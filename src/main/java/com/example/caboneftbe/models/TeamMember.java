@@ -15,7 +15,7 @@ import lombok.Setter;
 public class TeamMember extends Base{
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private Users users;
 
     @ManyToOne
     @JoinColumn(name = "team_id")

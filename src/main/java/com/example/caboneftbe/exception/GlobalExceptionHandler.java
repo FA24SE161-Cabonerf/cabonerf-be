@@ -5,12 +5,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 import org.springframework.http.HttpStatus;
 
-@Getter
-@Setter
+
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Builder
+@SuperBuilder
 public class GlobalExceptionHandler extends RuntimeException{
     HttpStatus status;
     String error;

@@ -8,13 +8,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-@Getter
-@Setter
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Entity
 @Table
-public class User extends Base implements UserDetails {
+@Getter
+@Setter
+public class Users extends Base implements UserDetails {
 
     private String userName;
     private String email;

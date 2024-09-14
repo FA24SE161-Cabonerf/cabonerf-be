@@ -6,7 +6,6 @@ public class UserDto {
     long id;
     String userName;
     String email;
-    String password;
     String phone;
     String profilePictureUrl;
     String bio;

@@ -20,5 +20,5 @@ public class ForgotPasswordToken extends Base{
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private Users users;
 }
