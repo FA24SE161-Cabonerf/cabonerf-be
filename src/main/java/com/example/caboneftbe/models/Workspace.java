@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,7 +17,7 @@ public class Workspace extends Base{
 
     @ManyToOne
     @JoinColumn(name = "owner_id")
-    private Users owner;
+    private User owner;
 
     @ManyToOne
     @JoinColumn(name = "team_id")

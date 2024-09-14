@@ -20,6 +20,6 @@ public class EmailVerificationToken extends Base{
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private Users user;
+    private User user;
 
 }

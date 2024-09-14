@@ -1,10 +1,7 @@
 package com.example.caboneftbe.models;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -17,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Entity
 @Table
-public class Users extends Base implements UserDetails {
+public class User extends Base implements UserDetails {
 
     private String userName;
     private String email;
