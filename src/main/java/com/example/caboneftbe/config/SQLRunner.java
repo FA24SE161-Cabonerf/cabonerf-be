@@ -17,7 +17,6 @@ import java.nio.charset.StandardCharsets;
 public class SQLRunner implements CommandLineRunner {
     @Autowired
     PasswordEncoder passwordEncoder;
-
     @Autowired
     private UserRepository userRepository;
 
@@ -32,10 +31,10 @@ public class SQLRunner implements CommandLineRunner {
         String sqlScript = loadSQLScript();
         jdbcTemplate.execute(sqlScript);
         String pass = passwordEncoder.encode("12345");
-        Users user = new Users();
-        user.setPassword(pass);
-        user.setEmail("caboneft@gmail.com");
-        userRepository.save(user);
+        Users users = new Users();
+        users.setPassword(pass);
+        users.setEmail("caboneft@gmail.com");
+        userRepository.save(users);
 
     }
 

@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@SuperBuilder
+@Builder
 public class GlobalExceptionHandler extends RuntimeException{
     HttpStatus status;
     String error;

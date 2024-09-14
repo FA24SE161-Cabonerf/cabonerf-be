@@ -2,9 +2,8 @@ package com.example.caboneftbe.models;
 
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -12,9 +11,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDate;
 
 @MappedSuperclass
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
+@SuperBuilder
 @EntityListeners(AuditingEntityListener.class)
 public class Base {
     @Id

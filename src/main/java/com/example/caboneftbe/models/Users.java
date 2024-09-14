@@ -2,6 +2,7 @@ package com.example.caboneftbe.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -9,11 +10,12 @@ import java.util.Collection;
 import java.util.List;
 
 @NoArgsConstructor
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table
 @Getter
 @Setter
+@SuperBuilder
 public class Users extends Base implements UserDetails {
 
     private String userName;
