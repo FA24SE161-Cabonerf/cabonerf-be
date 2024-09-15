@@ -2,6 +2,7 @@ package com.example.caboneftbe.controller;
 
 import com.example.caboneftbe.enums.API_PARAMS;
 import com.example.caboneftbe.request.LoginByEmailRequest;
+import com.example.caboneftbe.request.RegisterRequest;
 import com.example.caboneftbe.response.ResponseObject;
 import com.example.caboneftbe.services.UserService;
 import jakarta.validation.Valid;
@@ -26,6 +27,13 @@ public class AuthenticateController {
     public ResponseEntity<ResponseObject> loginByEmail(@Valid @RequestBody LoginByEmailRequest request){
         return ResponseEntity.ok().body(
                 new ResponseObject("success", "Login successfully", userService.loginByEmail(request))
+        );
+    }
+
+    @PostMapping(API_PARAMS.REGISTER)
+    public ResponseEntity<ResponseObject> register(@Valid @RequestBody RegisterRequest request){
+        return ResponseEntity.ok().body(
+                new ResponseObject("success", "Register successfully", userService.register(request))
         );
     }
 
