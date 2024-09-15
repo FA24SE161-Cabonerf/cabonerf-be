@@ -4,6 +4,8 @@ import com.example.caboneftbe.converter.UserConverter;
 import com.example.caboneftbe.exception.GlobalExceptionHandler;
 import com.example.caboneftbe.repositories.UserRepository;
 import com.example.caboneftbe.request.LoginByEmailRequest;
+import com.example.caboneftbe.request.RefreshTokenRequest;
+import com.example.caboneftbe.response.AuthenticationResponse;
 import com.example.caboneftbe.response.LoginResponse;
 import com.example.caboneftbe.services.JwtService;
 import com.example.caboneftbe.services.UserService;
@@ -47,5 +49,11 @@ public class UserServiceImpl implements UserService {
                 .refresh_token(refreshToken)
                 .user(UserConverter.INSTANCE.fromUserToUserDto(user))
                 .build();
+    }
+
+    @Override
+    public AuthenticationResponse refreshToken(RefreshTokenRequest request) {
+        String clientToken = request.getRefreshToken();
+        return null;
     }
 }

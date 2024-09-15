@@ -2,6 +2,7 @@ package com.example.caboneftbe.controller;
 
 import com.example.caboneftbe.enums.API_PARAMS;
 import com.example.caboneftbe.request.LoginByEmailRequest;
+import com.example.caboneftbe.request.RefreshTokenRequest;
 import com.example.caboneftbe.response.ResponseObject;
 import com.example.caboneftbe.services.UserService;
 import jakarta.validation.Valid;
@@ -29,5 +30,11 @@ public class AuthenticateController {
         );
     }
 
+    @PostMapping(API_PARAMS.REFRESH_TOKEN)
+    public ResponseEntity<ResponseObject> refreshToken(@RequestBody RefreshTokenRequest request){
+        return ResponseEntity.ok().body(
+                new ResponseObject("success", "Refresh token successfully.", userService.refreshToken(request))
+        );
+    }
 
 }
