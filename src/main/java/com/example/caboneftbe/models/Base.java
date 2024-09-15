@@ -28,5 +28,5 @@ public class Base {
     @LastModifiedDate
     private LocalDate modifiedDate;
     @Column
-    private boolean status;
+    private boolean status = true;
 }
