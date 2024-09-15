@@ -2,6 +2,7 @@ package com.example.caboneftbe.services.impl;
 
 import com.example.caboneftbe.converter.UserConverter;
 import com.example.caboneftbe.exception.GlobalExceptionHandler;
+import com.example.caboneftbe.models.RefreshToken;
 import com.example.caboneftbe.models.Users;
 import com.example.caboneftbe.repositories.*;
 import com.example.caboneftbe.request.LoginByEmailRequest;
@@ -19,8 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @Data
@@ -28,7 +29,7 @@ import java.util.UUID;
 @NoArgsConstructor(force = true)
 @SuperBuilder
 @AllArgsConstructor
-public class UserServiceImpl implements UserService {
+public class AuthenticationServiceImpl implements UserService {
     @Autowired
     UserRepository userRepository;
 
@@ -50,6 +51,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     RoleRepository roleRepository;
 
+    @Autowired
+    RefreshTokenRepository refreshTokenRepository;
+
     @Override
     public LoginResponse loginByEmail(LoginByEmailRequest request) {
         var user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> GlobalExceptionHandler.notFound("User not found!"));
@@ -61,6 +65,8 @@ public class UserServiceImpl implements UserService {
 
         String accessToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
+
+        saveRefreshToken(refreshToken, user);
 
         return LoginResponse.builder()
                 .access_token(accessToken)
@@ -111,6 +117,38 @@ public class UserServiceImpl implements UserService {
     @Override
     public AuthenticationResponse refreshToken(RefreshTokenRequest request) {
         String clientToken = request.getRefreshToken();
-        return null;
+        var user = userRepository.findById(request.getUserId()).orElseThrow(() -> GlobalExceptionHandler.notFound("User not found!"));
+        if (!jwtService.isTokenValid(clientToken, user)) {
+            throw GlobalExceptionHandler.unauthorize("Invalid or expired refresh token");
+        }
+
+        return AuthenticationResponse.builder()
+                .access_token(jwtService.generateToken(user))
+                .refresh_token(rotateRefreshToken(clientToken, user))
+                .build();
     }
+
+    private static RefreshToken createRefreshTokenEntity(String refreshToken, Users user) {
+        RefreshToken token = new RefreshToken();
+        token.setToken(refreshToken);
+        token.setCreatedAt(LocalDateTime.now());
+        token.setValid(true);
+        token.setUsers(user);
+        return token;
+    }
+
+    public void saveRefreshToken(String refreshTokenString, Users user) {
+        refreshTokenRepository.save(createRefreshTokenEntity(refreshTokenString, user));
+    }
+
+    public String rotateRefreshToken(String oldRefreshTokenString, Users user) {
+        // invalidate token cũ
+        refreshTokenRepository.findByToken(oldRefreshTokenString).get().setValid(false);
+        // gen token string mới
+        String newRefreshTokenString = jwtService.generateRefreshToken(user);
+        // save token string mới vào db
+        saveRefreshToken(newRefreshTokenString, user);
+        return newRefreshTokenString;
+    }
+
 }

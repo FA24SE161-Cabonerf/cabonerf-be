@@ -1,6 +1,7 @@
 package com.example.caboneftbe.request;
 
 
+import com.example.caboneftbe.models.Users;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -11,4 +12,5 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RefreshTokenRequest {
     String refreshToken;
+    Long userId;
 }
