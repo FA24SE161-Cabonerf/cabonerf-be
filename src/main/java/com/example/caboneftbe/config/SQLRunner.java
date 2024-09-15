@@ -33,7 +33,7 @@ public class SQLRunner implements CommandLineRunner {
         String pass = passwordEncoder.encode("12345");
         Users users = new Users();
         users.setPassword(pass);
-        users.setEmail("caboneft@gmail.com");
+        users.setEmail("cabonerf@gmail.com");
         userRepository.save(users);
 
     }
