@@ -12,7 +12,7 @@ import com.example.caboneftbe.request.RegisterRequest;
 import com.example.caboneftbe.response.LoginResponse;
 import com.example.caboneftbe.response.RegisterResponse;
 import com.example.caboneftbe.services.JwtService;
-import com.example.caboneftbe.services.UserService;
+import com.example.caboneftbe.services.AuthenticationService;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
@@ -29,7 +29,7 @@ import java.util.Optional;
 @NoArgsConstructor(force = true)
 @SuperBuilder
 @AllArgsConstructor
-public class AuthenticationServiceImpl implements UserService {
+public class AuthenticationServiceImpl implements AuthenticationService {
     @Autowired
     UserRepository userRepository;
 
@@ -77,37 +77,41 @@ public class AuthenticationServiceImpl implements UserService {
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
-        if (!userRepository.findByEmail(request.getEmail()).isPresent()) {
-            if (request.getPassword().equals(request.getConfirmPassword())) {
-                var user = Users.builder()
-                        .email(request.getEmail())
-                        .userName(request.getFullname())
-                        .password(passwordEncoder.encode(request.getPassword()))
-                        .userStatus(statusRepository.getById(1L))
-                        .userVerifyStatus(userVerifyStatusRepository.getById(1L))
-                        .role(roleRepository.findById(3L).get())
-                        .subscription(null)
-                        .status(true)
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw GlobalExceptionHandler.badRequest("Email already exists!");
+        }
+
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw GlobalExceptionHandler.badRequest("Passwords and Confirm Passwords don't match!");
+        }
+
+        var user = Users.builder()
+                .email(request.getEmail())
+                .userName(request.getFullname())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .userStatus(statusRepository.getById(1L))
+                .userVerifyStatus(userVerifyStatusRepository.getById(1L))
+                .role(roleRepository.findById(3L).get())
+                .subscription(null)
+                .status(true)
+                .build();
+
+        Optional<Users> saved = Optional.of(userRepository.save(user));
+        if (saved.isPresent()) {
+            try {
+                // String token = UUID.randomUUID().toString();
+
+                var accessToken = jwtService.generateToken(saved.get());
+                var refreshToken = jwtService.generateRefreshToken(saved.get());
+
+                return RegisterResponse.builder()
+                        .access_token(accessToken)
+                        .refresh_token(refreshToken)
+                        .user(UserConverter.INSTANCE.fromUserToUserDto(saved.get()))
                         .build();
 
-                Optional<Users> saved = Optional.of(userRepository.save(user));
-                if (saved.isPresent()) {
-                    try {
-                        // String token = UUID.randomUUID().toString();
-
-                        var accessToken = jwtService.generateToken(saved.get());
-                        var refreshToken = jwtService.generateRefreshToken(saved.get());
-
-                        return RegisterResponse.builder()
-                                .access_token(accessToken)
-                                .refresh_token(refreshToken)
-                                .user(UserConverter.INSTANCE.fromUserToUserDto(saved.get()))
-                                .build();
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return null;
