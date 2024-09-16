@@ -32,7 +32,7 @@ jobs:
         with:
           name: cabonerf-be
       - name: Deploy to Azure App Service
-        uses: azure/webapp-cabonerf@v2
+        uses: azure/cabonerf-be@v2
         with:
           app-name: cabonerf
           publish-profile: ${{ secrets.azureWebAppPublishProfile }}
