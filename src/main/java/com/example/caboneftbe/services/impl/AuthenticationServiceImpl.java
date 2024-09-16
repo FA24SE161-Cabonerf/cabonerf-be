@@ -78,11 +78,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public RegisterResponse register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw GlobalExceptionHandler.badRequest("Email already exists!");
+            throw CustomExceptions.badRequest("Email already exists!");
         }
 
         if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw GlobalExceptionHandler.badRequest("Passwords and Confirm Passwords don't match!");
+            throw CustomExceptions.badRequest("Passwords and Confirm Passwords don't match!");
         }
 
         var user = Users.builder()
