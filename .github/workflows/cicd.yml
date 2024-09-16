@@ -3,7 +3,7 @@ name: Cabonerf App to Azure App Service
 on:
   push:
     branches:
-      - thang/cicd
+      - main
 
 jobs:
   build:
