@@ -28,7 +28,7 @@ jobs:
     needs: build
     steps:
       - name: Deploy to Azure App Service
-        uses: azure/webapps-deploy@v2
+        uses: azure/webapps-deploy@v4
         with:
           app-name: cabonerf
           publish-profile: ${{ secrets.azureWebAppPublishProfile }}
