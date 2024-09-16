@@ -27,10 +27,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Download Artifact from github job
-        uses: actions/download-artifact@v4
-        with:
-          name: cabonerf
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v2
         with:
