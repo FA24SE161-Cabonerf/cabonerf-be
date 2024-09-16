@@ -6,13 +6,16 @@ import com.example.caboneftbe.models.RefreshToken;
 import com.example.caboneftbe.models.Users;
 import com.example.caboneftbe.repositories.*;
 import com.example.caboneftbe.request.LoginByEmailRequest;
+import com.example.caboneftbe.request.MailRequest;
 import com.example.caboneftbe.request.RefreshTokenRequest;
 import com.example.caboneftbe.response.AuthenticationResponse;
 import com.example.caboneftbe.request.RegisterRequest;
 import com.example.caboneftbe.response.LoginResponse;
 import com.example.caboneftbe.response.RegisterResponse;
+import com.example.caboneftbe.services.EmailVerificationTokenService;
 import com.example.caboneftbe.services.JwtService;
 import com.example.caboneftbe.services.AuthenticationService;
+import com.example.caboneftbe.services.MailService;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
@@ -20,8 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.*;
+
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @Data
@@ -53,6 +57,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Autowired
     RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
+    MailService mailService;
+
+    @Autowired
+    EmailVerificationTokenService emailVerificationTokenService;
 
     @Override
     public LoginResponse loginByEmail(LoginByEmailRequest request) {
@@ -99,7 +109,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Optional<Users> saved = Optional.of(userRepository.save(user));
         if (saved.isPresent()) {
             try {
-                // String token = UUID.randomUUID().toString();
+                Random random = new Random();
+                int _token = 100000 + random.nextInt(900000);
+                String token = String.valueOf(100000 + random.nextInt(900000));
+                emailVerificationTokenService.save(saved.get(), token);
+
+                MailRequest mailRequest = new MailRequest();
+                mailRequest.setSubject("Verification Code");
+                mailRequest.setName("Cabonerf");
+                mailRequest.setTo(user.getEmail());
+                mailRequest.setFrom("cabonerf@gmail.com");
+
+                Map<String,Object> model = new HashMap<>();
+                model.put("code", token);
+
+                mailService.sendMailRegister(mailRequest,model);
 
                 var accessToken = jwtService.generateToken(saved.get());
                 var refreshToken = jwtService.generateRefreshToken(saved.get());

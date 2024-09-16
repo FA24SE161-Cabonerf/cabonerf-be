@@ -3,7 +3,7 @@ package com.example.caboneftbe.models;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Getter
 @Setter
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Table
 public class EmailVerificationToken extends Base{
     private String token;
-    private LocalDateTime expiryDate;
+    private Timestamp expiryDate;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
