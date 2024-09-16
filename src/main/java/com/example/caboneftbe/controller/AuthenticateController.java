@@ -5,7 +5,7 @@ import com.example.caboneftbe.request.LoginByEmailRequest;
 import com.example.caboneftbe.request.RefreshTokenRequest;
 import com.example.caboneftbe.request.RegisterRequest;
 import com.example.caboneftbe.response.ResponseObject;
-import com.example.caboneftbe.services.UserService;
+import com.example.caboneftbe.services.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -22,26 +22,26 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class AuthenticateController {
     @Autowired
-    private UserService userService;
+    private AuthenticationService authenticationService;
 
     @PostMapping(API_PARAMS.LOGIN_BY_EMAIL)
     public ResponseEntity<ResponseObject> loginByEmail(@Valid @RequestBody LoginByEmailRequest request){
         return ResponseEntity.ok().body(
-                new ResponseObject("success", "Login successfully", userService.loginByEmail(request))
+                new ResponseObject("success", "Login successfully", authenticationService.loginByEmail(request))
         );
     }
 
     @PostMapping(API_PARAMS.REGISTER)
     public ResponseEntity<ResponseObject> register(@Valid @RequestBody RegisterRequest request){
         return ResponseEntity.ok().body(
-                new ResponseObject("success", "Register successfully", userService.register(request))
+                new ResponseObject("success", "Register successfully", authenticationService.register(request))
         );
     }
 
     @PostMapping(API_PARAMS.REFRESH_TOKEN)
     public ResponseEntity<ResponseObject> refreshToken(@RequestBody RefreshTokenRequest request){
         return ResponseEntity.ok().body(
-                new ResponseObject("success", "Refresh token successfully.", userService.refreshToken(request))
+                new ResponseObject("success", "Refresh token successfully.", authenticationService.refreshToken(request))
         );
     }
 
