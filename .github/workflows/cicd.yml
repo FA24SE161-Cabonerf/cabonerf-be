@@ -29,9 +29,11 @@ jobs:
     steps:
       - name: Download Artifact from github job
         uses: actions/download-artifact@v4
+        with:
+          name: cabonerf-be
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v2
         with:
-          app-name: cabonerf-be
+          app-name: cabonerf
           publish-profile: ${{ secrets.azureWebAppPublishProfile }}
           package: '*.jar'
