@@ -32,8 +32,8 @@ jobs:
         with:
           name: cabonerf-be
       - name: Deploy to Azure App Service
-        uses: azure/cabonerf-be@v2
+        uses: azure/webapps-deploy@v2
         with:
-          app-name: cabonerf
+          app-name: cabonerf-be
           publish-profile: ${{ secrets.azureWebAppPublishProfile }}
           package: '*.jar'
