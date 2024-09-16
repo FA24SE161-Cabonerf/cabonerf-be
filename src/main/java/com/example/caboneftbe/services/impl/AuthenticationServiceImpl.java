@@ -1,7 +1,7 @@
 package com.example.caboneftbe.services.impl;
 
 import com.example.caboneftbe.converter.UserConverter;
-import com.example.caboneftbe.exception.GlobalExceptionHandler;
+import com.example.caboneftbe.exception.CustomExceptions;
 import com.example.caboneftbe.models.RefreshToken;
 import com.example.caboneftbe.models.Users;
 import com.example.caboneftbe.repositories.*;
@@ -56,11 +56,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public LoginResponse loginByEmail(LoginByEmailRequest request) {
-        var user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> GlobalExceptionHandler.notFound("User not found!"));
+        var user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> CustomExceptions.notFound("User not found!"));
         // flow: lấy pw nhận vào -> encode -> nếu trùng với trong DB -> authen
         boolean isAuthenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!isAuthenticated) {
-            throw GlobalExceptionHandler.unauthorize("Email or password didn't match!");
+            throw  CustomExceptions.unauthorized("Email or password didn't match!");
         }
 
         String accessToken = jwtService.generateToken(user);
@@ -78,11 +78,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public RegisterResponse register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw GlobalExceptionHandler.badRequest("Email already exists!");
+            throw CustomExceptions.badRequest("Email already exists!");
         }
 
         if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw GlobalExceptionHandler.badRequest("Passwords and Confirm Passwords don't match!");
+            throw CustomExceptions.badRequest("Passwords and Confirm Passwords don't match!");
         }
 
         var user = Users.builder()
@@ -121,9 +121,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthenticationResponse refreshToken(RefreshTokenRequest request) {
         String clientToken = request.getRefreshToken();
-        var user = userRepository.findById(request.getUserId()).orElseThrow(() -> GlobalExceptionHandler.notFound("User not found!"));
+        var user = userRepository.findById(request.getUserId()).orElseThrow(() -> CustomExceptions.notFound("User not found!"));
         if (!jwtService.isTokenValid(clientToken, user)) {
-            throw GlobalExceptionHandler.unauthorize("Invalid or expired refresh token");
+            throw CustomExceptions.unauthorized("Invalid or expired refresh token");
         }
 
         return AuthenticationResponse.builder()
