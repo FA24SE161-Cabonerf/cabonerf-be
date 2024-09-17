@@ -2,14 +2,13 @@ package com.example.caboneftbe.services.impl;
 
 import com.example.caboneftbe.converter.UserConverter;
 import com.example.caboneftbe.exception.CustomExceptions;
+import com.example.caboneftbe.models.EmailVerificationToken;
 import com.example.caboneftbe.models.RefreshToken;
 import com.example.caboneftbe.models.Users;
 import com.example.caboneftbe.repositories.*;
-import com.example.caboneftbe.request.LoginByEmailRequest;
-import com.example.caboneftbe.request.MailRequest;
-import com.example.caboneftbe.request.RefreshTokenRequest;
+import com.example.caboneftbe.request.*;
+import com.example.caboneftbe.response.ActiveCodeResponse;
 import com.example.caboneftbe.response.AuthenticationResponse;
-import com.example.caboneftbe.request.RegisterRequest;
 import com.example.caboneftbe.response.LoginResponse;
 import com.example.caboneftbe.response.RegisterResponse;
 import com.example.caboneftbe.services.EmailVerificationTokenService;
@@ -23,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 import java.time.LocalDateTime;
@@ -63,6 +63,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Autowired
     EmailVerificationTokenService emailVerificationTokenService;
+
+    @Autowired
+    EmailVerificationTokenRepository verificationTokenRepository;
 
     @Override
     public LoginResponse loginByEmail(LoginByEmailRequest request) {
@@ -153,6 +156,39 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return AuthenticationResponse.builder()
                 .access_token(jwtService.generateToken(user))
                 .refresh_token(rotateRefreshToken(clientToken, user))
+                .build();
+    }
+
+    @Override
+    public ActiveCodeResponse activeCode(ActiveUserRequest request) {
+        EmailVerificationToken token = verificationTokenRepository.findByToken(request.getCode());
+        if(token == null){
+            throw CustomExceptions.notFound("Invalid verification code");
+        }
+
+        Users users = token.getUsers();
+
+        Optional<Users> _user = userRepository.findById(request.getUserId());
+        if(_user.isEmpty()){
+            throw CustomExceptions.notFound("User not found");
+        }
+
+        if(_user.equals(users)){
+            throw CustomExceptions.badRequest("Token does not belong to this user");
+        }
+
+        if(users.getUserVerifyStatus().getId() != 1){
+            throw CustomExceptions.badRequest("User is verify");
+        }
+
+        Timestamp time = new Timestamp(System.currentTimeMillis());
+        if(token.getExpiryDate().before(time)){
+            throw CustomExceptions.badRequest("Token has expired");
+        }
+
+        users.setUserVerifyStatus(userVerifyStatusRepository.getReferenceById(2L));
+        return ActiveCodeResponse.builder()
+                .user(UserConverter.INSTANCE.fromUserToUserDto(userRepository.save(users)))
                 .build();
     }
 

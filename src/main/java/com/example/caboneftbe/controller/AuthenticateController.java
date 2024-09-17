@@ -1,6 +1,7 @@
 package com.example.caboneftbe.controller;
 
 import com.example.caboneftbe.enums.API_PARAMS;
+import com.example.caboneftbe.request.ActiveUserRequest;
 import com.example.caboneftbe.request.LoginByEmailRequest;
 import com.example.caboneftbe.request.RefreshTokenRequest;
 import com.example.caboneftbe.request.RegisterRequest;
@@ -11,10 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequestMapping(API_PARAMS.API_VERSION)
 @NoArgsConstructor(force = true)
@@ -42,6 +40,13 @@ public class AuthenticateController {
     public ResponseEntity<ResponseObject> refreshToken(@RequestBody RefreshTokenRequest request){
         return ResponseEntity.ok().body(
                 new ResponseObject("success", "Refresh token successfully.", authenticationService.refreshToken(request))
+        );
+    }
+
+    @PutMapping(API_PARAMS.ACTIVE_USER)
+    public ResponseEntity<ResponseObject> activeUser(@RequestBody ActiveUserRequest request){
+        return ResponseEntity.ok().body(
+                new ResponseObject("success","Active user successfully", authenticationService.activeCode(request))
         );
     }
 
