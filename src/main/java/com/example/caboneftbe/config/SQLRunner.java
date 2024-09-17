@@ -30,11 +30,11 @@ public class SQLRunner implements CommandLineRunner {
     public void run(String... args) throws Exception {
         String sqlScript = loadSQLScript();
         jdbcTemplate.execute(sqlScript);
-        String pass = passwordEncoder.encode("12345");
-        Users users = new Users();
-        users.setPassword(pass);
-        users.setEmail("cabonerf@gmail.com");
-        userRepository.save(users);
+//        String pass = passwordEncoder.encode("12345");
+//        Users users = new Users();
+//        users.setPassword(pass);
+//        users.setEmail("cabonerf@gmail.com");
+//        userRepository.save(users);
 
     }
 
