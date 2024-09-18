@@ -1,6 +1,7 @@
 package com.example.caboneftbe.controller;
 
 import com.example.caboneftbe.enums.API_PARAMS;
+import com.example.caboneftbe.enums.Constants;
 import com.example.caboneftbe.request.ActiveUserRequest;
 import com.example.caboneftbe.request.LoginByEmailRequest;
 import com.example.caboneftbe.request.RefreshTokenRequest;
@@ -26,28 +27,28 @@ public class AuthenticateController {
     @PostMapping(API_PARAMS.LOGIN_BY_EMAIL)
     public ResponseEntity<ResponseObject> loginByEmail(@Valid @RequestBody LoginByEmailRequest request){
         return ResponseEntity.ok().body(
-                new ResponseObject("success", "Login successfully", authenticationService.loginByEmail(request))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Login successfully", authenticationService.loginByEmail(request))
         );
     }
 
     @PostMapping(API_PARAMS.REGISTER)
     public ResponseEntity<ResponseObject> register(@Valid @RequestBody RegisterRequest request){
         return ResponseEntity.ok().body(
-                new ResponseObject("success", "Register successfully", authenticationService.register(request))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Register successfully", authenticationService.register(request))
         );
     }
 
     @PostMapping(API_PARAMS.REFRESH_TOKEN)
     public ResponseEntity<ResponseObject> refreshToken(@RequestBody RefreshTokenRequest request){
         return ResponseEntity.ok().body(
-                new ResponseObject("success", "Refresh token successfully.", authenticationService.refreshToken(request))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Refresh token successfully.", authenticationService.refreshToken(request))
         );
     }
 
     @PutMapping(API_PARAMS.ACTIVE_USER)
     public ResponseEntity<ResponseObject> activeUser(@RequestBody ActiveUserRequest request){
         return ResponseEntity.ok().body(
-                new ResponseObject("success","Active user successfully", authenticationService.activeCode(request))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Active user successfully", authenticationService.activeCode(request))
         );
     }
 
