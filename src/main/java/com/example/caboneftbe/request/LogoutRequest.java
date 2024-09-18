@@ -13,5 +13,5 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LogoutRequest {
-    String refresh_token;
+    String refreshToken;
 }
