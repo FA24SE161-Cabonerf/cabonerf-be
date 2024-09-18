@@ -2,10 +2,7 @@ package com.example.caboneftbe.controller;
 
 import com.example.caboneftbe.enums.API_PARAMS;
 import com.example.caboneftbe.enums.Constants;
-import com.example.caboneftbe.request.ActiveUserRequest;
-import com.example.caboneftbe.request.LoginByEmailRequest;
-import com.example.caboneftbe.request.RefreshTokenRequest;
-import com.example.caboneftbe.request.RegisterRequest;
+import com.example.caboneftbe.request.*;
 import com.example.caboneftbe.response.ResponseObject;
 import com.example.caboneftbe.services.AuthenticationService;
 import jakarta.validation.Valid;
@@ -52,4 +49,10 @@ public class AuthenticateController {
         );
     }
 
+    @PostMapping(API_PARAMS.LOGOUT)
+    public ResponseEntity<ResponseObject> logout(@RequestHeader("Authorization") String accessToken, @RequestBody LogoutRequest logoutRequest){
+        return ResponseEntity.ok().body(
+                authenticationService.logout(logoutRequest,accessToken)
+        );
+    }
 }
