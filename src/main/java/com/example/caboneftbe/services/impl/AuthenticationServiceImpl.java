@@ -192,6 +192,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
     }
 
+    @Override
+    public LoginResponse logout(LogoutRequest request, String access_token) {
+        return null;
+    }
+
     private static RefreshToken createRefreshTokenEntity(String refreshToken, Users user) {
         RefreshToken token = new RefreshToken();
         token.setToken(refreshToken);
