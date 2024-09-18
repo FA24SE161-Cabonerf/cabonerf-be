@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
 @RestController
+@CrossOrigin(origins = "*")
 public class AuthenticateController {
     @Autowired
     private AuthenticationService authenticationService;
