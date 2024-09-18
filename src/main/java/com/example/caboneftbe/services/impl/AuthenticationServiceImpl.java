@@ -100,7 +100,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         var user = Users.builder()
                 .email(request.getEmail())
-                .userName(request.getFullname())
+                .fullName(request.getFullname())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .userStatus(statusRepository.getById(1L))
                 .userVerifyStatus(userVerifyStatusRepository.getById(1L))

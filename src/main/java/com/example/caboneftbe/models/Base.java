@@ -23,10 +23,13 @@ public class Base {
     private Long id;
     @Column
     @CreatedDate
+    @JsonIgnore
     private LocalDate createAt;
     @Column
     @LastModifiedDate
+    @JsonIgnore
     private LocalDate modifiedDate;
     @Column
+    @JsonIgnore
     private boolean status = true;
 }

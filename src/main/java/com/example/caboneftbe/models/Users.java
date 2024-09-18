@@ -18,7 +18,7 @@ import java.util.List;
 @SuperBuilder
 public class Users extends Base implements UserDetails {
 
-    private String userName;
+    private String fullName;
     private String email;
     private String password;
     private String phone;
