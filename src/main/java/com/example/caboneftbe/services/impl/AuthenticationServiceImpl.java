@@ -73,7 +73,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // flow: lấy pw nhận vào -> encode -> nếu trùng với trong DB -> authen
         boolean isAuthenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!isAuthenticated) {
-            throw  CustomExceptions.unauthorized("Email or password didn't match!");
+            throw  CustomExceptions.unauthorized("Email or password wrong!");
         }
 
         String accessToken = jwtService.generateToken(user);

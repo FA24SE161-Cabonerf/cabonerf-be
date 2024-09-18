@@ -1,17 +1,16 @@
 package com.example.caboneftbe.exception;
 
-
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CustomError {
-    String code;
+public class ErrorDetail {
+    Object value;
     String message;
+    String path;
 }

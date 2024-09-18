@@ -11,14 +11,24 @@ import org.springframework.http.HttpStatus;
 @Builder
 public class CustomExceptions extends RuntimeException{
     HttpStatus status;
-    CustomError error;
+    ErrorResponse error;
 
     public static CustomExceptions notFound(String message) {
         return CustomExceptions.builder()
                 .status(HttpStatus.NOT_FOUND)
-                .error(CustomError.builder()
-                        .code(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .error(ErrorResponse.builder()
+                        .status(HttpStatus.NOT_FOUND.getReasonPhrase())
                         .message(message)
+                        .build())
+                .build();
+    }
+    public static CustomExceptions notFound(String message, Object data) {
+        return CustomExceptions.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .error(ErrorResponse.builder()
+                        .status(HttpStatus.NOT_FOUND.getReasonPhrase())
+                        .message(message)
+                        .data(data)
                         .build())
                 .build();
     }
@@ -26,9 +36,19 @@ public class CustomExceptions extends RuntimeException{
     public static CustomExceptions badRequest(String message) {
         return CustomExceptions.builder()
                 .status(HttpStatus.BAD_REQUEST)
-                .error(CustomError.builder()
-                        .code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                .error(ErrorResponse.builder()
+                        .status(HttpStatus.BAD_REQUEST.getReasonPhrase())
                         .message(message)
+                        .build())
+                .build();
+    }
+    public static CustomExceptions badRequest(String message, Object data) {
+        return CustomExceptions.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .error(ErrorResponse.builder()
+                        .status(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                        .message(message)
+                        .data(data)
                         .build())
                 .build();
     }
@@ -36,9 +56,20 @@ public class CustomExceptions extends RuntimeException{
     public static CustomExceptions unauthorized(String message) {
         return CustomExceptions.builder()
                 .status(HttpStatus.UNAUTHORIZED)
-                .error(CustomError.builder()
-                        .code(String.valueOf(HttpStatus.UNAUTHORIZED.value()))
+                .error(ErrorResponse.builder()
+                        .status(HttpStatus.UNAUTHORIZED.getReasonPhrase())
                         .message(message)
+                        .build())
+                .build();
+    }
+
+    public static CustomExceptions unauthorized(String message, Object data) {
+        return CustomExceptions.builder()
+                .status(HttpStatus.UNAUTHORIZED)
+                .error(ErrorResponse.builder()
+                        .status(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                        .message(message)
+                        .data(data)
                         .build())
                 .build();
     }
