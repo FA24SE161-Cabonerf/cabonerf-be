@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
         });
 
         ErrorResponse response = ErrorResponse.builder()
-                .status("Failed")
+                .status("Error")
                 .message("Validation failed")
                 .data(errors)
                 .build();

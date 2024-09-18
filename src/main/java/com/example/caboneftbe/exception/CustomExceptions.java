@@ -1,5 +1,6 @@
 package com.example.caboneftbe.exception;
 
+import com.example.caboneftbe.enums.Constants;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,7 @@ public class CustomExceptions extends RuntimeException{
         return CustomExceptions.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .error(ErrorResponse.builder()
-                        .status(HttpStatus.NOT_FOUND.getReasonPhrase())
+                        .status(Constants.RESPONSE_STATUS_ERROR)
                         .message(message)
                         .build())
                 .build();
@@ -26,7 +27,7 @@ public class CustomExceptions extends RuntimeException{
         return CustomExceptions.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .error(ErrorResponse.builder()
-                        .status(HttpStatus.NOT_FOUND.getReasonPhrase())
+                        .status(Constants.RESPONSE_STATUS_ERROR)
                         .message(message)
                         .data(data)
                         .build())
@@ -37,7 +38,7 @@ public class CustomExceptions extends RuntimeException{
         return CustomExceptions.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .error(ErrorResponse.builder()
-                        .status(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                        .status(Constants.RESPONSE_STATUS_ERROR)
                         .message(message)
                         .build())
                 .build();
@@ -46,7 +47,7 @@ public class CustomExceptions extends RuntimeException{
         return CustomExceptions.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .error(ErrorResponse.builder()
-                        .status(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                        .status(Constants.RESPONSE_STATUS_ERROR)
                         .message(message)
                         .data(data)
                         .build())
@@ -57,7 +58,7 @@ public class CustomExceptions extends RuntimeException{
         return CustomExceptions.builder()
                 .status(HttpStatus.UNAUTHORIZED)
                 .error(ErrorResponse.builder()
-                        .status(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                        .status(Constants.RESPONSE_STATUS_ERROR)
                         .message(message)
                         .build())
                 .build();
@@ -67,7 +68,7 @@ public class CustomExceptions extends RuntimeException{
         return CustomExceptions.builder()
                 .status(HttpStatus.UNAUTHORIZED)
                 .error(ErrorResponse.builder()
-                        .status(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                        .status(Constants.RESPONSE_STATUS_ERROR)
                         .message(message)
                         .data(data)
                         .build())
