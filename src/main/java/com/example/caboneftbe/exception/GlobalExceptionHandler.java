@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
         ex.getBindingResult().getFieldErrors().forEach(fieldError -> {
             errors.put(fieldError.getField(), ErrorDetail.builder()
                     .value(fieldError.getRejectedValue())
-                    .msg(fieldError.getDefaultMessage())
+                    .message(fieldError.getDefaultMessage())
                     .path(fieldError.getField())
                     .build());
         });
