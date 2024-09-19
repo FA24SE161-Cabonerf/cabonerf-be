@@ -74,4 +74,25 @@ public class CustomExceptions extends RuntimeException{
                         .build())
                 .build();
     }
+
+    public static CustomExceptions validator(String message) {
+        return CustomExceptions.builder()
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .error(ErrorResponse.builder()
+                        .status(Constants.RESPONSE_STATUS_ERROR)
+                        .message(message)
+                        .build())
+                .build();
+    }
+
+    public static CustomExceptions validator(String message, Object data) {
+        return CustomExceptions.builder()
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .error(ErrorResponse.builder()
+                        .status(Constants.RESPONSE_STATUS_ERROR)
+                        .message(message)
+                        .data(data)
+                        .build())
+                .build();
+    }
 }

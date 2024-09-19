@@ -7,4 +7,5 @@ public class API_PARAMS {
     public static final String REFRESH_TOKEN = "/refresh";
     public static final String ACTIVE_USER = "/active-user";
     public static final String LOGOUT = "/logout";
+    public static final String USERS = "/users";
 }

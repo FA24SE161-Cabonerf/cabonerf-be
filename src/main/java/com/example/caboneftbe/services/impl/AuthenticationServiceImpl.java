@@ -93,11 +93,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public RegisterResponse register(RegisterRequest request) {
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,Map.of("email", "Email already exist."));
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,Map.of("email", "Email already exist."));
         }
 
         if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,Map.of("password","Confirm Passwords do not match."));
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,Map.of("password","Confirm Passwords do not match."));
         }
 
         var user = Users.builder()
