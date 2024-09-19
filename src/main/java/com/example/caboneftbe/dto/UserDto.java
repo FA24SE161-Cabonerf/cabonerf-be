@@ -19,7 +19,6 @@ public class UserDto {
     String profilePictureUrl;
 //    String bio;
     RoleDto role;
-    UserVerifyStatusDto userVerifyStatus;
     SubscriptionType subscription;
     UserStatus userStatus;
 }
