@@ -1,7 +1,7 @@
--- insert into subscription_type(subscription_name,description,project_limit,usage_limit,annual_cost,monthly_cost,can_create_organization)
--- values ('Basic','Người dùng cá nhân với hạn chế cơ bản',5,1000,99.99,9.99,false),
---        ('Pro','Người dùng chuyên nghiệp với nhiều tính năng hơn',20,10000,199.99,19.99,true),
---        ('Enterprise', 'Doanh nghiệp với khả năng mở rộng tối đa',100,100000,999.99,99.99,true);
+-- insert into subscription_type(subscription_name,description,project_limit,usage_limit,annual_cost,monthly_cost,can_create_organization,status)
+-- values ('Basic','Người dùng cá nhân với hạn chế cơ bản',5,1000,0,0,false,true),
+--        ('Pro','Người dùng chuyên nghiệp với nhiều tính năng hơn',20,10000,199.99,19.99,true,true),
+--        ('Enterprise', 'Doanh nghiệp với khả năng mở rộng tối đa',100,100000,999.99,99.99,true,true);
 --
 -- insert into user_verify_status(status_name,description,status)
 -- values ('Pending','Người dùng đã đăng ký nhưng chưa được xác minh',true),

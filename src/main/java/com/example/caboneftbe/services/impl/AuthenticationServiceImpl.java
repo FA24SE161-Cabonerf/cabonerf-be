@@ -1,6 +1,7 @@
 package com.example.caboneftbe.services.impl;
 
 import com.example.caboneftbe.converter.UserConverter;
+import com.example.caboneftbe.enums.Constants;
 import com.example.caboneftbe.exception.CustomExceptions;
 import com.example.caboneftbe.models.EmailVerificationToken;
 import com.example.caboneftbe.models.RefreshToken;
@@ -90,58 +91,57 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
+
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw CustomExceptions.badRequest("Email already exists!");
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,Map.of("email", "Email already exist."));
         }
 
         if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw CustomExceptions.badRequest("Passwords and Confirm Passwords don't match!");
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,Map.of("password","Confirm Passwords do not match."));
         }
 
         var user = Users.builder()
                 .email(request.getEmail())
-                .fullName(request.getFullname())
+                .fullName(request.getFullName())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .userStatus(statusRepository.getById(1L))
-                .userVerifyStatus(userVerifyStatusRepository.getById(1L))
+                .userStatus(statusRepository.findById(1L).get())
+                .userVerifyStatus(userVerifyStatusRepository.findById(1L).get())
                 .role(roleRepository.findById(3L).get())
-                .subscription(null)
+                .subscription(subscriptionTypeRepository.findById(1L).get())
                 .status(true)
                 .build();
 
         Optional<Users> saved = Optional.of(userRepository.save(user));
-        if (saved.isPresent()) {
-            try {
-                Random random = new Random();
-                int _token = 100000 + random.nextInt(900000);
-                String token = String.valueOf(100000 + random.nextInt(900000));
-                emailVerificationTokenService.save(saved.get(), token);
+//        if (saved.isPresent()) {
+//            try {
+//                Random random = new Random();
+//                int _token = 100000 + random.nextInt(900000);
+//                String token = String.valueOf(100000 + random.nextInt(900000));
+//                emailVerificationTokenService.save(saved.get(), token);
+//
+//                MailRequest mailRequest = new MailRequest();
+//                mailRequest.setSubject("Verification Code");
+//                mailRequest.setName("Cabonerf");
+//                mailRequest.setTo(user.getEmail());
+//                mailRequest.setFrom("cabonerf@gmail.com");
+//
+//                Map<String,Object> model = new HashMap<>();
+//                model.put("code", token);
+//
+////                mailService.sendMailRegister(mailRequest,model);
+//
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+        var accessToken = jwtService.generateToken(saved.get());
+        var refreshToken = jwtService.generateRefreshToken(saved.get());
 
-                MailRequest mailRequest = new MailRequest();
-                mailRequest.setSubject("Verification Code");
-                mailRequest.setName("Cabonerf");
-                mailRequest.setTo(user.getEmail());
-                mailRequest.setFrom("cabonerf@gmail.com");
-
-                Map<String,Object> model = new HashMap<>();
-                model.put("code", token);
-
-                mailService.sendMailRegister(mailRequest,model);
-
-                var accessToken = jwtService.generateToken(saved.get());
-                var refreshToken = jwtService.generateRefreshToken(saved.get());
-
-                return RegisterResponse.builder()
-                        .access_token(accessToken)
-                        .refresh_token(refreshToken)
-                        .user(UserConverter.INSTANCE.fromUserToUserDto(saved.get()))
-                        .build();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
+        return RegisterResponse.builder()
+                .access_token(accessToken)
+                .refresh_token(refreshToken)
+                .user(UserConverter.INSTANCE.fromUserToUserDto(saved.get()))
+                .build();
     }
 
 
