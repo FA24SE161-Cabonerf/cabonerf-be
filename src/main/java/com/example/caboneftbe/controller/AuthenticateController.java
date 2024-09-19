@@ -64,13 +64,13 @@ public class AuthenticateController {
 
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<ResponseObject> handleMissingHeader(MissingRequestHeaderException ex){
-        return ResponseEntity.badRequest().body(
-               new ResponseObject(Constants.RESPONSE_STATUS_ERROR,"Error", Map.of("Authorization","Authorization header is required")));
+        return ResponseEntity.status(401).body(
+               new ResponseObject(Constants.RESPONSE_STATUS_ERROR,"Error", Map.of("Authorization","Unauthorized access")));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ResponseObject> handleValidationBody(HttpMessageNotReadableException ex) {
-        return ResponseEntity.badRequest().body(
+        return ResponseEntity.status(401).body(
                 new ResponseObject(Constants.RESPONSE_STATUS_ERROR,"Error", Map.of("RequestBody","RequestBody is required")));
     }
 }
