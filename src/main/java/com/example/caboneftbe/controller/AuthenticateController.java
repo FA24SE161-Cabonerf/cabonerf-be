@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping(API_PARAMS.API_VERSION)
+@RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.USERS)
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
 @RestController
