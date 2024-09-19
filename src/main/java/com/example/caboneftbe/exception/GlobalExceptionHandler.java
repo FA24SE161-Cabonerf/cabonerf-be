@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
                 .data(errors)
                 .build();
 
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(response, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @ExceptionHandler(Exception.class)
