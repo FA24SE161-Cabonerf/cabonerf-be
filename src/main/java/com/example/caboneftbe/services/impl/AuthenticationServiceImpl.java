@@ -191,34 +191,41 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public ResponseObject logout(LogoutRequest request, String access_token) {
-        if(access_token != null || access_token.startsWith("Bearer ")){
+
+        if(access_token != null && access_token.startsWith("Bearer ") && access_token.length() > 7){
             access_token = access_token.substring(7);
-        }else {
-            throw CustomExceptions.badRequest("Invalid access token");
+        }else if(access_token.isEmpty()){
+            throw CustomExceptions.unauthorized("Access token is null","");
+        }
+        else {
+            throw CustomExceptions.badRequest("Invalid access token","");
         }
 
         String refresh_token = "";
-        if(request.getRefreshToken() == null || !request.getRefreshToken().startsWith("Bearer ")){
-            throw CustomExceptions.badRequest("Invalid refresh token");
+        if(request.getRefreshToken() == null || (!request.getRefreshToken().startsWith("Bearer "))){
+            throw CustomExceptions.badRequest("Invalid refresh token","");
+        }else if(request.getRefreshToken().isEmpty()){
+            throw CustomExceptions.unauthorized("Refresh token is null","");
+        }else if(request.getRefreshToken().length() == 7){
+            throw CustomExceptions.badRequest("Invalid refresh token","");
         }
         refresh_token = request.getRefreshToken().substring(7);
         Optional<RefreshToken> _refresh_token = refreshTokenRepository.findByToken(refresh_token);
         var user = userRepository.findById(_refresh_token.get().getUsers().getId()).get();
         if(_refresh_token.isEmpty()){
-            throw CustomExceptions.notFound("Refresh token not found");
+            throw CustomExceptions.notFound("Refresh token not found","");
+        }
+        if(jwtService.isTokenExpired(access_token)){
+            throw CustomExceptions.badRequest("Access token is expired","");
         }
         if(!jwtService.isTokenValid(access_token,user)){
-            throw CustomExceptions.badRequest("Access token not valid");
-        }
-        if(!_refresh_token.get().isValid()){
-            throw CustomExceptions.badRequest("Refresh token not valid");
+            throw CustomExceptions.badRequest("Access token not valid","");
         }
         if(jwtService.isTokenExpired(refresh_token)){
-            throw CustomExceptions.badRequest("Refresh token is expired");
+            throw CustomExceptions.badRequest("Refresh token is expired","");
         }
-
-        if(jwtService.isTokenExpired(access_token)){
-            throw CustomExceptions.badRequest("Access token is expired");
+        if(!_refresh_token.get().isValid()){
+            throw CustomExceptions.badRequest("Refresh token not valid","");
         }
         _refresh_token.get().setValid(false);
         refreshTokenRepository.save(_refresh_token.get());
