@@ -46,7 +46,10 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
             access_token = authHeader.substring(7);
 
             // Giải mã và lấy email người dùng từ token
-            userEmail = jwtService.extractUsername(access_token);
+            try{
+                userEmail = jwtService.extractUsername(access_token);
+
+
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 // Load thông tin người dùng từ dịch vụ UserDetails
@@ -70,7 +73,21 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
 
             // Cho phép tiếp tục xử lý chuỗi lọc
             filterChain.doFilter(request, response);
+            }catch (Exception e){
+                response.setStatus(422);
 
+                response.setContentType("application/json");
+                String jsonResponse = "{"
+                        + "\"status\" : \"Error\","
+                        + "\"message\": \"Error\","
+                        + "\"data\": {" +
+                        "\"accessToken\":\"Access token format is wrong\"" +
+                        "}"
+                        + "}";
+
+                response.getWriter().write(jsonResponse);
+                response.getWriter().flush();
+            }
         } catch (ExpiredJwtException e) {
             // Ném ngoại lệ CustomExceptions với thông báo lỗi và thông tin liên quan
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

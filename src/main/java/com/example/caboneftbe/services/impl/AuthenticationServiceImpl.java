@@ -13,6 +13,8 @@ import com.example.caboneftbe.services.EmailVerificationTokenService;
 import com.example.caboneftbe.services.JwtService;
 import com.example.caboneftbe.services.AuthenticationService;
 import com.example.caboneftbe.services.MailService;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
@@ -202,12 +204,25 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } else {
             throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Invalid access token"));
         }
+
+        try {
+            if(!checkTokenValidity(access_token)){
+                throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token format is wrong"));
+            }
+        } catch (JwtException e) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token format is wrong"));
+        }
+//        if(!isBase64Url(access_token)){
+//            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token format is wrong"));
+//        }
         String refresh_token = "";
 
         refresh_token = request.getRefreshToken().substring(7);
-        Optional<RefreshToken> _refresh_token = refreshTokenRepository.findByToken(refresh_token);
-        var user = userRepository.findById(_refresh_token.get().getUsers().getId()).get();
-
+        try {
+           String userEmail = jwtService.extractUsername(refresh_token);
+        } catch (JwtException e) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token format is wrong"));
+        }
         try {
             if (jwtService.isTokenExpired(access_token)) {
                 throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token is expired"));
@@ -215,7 +230,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } catch (Exception e) {
             throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token is expired"));
         }
-
+        Optional<RefreshToken> _refresh_token = refreshTokenRepository.findByToken(refresh_token);
+        var user = userRepository.findById(_refresh_token.get().getUsers().getId()).get();
         try {
             if (!jwtService.isTokenValid(access_token, user)) {
                 throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token not valid"));
@@ -265,6 +281,37 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // save token string mới vào db
         saveRefreshToken(newRefreshTokenString, user);
         return newRefreshTokenString;
+    }
+
+    public static boolean isValidJwtFormat(String token) {
+        // Kiểm tra token có đủ 3 phần (header, payload, signature) không
+        String[] parts = token.split("\\.");
+        if (parts.length != 3) {
+            return false; // Token không đủ 3 phần
+        }
+
+        // Kiểm tra từng phần có phải là Base64 URL hợp lệ không
+        return isBase64Url(parts[0]) && isBase64Url(parts[1]) && isBase64Url(parts[2]);
+    }
+
+    // Kiểm tra phần chuỗi có phải Base64 URL không
+    private static boolean isBase64Url(String str) {
+        try {
+            // Decode chuỗi Base64 URL mà không cần padding (=)
+            Base64.getUrlDecoder().decode(str);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false; // Không phải chuỗi Base64 URL hợp lệ
+        }
+    }
+
+    // Hàm kiểm tra token hợp lệ hay không
+    public static boolean checkTokenValidity(String token) {
+        if (!isValidJwtFormat(token)) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
 }
