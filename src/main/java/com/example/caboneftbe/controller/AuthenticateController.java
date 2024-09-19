@@ -50,7 +50,7 @@ public class AuthenticateController {
     }
 
     @PostMapping(API_PARAMS.LOGOUT)
-    public ResponseEntity<ResponseObject> logout(@RequestHeader("Authorization") String accessToken, @RequestBody LogoutRequest logoutRequest){
+    public ResponseEntity<ResponseObject> logout(@RequestHeader("Authorization") String accessToken,@Valid @RequestBody LogoutRequest logoutRequest){
         return ResponseEntity.ok().body(
                 authenticationService.logout(logoutRequest,accessToken)
         );
