@@ -13,14 +13,10 @@ import java.util.Map;
 public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
-        Map<String, ErrorDetail> errors = new HashMap<>();
+        Map<String, String> errors = new HashMap<>();
 
         ex.getBindingResult().getFieldErrors().forEach(fieldError -> {
-            errors.put(fieldError.getField(), ErrorDetail.builder()
-                    .value(fieldError.getRejectedValue())
-                    .message(fieldError.getDefaultMessage())
-                    .path(fieldError.getField())
-                    .build());
+            errors.put(fieldError.getField(), fieldError.getDefaultMessage());
         });
 
         ErrorResponse response = ErrorResponse.builder()
