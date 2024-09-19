@@ -69,7 +69,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public LoginResponse loginByEmail(LoginByEmailRequest request) {
         var user = userRepository.findByEmail(request.getEmail()).orElseThrow(()
-                -> CustomExceptions.unauthorized(EMAIL_PASSWORD_WRONG, Map.of("email", EMAIL_PASSWORD_WRONG)));
+                -> CustomExceptions.unauthorized(EMAIL_PASSWORD_WRONG, Map.of("password", EMAIL_PASSWORD_WRONG)));
         // flow: lấy pw nhận vào -> encode -> nếu trùng với trong DB -> authen
         boolean isAuthenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!isAuthenticated) {
