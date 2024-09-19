@@ -9,8 +9,14 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.USERS)
 @NoArgsConstructor(force = true)
@@ -50,9 +56,21 @@ public class AuthenticateController {
     }
 
     @PostMapping(API_PARAMS.LOGOUT)
-    public ResponseEntity<ResponseObject> logout(@RequestHeader("Authorization") String accessToken,@Valid @RequestBody LogoutRequest logoutRequest){
+    public ResponseEntity<ResponseObject> logout(@RequestHeader(value = "Authorization",required = true) String accessToken,@Valid @RequestBody(required = true) LogoutRequest logoutRequest){
         return ResponseEntity.ok().body(
                 authenticationService.logout(logoutRequest,accessToken)
         );
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ResponseObject> handleMissingHeader(MissingRequestHeaderException ex){
+        return ResponseEntity.badRequest().body(
+               new ResponseObject(Constants.RESPONSE_STATUS_ERROR,"Error", Map.of("Authorization","Authorization header is required")));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ResponseObject> handleValidationBody(HttpMessageNotReadableException ex) {
+        return ResponseEntity.badRequest().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_ERROR,"Error", Map.of("RequestBody","RequestBody is required")));
     }
 }
