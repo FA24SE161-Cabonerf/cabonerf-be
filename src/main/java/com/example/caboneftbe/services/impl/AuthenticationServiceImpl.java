@@ -64,13 +64,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Autowired
     EmailVerificationTokenRepository verificationTokenRepository;
 
+    public static final String EMAIL_PASSWORD_WRONG = "Email or password wrong!";
+
     @Override
     public LoginResponse loginByEmail(LoginByEmailRequest request) {
-        var user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> CustomExceptions.notFound("User not found!"));
+        var user = userRepository.findByEmail(request.getEmail()).orElseThrow(()
+                -> CustomExceptions.unauthorized(EMAIL_PASSWORD_WRONG, Map.of("email", EMAIL_PASSWORD_WRONG)));
         // flow: lấy pw nhận vào -> encode -> nếu trùng với trong DB -> authen
         boolean isAuthenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!isAuthenticated) {
-            throw  CustomExceptions.unauthorized("Email or password wrong!");
+            throw  CustomExceptions.unauthorized(EMAIL_PASSWORD_WRONG, Map.of("password", EMAIL_PASSWORD_WRONG));
         }
 
         String accessToken = jwtService.generateToken(user);

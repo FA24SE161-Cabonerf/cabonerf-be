@@ -12,8 +12,9 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoginByEmailRequest {
-    @Email
+    @NotEmpty(message = "This field cannot be empty.")
+    @Email(message = "Please enter a valid email address.")
     String email;
-    @NotEmpty
+    @NotEmpty(message = "Password is required.")
     String password;
 }
