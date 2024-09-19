@@ -221,7 +221,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         try {
            String userEmail = jwtService.extractUsername(refresh_token);
         } catch (JwtException e) {
-            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token format is wrong"));
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token format is wrong"));
         }
         try {
             if (jwtService.isTokenExpired(access_token)) {
