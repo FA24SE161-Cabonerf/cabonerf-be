@@ -19,8 +19,8 @@ public class RegisterRequest {
     String email;
 
     @NotBlank(message = "Full Name cannot be empty")
-    @Size(min = 3, max = 50, message = "'Full name must contain at least 3 characters")
-    @Pattern(regexp = "^[A-Z][a-z]+(\\s[A-Z][a-z]+)*$",
+    @Size(min = 3, max = 50, message = "'Full name must contain at least 3 characters and no more than 50 characters")
+    @Pattern(regexp = "^[A-ZÀ-Ỹ][A-Za-zÀ-ỹ\\s]*$",
             message = "Full Name must start with a capital letter and not contain special characters or numbers")
     String fullName;
 

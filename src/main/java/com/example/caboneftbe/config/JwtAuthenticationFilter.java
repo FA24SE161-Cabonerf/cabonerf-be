@@ -1,6 +1,8 @@
 package com.example.caboneftbe.config;
 
+import com.example.caboneftbe.exception.CustomExceptions;
 import com.example.caboneftbe.services.JwtService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,26 +35,58 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
         final String access_token;
         final String userEmail;
-        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        access_token = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(access_token);
-        if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userService.loadUserByUsername(userEmail);
-            if(jwtService.isTokenValid(access_token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        try {
+            // Kiểm tra nếu header Authorization có giá trị và bắt đầu bằng "Bearer"
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                filterChain.doFilter(request, response);
+                return;
             }
+
+            access_token = authHeader.substring(7);
+
+            // Giải mã và lấy email người dùng từ token
+            userEmail = jwtService.extractUsername(access_token);
+
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                // Load thông tin người dùng từ dịch vụ UserDetails
+                UserDetails userDetails = this.userService.loadUserByUsername(userEmail);
+
+                // Kiểm tra tính hợp lệ của token
+                if (jwtService.isTokenValid(access_token, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+
+                    // Đặt thông tin xác thực vào SecurityContext
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            }
+
+            // Cho phép tiếp tục xử lý chuỗi lọc
+            filterChain.doFilter(request, response);
+
+        } catch (ExpiredJwtException e) {
+            // Ném ngoại lệ CustomExceptions với thông báo lỗi và thông tin liên quan
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+            response.setContentType("application/json");
+            String jsonResponse = "{"
+                    + "\"status\" : \"Error\","
+                    + "\"message\": \"Error\","
+                    + "\"data\": {" +
+                    "\"accessToken\":\"Access token has expired\"" +
+                    "}"
+                    + "}";
+
+            response.getWriter().write(jsonResponse);
+            response.getWriter().flush();
         }
-        filterChain.doFilter(request, response);
     }
+
 }
