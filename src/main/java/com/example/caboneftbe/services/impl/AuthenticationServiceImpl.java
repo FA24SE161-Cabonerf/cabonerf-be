@@ -74,7 +74,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // flow: lấy pw nhận vào -> encode -> nếu trùng với trong DB -> authen
         boolean isAuthenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!isAuthenticated) {
-            throw  CustomExceptions.unauthorized(EMAIL_PASSWORD_WRONG, Map.of("password", EMAIL_PASSWORD_WRONG));
+            throw CustomExceptions.unauthorized(EMAIL_PASSWORD_WRONG, Map.of("password", EMAIL_PASSWORD_WRONG));
         }
 
         String accessToken = jwtService.generateToken(user);
@@ -93,11 +93,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public RegisterResponse register(RegisterRequest request) {
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,Map.of("email", "Email already exist."));
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("email", "Email already exist."));
         }
 
         if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,Map.of("password","Confirm Passwords do not match."));
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("password", "Confirm Passwords do not match."));
         }
 
         var user = Users.builder()
@@ -162,27 +162,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public ActiveCodeResponse activeCode(ActiveUserRequest request) {
         EmailVerificationToken token = verificationTokenRepository.findByToken(request.getCode());
-        if(token == null){
+        if (token == null) {
             throw CustomExceptions.notFound("Invalid verification code");
         }
 
         Users users = token.getUsers();
 
         Optional<Users> _user = userRepository.findById(request.getUserId());
-        if(_user.isEmpty()){
+        if (_user.isEmpty()) {
             throw CustomExceptions.notFound("User not found");
         }
 
-        if(_user.equals(users)){
+        if (_user.equals(users)) {
             throw CustomExceptions.badRequest("Token does not belong to this user");
         }
 
-        if(users.getUserVerifyStatus().getId() != 1){
+        if (users.getUserVerifyStatus().getId() != 1) {
             throw CustomExceptions.badRequest("User is verify");
         }
 
         Timestamp time = new Timestamp(System.currentTimeMillis());
-        if(token.getExpiryDate().before(time)){
+        if (token.getExpiryDate().before(time)) {
             throw CustomExceptions.badRequest("Token has expired");
         }
 
@@ -195,44 +195,53 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public ResponseObject logout(LogoutRequest request, String access_token) {
 
-        if(access_token != null && access_token.startsWith("Bearer ") && access_token.length() > 7){
+        if (access_token != null && access_token.startsWith("Bearer ") && access_token.length() > 7) {
             access_token = access_token.substring(7);
-        }else if(access_token.isEmpty()){
-            throw CustomExceptions.unauthorized("Access token is null","");
+        } else if (access_token.isEmpty()) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token is empty"));
+        } else {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Invalid access token"));
         }
-        else {
-            throw CustomExceptions.badRequest("Invalid access token","");
-        }
-
         String refresh_token = "";
-        if(request.getRefreshToken() == null || (!request.getRefreshToken().startsWith("Bearer "))){
-            throw CustomExceptions.badRequest("Invalid refresh token","");
-        }else if(request.getRefreshToken().isEmpty()){
-            throw CustomExceptions.unauthorized("Refresh token is null","");
-        }else if(request.getRefreshToken().length() == 7){
-            throw CustomExceptions.badRequest("Invalid refresh token","");
-        }
+
         refresh_token = request.getRefreshToken().substring(7);
         Optional<RefreshToken> _refresh_token = refreshTokenRepository.findByToken(refresh_token);
         var user = userRepository.findById(_refresh_token.get().getUsers().getId()).get();
-        if(_refresh_token.isEmpty()){
-            throw CustomExceptions.notFound("Refresh token not found","");
+
+        try {
+            if (jwtService.isTokenExpired(access_token)) {
+                throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token is expired"));
+            }
+        } catch (Exception e) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token is expired"));
         }
-        if(jwtService.isTokenExpired(access_token)){
-            throw CustomExceptions.badRequest("Access token is expired","");
+
+        try {
+            if (!jwtService.isTokenValid(access_token, user)) {
+                throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token not valid"));
+            }
+        } catch (Exception e) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token not valid"));
         }
-        if(!jwtService.isTokenValid(access_token,user)){
-            throw CustomExceptions.badRequest("Access token not valid","");
+        try {
+            if (jwtService.isTokenExpired(refresh_token)) {
+                throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token is expired"));
+            }
+        } catch (Exception e) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token is expired"));
         }
-        if(jwtService.isTokenExpired(refresh_token)){
-            throw CustomExceptions.badRequest("Refresh token is expired","");
+        try {
+            if (!_refresh_token.get().isValid()) {
+                throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token not valid"));
+            }
+        } catch (Exception e) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token not valid"));
         }
-        if(!_refresh_token.get().isValid()){
-            throw CustomExceptions.badRequest("Refresh token not valid","");
-        }
+
+
         _refresh_token.get().setValid(false);
         refreshTokenRepository.save(_refresh_token.get());
-        return new ResponseObject("Success","You have been logged out successfully","");
+        return new ResponseObject("Success", "You have been logged out successfully", "");
     }
 
     private static RefreshToken createRefreshTokenEntity(String refreshToken, Users user) {
