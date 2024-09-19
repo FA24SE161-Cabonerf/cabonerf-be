@@ -139,6 +139,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var accessToken = jwtService.generateToken(saved.get());
         var refreshToken = jwtService.generateRefreshToken(saved.get());
 
+        saveRefreshToken(refreshToken, user);
+
         return RegisterResponse.builder()
                 .access_token(accessToken)
                 .refresh_token(refreshToken)
