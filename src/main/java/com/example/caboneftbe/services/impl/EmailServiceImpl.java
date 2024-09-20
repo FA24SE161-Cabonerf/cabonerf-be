@@ -26,7 +26,7 @@ public class EmailServiceImpl implements EmailService {
     private final String clientUrl;
 
     public EmailServiceImpl() {
-
+//
         Dotenv dotenv = Dotenv.load();
 
         String awsRegion = dotenv.get("AWS_REGION");
