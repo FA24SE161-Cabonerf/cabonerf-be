@@ -49,13 +49,6 @@ public class AuthenticateController {
         );
     }
 
-    @PutMapping(API_PARAMS.ACTIVE_USER)
-    public ResponseEntity<ResponseObject> activeUser(@RequestBody ActiveUserRequest request){
-        return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Active user successfully", authenticationService.activeCode(request))
-        );
-    }
-
     @PostMapping(API_PARAMS.LOGOUT)
     public ResponseEntity<ResponseObject> logout(@RequestHeader(value = "Authorization",required = true) String accessToken,@Valid @RequestBody(required = true) LogoutRequest logoutRequest){
         return ResponseEntity.ok().body(
