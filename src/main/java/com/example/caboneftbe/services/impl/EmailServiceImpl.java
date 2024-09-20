@@ -29,10 +29,10 @@ public class EmailServiceImpl implements EmailService {
 
         Dotenv dotenv = Dotenv.load();
 
-        String awsRegion = dotenv.get("REGION");
-        String awsAccessKeyId = dotenv.get("ACCESS_KEY_ID");
-        String awsSecretAccessKey = dotenv.get("SECRET_ACCESS_KEY");
-        this.fromAddress = dotenv.get("FROM_ADDRESS");
+        String awsRegion = dotenv.get("AWS_REGION");
+        String awsAccessKeyId = dotenv.get("AWS_ACCESS_KEY_ID");
+        String awsSecretAccessKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
+        this.fromAddress = dotenv.get("SES_FROM_ADDRESS");
         this.clientUrl = dotenv.get("CLIENT_URL");
 
         // Initialize SES client with credentials from .env
