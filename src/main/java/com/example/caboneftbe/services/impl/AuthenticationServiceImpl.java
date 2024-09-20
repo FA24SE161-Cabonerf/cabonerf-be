@@ -2,6 +2,7 @@ package com.example.caboneftbe.services.impl;
 
 import com.example.caboneftbe.converter.UserConverter;
 import com.example.caboneftbe.enums.Constants;
+import com.example.caboneftbe.enums.MessageConstants;
 import com.example.caboneftbe.exception.CustomExceptions;
 import com.example.caboneftbe.models.EmailVerificationToken;
 import com.example.caboneftbe.models.RefreshToken;
@@ -66,17 +67,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Autowired
     EmailVerificationTokenRepository verificationTokenRepository;
 
-
-    public static final String EMAIL_PASSWORD_WRONG = "Email or password wrong!";
+    public static final String PASSWORD_FIELD = "password";
+    public static final String EMAIL_FIELD = "email";
 
     @Override
-    public LoginResponse loginByEmail(LoginByEmailRequest request)  {
+    public LoginResponse loginByEmail(LoginByEmailRequest request) {
         var user = userRepository.findByEmail(request.getEmail()).orElseThrow(()
-                -> CustomExceptions.unauthorized(EMAIL_PASSWORD_WRONG, Map.of("password", EMAIL_PASSWORD_WRONG)));
+                -> CustomExceptions.unauthorized(MessageConstants.EMAIL_PASSWORD_WRONG, Map.of(PASSWORD_FIELD, MessageConstants.EMAIL_PASSWORD_WRONG)));
         // flow: lấy pw nhận vào -> encode -> nếu trùng với trong DB -> authen
         boolean isAuthenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!isAuthenticated) {
-            throw CustomExceptions.unauthorized(EMAIL_PASSWORD_WRONG, Map.of("password", EMAIL_PASSWORD_WRONG));
+            throw CustomExceptions.unauthorized(MessageConstants.EMAIL_PASSWORD_WRONG, Map.of(PASSWORD_FIELD, MessageConstants.EMAIL_PASSWORD_WRONG));
         }
 
         String accessToken = jwtService.generateToken(user);
@@ -92,14 +93,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public RegisterResponse register(RegisterRequest request){
+    public RegisterResponse register(RegisterRequest request) {
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("email", "Email already exist."));
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of(EMAIL_FIELD, MessageConstants.EMAIL_ALREADY_EXIST));
         }
 
         if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("password", "Confirm Passwords do not match."));
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of(PASSWORD_FIELD, MessageConstants.CONFIRM_PASSWORD_NOT_MATCH));
         }
 
         var user = Users.builder()
@@ -118,7 +119,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             //send mail
             var emailStatusVerify = jwtService.generateEmailVerifyToken(saved.get());
-            EmailVerificationToken token = new EmailVerificationToken(emailStatusVerify,null,true,saved.get());
+            EmailVerificationToken token = new EmailVerificationToken(emailStatusVerify, null, true, saved.get());
             verificationTokenRepository.save(token);
 
             emailService.sendVerifyRegisterEmail(saved.get().getEmail(),token.getToken());
@@ -138,11 +139,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
     @Override
-    public AuthenticationResponse refreshToken(RefreshTokenRequest request){
+    public AuthenticationResponse refreshToken(RefreshTokenRequest request) {
         String clientToken = request.getRefreshToken();
-        var user = userRepository.findById(request.getUserId()).orElseThrow(() -> CustomExceptions.notFound("User not found!"));
-        if (!jwtService.isTokenValid(clientToken, user,"refresh")) {
-            throw CustomExceptions.unauthorized("Invalid or expired refresh token");
+        var user = userRepository.findById(request.getUserId()).orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
+        if (!jwtService.isTokenValid(clientToken, user, Constants.TOKEN_TYPE_REFRESH)) {
+            throw CustomExceptions.unauthorized(MessageConstants.INVALID_REFRESH_TOKEN);
         }
 
         return AuthenticationResponse.builder()
@@ -165,12 +166,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         refresh_token = request.getRefreshToken().substring(7);
         try {
-           String userEmail = jwtService.extractUsername(refresh_token,"refresh");
+            String userEmail = jwtService.extractUsername(refresh_token, Constants.TOKEN_TYPE_REFRESH);
         } catch (JwtException e) {
             throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token format is wrong"));
         }
         try {
-            if (jwtService.isTokenExpired(access_token,"access")) {
+            if (jwtService.isTokenExpired(access_token, Constants.TOKEN_TYPE_ACCESS)) {
                 throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token is expired"));
             }
         } catch (Exception e) {
@@ -179,14 +180,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Optional<RefreshToken> _refresh_token = refreshTokenRepository.findByToken(refresh_token);
         var user = userRepository.findById(_refresh_token.get().getUsers().getId()).get();
         try {
-            if (!jwtService.isTokenValid(access_token, user,"access")) {
+            if (!jwtService.isTokenValid(access_token, user, "access")) {
                 throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token not valid"));
             }
         } catch (Exception e) {
             throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token not valid"));
         }
         try {
-            if (jwtService.isTokenExpired(refresh_token,"refresh")) {
+            if (jwtService.isTokenExpired(refresh_token, "refresh")) {
                 throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token is expired"));
             }
         } catch (Exception e) {
@@ -209,17 +210,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public LoginResponse verifyEmail(VerifyEmailRequest request) {
 
-        if(request.getToken() == null || !request.getToken().startsWith("Bearer ")){
-            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR,Map.of("Email verify token","Email verify token not valid"));
+        if (request.getToken() == null || !request.getToken().startsWith("Bearer ")) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("Email verify token", "Email verify token not valid"));
         }
         var email_verify_token = request.getToken().substring(7);
         try {
-            String userEmail = jwtService.extractUsername(email_verify_token,"email_verify");
+            String userEmail = jwtService.extractUsername(email_verify_token, "email_verify");
         } catch (JwtException e) {
             throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("emailVerify", "Email verify token format is wrong"));
         }
         try {
-            if (jwtService.isTokenExpired(email_verify_token,"email_verify")) {
+            if (jwtService.isTokenExpired(email_verify_token, "email_verify")) {
                 throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("emailVerify", "Email verify token is expired"));
             }
         } catch (Exception e) {
@@ -228,14 +229,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         EmailVerificationToken token = verificationTokenRepository.findByToken(email_verify_token);
 
-        if(token == null){
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,Map.of("Email verify token","Email verify token not exist"));
+        if (token == null) {
+            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, Map.of("Email verify token", "Email verify token not exist"));
         }
-        if(!token.isValid()){
-            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR,Map.of("Email verify token","Email verify token not valid"));
+        if (!token.isValid()) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("Email verify token", "Email verify token not valid"));
         }
 
-        String email = jwtService.extractUsername(email_verify_token,"email_verify");
+        String email = jwtService.extractUsername(email_verify_token, "email_verify");
 
         var user = userRepository.findByEmail(email).get();
         token.setValid(false);

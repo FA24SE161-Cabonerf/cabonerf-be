@@ -2,6 +2,7 @@ package com.example.caboneftbe.services;
 
 import com.example.caboneftbe.converter.UserVerifyStatusConverter;
 import com.example.caboneftbe.dto.UserVerifyStatusDto;
+import com.example.caboneftbe.enums.Constants;
 import com.example.caboneftbe.repositories.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,34 +54,34 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails, "access", 3600000);
+        return generateToken(new HashMap<>(), userDetails, Constants.TOKEN_TYPE_ACCESS, 3600000);
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails, "refresh", 64000000);
+        return generateToken(new HashMap<>(), userDetails, Constants.TOKEN_TYPE_REFRESH, 64000000);
     }
 
     public String generateEmailVerifyToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails, "email_verify", 3600000);
+        return generateToken(new HashMap<>(), userDetails, Constants.TOKEN_TYPE_EMAIL_VERIFY, 3600000);
     }
 
     public String generateForgotPasswordToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails, "forgot_password", 3600000);
+        return generateToken(new HashMap<>(), userDetails, Constants.TOKEN_TYPE_FORGOT_PASSWORD, 3600000);
     }
 
     private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, String secretKey, long expiration){
         int token_type = 0;
         switch (secretKey){
-            case "access":
+            case Constants.TOKEN_TYPE_ACCESS:
                 token_type = 1;
                 break;
-            case "refresh":
+            case Constants.TOKEN_TYPE_REFRESH:
                 token_type = 2;
                 break;
-            case "email_verify":
+            case Constants.TOKEN_TYPE_EMAIL_VERIFY:
                 token_type = 3;
                 break;
-            case "forgot_password":
+            case Constants.TOKEN_TYPE_FORGOT_PASSWORD:
                 token_type = 4;
                 break;
         }
@@ -125,16 +126,16 @@ public class JwtService {
     private Key getSignInKey(String tokenType) {
         String secretKey;
         switch (tokenType) {
-            case "access":
+            case Constants.TOKEN_TYPE_ACCESS:
                 secretKey = accessTokenSecretKey;
                 break;
-            case "refresh":
+            case Constants.TOKEN_TYPE_REFRESH:
                 secretKey = refreshTokenSecretKey;
                 break;
-            case "email_verify":
+            case Constants.TOKEN_TYPE_EMAIL_VERIFY:
                 secretKey = emailVerifyTokenSecretKey;
                 break;
-            case "forgot_password":
+            case Constants.TOKEN_TYPE_FORGOT_PASSWORD:
                 secretKey = forgotPasswordTokenSecretKey;
                 break;
             default:

@@ -1,5 +1,6 @@
 package com.example.caboneftbe.config;
 
+import com.example.caboneftbe.enums.Constants;
 import com.example.caboneftbe.exception.CustomExceptions;
 import com.example.caboneftbe.services.JwtService;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -47,7 +48,7 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
 
             // Giải mã và lấy email người dùng từ token
             try{
-                userEmail = jwtService.extractUsername(access_token,"access");
+                userEmail = jwtService.extractUsername(access_token, Constants.TOKEN_TYPE_ACCESS);
 
 
 
@@ -56,7 +57,7 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
                 UserDetails userDetails = this.userService.loadUserByUsername(userEmail);
 
                 // Kiểm tra tính hợp lệ của token
-                if (jwtService.isTokenValid(access_token, userDetails,"access")) {
+                if (jwtService.isTokenValid(access_token, userDetails,Constants.TOKEN_TYPE_ACCESS)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
