@@ -243,6 +243,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         verificationTokenRepository.save(token);
         user.setUserVerifyStatus(userVerifyStatusRepository.findById(2L).get());
 
+        Optional<RefreshToken> refreshToken = refreshTokenRepository.findTopByTokenOrderByCreatedAtDesc(user.getId());
+        refreshToken.get().setValid(false);
+        refreshTokenRepository.save(refreshToken.get());
+
         var access_token = jwtService.generateToken(user);
         var refresh_token = jwtService.generateRefreshToken(user);
 
