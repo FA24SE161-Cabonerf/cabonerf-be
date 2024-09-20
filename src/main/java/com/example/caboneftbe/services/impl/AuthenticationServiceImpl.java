@@ -290,6 +290,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String email = jwtService.extractUsername(email_verify_token,"email_verify");
 
         var user = userRepository.findByEmail(email).get();
+        token.setValid(false);
+        verificationTokenRepository.save(token);
         user.setUserVerifyStatus(userVerifyStatusRepository.findById(2L).get());
 
         userRepository.save(user);
