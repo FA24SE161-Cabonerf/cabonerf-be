@@ -13,7 +13,7 @@ import com.example.caboneftbe.response.*;
 import com.example.caboneftbe.services.EmailVerificationTokenService;
 import com.example.caboneftbe.services.JwtService;
 import com.example.caboneftbe.services.AuthenticationService;
-import com.example.caboneftbe.services.MailService;
+import com.example.caboneftbe.services.EmailService;
 import io.jsonwebtoken.JwtException;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -59,7 +59,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
-    MailService mailService;
+    EmailService emailService;
 
     @Autowired
     EmailVerificationTokenService emailVerificationTokenService;
@@ -116,29 +116,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         Optional<Users> saved = Optional.of(userRepository.save(user));
         if (saved.isPresent()) {
-//            try {
-//                Random random = new Random();
-//                int _token = 100000 + random.nextInt(900000);
-//                String token = String.valueOf(100000 + random.nextInt(900000));
-//                emailVerificationTokenService.save(saved.get(), token);
-//
-//                MailRequest mailRequest = new MailRequest();
-//                mailRequest.setSubject("Verification Code");
-//                mailRequest.setName("Cabonerf");
-//                mailRequest.setTo(user.getEmail());
-//                mailRequest.setFrom("cabonerf@gmail.com");
-//
-//                Map<String,Object> model = new HashMap<>();
-//                model.put("code", token);
-//
-////                mailService.sendMailRegister(mailRequest,model);
-//
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
+
+            //send mail
             var emailStatusVerify = jwtService.generateEmailVerifyToken(saved.get());
             EmailVerificationToken token = new EmailVerificationToken(emailStatusVerify, null, true, saved.get());
             verificationTokenRepository.save(token);
+
+            emailService.sendVerifyRegisterEmail(saved.get().getEmail(),token.getToken());
         }
         var accessToken = jwtService.generateToken(saved.get());
         var refreshToken = jwtService.generateRefreshToken(saved.get());
@@ -165,39 +149,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return AuthenticationResponse.builder()
                 .access_token(jwtService.generateToken(user))
                 .refresh_token(rotateRefreshToken(clientToken, user))
-                .build();
-    }
-
-    @Override
-    public ActiveCodeResponse activeCode(ActiveUserRequest request) {
-        EmailVerificationToken token = verificationTokenRepository.findByToken(request.getCode());
-        if (token == null) {
-            throw CustomExceptions.notFound(MessageConstants.INVALID_VERIFICATION_CODE);
-        }
-
-        Users users = token.getUsers();
-
-        Optional<Users> _user = userRepository.findById(request.getUserId());
-        if (_user.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND);
-        }
-
-        if (_user.equals(users)) {
-            throw CustomExceptions.badRequest("Token does not belong to this user");
-        }
-
-        if (users.getUserVerifyStatus().getId() != 1) {
-            throw CustomExceptions.badRequest("User is verify");
-        }
-
-        Timestamp time = new Timestamp(System.currentTimeMillis());
-        if (token.getExpiryDate().before(time)) {
-            throw CustomExceptions.badRequest(MessageConstants.TOKEN_EXPIRED);
-        }
-
-        users.setUserVerifyStatus(userVerifyStatusRepository.getReferenceById(2L));
-        return ActiveCodeResponse.builder()
-                .user(UserConverter.INSTANCE.fromUserToUserDto(userRepository.save(users)))
                 .build();
     }
 
