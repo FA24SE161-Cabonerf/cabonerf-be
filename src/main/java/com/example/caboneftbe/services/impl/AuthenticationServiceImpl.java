@@ -13,6 +13,7 @@ import com.example.caboneftbe.services.EmailVerificationTokenService;
 import com.example.caboneftbe.services.JwtService;
 import com.example.caboneftbe.services.AuthenticationService;
 import com.example.caboneftbe.services.MailService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.*;
@@ -67,10 +68,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Autowired
     EmailVerificationTokenRepository verificationTokenRepository;
 
+
     public static final String EMAIL_PASSWORD_WRONG = "Email or password wrong!";
 
     @Override
-    public LoginResponse loginByEmail(LoginByEmailRequest request) {
+    public LoginResponse loginByEmail(LoginByEmailRequest request)  {
         var user = userRepository.findByEmail(request.getEmail()).orElseThrow(()
                 -> CustomExceptions.unauthorized(EMAIL_PASSWORD_WRONG, Map.of("password", EMAIL_PASSWORD_WRONG)));
         // flow: lấy pw nhận vào -> encode -> nếu trùng với trong DB -> authen
@@ -92,7 +94,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public RegisterResponse register(RegisterRequest request) {
+    public RegisterResponse register(RegisterRequest request){
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("email", "Email already exist."));
@@ -114,7 +116,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
 
         Optional<Users> saved = Optional.of(userRepository.save(user));
-//        if (saved.isPresent()) {
+        if (saved.isPresent()) {
 //            try {
 //                Random random = new Random();
 //                int _token = 100000 + random.nextInt(900000);
@@ -135,9 +137,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 //            } catch (Exception e) {
 //                e.printStackTrace();
 //            }
-//        }
+            var emailStatusVerify = jwtService.generateEmailVerifyToken(saved.get());
+            EmailVerificationToken token = new EmailVerificationToken(emailStatusVerify,null,true,saved.get());
+            verificationTokenRepository.save(token);
+        }
         var accessToken = jwtService.generateToken(saved.get());
         var refreshToken = jwtService.generateRefreshToken(saved.get());
+
 
         saveRefreshToken(refreshToken, user);
 
@@ -150,10 +156,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
     @Override
-    public AuthenticationResponse refreshToken(RefreshTokenRequest request) {
+    public AuthenticationResponse refreshToken(RefreshTokenRequest request){
         String clientToken = request.getRefreshToken();
         var user = userRepository.findById(request.getUserId()).orElseThrow(() -> CustomExceptions.notFound("User not found!"));
-        if (!jwtService.isTokenValid(clientToken, user)) {
+        if (!jwtService.isTokenValid(clientToken, user,"refresh")) {
             throw CustomExceptions.unauthorized("Invalid or expired refresh token");
         }
 
@@ -210,12 +216,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         refresh_token = request.getRefreshToken().substring(7);
         try {
-           String userEmail = jwtService.extractUsername(refresh_token);
+           String userEmail = jwtService.extractUsername(refresh_token,"refresh");
         } catch (JwtException e) {
             throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token format is wrong"));
         }
         try {
-            if (jwtService.isTokenExpired(access_token)) {
+            if (jwtService.isTokenExpired(access_token,"access")) {
                 throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token is expired"));
             }
         } catch (Exception e) {
@@ -224,14 +230,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Optional<RefreshToken> _refresh_token = refreshTokenRepository.findByToken(refresh_token);
         var user = userRepository.findById(_refresh_token.get().getUsers().getId()).get();
         try {
-            if (!jwtService.isTokenValid(access_token, user)) {
+            if (!jwtService.isTokenValid(access_token, user,"access")) {
                 throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token not valid"));
             }
         } catch (Exception e) {
             throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token not valid"));
         }
         try {
-            if (jwtService.isTokenExpired(refresh_token)) {
+            if (jwtService.isTokenExpired(refresh_token,"refresh")) {
                 throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token is expired"));
             }
         } catch (Exception e) {
@@ -249,6 +255,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         _refresh_token.get().setValid(false);
         refreshTokenRepository.save(_refresh_token.get());
         return new ResponseObject("Success", "You have been logged out successfully", "");
+    }
+
+    @Override
+    public ResponseObject verifyEmail(VerifyEmailRequest request) {
+
+        return null;
     }
 
     private static RefreshToken createRefreshTokenEntity(String refreshToken, Users user) {
