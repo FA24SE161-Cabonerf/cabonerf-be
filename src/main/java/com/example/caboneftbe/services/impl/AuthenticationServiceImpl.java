@@ -207,7 +207,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public ResponseObject verifyEmail(VerifyEmailRequest request) {
+    public LoginResponse verifyEmail(VerifyEmailRequest request) {
 
         if(request.getToken() == null || !request.getToken().startsWith("Bearer ")){
             throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR,Map.of("Email verify token","Email verify token not valid"));
@@ -242,8 +242,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         verificationTokenRepository.save(token);
         user.setUserVerifyStatus(userVerifyStatusRepository.findById(2L).get());
 
+        var access_token = jwtService.generateToken(user);
+        var refresh_token = jwtService.generateRefreshToken(user);
+
         userRepository.save(user);
-        return new ResponseObject("Success","Verify email successfully","");
+        return LoginResponse.builder()
+                .access_token(access_token)
+                .refresh_token(refresh_token)
+                .user(UserConverter.INSTANCE.fromUserToUserDto(user))
+                .build();
     }
 
     private static RefreshToken createRefreshTokenEntity(String refreshToken, Users user) {

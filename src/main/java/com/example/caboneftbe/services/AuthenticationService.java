@@ -9,5 +9,5 @@ public interface AuthenticationService {
     RegisterResponse register(RegisterRequest request);
     AuthenticationResponse refreshToken(RefreshTokenRequest request);
     ResponseObject logout(LogoutRequest request, String access_token);
-    ResponseObject verifyEmail(VerifyEmailRequest request);
+    LoginResponse verifyEmail(VerifyEmailRequest request);
 }
