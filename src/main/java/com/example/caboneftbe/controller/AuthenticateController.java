@@ -5,6 +5,7 @@ import com.example.caboneftbe.enums.Constants;
 import com.example.caboneftbe.request.*;
 import com.example.caboneftbe.response.ResponseObject;
 import com.example.caboneftbe.services.AuthenticationService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -28,14 +29,14 @@ public class AuthenticateController {
     private AuthenticationService authenticationService;
 
     @PostMapping(API_PARAMS.LOGIN_BY_EMAIL)
-    public ResponseEntity<ResponseObject> loginByEmail(@Valid @RequestBody LoginByEmailRequest request){
+    public ResponseEntity<ResponseObject> loginByEmail(@Valid @RequestBody LoginByEmailRequest request) {
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Login successfully", authenticationService.loginByEmail(request))
         );
     }
 
     @PostMapping(API_PARAMS.REGISTER)
-    public ResponseEntity<ResponseObject> register(@Valid @RequestBody RegisterRequest request){
+    public ResponseEntity<ResponseObject> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Register successfully", authenticationService.register(request))
         );

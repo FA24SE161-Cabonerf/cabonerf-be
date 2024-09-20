@@ -32,7 +32,7 @@ public class EmailVerificationTokenServiceImpl implements EmailVerificationToken
     @Transactional
     @Override
     public void save(Users users, String token) {
-        EmailVerificationToken emailVerificationToken = new EmailVerificationToken(token,calculateExpiryDate(24*60),users);
+        EmailVerificationToken emailVerificationToken = new EmailVerificationToken(token,calculateExpiryDate(24*60),true,users);
         emailVerificationTokenRepository.save(emailVerificationToken);
     }
 

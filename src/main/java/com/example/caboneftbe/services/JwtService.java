@@ -3,6 +3,8 @@ package com.example.caboneftbe.services;
 import com.example.caboneftbe.converter.UserVerifyStatusConverter;
 import com.example.caboneftbe.dto.UserVerifyStatusDto;
 import com.example.caboneftbe.repositories.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -35,6 +37,9 @@ public class JwtService {
     @Value("${app.email_verify_token_secret_key}")
     private String emailVerifyTokenSecretKey;
 
+    @Value("${app.forgot_password_token_secret_key}")
+    private String forgotPasswordTokenSecretKey;
+
     @Autowired
     UserRepository userRepository;
 
@@ -59,7 +64,11 @@ public class JwtService {
         return generateToken(new HashMap<>(), userDetails, "email_verify", 3600000);
     }
 
-    private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, String secretKey, long expiration) {
+    public String generateForgotPasswordToken(UserDetails userDetails) {
+        return generateToken(new HashMap<>(), userDetails, "forgot_password", 3600000);
+    }
+
+    private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, String secretKey, long expiration){
         int token_type = 0;
         switch (secretKey){
             case "access":
@@ -71,11 +80,15 @@ public class JwtService {
             case "email_verify":
                 token_type = 3;
                 break;
+            case "forgot_password":
+                token_type = 4;
+                break;
         }
         var username = userRepository.findByEmail(userDetails.getUsername()).get();
+
         extraClaims.put("token_type", token_type);
         UserVerifyStatusDto verifyStatusDto = UserVerifyStatusConverter.INSTANCE.fromUserVerifyStatusToUserVerifyStatusDto(username.getUserVerifyStatus());
-        extraClaims.put("user_verify_status",verifyStatusDto);
+        extraClaims.put("user_verify_status", verifyStatusDto.getId());
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
@@ -83,6 +96,7 @@ public class JwtService {
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(secretKey), SignatureAlgorithm.HS256)
+                .setHeaderParam("typ","JWT")
                 .compact();
     }
 
@@ -119,6 +133,9 @@ public class JwtService {
                 break;
             case "email_verify":
                 secretKey = emailVerifyTokenSecretKey;
+                break;
+            case "forgot_password":
+                secretKey = forgotPasswordTokenSecretKey;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown token type: " + tokenType);
