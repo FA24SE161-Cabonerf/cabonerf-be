@@ -29,7 +29,6 @@ public class EmailServiceImpl implements EmailService {
 
         Dotenv dotenv = Dotenv.load();
 
-        // Retrieve values from .env or use default if missing
         String awsRegion = dotenv.get("AWS_REGION");
         String awsAccessKeyId = dotenv.get("AWS_ACCESS_KEY_ID");
         String awsSecretAccessKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
