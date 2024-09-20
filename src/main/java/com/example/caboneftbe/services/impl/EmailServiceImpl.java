@@ -1,6 +1,7 @@
 package com.example.caboneftbe.services.impl;
 
 import com.example.caboneftbe.services.EmailService;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -24,19 +25,23 @@ public class EmailServiceImpl implements EmailService {
     private final String verifyEmailTemplate;
     private final String clientUrl;
 
-    public EmailServiceImpl(
-            @Value("${aws.region}") String awsRegion,
-            @Value("${aws.accessKeyId}") String awsAccessKeyId,
-            @Value("${aws.secretAccessKey}") String awsSecretAccessKey,
-            @Value("${ses.fromAddress}") String fromAddress,
-            @Value("${client.url}") String clientUrl
-    ) {
+    public EmailServiceImpl() {
+
+        Dotenv dotenv = Dotenv.load();
+
+        // Retrieve values from .env or use default if missing
+        String awsRegion = dotenv.get("AWS_REGION");
+        String awsAccessKeyId = dotenv.get("AWS_ACCESS_KEY_ID");
+        String awsSecretAccessKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
+        this.fromAddress = dotenv.get("SES_FROM_ADDRESS");
+        this.clientUrl = dotenv.get("CLIENT_URL");
+
+        // Initialize SES client with credentials from .env
         this.sesClient = SesClient.builder()
                 .region(Region.of(awsRegion))
                 .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(awsAccessKeyId, awsSecretAccessKey)))
                 .build();
-        this.fromAddress = fromAddress;
-        this.clientUrl = clientUrl;
+
 
         // Read the email template from resources
         try {
