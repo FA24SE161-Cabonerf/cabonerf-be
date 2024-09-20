@@ -47,7 +47,7 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
 
             // Giải mã và lấy email người dùng từ token
             try{
-                userEmail = jwtService.extractUsername(access_token,"access_token");
+                userEmail = jwtService.extractUsername(access_token,"access");
 
 
 

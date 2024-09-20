@@ -20,6 +20,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -260,7 +261,39 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public ResponseObject verifyEmail(VerifyEmailRequest request) {
 
-        return null;
+        if(request.getToken() == null || !request.getToken().startsWith("Bearer ")){
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR,Map.of("Email verify token","Email verify token not valid"));
+        }
+        var email_verify_token = request.getToken().substring(7);
+        try {
+            String userEmail = jwtService.extractUsername(email_verify_token,"email_verify");
+        } catch (JwtException e) {
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("emailVerify", "Email verify token format is wrong"));
+        }
+        try {
+            if (jwtService.isTokenExpired(email_verify_token,"email_verify")) {
+                throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("emailVerify", "Email verify token is expired"));
+            }
+        } catch (Exception e) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("emailVerify", "Email verify token is expired"));
+        }
+
+        EmailVerificationToken token = verificationTokenRepository.findByToken(email_verify_token);
+
+        if(token == null){
+            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,Map.of("Email verify token","Email verify token not exist"));
+        }
+        if(!token.isValid()){
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR,Map.of("Email verify token","Email verify token not valid"));
+        }
+
+        String email = jwtService.extractUsername(email_verify_token,"email_verify");
+
+        var user = userRepository.findByEmail(email).get();
+        user.setUserVerifyStatus(userVerifyStatusRepository.findById(2L).get());
+
+        userRepository.save(user);
+        return new ResponseObject("Success","Verify email successfully","");
     }
 
     private static RefreshToken createRefreshTokenEntity(String refreshToken, Users user) {

@@ -15,6 +15,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class VerifyEmailRequest {
 
-    @NotEmpty(message = "Token is required.")
+    @NotEmpty(message = "Token is required")
     String token;
 }

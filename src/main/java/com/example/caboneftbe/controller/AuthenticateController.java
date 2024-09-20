@@ -63,6 +63,13 @@ public class AuthenticateController {
         );
     }
 
+    @PostMapping(API_PARAMS.EMAIL_VERIFY)
+    public ResponseEntity<ResponseObject> logout(@Valid @RequestBody(required = true) VerifyEmailRequest verifyEmailRequest){
+        return ResponseEntity.ok().body(
+                authenticationService.verifyEmail(verifyEmailRequest)
+        );
+    }
+
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<ResponseObject> handleMissingHeader(MissingRequestHeaderException ex){
         return ResponseEntity.status(401).body(
