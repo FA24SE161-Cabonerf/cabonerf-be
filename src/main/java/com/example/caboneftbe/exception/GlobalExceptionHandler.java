@@ -1,9 +1,13 @@
 package com.example.caboneftbe.exception;
 
+import com.example.caboneftbe.enums.Constants;
+import com.example.caboneftbe.response.ResponseObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -43,5 +47,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CustomExceptions.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(CustomExceptions ex){
         return new ResponseEntity<>(ex.getError(), ex.getStatus());
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ResponseObject> handleMissingHeader(MissingRequestHeaderException ex){
+        return ResponseEntity.status(401).body(
+                new ResponseObject(Constants.RESPONSE_STATUS_ERROR,"Error", Map.of("Authorization","Unauthorized access")));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ResponseObject> handleValidationBody(HttpMessageNotReadableException ex) {
+        return ResponseEntity.status(401).body(
+                new ResponseObject(Constants.RESPONSE_STATUS_ERROR,"Error", Map.of("RequestBody","RequestBody is required")));
     }
 }

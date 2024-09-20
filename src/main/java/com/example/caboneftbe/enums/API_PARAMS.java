@@ -9,4 +9,5 @@ public class API_PARAMS {
     public static final String LOGOUT = "/logout";
     public static final String USERS = "/users";
     public static final String ME = "/me";
+    public static final String EMAIL_VERIFY = "/email-verify";
 }

@@ -1,6 +1,7 @@
 package com.example.caboneftbe.converter;
 
 import com.example.caboneftbe.dto.UserDto;
+import com.example.caboneftbe.dto.UserProfileDto;
 import com.example.caboneftbe.models.Users;
 import com.example.caboneftbe.response.GetProfileResponse;
 import org.mapstruct.Mapper;
@@ -12,7 +13,7 @@ public interface UserConverter {
 
     UserDto fromUserToUserDto(Users users);
 
-    GetProfileResponse fromUserDtoToGetProfileResponse(UserDto userDto);
+    GetProfileResponse fromUserProfileDtoToGetProfileResponse(UserProfileDto userProfileDto);
 
-
+    UserProfileDto fromUserToUserProfileDto(Users user);
 }

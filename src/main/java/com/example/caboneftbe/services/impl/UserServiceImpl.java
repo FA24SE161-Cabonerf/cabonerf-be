@@ -2,7 +2,9 @@ package com.example.caboneftbe.services.impl;
 
 import com.example.caboneftbe.converter.UserConverter;
 import com.example.caboneftbe.dto.UserDto;
+import com.example.caboneftbe.dto.UserProfileDto;
 import com.example.caboneftbe.enums.Constants;
+import com.example.caboneftbe.enums.MessageConstants;
 import com.example.caboneftbe.exception.CustomExceptions;
 import com.example.caboneftbe.exception.GlobalExceptionHandler;
 import com.example.caboneftbe.repositories.UserRepository;
@@ -40,16 +42,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public GetProfileResponse getMe(String accessToken) {
-        if (jwtService.isTokenExpired(accessToken)) {
-            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token has expired"));
+        if (jwtService.isTokenExpired(accessToken, Constants.TOKEN_TYPE_ACCESS)) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", MessageConstants.TOKEN_EXPIRED));
         }
 
-        String email = jwtService.extractUsername(accessToken);
+        String email = jwtService.extractUsername(accessToken, Constants.TOKEN_TYPE_ACCESS);
         var user = userRepository.findByEmail(email)
-                .orElseThrow(() -> CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token is not valid")));
+                .orElseThrow(() -> CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", MessageConstants.INVALID_ACCESS_TOKEN)));
 
-        UserDto userDto = userConverter.fromUserToUserDto(user);
+        UserProfileDto userProfileDtoDto = userConverter.fromUserToUserProfileDto(user);
 
-        return userConverter.fromUserDtoToGetProfileResponse(userDto);
+        return userConverter.fromUserProfileDtoToGetProfileResponse(userProfileDtoDto);
     }
 }

@@ -19,9 +19,11 @@ public class GetProfileResponse {
     long id;
     String fullName;
     String email;
+    String phone;
     String profilePictureUrl;
+    String bio;
     RoleDto role;
     UserVerifyStatusDto userVerifyStatus;
-    SubscriptionType subscription;
-    UserStatus userStatus;
+    SubscriptionTypeDto subscription;
+    UserStatusDto userStatus;
 }

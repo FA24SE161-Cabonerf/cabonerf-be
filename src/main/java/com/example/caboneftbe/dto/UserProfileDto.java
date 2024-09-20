@@ -1,9 +1,7 @@
 package com.example.caboneftbe.dto;
 
-import com.example.caboneftbe.models.Role;
 import com.example.caboneftbe.models.SubscriptionType;
 import com.example.caboneftbe.models.UserStatus;
-import com.example.caboneftbe.models.UserVerifyStatus;
 import lombok.*;
 
 @NoArgsConstructor
@@ -11,14 +9,15 @@ import lombok.*;
 @Data
 @Getter
 @Setter
-public class UserDto {
+public class UserProfileDto {
     long id;
     String fullName;
     String email;
-//    String phone;
+    String phone;
     String profilePictureUrl;
-//    String bio;
+    String bio;
     RoleDto role;
-    SubscriptionType subscription;
-    UserStatus userStatus;
+    UserVerifyStatusDto userVerifyStatus;
+    SubscriptionTypeDto subscription;
+    UserStatusDto userStatus;
 }

@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 public class EmailVerificationToken extends Base{
     private String token;
     private Timestamp expiryDate;
+    private boolean isValid;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

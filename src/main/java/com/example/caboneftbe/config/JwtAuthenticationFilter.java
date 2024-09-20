@@ -1,5 +1,6 @@
 package com.example.caboneftbe.config;
 
+import com.example.caboneftbe.enums.Constants;
 import com.example.caboneftbe.exception.CustomExceptions;
 import com.example.caboneftbe.services.JwtService;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -46,14 +47,17 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
             access_token = authHeader.substring(7);
 
             // Giải mã và lấy email người dùng từ token
-            userEmail = jwtService.extractUsername(access_token);
+            try{
+                userEmail = jwtService.extractUsername(access_token, Constants.TOKEN_TYPE_ACCESS);
+
+
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 // Load thông tin người dùng từ dịch vụ UserDetails
                 UserDetails userDetails = this.userService.loadUserByUsername(userEmail);
 
                 // Kiểm tra tính hợp lệ của token
-                if (jwtService.isTokenValid(access_token, userDetails)) {
+                if (jwtService.isTokenValid(access_token, userDetails,Constants.TOKEN_TYPE_ACCESS)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
@@ -70,7 +74,21 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
 
             // Cho phép tiếp tục xử lý chuỗi lọc
             filterChain.doFilter(request, response);
+            }catch (Exception e){
+                response.setStatus(422);
 
+                response.setContentType("application/json");
+                String jsonResponse = "{"
+                        + "\"status\" : \"Error\","
+                        + "\"message\": \"Error\","
+                        + "\"data\": {" +
+                        "\"accessToken\":\"Access token format is wrong\"" +
+                        "}"
+                        + "}";
+
+                response.getWriter().write(jsonResponse);
+                response.getWriter().flush();
+            }
         } catch (ExpiredJwtException e) {
             // Ném ngoại lệ CustomExceptions với thông báo lỗi và thông tin liên quan
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
