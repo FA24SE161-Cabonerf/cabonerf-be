@@ -28,7 +28,7 @@ public class Base {
     @Column
     @LastModifiedDate
     @JsonIgnore
-    private LocalDate modifiedDate;
+    private LocalDate modifiedAt;
     @Column
     @JsonIgnore
     private boolean status = true;
