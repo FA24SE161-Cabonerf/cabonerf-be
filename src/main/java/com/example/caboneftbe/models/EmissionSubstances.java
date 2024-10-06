@@ -15,7 +15,7 @@ public class EmissionSubstances extends Base{
 
     private String molecularFormula;
     private String alternativeFormula;
-
+    private String emissionComparment;
 //    @ManyToOne
 //    @JoinColumn(name = "resource_type_id")
 //    private String resourceType;
