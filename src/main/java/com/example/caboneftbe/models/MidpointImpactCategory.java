@@ -13,7 +13,10 @@ public class MidpointImpactCategory extends Base{
     private String name;
     private String description;
     private String abbr;
-    private String unit;
+
+    @ManyToOne
+    @JoinColumn(name = "midpoint_impact_category_unit_id")
+    private MidpointImpactCategoryUnit unit;
 
     @ManyToOne
     @JoinColumn(name = "impact_category_id")

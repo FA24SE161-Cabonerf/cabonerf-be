@@ -20,7 +20,5 @@ public class EmissionSubstances extends Base{
 //    @JoinColumn(name = "resource_type_id")
 //    private String resourceType;
 
-    @ManyToOne
-    @JoinColumn(name = "unit_id")
-    private Unit unit;
+
 }
