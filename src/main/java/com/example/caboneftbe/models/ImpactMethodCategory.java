@@ -11,8 +11,6 @@ import lombok.*;
 @Table
 public class ImpactMethodCategory extends Base{
 
-    private String name;
-
     @ManyToOne
     @JoinColumn(name = "life_cycle_impact_assessment_method_id")
     private LifeCycleImpactAssessmentMethod lifeCycleImpactAssessmentMethod;

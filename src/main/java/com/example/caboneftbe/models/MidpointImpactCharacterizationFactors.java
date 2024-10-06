@@ -18,6 +18,10 @@ public class MidpointImpactCharacterizationFactors extends Base{
     @JoinColumn(name = "emission_substances_id")
     private EmissionSubstances emissionSubstances;
 
-    private double scientificValue;
+    private String scientificValue;
     private double decimalValue;
+
+    @ManyToOne
+    @JoinColumn(name = "unit_id")
+    private Unit unit;
 }
