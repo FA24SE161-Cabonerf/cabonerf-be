@@ -24,4 +24,8 @@ public class MidpointImpactCharacterizationFactors extends Base{
     @ManyToOne
     @JoinColumn(name = "unit_id")
     private Unit unit;
+
+    @ManyToOne
+    @JoinColumn(name = "emission_compartment_id")
+    private EmissionCompartment emissionCompartment;
 }
