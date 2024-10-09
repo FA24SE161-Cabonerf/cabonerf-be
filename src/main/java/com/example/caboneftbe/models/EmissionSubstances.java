@@ -15,7 +15,4 @@ public class EmissionSubstances extends Base{
     private String molecularFormula;
     private String alternativeFormula;
 
-    @ManyToOne
-    @JoinColumn(name = "emission_compartment_id")
-    private EmissionCompartment emissionCompartment;
 }

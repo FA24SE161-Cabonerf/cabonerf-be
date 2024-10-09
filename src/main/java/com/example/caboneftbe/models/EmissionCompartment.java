@@ -15,5 +15,4 @@ import lombok.Setter;
 @Table
 public class EmissionCompartment extends Base{
     private String name;
-
 }
