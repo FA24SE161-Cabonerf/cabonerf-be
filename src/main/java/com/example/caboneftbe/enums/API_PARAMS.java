@@ -10,4 +10,6 @@ public class API_PARAMS {
     public static final String USERS = "/users";
     public static final String ME = "/me";
     public static final String EMAIL_VERIFY = "/email-verify";
+    public static final String MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR = "/midpoint-impact-characterization-factors";
+    public static final String IMPORT_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR = "/import";
 }

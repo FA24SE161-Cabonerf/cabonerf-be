@@ -1,20 +1,28 @@
--- insert into subscription_type(subscription_name,description,project_limit,usage_limit,annual_cost,monthly_cost,can_create_organization,status)
--- values ('Basic','Người dùng cá nhân với hạn chế cơ bản',5,1000,0,0,false,true),
---        ('Pro','Người dùng chuyên nghiệp với nhiều tính năng hơn',20,10000,199.99,19.99,true,true),
---        ('Enterprise', 'Doanh nghiệp với khả năng mở rộng tối đa',100,100000,999.99,99.99,true,true);
---
--- insert into user_verify_status(status_name,description,status)
--- values ('Pending','Người dùng đã đăng ký nhưng chưa được xác minh',true),
---        ('Verified','Người dùng đã được xác minh thành công',true),
---        ('Suspended','Người dùng bị tạm ngừng xác minh',true);
---
--- insert into user_status(status_name,description,status)
--- values ('Active','Người dùng đang hoạt động bình thường',true),
---        ('Inactive','Người dùng không hoạt động',true),
---        ('Banned','Người dùng đã bị cấm truy cập hệ thống',true);
---
--- insert into  role(name,status)
--- values ('System Admin',true),
---        ('Company Admin',true),
---        ('Organization Manager',true),
---        ('Organization LCA Staff',true);
+insert into subscription_type(subscription_name,description,project_limit,usage_limit,annual_cost,monthly_cost,can_create_organization,status)
+values ('Basic','Người dùng cá nhân với hạn chế cơ bản',5,1000,0,0,false,true),
+       ('Pro','Người dùng chuyên nghiệp với nhiều tính năng hơn',20,10000,199.99,19.99,true,true),
+       ('Enterprise', 'Doanh nghiệp với khả năng mở rộng tối đa',100,100000,999.99,99.99,true,true);
+
+insert into user_verify_status(status_name,description,status)
+values ('Pending','Người dùng đã đăng ký nhưng chưa được xác minh',true),
+       ('Verified','Người dùng đã được xác minh thành công',true),
+       ('Suspended','Người dùng bị tạm ngừng xác minh',true);
+
+insert into user_status(status_name,description,status)
+values ('Active','Người dùng đang hoạt động bình thường',true),
+       ('Inactive','Người dùng không hoạt động',true),
+       ('Banned','Người dùng đã bị cấm truy cập hệ thống',true);
+
+insert into  role(name,status)
+values ('System Admin',true),
+       ('Company Admin',true),
+       ('Organization Manager',true),
+       ('Organization LCA Staff',true);
+
+insert into emission_compartment(name,status)
+values ('Air',true),
+       ('Fresh water',true),
+       ('Marine water',true),
+       ('Agricultural Soil',true),
+       ('Sea water',true);
+

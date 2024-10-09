@@ -14,6 +14,5 @@ import org.springframework.web.multipart.support.MultipartFilter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ImportEmissionSubstanceRequest {
-    private long methodId;
     private MultipartFilter excel;
 }
