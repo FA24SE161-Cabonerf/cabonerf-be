@@ -18,7 +18,7 @@ public class Process extends Base{
     @JoinColumn(name = "lifecycle_stage_id")
     private LifecycleStage lifecycleStage;
 
-    private String overallProducFlowRequired;
+    private String overallProductFlowRequired;
 
     @ManyToOne
     @JoinColumn(name = "project_id")

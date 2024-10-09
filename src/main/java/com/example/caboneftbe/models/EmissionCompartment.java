@@ -13,6 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table
-public class MidpointImpactCategoryUnit extends Base{
+public class EmissionCompartment extends Base{
     private String name;
+
 }

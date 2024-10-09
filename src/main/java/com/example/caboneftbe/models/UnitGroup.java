@@ -11,4 +11,5 @@ import lombok.*;
 @Table
 public class UnitGroup extends Base{
     private String name;
+    private String unitGroupType;
 }
