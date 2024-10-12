@@ -7,8 +7,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
+import org.apache.poi.ss.formula.functions.T;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -16,5 +18,6 @@ import java.util.List;
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ImportEmissionSubstanceResponse {
-    private List<MidpointImpactCharacterizationFactorsDto> list;
+    private List<MidpointImpactCharacterizationFactorsDto> dataImportSuccess;
+    private Map<String, String> dataImportFailure;
 }

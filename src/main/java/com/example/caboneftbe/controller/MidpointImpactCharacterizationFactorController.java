@@ -3,6 +3,7 @@ package com.example.caboneftbe.controller;
 import com.example.caboneftbe.converter.MidpointImpactCharacterizationFactorConverterImpl;
 import com.example.caboneftbe.enums.API_PARAMS;
 import com.example.caboneftbe.enums.Constants;
+import com.example.caboneftbe.request.ImportEmissionSubstanceRequest;
 import com.example.caboneftbe.response.ResponseObject;
 import com.example.caboneftbe.services.impl.ExcelServiceImpl;
 import lombok.AllArgsConstructor;
@@ -23,9 +24,9 @@ public class MidpointImpactCharacterizationFactorController {
     private ExcelServiceImpl service;
 
     @PostMapping(API_PARAMS.IMPORT_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR)
-    public ResponseEntity<ResponseObject> importExcel(@RequestParam("file") MultipartFile file){
+    public ResponseEntity<ResponseObject> importExcel(@RequestParam("file") MultipartFile file, @RequestParam String request){
         return ResponseEntity.ok(new ResponseObject(
-                Constants.RESPONSE_STATUS_SUCCESS,"Import success",service.readExcel(file)
+                Constants.RESPONSE_STATUS_SUCCESS,"Import success",service.readExcel(file,request)
         ));
     }
 }

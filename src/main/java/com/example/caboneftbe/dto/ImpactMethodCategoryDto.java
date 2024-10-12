@@ -11,5 +11,5 @@ import lombok.*;
 public class ImpactMethodCategoryDto {
     private long id;
     private LifeCycleImpactAssessmentMethodDto lifeCycleImpactAssessmentMethod;
-    private ImpactMethodCategoryDto impactMethodCategoryDto;
+    private ImpactCategoryDto impactCategory;
 }

@@ -14,5 +14,5 @@ import org.springframework.web.multipart.support.MultipartFilter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ImportEmissionSubstanceRequest {
-    private MultipartFilter excel;
+    private String lifeCycleImpactAssessmentMethodName;
 }
