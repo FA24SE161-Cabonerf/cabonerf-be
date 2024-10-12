@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table
-public class LifecycleStage extends Base{
+public class LifeCycleStage extends Base{
     private String name;
     private String description;
 }
