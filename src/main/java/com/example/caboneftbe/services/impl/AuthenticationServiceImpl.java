@@ -108,7 +108,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .fullName(request.getFullName())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .userStatus(statusRepository.findById(1L).get())
-                .userVerifyStatus(userVerifyStatusRepository.findById(2L).get())
+                .userVerifyStatus(userVerifyStatusRepository.findById(1L).get())
                 .role(roleRepository.findById(3L).get())
                 .subscription(subscriptionTypeRepository.findById(1L).get())
                 .status(true)
@@ -122,7 +122,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             EmailVerificationToken token = new EmailVerificationToken(emailStatusVerify, null, true, saved.get());
             verificationTokenRepository.save(token);
 
-            emailService.sendVerifyRegisterEmail(saved.get().getEmail(),token.getToken());
+//            emailService.sendVerifyRegisterEmail(saved.get().getEmail(),token.getToken());
         }
         var accessToken = jwtService.generateToken(saved.get());
         var refreshToken = jwtService.generateRefreshToken(saved.get());

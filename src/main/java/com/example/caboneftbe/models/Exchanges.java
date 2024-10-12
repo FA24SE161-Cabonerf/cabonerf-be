@@ -13,6 +13,7 @@ public class Exchanges extends Base{
 
     private String name;
     private String description;
+    private double value;
 
     @ManyToOne
     @JoinColumn(name = "exchanges_type_id")
