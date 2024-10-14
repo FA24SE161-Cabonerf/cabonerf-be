@@ -50,7 +50,7 @@ public class ProcessServiceImpl implements ProcessService {
 //        if(projectRepository.findById(request.getProjectId()).isEmpty()){
 //            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, Map.of("projectId","Not exist"));
 //        }
-        process.setOverallProductFlowRequired(0);
+        process.setOverAllProductFlowRequired(0);
 
         process = processRepository.save(process);
 
