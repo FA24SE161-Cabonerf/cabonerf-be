@@ -41,6 +41,8 @@ public class ExcelServiceImpl implements ExcelService {
     private ImpactMethodCategoryRepository impactMethodCategoryRepository;
     @Autowired
     private LifeCycleImpactAssessmentMethodRepository lifeCycleImpactAssessmentMethodRepository;
+    @Autowired
+    private UnitRepository unitRepository;
 
     private Map<String, String> error = new HashMap<>();
 
@@ -124,6 +126,12 @@ public class ExcelServiceImpl implements ExcelService {
                     emissionSubstancesRepository.save(emissionSubstances);
                 } else {
                     emissionSubstances = emissionSubstancesRepository.findByName(emissionSubstances.getName(),currentRow.getCell(3).getStringCellValue());
+                }
+            }
+            List<Unit> units = unitRepository.findByName("-eq");
+            for(Unit unit : units) {
+                if(unit.getName().contains(data.getImpactMethodCategory().getImpactCategory().getMidpointImpactCategory().getUnit().getName())){
+                    data.setUnit(unit);
                 }
             }
             data.setEmissionSubstances(emissionSubstances);

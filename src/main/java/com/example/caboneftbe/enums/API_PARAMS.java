@@ -13,4 +13,9 @@ public class API_PARAMS {
     public static final String MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR = "/midpoint-impact-characterization-factors";
     public static final String IMPORT_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR = "/import";
     public static final String PROCESS = "/process";
+    public static final String EXCHANGE = "/exchanges";
+    public static final String CREATE_ELEMENTARY_EXCHANGE = "/create-elementary-exchange";
+    public static final String CREATE_PRODUCT_EXCHANGE = "/create-product-exchange";
+    public static final String CONNECTOR = "/connectors";
+
 }
