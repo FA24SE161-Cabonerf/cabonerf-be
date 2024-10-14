@@ -20,4 +20,5 @@ public class ExchangesDto {
     private ExchangesTypeDto exchangesType;
     private UnitDto unit;
     private boolean input;
+
 }

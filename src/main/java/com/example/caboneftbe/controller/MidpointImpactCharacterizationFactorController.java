@@ -24,9 +24,9 @@ public class MidpointImpactCharacterizationFactorController {
     private ExcelServiceImpl service;
 
     @PostMapping(API_PARAMS.IMPORT_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR)
-    public ResponseEntity<ResponseObject> importExcel(@RequestParam("file") MultipartFile file, @RequestParam String request){
+    public ResponseEntity<ResponseObject> importExcel(@RequestParam("file") MultipartFile file, @RequestParam String methodName){
         return ResponseEntity.ok(new ResponseObject(
-                Constants.RESPONSE_STATUS_SUCCESS,"Import success",service.readExcel(file,request)
+                Constants.RESPONSE_STATUS_SUCCESS,"Import success",service.readExcel(file,methodName)
         ));
     }
 }

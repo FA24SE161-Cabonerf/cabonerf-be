@@ -7,6 +7,7 @@ import com.example.caboneftbe.models.Exchanges;
 import com.example.caboneftbe.models.Process;
 import com.example.caboneftbe.models.Project;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
@@ -14,4 +15,5 @@ public interface ProcessConverter {
     ProcessConverter INSTANCE = Mappers.getMapper(ProcessConverter.class);
 
     ProcessDto fromProcessToProcessDto(Process process);
+
 }
