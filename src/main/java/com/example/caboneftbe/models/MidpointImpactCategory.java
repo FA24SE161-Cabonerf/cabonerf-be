@@ -17,8 +17,4 @@ public class MidpointImpactCategory extends Base{
     @ManyToOne
     @JoinColumn(name = "unit_id")
     private Unit unit;
-
-    @ManyToOne
-    @JoinColumn(name = "impact_category_id")
-    private ImpactCategory impactCategory;
 }

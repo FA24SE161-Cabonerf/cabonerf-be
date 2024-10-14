@@ -11,10 +11,10 @@ import lombok.*;
 public class Unit extends Base{
     private String name;
     private double conversionFactor;
+    private boolean isDefault;
 
     @ManyToOne
     @JoinColumn(name = "unit_group_id")
     private UnitGroup unitGroup;
 
-    private boolean isDefault;
 }

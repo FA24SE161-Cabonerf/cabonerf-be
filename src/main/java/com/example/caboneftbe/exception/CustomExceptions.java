@@ -95,4 +95,24 @@ public class CustomExceptions extends RuntimeException{
                         .build())
                 .build();
     }
+
+    public static CustomExceptions noContent(String message) {
+        return CustomExceptions.builder()
+                .status(HttpStatus.NO_CONTENT)
+                .error(ErrorResponse.builder()
+                        .status(Constants.RESPONSE_STATUS_ERROR)
+                        .message(message)
+                        .build())
+                .build();
+    }
+    public static CustomExceptions noContent(String message, Object data) {
+        return CustomExceptions.builder()
+                .status(HttpStatus.NO_CONTENT)
+                .error(ErrorResponse.builder()
+                        .status(Constants.RESPONSE_STATUS_ERROR)
+                        .message(message)
+                        .data(data)
+                        .build())
+                .build();
+    }
 }
