@@ -15,5 +15,5 @@ public class ImpactCategoryDto {
     private String unit;
 
     private MidpointImpactCategoryDto midpointImpactCategory;
-
+    private EmissionCompartmentDto emissionCompartment;
 }

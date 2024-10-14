@@ -1,18 +1,21 @@
 package com.example.caboneftbe.dto;
 
-import lombok.Value;
+import com.example.caboneftbe.models.UnitGroup;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.*;
 
-import java.io.Serializable;
-import java.time.LocalDate;
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+@Getter
+@Setter
+public class UnitDto {
+    private long id;
+    private String name;
+    private double conversionFactor;
+    private boolean isDefault;
 
-/**
- * DTO for {@link com.example.caboneftbe.models.Unit}
- */
-@Value
-public class UnitDto implements Serializable {
-    Long id;
-    String name;
-    double conversionFactor;
-    boolean isDefault;
-    UnitGroupDto unitGroup;
+    private UnitGroupDto unitGroup;
+
 }

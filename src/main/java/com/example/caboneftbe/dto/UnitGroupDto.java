@@ -1,16 +1,14 @@
 package com.example.caboneftbe.dto;
 
-import lombok.Value;
+import lombok.*;
 
-import java.io.Serializable;
-import java.time.LocalDate;
-
-/**
- * DTO for {@link com.example.caboneftbe.models.UnitGroup}
- */
-@Value
-public class UnitGroupDto implements Serializable {
-    Long id;
-    String name;
-    String unitGroupType;
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+@Getter
+@Setter
+public class UnitGroupDto {
+    private long id;
+    private String name;
+    private String unitGroupType;
 }

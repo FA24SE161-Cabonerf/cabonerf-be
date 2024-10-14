@@ -122,7 +122,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             EmailVerificationToken token = new EmailVerificationToken(emailStatusVerify, null, true, saved.get());
             verificationTokenRepository.save(token);
 
-            emailService.sendVerifyRegisterEmail(saved.get().getEmail(),token.getToken());
+//            emailService.sendVerifyRegisterEmail(saved.get().getEmail(),token.getToken());
         }
         var accessToken = jwtService.generateToken(saved.get());
         var refreshToken = jwtService.generateRefreshToken(saved.get());

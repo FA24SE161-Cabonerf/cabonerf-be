@@ -10,6 +10,7 @@ import lombok.*;
 @Entity
 @Table
 public class MidpointImpactCharacterizationFactors extends Base{
+    private String cas;
     @ManyToOne
     @JoinColumn(name = "impact_method_category_id")
     private ImpactMethodCategory impactMethodCategory;

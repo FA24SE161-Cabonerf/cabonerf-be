@@ -1,18 +1,19 @@
 package com.example.caboneftbe.dto;
 
-import lombok.Value;
+import com.example.caboneftbe.models.Unit;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.*;
 
-import java.io.Serializable;
-import java.time.LocalDate;
-
-/**
- * DTO for {@link com.example.caboneftbe.models.MidpointImpactCategory}
- */
-@Value
-public class MidpointImpactCategoryDto implements Serializable {
-    Long id;
-    String name;
-    String description;
-    String abbr;
-    UnitDto unit;
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+@Getter
+@Setter
+public class MidpointImpactCategoryDto {
+    private long id;
+    private String name;
+    private String description;
+    private String abbr;
+    private UnitDto unit;
 }
