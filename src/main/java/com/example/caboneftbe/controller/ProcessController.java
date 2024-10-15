@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.PROCESS)
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 @RestController
 @CrossOrigin(origins = "*")
@@ -42,7 +42,7 @@ public class ProcessController {
     }
 
     @PostMapping()
-    public ResponseEntity<ResponseObject> process(@Valid @RequestBody CreateProcessRequest request) {
+    public ResponseEntity<ResponseObject> createProcess(@Valid @RequestBody CreateProcessRequest request) {
         return ResponseEntity.ok().body(new ResponseObject(
                         Constants.RESPONSE_STATUS_SUCCESS, "Create process success", service.createProcess(request)
                 )
