@@ -1,21 +1,31 @@
 package com.example.caboneftbe.controller;
 
 import com.example.caboneftbe.enums.API_PARAMS;
+import com.example.caboneftbe.services.MessagePublisher;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequestMapping(API_PARAMS.API_VERSION)
 @NoArgsConstructor(force = true)
 @RestController
 @CrossOrigin(origins = "*")
 public class CheckHeathController {
+    @Autowired
+    private MessagePublisher messagePublisher;
+
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok().body("OK");
+    }
+
+    @GetMapping("/send-message")
+    public ResponseEntity<String> sendMessage() {
+        messagePublisher.sendMessage("message");
+        // mỗi khi call thì sẽ send message to rabbitMQ
+        // send message xong thì message listener sẽ bắt (message) và xử lí
+        return ResponseEntity.ok().body("Test send message - queued by rabbitMQ");
     }
 }
