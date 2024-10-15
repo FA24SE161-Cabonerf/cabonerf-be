@@ -23,23 +23,20 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
     private ImpactCategoryConverter impactCategoryConverter;
 
     @Override
-    public GetImpactCategoryListResponse getImpactCategoryList() {
+    public List<ImpactCategoryDto> getImpactCategoryList() {
         List<ImpactCategory> impactCategories = impactCategoryRepository.findAllByStatus(true);
         if (impactCategories.isEmpty()) {
             throw CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND);
         }
         List<ImpactCategoryDto> impactCategoryDtos = impactCategoryConverter.fromImpactCategoryListToDtoList(impactCategories);
 
-        return GetImpactCategoryListResponse.builder()
-                .impactCategoryList(impactCategoryDtos).build();
+        return impactCategoryDtos;
     }
 
     @Override
-    public Optional<ImpactCategory> getImpactCategoryById(long id) {
-        Optional<ImpactCategory> impactCategory = impactCategoryRepository.findById(id);
-        if (impactCategory.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND);
-        }
-        return impactCategory;
+    public ImpactCategoryDto getImpactCategoryById(long id) {
+        ImpactCategory impactCategory = impactCategoryRepository.findById(id).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND));
+        return impactCategoryConverter.fromImpactCategoryToImpactCategoryDto(impactCategory);
     }
 }
