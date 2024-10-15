@@ -25,8 +25,8 @@ public class RabbitMQConfig {
     }
 
     public static final String QUEUE = "cabonerf.queue";
-    public static final String EXCHANGE = "cabonerf.exchange";
-    public static final String ROUTING_KEY = "cabonerf.routing.*";
+    public static final String EXCHANGE = "java.exchange";
+    public static final String ROUTING_KEY = "java.key";
 
     @Bean
     public Queue queue() {
