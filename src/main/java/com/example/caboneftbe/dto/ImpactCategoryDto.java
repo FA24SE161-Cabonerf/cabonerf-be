@@ -8,7 +8,7 @@ import lombok.*;
 @Getter
 @Setter
 public class ImpactCategoryDto {
-    private String id;
+    private long id;
     private String name;
     private String indicator;
     private String indicatorDescription;

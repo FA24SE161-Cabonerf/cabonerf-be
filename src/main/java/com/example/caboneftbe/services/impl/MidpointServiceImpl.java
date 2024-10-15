@@ -1,5 +1,7 @@
 package com.example.caboneftbe.services.impl;
 
+import com.example.caboneftbe.converter.MidpointImpactCharacterizationFactorConverter;
+import com.example.caboneftbe.dto.MidpointImpactCharacterizationFactorsDto;
 import com.example.caboneftbe.enums.MessageConstants;
 import com.example.caboneftbe.exception.CustomExceptions;
 import com.example.caboneftbe.models.MidpointImpactCharacterizationFactors;
@@ -16,21 +18,27 @@ public class MidpointServiceImpl implements MidpointService {
     @Autowired
     private MidpointRepository midpointRepository;
 
+    @Autowired
+    private MidpointImpactCharacterizationFactorConverter midpointConverter;
+
     @Override
-    public List<MidpointImpactCharacterizationFactors> getAllImpactCharacterizationFactors() {
+    public List<MidpointImpactCharacterizationFactorsDto> getAllImpactCharacterizationFactors() {
         List<MidpointImpactCharacterizationFactors> impactCharacterizationFactors = midpointRepository.findAll();
         if (impactCharacterizationFactors.isEmpty()) {
             throw CustomExceptions.notFound(MessageConstants.NO_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR);
         }
-        return impactCharacterizationFactors;
+
+
+        return midpointConverter.fromMidpointListToMidpointDtoList(impactCharacterizationFactors);
+
     }
 
     @Override
-    public Optional<MidpointImpactCharacterizationFactors> getImpactCharacterizationFactorById(Long id) {
-        Optional<MidpointImpactCharacterizationFactors> impactCharacterizationFactor = midpointRepository.findById(id);
-        if (impactCharacterizationFactor.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR);
-        }
-        return impactCharacterizationFactor;
+    public MidpointImpactCharacterizationFactorsDto getImpactCharacterizationFactorById(Long id) {
+        MidpointImpactCharacterizationFactors impactCharacterizationFactor = midpointRepository.findById(id).orElseThrow(()
+                -> CustomExceptions.notFound(MessageConstants.NO_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR)
+        );
+
+        return midpointConverter.fromMidpointImpactCharacterizationFactorsToMidpointImpactCharacterizationFactorsDto(impactCharacterizationFactor);
     }
 }
