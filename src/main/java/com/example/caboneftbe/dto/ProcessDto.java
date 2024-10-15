@@ -16,7 +16,4 @@ public class ProcessDto {
     private LifeCycleStageDto lifeCycleStage;
     private String overallProductFlowRequired;
     private ProjectDto project;
-    private List<ProcessImpactValueDto> impactValues;
-    private List<ExchangesDto> exchanges;
-
 }

@@ -16,7 +16,6 @@ public class API_PARAMS {
     public static final String EMAIL_VERIFY = "/email-verify";
     public static final String MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR = "/midpoint-impact-characterization-factors";
     public static final String IMPORT_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR = "/import";
-    public static final String PROCESS = "/process";
     public static final String EXCHANGE = "/exchanges";
     public static final String CREATE_ELEMENTARY_EXCHANGE = "/create-elementary-exchange";
     public static final String CREATE_PRODUCT_EXCHANGE = "/create-product-exchange";
@@ -43,5 +42,11 @@ public class API_PARAMS {
 
     public static final String PROJECT = "/projects";
     public static final String GET_PROJECT_LIST_BY_METHOD_ID = "/projects-list/{id}";
+
+    /************************
+     *      PROCESS APIs     *
+     ************************/
+    public static final String PROCESS = "/process";
+    public static final String PROCESS_BY_ID = "/{id}";
 
 }
