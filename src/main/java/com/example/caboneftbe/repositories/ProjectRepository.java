@@ -22,4 +22,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
             "JOIN Unit u ON u.id = mic.unit.id " +
             "WHERE p.id = :projectId")
     List<ProjectDetailResponseDto> getProjectLevelDetail(@Param("projectId") Long projectId);
+
+    Project findByName(String name);
 }

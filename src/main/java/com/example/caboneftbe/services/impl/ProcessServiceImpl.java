@@ -59,9 +59,10 @@ public class ProcessServiceImpl implements ProcessService {
         }
         process.setLifeCycleStage(lifeCycleStageRepository.findById(request.getLifeCycleStageId()).get());
 
-//        if(projectRepository.findById(request.getProjectId()).isEmpty()){
-//            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, Map.of("projectId","Not exist"));
-//        }
+        if(projectRepository.findById(request.getProjectId()).isEmpty()){
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, Map.of("projectId","Not exist"));
+        }
+        process.setProject(projectRepository.findById(request.getProjectId()).get());
         process.setOverAllProductFlowRequired(0);
 
         process = processRepository.save(process);

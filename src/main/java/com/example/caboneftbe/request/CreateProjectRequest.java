@@ -1,7 +1,6 @@
 package com.example.caboneftbe.request;
 
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,13 +13,9 @@ import lombok.experimental.SuperBuilder;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateProcessRequest {
-
+public class CreateProjectRequest {
     @NotEmpty(message = "Name is required.")
     private String name;
     private String description;
-    @NotNull(message = "Life Cycle Stage is required.")
-    private long lifeCycleStageId;
-    @NotEmpty(message = "Project is required.")
-    private long projectId;
+    private String location;
 }
