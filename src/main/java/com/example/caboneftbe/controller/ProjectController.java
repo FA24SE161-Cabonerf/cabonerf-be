@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.PROJECT)
-@NoArgsConstructor(force = true)
+@NoArgsConstructor
 @AllArgsConstructor
 @RestController
 @CrossOrigin(origins = "*")

@@ -81,13 +81,9 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         exchanges = exchangesRepository.save(exchanges);
 
-        ProcessDto processDto = processConverter.fromProcessToProcessDto(process.get());
-
-        List<ExchangesDto> list = new ArrayList<>(exchangesConverter.INSTANCE.fromExchangesToExchangesDto(exchangesList));
-        processDto.setExchanges(list);
-
         return CreateProcessResponse.builder()
-                .process(processDto)
+                .process(processConverter.fromProcessToProcessDto(process.get()))
+                .exchanges(exchangesConverter.INSTANCE.fromExchangesToExchangesDto(exchangesList))
                 .build();
     }
 
@@ -122,13 +118,9 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         exchanges = exchangesRepository.save(exchanges);
 
-        ProcessDto processDto = processConverter.fromProcessToProcessDto(process.get());
-
-        List<ExchangesDto> list = new ArrayList<>(exchangesConverter.INSTANCE.fromExchangesToExchangesDto(exchangesList));
-        processDto.setExchanges(list);
-
         return CreateProcessResponse.builder()
-                .process(processDto)
+                .process(processConverter.fromProcessToProcessDto(process.get()))
+                .exchanges(exchangesConverter.INSTANCE.fromExchangesToExchangesDto(exchangesList))
                 .build();
     }
 }
