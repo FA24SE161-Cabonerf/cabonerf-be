@@ -1,6 +1,7 @@
 package com.example.caboneftbe.controller;
 
 import com.example.caboneftbe.enums.API_PARAMS;
+import com.example.caboneftbe.request.RabbitMqJsonRequest;
 import com.example.caboneftbe.services.MessagePublisher;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @NoArgsConstructor(force = true)
 @RestController
 @CrossOrigin(origins = "*")
+@AllArgsConstructor
 public class CheckHeathController {
     @Autowired
     private MessagePublisher messagePublisher;
@@ -22,8 +24,8 @@ public class CheckHeathController {
     }
 
     @GetMapping("/send-message")
-    public ResponseEntity<String> sendMessage() {
-        messagePublisher.sendMessage("message");
+    public ResponseEntity<String> sendMessage(@RequestBody RabbitMqJsonRequest request) {
+        messagePublisher.sendMessage(request);
         // mỗi khi call thì sẽ send message to rabbitMQ
         // send message xong thì message listener sẽ bắt (message) và xử lí
         return ResponseEntity.ok().body("Test send message - queued by rabbitMQ");

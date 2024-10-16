@@ -1,6 +1,7 @@
 package com.example.caboneftbe.services;
 
 import com.example.caboneftbe.config.RabbitMQConfig;
+import com.example.caboneftbe.request.RabbitMqJsonRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
@@ -9,8 +10,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class MessageListener {
     @RabbitListener(queues = RabbitMQConfig.QUEUE)
-    public void handleMessage(String message) {
-        log.info("Received message: {}", message);
+    public void handleMessage(RabbitMqJsonRequest request) {
+        log.info("Received message: {}", request.toString());
         // Here, you can add logic to process the message.
         // Example: updating a database, calling another service, etc.
 

@@ -24,7 +24,7 @@ public class RabbitMQConfig {
         return rabbitTemplate;
     }
 
-    public static final String QUEUE = "cabonerf.queue";
+    public static final String QUEUE = "java.queue";
     public static final String EXCHANGE = "java.exchange";
     public static final String ROUTING_KEY = "java.key";
 
@@ -33,13 +33,18 @@ public class RabbitMQConfig {
         return new Queue(QUEUE);
     }
 
+//    @Bean
+//    public TopicExchange exchange() {
+//        return new TopicExchange(EXCHANGE);
+//    }
+
     @Bean
-    public TopicExchange exchange() {
-        return new TopicExchange(EXCHANGE);
+    public DirectExchange exchange() {
+        return new DirectExchange(EXCHANGE);
     }
 
     @Bean
-    public Binding binding(Queue queue, TopicExchange exchange) {
+    public Binding binding(Queue queue, DirectExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
     }
 

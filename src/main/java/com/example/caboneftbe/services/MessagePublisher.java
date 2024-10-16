@@ -1,6 +1,9 @@
 package com.example.caboneftbe.services;
 
 import com.example.caboneftbe.config.RabbitMQConfig;
+import com.example.caboneftbe.request.RabbitMqJsonRequest;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
+@NoArgsConstructor
+@AllArgsConstructor
 public class MessagePublisher {
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -19,8 +24,8 @@ public class MessagePublisher {
     @Value(RabbitMQConfig.ROUTING_KEY)
     private String routingKey;
 
-    public void sendMessage(String message) {
-        rabbitTemplate.convertAndSend(exchangeName, routingKey, message);
-        log.info("Sent message: {}", message);
+    public void sendMessage(RabbitMqJsonRequest request) {
+        rabbitTemplate.convertAndSend(exchangeName, routingKey, request);
+        log.info("Sent message: {}", request.toString());
     }
 }
