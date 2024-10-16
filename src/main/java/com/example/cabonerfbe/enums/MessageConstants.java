@@ -22,4 +22,12 @@ public class MessageConstants {
     public static final String GET_ALL_MIDPOINT_FACTORS_SUCCESS = "Get all midpoint impact characterization factors success";
     public static final String GET_MIDPOINT_FACTOR_BY_ID_SUCCESS = "Get midpoint impact factor by id success";
     public static final String GET_PROJECT_LIST_SUCCESS = "Get project list success";
+
+    public static final String GET_ALL_UNIT_GROUP_SUCCESS = "Get all unit group success";
+    public static final String GET_UNIT_GROUP_BY_ID_SUCCESS = "Get unit group by success";
+    public static final String GET_UNIT_GROUP_BY_ID_NOT_FOUND = "Unit group not exist";
+
+    public static final String GET_ALL_LIFE_STAGE_SUCCESS = "Get all life cycle stage success";
+    public static final String GET_LIFE_STAGE_BY_ID_SUCCESS = "Get life cycle stage by success";
+    public static final String GET_LIFE_STAGE_BY_ID_NOT_FOUND = "Life cycle stage not exist";
 }
