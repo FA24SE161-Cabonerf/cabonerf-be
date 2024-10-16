@@ -12,11 +12,14 @@ import com.example.cabonerfbe.response.MidpointImpactCharacterizationFactorsResp
 import com.example.cabonerfbe.response.MidpointSubstanceFactorsResponse;
 import com.example.cabonerfbe.services.MidpointService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class MidpointServiceImpl implements MidpointService {
@@ -48,12 +51,14 @@ public class MidpointServiceImpl implements MidpointService {
 
     @Override
     public PageList<MidpointSubstanceFactorsResponse> getAllMidpointFactorsAdmin(int currentPage, int pageSize) {
-        List<Object[]> midpointSubstanceFactorList = midpointRepository.findAllWithPerspective(PageRequest.of(1, 20));
-        List<MidpointSubstanceFactorsDto> midpointSubstanceFactorsDtoList = new ArrayList<>();
-        for (Object[] midpointSubstance : midpointSubstanceFactorList) {
-            midpointSubstanceFactorsDtoList.add(midpointConverter.fromQueryResultsToDto(midpointSubstance));
-        }
+        Pageable pageable = PageRequest.of(currentPage, pageSize);
+        Page<Object[]> midpointSubstanceFactorPage = midpointRepository.findAllWithPerspective(pageable);
+        List<MidpointSubstanceFactorsDto> midpointSubstanceFactorsDtoList = midpointSubstanceFactorPage.getContent().stream()
+                .map(midpointConverter::fromQueryResultsToDto)
+                .collect(Collectors.toList());
         PageList<MidpointSubstanceFactorsDto> midpointSubstanceFactorsDtoPageList = new PageList<>();
+        midpointSubstanceFactorsDtoPageList.setCurrentPage(currentPage);
+        midpointSubstanceFactorsDtoPageList.setTotalPage(midpointSubstanceFactorPage.getTotalPages());
         midpointSubstanceFactorsDtoPageList.setListResult(midpointSubstanceFactorsDtoList);
         return midpointConverter.fromMidpointSubstanceFactorPageListDtoToMidpointSubstanceFactorPageListResponse(midpointSubstanceFactorsDtoPageList);
     }
