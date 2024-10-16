@@ -149,7 +149,7 @@ public class ExcelServiceImpl implements ExcelService {
                 }
             }
             data = repository.save(data);
-            return converter.INSTANCE.fromMidpointImpactCharacterizationFactorsToMidpointImpactCharacterizationFactorsDto(data);
+            return converter.INSTANCE.fromMidpointToMidpointDto(data);
 
         } catch (Exception e) {
             error.put(sheetName, "Row: " + (currentRow.getRowNum() + 1) + " - Column: " + (rowValue + 1) + " - " + e.getMessage());

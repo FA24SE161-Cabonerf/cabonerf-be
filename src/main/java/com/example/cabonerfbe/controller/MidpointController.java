@@ -23,14 +23,23 @@ public class MidpointController {
     @GetMapping(API_PARAMS.GET_ALL_MIDPOINT_FACTORS)
     public ResponseEntity<ResponseObject> getAllMidpointFactors() {
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_ALL_MIDPOINT_FACTORS_SUCCESS, midpointService.getAllImpactCharacterizationFactors())
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_ALL_MIDPOINT_FACTORS_SUCCESS, midpointService.getAllMidpointFactors())
         );
     }
 
     @GetMapping(API_PARAMS.GET_MIDPOINT_FACTOR_BY_ID)
     public ResponseEntity<ResponseObject> getMidpointFactorById(@PathVariable long id) {
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_MIDPOINT_FACTOR_BY_ID_SUCCESS, midpointService.getImpactCharacterizationFactorById(id))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_MIDPOINT_FACTOR_BY_ID_SUCCESS, midpointService.getMidpointFactorById(id))
         );
     }
+
+    @GetMapping(API_PARAMS.ADMIN + API_PARAMS.GET_ALL_MIDPOINT_FACTORS)
+    public ResponseEntity<ResponseObject> getAllMidpointFactorsAdmin(@RequestParam(defaultValue = "0") int currentPage,
+                                                                     @RequestParam(defaultValue = "5") int pageSize) {
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_ALL_MIDPOINT_FACTORS_SUCCESS, midpointService.getAllMidpointFactorsAdmin(currentPage, pageSize))
+        );
+    }
+
 }
