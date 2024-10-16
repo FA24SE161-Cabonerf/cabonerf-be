@@ -49,4 +49,22 @@ public class API_PARAMS {
     public static final String PROCESS = "/process";
     public static final String PROCESS_BY_ID = "/{id}";
 
+    /************************
+     *      UNIT GROUP APIs     *
+     ************************/
+    public static final String UNIT_GROUP = "/unit-groups";
+    public static final String UNIT_GROUP_BY_ID = "/{id}";
+
+    /************************
+     *      LIFE CYCLE STAGE APIs     *
+     ************************/
+    public static final String LIFE_STAGE = "/life-cycle-stages";
+    public static final String LIFE_STAGE_BY_ID = "/{id}";
+
+    /************************
+     *      UNIT APIs     *
+     ************************/
+    public static final String UNIT = "/units";
+    public static final String UNIT_BY_ID = "/{id}";
+
 }

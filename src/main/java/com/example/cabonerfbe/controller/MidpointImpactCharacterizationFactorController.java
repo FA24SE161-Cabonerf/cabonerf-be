@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR)
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 @RestController
 @CrossOrigin(origins = "*")
