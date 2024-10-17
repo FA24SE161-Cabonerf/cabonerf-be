@@ -8,6 +8,7 @@ import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.MidpointImpactCharacterizationFactors;
 import com.example.cabonerfbe.repositories.MidpointRepository;
+import com.example.cabonerfbe.request.PaginationRequest;
 import com.example.cabonerfbe.response.MidpointImpactCharacterizationFactorsResponse;
 import com.example.cabonerfbe.response.MidpointSubstanceFactorsResponse;
 import com.example.cabonerfbe.services.MidpointService;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,15 +52,26 @@ public class MidpointServiceImpl implements MidpointService {
     }
 
     @Override
-    public PageList<MidpointSubstanceFactorsResponse> getAllMidpointFactorsAdmin(int currentPage, int pageSize) {
-        Pageable pageable = PageRequest.of(currentPage, pageSize);
+    public PageList<MidpointSubstanceFactorsResponse> getAllMidpointFactorsAdmin(PaginationRequest request) {
+        int pageSize = request.getPageSize();
+        int currentPage = request.getCurrentPage();
+
+        Pageable pageable = PageRequest.of(currentPage - 1, pageSize);
+
         Page<Object[]> midpointSubstanceFactorPage = midpointRepository.findAllWithPerspective(pageable);
+        long totalRecords = midpointSubstanceFactorPage.getTotalElements() / 3;
+
+        int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+        if (currentPage > totalPages) {
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("currentPage", MessageConstants.CURRENT_PAGE_EXCEED_TOTAL_PAGES));
+        }
+
         List<MidpointSubstanceFactorsDto> midpointSubstanceFactorsDtoList = midpointSubstanceFactorPage.getContent().stream()
                 .map(midpointConverter::fromQueryResultsToDto)
                 .collect(Collectors.toList());
         PageList<MidpointSubstanceFactorsDto> midpointSubstanceFactorsDtoPageList = new PageList<>();
         midpointSubstanceFactorsDtoPageList.setCurrentPage(currentPage);
-        midpointSubstanceFactorsDtoPageList.setTotalPage(midpointSubstanceFactorPage.getTotalPages());
+        midpointSubstanceFactorsDtoPageList.setTotalPage(totalPages);
         midpointSubstanceFactorsDtoPageList.setListResult(midpointSubstanceFactorsDtoList);
         return midpointConverter.fromMidpointSubstanceFactorPageListDtoToMidpointSubstanceFactorPageListResponse(midpointSubstanceFactorsDtoPageList);
     }

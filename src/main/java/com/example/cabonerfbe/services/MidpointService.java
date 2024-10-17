@@ -1,6 +1,7 @@
 package com.example.cabonerfbe.services;
 
 import com.example.cabonerfbe.dto.PageList;
+import com.example.cabonerfbe.request.PaginationRequest;
 import com.example.cabonerfbe.response.MidpointImpactCharacterizationFactorsResponse;
 import com.example.cabonerfbe.response.MidpointSubstanceFactorsResponse;
 
@@ -10,5 +11,5 @@ public interface MidpointService {
     List<MidpointImpactCharacterizationFactorsResponse> getAllMidpointFactors();
     MidpointImpactCharacterizationFactorsResponse getMidpointFactorById(Long id);
 
-    PageList<MidpointSubstanceFactorsResponse> getAllMidpointFactorsAdmin(int currentPage, int pageSize);
+    PageList<MidpointSubstanceFactorsResponse> getAllMidpointFactorsAdmin(PaginationRequest request);
 }
