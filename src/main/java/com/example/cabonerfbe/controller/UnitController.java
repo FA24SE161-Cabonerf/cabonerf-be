@@ -11,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.UNIT)
-@NoArgsConstructor
-@AllArgsConstructor
 @RestController
 @CrossOrigin(origins = "*")
 public class UnitController {
