@@ -4,9 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CaboneftBeApplication {
+public class CabonerfBeApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CaboneftBeApplication.class, args);
+        SpringApplication.run(CabonerfBeApplication.class, args);
     }
 }
