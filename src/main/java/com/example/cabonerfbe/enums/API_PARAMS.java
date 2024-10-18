@@ -49,4 +49,9 @@ public class API_PARAMS {
     public static final String PROCESS = "/process";
     public static final String PROCESS_BY_ID = "/{id}";
 
+    /************************
+     *      ADMIN APIs      *
+     ************************/
+    public static final String ADMIN = "/admin";
+
 }
