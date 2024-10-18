@@ -9,7 +9,7 @@ import lombok.*;
 @Builder
 @Data
 public class MidpointSubstanceFactorsDto {
-    private Long id;
+    private String id;
     private String casNumber;
     private String name;
     private String chemicalName;

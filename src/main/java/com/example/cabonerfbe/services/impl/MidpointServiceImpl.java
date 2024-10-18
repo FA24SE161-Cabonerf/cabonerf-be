@@ -31,6 +31,9 @@ public class MidpointServiceImpl implements MidpointService {
     @Autowired
     private MidpointImpactCharacterizationFactorConverter midpointConverter;
 
+    private static final int PAGE_INDEX_ADJUSTMENT = 1;
+
+
     @Override
     public List<MidpointImpactCharacterizationFactorsResponse> getAllMidpointFactors() {
         List<MidpointImpactCharacterizationFactors> impactCharacterizationFactors = midpointRepository.findAllByStatus(Constants.STATUS_TRUE);
@@ -56,12 +59,13 @@ public class MidpointServiceImpl implements MidpointService {
         int pageSize = request.getPageSize();
         int currentPage = request.getCurrentPage();
 
-        Pageable pageable = PageRequest.of(currentPage - 1, pageSize);
+        Pageable pageable = PageRequest.of(currentPage - PAGE_INDEX_ADJUSTMENT, pageSize);
 
         Page<Object[]> midpointSubstanceFactorPage = midpointRepository.findAllWithPerspective(pageable);
-        long totalRecords = midpointSubstanceFactorPage.getTotalElements() / 3;
+        long totalRecords = midpointSubstanceFactorPage.getTotalElements();
 
         int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+
         if (currentPage > totalPages) {
             throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("currentPage", MessageConstants.CURRENT_PAGE_EXCEED_TOTAL_PAGES));
         }

@@ -13,12 +13,7 @@ public interface MidpointRepository extends JpaRepository<MidpointImpactCharacte
     List<MidpointImpactCharacterizationFactors> findAllByStatus(boolean status);
 
     @Query(value = QueryStrings.FIND_MIDPOINT_SUBSTANCE_FACTORS_WITH_PERSPECTIVES,
-            countQuery = "SELECT COUNT(*) FROM emission_substances es " +
-                    "JOIN midpoint_impact_characterization_factors micf ON micf.emission_substances_id = es.id " +
-                    "JOIN impact_method_category imc ON imc.id = micf.impact_method_category_id " +
-                    "JOIN life_cycle_impact_assessment_method lciam ON lciam.id = imc.life_cycle_impact_assessment_method_id " +
-                    "JOIN perspective p ON p.id = lciam.perspective_id " +
-                    "JOIN emission_compartment ec ON ec.id = micf.emission_compartment_id",
+            countQuery = QueryStrings.COUNT_MIDPOINT_SUBSTANCE_FACTORS_WITH_PERSPECTIVE,
             nativeQuery = true)
     Page<Object[]> findAllWithPerspective(Pageable pageable);
 }
