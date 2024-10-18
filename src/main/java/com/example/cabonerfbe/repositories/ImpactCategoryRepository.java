@@ -1,6 +1,6 @@
 package com.example.cabonerfbe.repositories;
 
-import com.example.cabonerfbe.enums.QueryConstants;
+import com.example.cabonerfbe.enums.QueryStrings;
 import com.example.cabonerfbe.models.ImpactCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +15,6 @@ public interface ImpactCategoryRepository extends JpaRepository<ImpactCategory,L
     ImpactCategory findByName(String name);
 
     List<ImpactCategory> findAllByStatus(boolean status);
-    @Query(QueryConstants.FIND_CATEGORY_BY_IMPACT_METHOD_ID)
+    @Query(QueryStrings.FIND_CATEGORY_BY_IMPACT_METHOD_ID)
     List<ImpactCategory> findAllByImpactMethodId(@Param("methodId") long methodId);
 }

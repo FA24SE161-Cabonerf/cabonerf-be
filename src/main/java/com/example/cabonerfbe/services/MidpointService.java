@@ -1,10 +1,15 @@
 package com.example.cabonerfbe.services;
 
-import com.example.cabonerfbe.dto.MidpointImpactCharacterizationFactorsDto;
+import com.example.cabonerfbe.dto.PageList;
+import com.example.cabonerfbe.request.PaginationRequest;
+import com.example.cabonerfbe.response.MidpointImpactCharacterizationFactorsResponse;
+import com.example.cabonerfbe.response.MidpointSubstanceFactorsResponse;
 
 import java.util.List;
 
 public interface MidpointService {
-    List<MidpointImpactCharacterizationFactorsDto> getAllImpactCharacterizationFactors();
-    MidpointImpactCharacterizationFactorsDto getImpactCharacterizationFactorById(Long id);
+    List<MidpointImpactCharacterizationFactorsResponse> getAllMidpointFactors();
+    MidpointImpactCharacterizationFactorsResponse getMidpointFactorById(Long id);
+
+    PageList<MidpointSubstanceFactorsResponse> getAllMidpointFactorsAdmin(PaginationRequest request);
 }

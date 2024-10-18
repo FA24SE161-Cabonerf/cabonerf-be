@@ -67,4 +67,9 @@ public class API_PARAMS {
     public static final String UNIT = "/units";
     public static final String UNIT_BY_ID = "/{id}";
 
+    /************************
+     *      ADMIN APIs      *
+     ************************/
+    public static final String ADMIN = "/admin";
+
 }
