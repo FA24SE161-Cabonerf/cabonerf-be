@@ -43,14 +43,14 @@ public class AuthenticateController {
     }
 
     @PostMapping(API_PARAMS.LOGOUT)
-    public ResponseEntity<ResponseObject> logout(@RequestHeader(value = "Authorization",required = true) String accessToken,@Valid @RequestBody(required = true) LogoutRequest logoutRequest){
+    public ResponseEntity<ResponseObject> logout(@RequestHeader(value = "x-user-id",required = true) String userId,@Valid @RequestBody(required = true) LogoutRequest logoutRequest){
         return ResponseEntity.ok().body(
-                authenticationService.logout(logoutRequest,accessToken)
+                authenticationService.logout(logoutRequest,userId)
         );
     }
 
     @PostMapping(API_PARAMS.EMAIL_VERIFY)
-    public ResponseEntity<ResponseObject> logout(@Valid @RequestBody(required = true) VerifyEmailRequest verifyEmailRequest){
+    public ResponseEntity<ResponseObject> verify(@Valid @RequestBody(required = true) VerifyEmailRequest verifyEmailRequest){
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Verify email successfully.", authenticationService.verifyEmail(verifyEmailRequest))
         );

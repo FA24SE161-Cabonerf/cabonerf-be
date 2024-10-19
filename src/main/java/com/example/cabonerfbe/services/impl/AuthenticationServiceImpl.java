@@ -78,14 +78,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (!isAuthenticated) {
             throw CustomExceptions.unauthorized(MessageConstants.EMAIL_PASSWORD_WRONG, Map.of(PASSWORD_FIELD, MessageConstants.EMAIL_PASSWORD_WRONG));
         }
-
         String accessToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
         saveRefreshToken(refreshToken, user);
 
         return LoginResponse.builder()
-                .access_token(accessToken)
+//                .access_token(accessToken)
                 .refresh_token(refreshToken)
                 .user(UserConverter.INSTANCE.fromUserToUserDto(user))
                 .build();
@@ -107,8 +106,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .fullName(request.getFullName())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .userStatus(statusRepository.findById(1L).get())
-                .userVerifyStatus(userVerifyStatusRepository.findById(1L).get())
-                .role(roleRepository.findById(3L).get())
+                .userVerifyStatus(userVerifyStatusRepository.findById(2L).get())
+                .role(roleRepository.findById(4L).get())
                 .subscription(subscriptionTypeRepository.findById(1L).get())
                 .status(true)
                 .build();
@@ -123,6 +122,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 //            emailService.sendVerifyRegisterEmail(saved.get().getEmail(),token.getToken());
         }
+        var gatewayToken = jwtService.generateGatewayToken();
         var accessToken = jwtService.generateToken(saved.get());
         var refreshToken = jwtService.generateRefreshToken(saved.get());
 
@@ -130,7 +130,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         saveRefreshToken(refreshToken, user);
 
         return RegisterResponse.builder()
-                .access_token(accessToken)
+//                .access_token(accessToken)
                 .refresh_token(refreshToken)
                 .user(UserConverter.INSTANCE.fromUserToUserDto(saved.get()))
                 .build();
@@ -146,21 +146,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         return AuthenticationResponse.builder()
-                .access_token(jwtService.generateToken(user))
+//                .access_token(jwtService.generateToken(user))
                 .refresh_token(rotateRefreshToken(clientToken, user))
                 .build();
     }
 
     @Override
-    public ResponseObject logout(LogoutRequest request, String access_token) {
+    public ResponseObject logout(LogoutRequest request, String userId) {
 
-        if (access_token != null && access_token.startsWith("Bearer ") && access_token.length() > 7) {
-            access_token = access_token.substring(7);
-        } else if (access_token.isEmpty()) {
-            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token is empty"));
-        } else {
-            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Invalid access token"));
-        }
+        long user_id = Long.parseLong(userId);
         String refresh_token = "";
 
         refresh_token = request.getRefreshToken().substring(7);
@@ -169,21 +163,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } catch (JwtException e) {
             throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token format is wrong"));
         }
-        try {
-            if (jwtService.isTokenExpired(access_token, Constants.TOKEN_TYPE_ACCESS)) {
-                throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token is expired"));
-            }
-        } catch (Exception e) {
-            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token is expired"));
-        }
         Optional<RefreshToken> _refresh_token = refreshTokenRepository.findByToken(refresh_token);
         var user = userRepository.findById(_refresh_token.get().getUsers().getId()).get();
-        try {
-            if (!jwtService.isTokenValid(access_token, user, "access")) {
-                throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token not valid"));
-            }
-        } catch (Exception e) {
-            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token not valid"));
+        if(user.getId() != user_id) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token does not belong to user with id " + userId));
         }
         try {
             if (jwtService.isTokenExpired(refresh_token, "refresh")) {
@@ -253,7 +236,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         userRepository.save(user);
         return LoginResponse.builder()
-                .access_token(access_token)
+//                .access_token(access_token)
                 .refresh_token(refresh_token)
                 .user(UserConverter.INSTANCE.fromUserToUserDto(user))
                 .build();
