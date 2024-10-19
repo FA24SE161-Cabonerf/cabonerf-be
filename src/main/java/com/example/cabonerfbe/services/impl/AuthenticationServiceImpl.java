@@ -155,15 +155,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public ResponseObject logout(LogoutRequest request, String access_token) {
+    public ResponseObject logout(LogoutRequest request, String userId) {
 
-        if (access_token != null && access_token.startsWith("Bearer ") && access_token.length() > 7) {
-            access_token = access_token.substring(7);
-        } else if (access_token.isEmpty()) {
-            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token is empty"));
-        } else {
-            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Invalid access token"));
-        }
+        long user_id = Long.parseLong(userId);
         String refresh_token = "";
 
         refresh_token = request.getRefreshToken().substring(7);
@@ -172,21 +166,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } catch (JwtException e) {
             throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token format is wrong"));
         }
-        try {
-            if (jwtService.isTokenExpired(access_token, Constants.TOKEN_TYPE_ACCESS)) {
-                throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token is expired"));
-            }
-        } catch (Exception e) {
-            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token is expired"));
-        }
         Optional<RefreshToken> _refresh_token = refreshTokenRepository.findByToken(refresh_token);
         var user = userRepository.findById(_refresh_token.get().getUsers().getId()).get();
-        try {
-            if (!jwtService.isTokenValid(access_token, user, "access")) {
-                throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token not valid"));
-            }
-        } catch (Exception e) {
-            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", "Access token not valid"));
+        if(user.getId() != user_id) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token does not belong to user with id " + userId));
         }
         try {
             if (jwtService.isTokenExpired(refresh_token, "refresh")) {

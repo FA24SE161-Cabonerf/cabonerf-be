@@ -167,6 +167,9 @@ public class JwtService {
             case Constants.TOKEN_TYPE_FORGOT_PASSWORD:
                 secretKey = forgotPasswordTokenSecretKey;
                 break;
+            case Constants.TOKEN_TYPE_GATEWAY:
+                secretKey = gatewayTokenSecretKey;
+                break;
             default:
                 throw new IllegalArgumentException("Unknown token type: " + tokenType);
         }
