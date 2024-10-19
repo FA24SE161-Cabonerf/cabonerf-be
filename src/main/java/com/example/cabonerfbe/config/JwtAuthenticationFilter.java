@@ -97,7 +97,7 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
 
             // Giải mã và lấy email người dùng từ token
             try {
-                // Lấy email từ token, kiểm tra token từ Gateway
+                // Kiểm tra token từ Gateway
                 service_id = jwtService.extractUsername(token, Constants.TOKEN_TYPE_GATEWAY);
 
                 // Kiểm tra tính hợp lệ của token từ client đến Gateway
