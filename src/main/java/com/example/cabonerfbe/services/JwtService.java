@@ -24,7 +24,7 @@ import java.util.function.Function;
 @Component
 @RequiredArgsConstructor
 public class JwtService {
-    private final Dotenv dotenv = Dotenv.load();
+//    private final Dotenv dotenv = Dotenv.load();
 
     @Value("${app.access_token_secret_key}")
     private String accessTokenSecretKey;
