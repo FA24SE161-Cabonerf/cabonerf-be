@@ -78,7 +78,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (!isAuthenticated) {
             throw CustomExceptions.unauthorized(MessageConstants.EMAIL_PASSWORD_WRONG, Map.of(PASSWORD_FIELD, MessageConstants.EMAIL_PASSWORD_WRONG));
         }
-
+        String gatewayToken = jwtService.generateGatewayToken();
         String accessToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
@@ -87,6 +87,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return LoginResponse.builder()
                 .access_token(accessToken)
                 .refresh_token(refreshToken)
+                .gateway_token(gatewayToken)
                 .user(UserConverter.INSTANCE.fromUserToUserDto(user))
                 .build();
     }
@@ -107,8 +108,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .fullName(request.getFullName())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .userStatus(statusRepository.findById(1L).get())
-                .userVerifyStatus(userVerifyStatusRepository.findById(1L).get())
-                .role(roleRepository.findById(3L).get())
+                .userVerifyStatus(userVerifyStatusRepository.findById(2L).get())
+                .role(roleRepository.findById(4L).get())
                 .subscription(subscriptionTypeRepository.findById(1L).get())
                 .status(true)
                 .build();
@@ -123,6 +124,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 //            emailService.sendVerifyRegisterEmail(saved.get().getEmail(),token.getToken());
         }
+        var gatewayToken = jwtService.generateGatewayToken();
         var accessToken = jwtService.generateToken(saved.get());
         var refreshToken = jwtService.generateRefreshToken(saved.get());
 
@@ -130,6 +132,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         saveRefreshToken(refreshToken, user);
 
         return RegisterResponse.builder()
+                .gateway_token(gatewayToken)
                 .access_token(accessToken)
                 .refresh_token(refreshToken)
                 .user(UserConverter.INSTANCE.fromUserToUserDto(saved.get()))
