@@ -19,7 +19,6 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 
 @Component
@@ -39,15 +38,31 @@ public class JwtService {
     @Value("${app.forgot_password_token_secret_key}")
     private String forgotPasswordTokenSecretKey;
 
-    private final String gatewayTokenSecretKey = dotenv.get("CLIENT_GATEWAY_SECRET_KEY");
+//    private final String gatewayTokenSecretKey = dotenv.get("CLIENT_GATEWAY_SECRET_KEY");
+//
+//    private final String mainIdServiceKey = dotenv.get("MAIN_SERVICE_ID_KEY");
+//
+//    private final long ACCESS_TOKEN_EXPIRATION = Long.parseLong(Objects.requireNonNull(dotenv.get("ACCESS_TOKEN_EXPIRATION")));
+//    private final long REFRESH_TOKEN_EXPIRATION = Long.parseLong(Objects.requireNonNull(dotenv.get("REFRESH_TOKEN_EXPIRATION")));
+//    private final long EMAIL_VERIFY_TOKEN_EXPIRATION = Long.parseLong(Objects.requireNonNull(dotenv.get("EMAIL_VERIFY_TOKEN_EXPIRATION")));
+//    private final long FORGOT_EXPIRATION = Long.parseLong(Objects.requireNonNull(dotenv.get("FORGOT_TOKEN_EXPIRATION")));
+//    private final long GATEWAY_TOKEN_EXPIRATION = Long.parseLong(Objects.requireNonNull(dotenv.get("GATEWAY_TOKEN_EXPIRATION")));
 
-    private final String mainIdServiceKey = dotenv.get("MAIN_SERVICE_ID_KEY");
+    @Value("${CLIENT_GATEWAY_SECRET_KEY}")
+    private String clientGatewaySecretKey;
+    @Value("${MAIN_SERVICE_ID_KEY}")
+    private String mainServiceIdKey;
 
-    private final long ACCESS_TOKEN_EXPIRATION = Long.parseLong(Objects.requireNonNull(dotenv.get("ACCESS_TOKEN_EXPIRATION")));
-    private final long REFRESH_TOKEN_EXPIRATION = Long.parseLong(Objects.requireNonNull(dotenv.get("REFRESH_TOKEN_EXPIRATION")));
-    private final long EMAIL_VERIFY_TOKEN_EXPIRATION = Long.parseLong(Objects.requireNonNull(dotenv.get("EMAIL_VERIFY_TOKEN_EXPIRATION")));
-    private final long FORGOT_EXPIRATION = Long.parseLong(Objects.requireNonNull(dotenv.get("FORGOT_TOKEN_EXPIRATION")));
-    private final long GATEWAY_TOKEN_EXPIRATION = Long.parseLong(Objects.requireNonNull(dotenv.get("GATEWAY_TOKEN_EXPIRATION")));
+    @Value("${ACCESS_TOKEN_EXPIRATION}")
+    private long ACCESS_TOKEN_EXPIRATION;
+    @Value("${REFRESH_TOKEN_EXPIRATION}")
+    private long REFRESH_TOKEN_EXPIRATION;
+    @Value("${EMAIL_VERIFY_TOKEN_EXPIRATION}")
+    private long EMAIL_VERIFY_TOKEN_EXPIRATION;
+    @Value("${FORGOT_TOKEN_EXPIRATION}")
+    private long FORGOT_EXPIRATION;
+    @Value("${GATEWAY_TOKEN_EXPIRATION}")
+    private long GATEWAY_TOKEN_EXPIRATION;
 
     @Autowired
     UserRepository userRepository;
@@ -78,7 +93,7 @@ public class JwtService {
     }
 
     public String generateGatewayToken() {
-        return generateGatewayToken(gatewayTokenSecretKey, GATEWAY_TOKEN_EXPIRATION);
+        return generateGatewayToken(clientGatewaySecretKey, GATEWAY_TOKEN_EXPIRATION);
     }
 
     private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, String secretKey, long expiration) {
@@ -117,7 +132,7 @@ public class JwtService {
         private String generateGatewayToken(String secretKey, long expiration) {
             return Jwts
                     .builder()
-                    .claim("service_id",mainIdServiceKey)
+                    .claim("service_id", mainServiceIdKey)
                     .setIssuedAt(new Date(System.currentTimeMillis()))
                     .setExpiration(new Date(System.currentTimeMillis() + expiration))
                     .signWith(SignatureAlgorithm.HS256, secretKey)
@@ -132,7 +147,7 @@ public class JwtService {
 
     public boolean isGatewayTokenValid(String token, String tokenType) {
         final String service_id = extractUsername(token, tokenType);
-        return service_id.equals(mainIdServiceKey);
+        return service_id.equals(mainServiceIdKey);
     }
 
     public boolean isTokenExpired(String token, String tokenType) {
@@ -168,7 +183,7 @@ public class JwtService {
                 secretKey = forgotPasswordTokenSecretKey;
                 break;
             case Constants.TOKEN_TYPE_GATEWAY:
-                secretKey = gatewayTokenSecretKey;
+                secretKey = clientGatewaySecretKey;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown token type: " + tokenType);
