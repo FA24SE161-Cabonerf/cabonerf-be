@@ -64,6 +64,7 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
         }
         if(!errorData.isEmpty()){
             sendErrorResponse(response, errorData);
+            return;
         }
         int user_id = Integer.parseInt(userId);
         int user_role = Integer.parseInt(userRole);
@@ -73,13 +74,16 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
             switch (user_active){
                 case 1:
                     errorData.put("userVerifyActive", "Email has not been verified");
+                    break;
                 case 3:
                     errorData.put("userVerifyActive", "Email has suspended");
+                    break;
             }
         }
 
         if(!errorData.isEmpty()){
             sendErrorResponse(response, errorData);
+            return;
         }
 
         try {
@@ -109,17 +113,8 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
             } catch (Exception e) {
                 // Bắt lỗi và trả về response hợp lý khi JWT không hợp lệ
-                response.setStatus(422);
-                response.setContentType("application/json");
-
-                String jsonResponse = "{"
-                        + "\"status\" : \"Error\","
-                        + "\"message\": \"Error\","
-                        + "\"data\": {\"accessToken\":\"Gateway token is valid\"}"
-                        + "}";
-
-                response.getWriter().write(jsonResponse);
-                response.getWriter().flush();
+                errorData.put("gatewayToken", "Gateway token is valid");
+                sendErrorResponse(response, errorData);
             }
 
 
