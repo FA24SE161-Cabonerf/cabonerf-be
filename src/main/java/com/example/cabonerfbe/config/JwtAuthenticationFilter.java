@@ -38,36 +38,41 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-
-//        final String userId = request.getHeader("x-user-id");
-//        final String userRole = request.getHeader("x-user-role");
-//        final String userActive = request.getHeader("x-user-active");
+        String requestURI = request.getRequestURI();
+        if (requestURI.equals("/register") || requestURI.equals("/login")) {
+            // Cho phép tiếp tục xử lý mà không qua filter
+            filterChain.doFilter(request, response);
+            return;
+        }
+        final String userId = request.getHeader("x-user-id");
+        final String userRole = request.getHeader("x-user-role");
+        final String userActive = request.getHeader("x-user-active");
         final String gateway_token = request.getHeader("gatewayToken");
         final String token;
         final String service_id;
 
-//        if(!isNumeric(userId)){
-//            sendErrorResponse(response,"User Id not valid");
-//        }
-//        if(!isNumeric(userRole)){
-//            sendErrorResponse(response,"User role not valid");
-//        }
-//        if(!isNumeric(userActive)){
-//            sendErrorResponse(response,"User verify status not valid");
-//        }
-//
-//        int user_id = Integer.parseInt(userId);
-//        int user_role = Integer.parseInt(userRole);
-//        int user_active = Integer.parseInt(userActive);
-//
-//        if(user_active != 2){
-//            switch (user_active){
-//                case 1:
-//                    sendErrorResponse(response,"Email has not been verified");
-//                case 2:
-//                    sendErrorResponse(response,"Email has suspended");
-//            }
-//        }
+        if(!isNumeric(userId)){
+            sendErrorResponse(response,"User Id not valid");
+        }
+        if(!isNumeric(userRole)){
+            sendErrorResponse(response,"User role not valid");
+        }
+        if(!isNumeric(userActive)){
+            sendErrorResponse(response,"User verify status not valid");
+        }
+
+        int user_id = Integer.parseInt(userId);
+        int user_role = Integer.parseInt(userRole);
+        int user_active = Integer.parseInt(userActive);
+
+        if(user_active != 2){
+            switch (user_active){
+                case 1:
+                    sendErrorResponse(response,"Email has not been verified");
+                case 2:
+                    sendErrorResponse(response,"Email has suspended");
+            }
+        }
 
 
 
