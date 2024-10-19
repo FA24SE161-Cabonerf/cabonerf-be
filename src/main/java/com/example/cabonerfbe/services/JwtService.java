@@ -52,7 +52,8 @@ public class JwtService {
     private String clientGatewaySecretKey;
     @Value("${MAIN_SERVICE_ID_KEY}")
     private String mainServiceIdKey;
-
+    @Value("${GATEWAY_SERVICE_SECRET_KEY}")
+    private String gatewayServiceSecretKey;
     @Value("${ACCESS_TOKEN_EXPIRATION}")
     private long ACCESS_TOKEN_EXPIRATION;
     @Value("${REFRESH_TOKEN_EXPIRATION}")
@@ -184,6 +185,9 @@ public class JwtService {
                 break;
             case Constants.TOKEN_TYPE_GATEWAY:
                 secretKey = clientGatewaySecretKey;
+                break;
+            case Constants.TOKEN_TYPE_SERVICE:
+                secretKey = gatewayServiceSecretKey;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown token type: " + tokenType);
