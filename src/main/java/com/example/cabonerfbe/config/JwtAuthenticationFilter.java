@@ -88,7 +88,10 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
                 // Kiểm tra tính hợp lệ của token từ client đến Gateway
                 if (service_id != null ) {
                     // Nếu token hợp lệ, chuyển đến token tiếp theo giữa Gateway và Microservice
-                    jwtService.isGatewayTokenValid(token, Constants.TOKEN_TYPE_GATEWAY);
+
+                    if(!jwtService.isGatewayTokenValid(token, Constants.TOKEN_TYPE_GATEWAY)){
+                        sendErrorResponse(response,"Gateway token is valid");
+                    }
                 }
 
                 // Cho phép tiếp tục xử lý chuỗi lọc
@@ -101,7 +104,7 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
                 String jsonResponse = "{"
                         + "\"status\" : \"Error\","
                         + "\"message\": \"Error\","
-                        + "\"data\": {\"accessToken\":\"Gateway token format is wrong\"}"
+                        + "\"data\": {\"accessToken\":\"Gateway token is valid\"}"
                         + "}";
 
                 response.getWriter().write(jsonResponse);
