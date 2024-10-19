@@ -84,7 +84,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         saveRefreshToken(refreshToken, user);
 
         return LoginResponse.builder()
-                .access_token(accessToken)
+//                .access_token(accessToken)
                 .refresh_token(refreshToken)
                 .user(UserConverter.INSTANCE.fromUserToUserDto(user))
                 .build();
@@ -130,7 +130,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         saveRefreshToken(refreshToken, user);
 
         return RegisterResponse.builder()
-                .access_token(accessToken)
+//                .access_token(accessToken)
                 .refresh_token(refreshToken)
                 .user(UserConverter.INSTANCE.fromUserToUserDto(saved.get()))
                 .build();
@@ -146,7 +146,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         return AuthenticationResponse.builder()
-                .access_token(jwtService.generateToken(user))
+//                .access_token(jwtService.generateToken(user))
                 .refresh_token(rotateRefreshToken(clientToken, user))
                 .build();
     }
@@ -236,7 +236,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         userRepository.save(user);
         return LoginResponse.builder()
-                .access_token(access_token)
+//                .access_token(access_token)
                 .refresh_token(refresh_token)
                 .user(UserConverter.INSTANCE.fromUserToUserDto(user))
                 .build();
