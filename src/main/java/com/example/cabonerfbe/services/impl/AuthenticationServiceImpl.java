@@ -78,7 +78,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (!isAuthenticated) {
             throw CustomExceptions.unauthorized(MessageConstants.EMAIL_PASSWORD_WRONG, Map.of(PASSWORD_FIELD, MessageConstants.EMAIL_PASSWORD_WRONG));
         }
-        String gatewayToken = jwtService.generateGatewayToken();
         String accessToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
@@ -87,7 +86,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return LoginResponse.builder()
                 .access_token(accessToken)
                 .refresh_token(refreshToken)
-                .gateway_token(gatewayToken)
                 .user(UserConverter.INSTANCE.fromUserToUserDto(user))
                 .build();
     }
@@ -132,7 +130,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         saveRefreshToken(refreshToken, user);
 
         return RegisterResponse.builder()
-                .gateway_token(gatewayToken)
                 .access_token(accessToken)
                 .refresh_token(refreshToken)
                 .user(UserConverter.INSTANCE.fromUserToUserDto(saved.get()))

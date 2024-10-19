@@ -8,7 +8,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 public class AuthenticationResponse {
-    private String gateway_token;
     private String access_token;
     private String refresh_token;
 }
