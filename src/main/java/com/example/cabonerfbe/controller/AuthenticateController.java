@@ -8,6 +8,7 @@ import com.example.cabonerfbe.services.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +18,14 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RestController
 @CrossOrigin(origins = "*")
+@Slf4j
 public class AuthenticateController {
     @Autowired
     private AuthenticationService authenticationService;
 
     @PostMapping(API_PARAMS.LOGIN_BY_EMAIL)
     public ResponseEntity<ResponseObject> loginByEmail(@Valid @RequestBody LoginByEmailRequest request) {
+        log.info("Start loginByEmail. request: {}", request);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Login successfully", authenticationService.loginByEmail(request))
         );
@@ -30,6 +33,7 @@ public class AuthenticateController {
 
     @PostMapping(API_PARAMS.REGISTER)
     public ResponseEntity<ResponseObject> register(@Valid @RequestBody RegisterRequest request) {
+        log.info("Start register. request: {}", request);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Register successfully", authenticationService.register(request))
         );
@@ -37,6 +41,7 @@ public class AuthenticateController {
 
     @PostMapping(API_PARAMS.REFRESH_TOKEN)
     public ResponseEntity<ResponseObject> refreshToken(@RequestBody RefreshTokenRequest request){
+        log.info("Start refreshToken. request: {}", request);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Refresh token successfully.", authenticationService.refreshToken(request))
         );
@@ -44,6 +49,7 @@ public class AuthenticateController {
 
     @PostMapping(API_PARAMS.LOGOUT)
     public ResponseEntity<ResponseObject> logout(@RequestHeader(value = "Authorization",required = true) String accessToken,@Valid @RequestBody(required = true) LogoutRequest logoutRequest){
+        log.info("Start logout. request: {}, {}", accessToken, logoutRequest);
         return ResponseEntity.ok().body(
                 authenticationService.logout(logoutRequest,accessToken)
         );

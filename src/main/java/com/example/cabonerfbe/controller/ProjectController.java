@@ -9,6 +9,7 @@ import com.example.cabonerfbe.services.ProjectService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +20,14 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RestController
 @CrossOrigin(origins = "*")
+@Slf4j
 public class ProjectController {
     @Autowired
     private ProjectService projectService;
 
     @GetMapping(API_PARAMS.GET_PROJECT_LIST_BY_METHOD_ID)
     public ResponseEntity<ResponseObject> getProjectListByMethodId(@PathVariable long id) {
+        log.info("Start getProjectListByMethodId. id: {}", id);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_LIST_SUCCESS, projectService.getProjectListByMethodId(id)
                 ));
@@ -32,6 +35,7 @@ public class ProjectController {
 
     @PostMapping()
     public ResponseEntity<ResponseObject> createProject(@Valid @RequestBody CreateProjectRequest request){
+        log.info("Start createProject. request: {}", request);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Create project success", projectService.createProject(request)
                 ));

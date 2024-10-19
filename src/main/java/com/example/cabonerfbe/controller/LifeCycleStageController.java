@@ -7,6 +7,7 @@ import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.LifeCycleStageService;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 @RestController
 @CrossOrigin(origins = "*")
+@Slf4j
 public class LifeCycleStageController {
 
     @Autowired
@@ -26,6 +28,7 @@ public class LifeCycleStageController {
 
     @GetMapping()
     public ResponseEntity<ResponseObject> getAllLifeCycleStage() {
+        log.info("Start getAllLifeCycleStage");
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get all life cycle stage success", lifeCycleStageService.getAll())
         );
