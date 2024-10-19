@@ -23,6 +23,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -50,17 +52,19 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
         final String gateway_token = request.getHeader("gatewayToken");
         final String token;
         final String service_id;
-
+        Map<String, String> errorData = new HashMap<>();
         if(!isNumeric(userId)){
-            sendErrorResponse(response,"User Id not valid");
+            errorData.put("x-user-id", "Invalid user id");
         }
         if(!isNumeric(userRole)){
-            sendErrorResponse(response,"User role not valid");
+            errorData.put("x-user-role", "Invalid user role");
         }
         if(!isNumeric(userActive)){
-            sendErrorResponse(response,"User verify status not valid");
+            errorData.put("x-user-active", "Invalid user verify active");
         }
-
+        if(!errorData.isEmpty()){
+            sendErrorResponse(response, errorData);
+        }
         int user_id = Integer.parseInt(userId);
         int user_role = Integer.parseInt(userRole);
         int user_active = Integer.parseInt(userActive);
@@ -68,13 +72,15 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
         if(user_active != 2){
             switch (user_active){
                 case 1:
-                    sendErrorResponse(response,"Email has not been verified");
-                case 2:
-                    sendErrorResponse(response,"Email has suspended");
+                    errorData.put("userVerifyActive", "Email has not been verified");
+                case 3:
+                    errorData.put("userVerifyActive", "Email has suspended");
             }
         }
 
-
+        if(!errorData.isEmpty()){
+            sendErrorResponse(response, errorData);
+        }
 
         try {
             // Kiểm tra nếu header Authorization có giá trị và bắt đầu bằng "Bearer"
@@ -95,7 +101,7 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
                     // Nếu token hợp lệ, chuyển đến token tiếp theo giữa Gateway và Microservice
 
                     if(!jwtService.isGatewayTokenValid(token, Constants.TOKEN_TYPE_GATEWAY)){
-                        sendErrorResponse(response,"Gateway token is valid");
+                        errorData.put("gatewayToken", "Gateway token is valid");
                     }
                 }
 
@@ -116,9 +122,10 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
                 response.getWriter().flush();
             }
 
+
         } catch (ExpiredJwtException e) {
             // Ném ngoại lệ CustomExceptions với thông báo lỗi và thông tin liên quan
-            sendErrorResponse(response,"Access token has expired");
+            errorData.put("gatewayToken", "Gateway token has expired");
         }
     }
 
@@ -129,20 +136,34 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
         }
         return str.matches("-?\\d+");
     }
-    private void sendErrorResponse(HttpServletResponse response, String errorMessage) throws IOException {
+    private void sendErrorResponse(HttpServletResponse response, Map<String, String> errorData) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
 
+        // Xây dựng JSON bằng cách sử dụng StringBuilder cho các trường dữ liệu lỗi
+        StringBuilder dataBuilder = new StringBuilder();
+        dataBuilder.append("\"data\": {");
+        for (Map.Entry<String, String> entry : errorData.entrySet()) {
+            dataBuilder.append("\"")
+                    .append(entry.getKey())
+                    .append("\": \"")
+                    .append(entry.getValue())
+                    .append("\",");
+        }
+        // Xóa dấu phẩy cuối cùng và đóng ngoặc
+        dataBuilder.deleteCharAt(dataBuilder.length() - 1);
+        dataBuilder.append("}");
+
+        // Tạo chuỗi JSON cuối cùng
         String jsonResponse = "{"
-                + "\"status\" : \"Error\","
-                + "\"message\": \" Error \","
-                + "\"data\": {"
-                + "\"accessToken\":\""+errorMessage+ "\""
-                + "}"
+                + "\"status\": \"Error\","
+                + "\"message\": \"Error\","
+                + dataBuilder.toString()
                 + "}";
 
         response.getWriter().write(jsonResponse);
         response.getWriter().flush();
     }
+
 
 }
