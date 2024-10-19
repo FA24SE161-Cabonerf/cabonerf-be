@@ -41,7 +41,7 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
         String requestURI = request.getRequestURI();
-        if (requestURI.equals("/register") || requestURI.equals("/login")) {
+        if (requestURI.contains("/register") || requestURI.contains("/login")) {
             // Cho phép tiếp tục xử lý mà không qua filter
             filterChain.doFilter(request, response);
             return;
