@@ -12,6 +12,7 @@ import com.example.cabonerfbe.request.PaginationRequest;
 import com.example.cabonerfbe.response.MidpointImpactCharacterizationFactorsResponse;
 import com.example.cabonerfbe.response.MidpointSubstanceFactorsResponse;
 import com.example.cabonerfbe.services.MidpointService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class MidpointServiceImpl implements MidpointService {
     @Autowired
     private MidpointRepository midpointRepository;
@@ -36,45 +38,43 @@ public class MidpointServiceImpl implements MidpointService {
 
     @Override
     public List<MidpointImpactCharacterizationFactorsResponse> getAllMidpointFactors() {
-        List<MidpointImpactCharacterizationFactors> impactCharacterizationFactors = midpointRepository.findAllByStatus(Constants.STATUS_TRUE);
-        if (impactCharacterizationFactors.isEmpty()) {
+        List<MidpointImpactCharacterizationFactors> factors  = midpointRepository.findAllByStatus(Constants.STATUS_TRUE);
+        if (factors .isEmpty()) {
             throw CustomExceptions.notFound(MessageConstants.NO_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR);
         }
 
-        return midpointConverter.fromMidpointDtoListToMidpointResponseList(midpointConverter.fromMidpointListToMidpointDtoList(impactCharacterizationFactors));
+        return midpointConverter.fromMidpointListToMidpointResponseList(factors);
 
     }
 
     @Override
     public MidpointImpactCharacterizationFactorsResponse getMidpointFactorById(Long id) {
-        MidpointImpactCharacterizationFactors impactCharacterizationFactor = midpointRepository.findById(id).orElseThrow(()
+        MidpointImpactCharacterizationFactors factor  = midpointRepository.findById(id).orElseThrow(()
                 -> CustomExceptions.notFound(MessageConstants.NO_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR)
         );
 
-        return midpointConverter.fromMidpointDtoToMidpointResponse(midpointConverter.fromMidpointToMidpointDto(impactCharacterizationFactor));
+        return midpointConverter.fromMidpointToMidpointResponse(factor);
     }
 
     @Override
     public PageList<MidpointSubstanceFactorsResponse> getAllMidpointFactorsAdmin(PaginationRequest request) {
-        int pageSize = request.getPageSize();
-        int currentPage = request.getCurrentPage();
-
-        Pageable pageable = PageRequest.of(currentPage - PAGE_INDEX_ADJUSTMENT, pageSize);
+        Pageable pageable = PageRequest.of(request.getCurrentPage() - PAGE_INDEX_ADJUSTMENT, request.getPageSize());
 
         Page<Object[]> midpointSubstanceFactorPage = midpointRepository.findAllWithPerspective(pageable);
-        long totalRecords = midpointSubstanceFactorPage.getTotalElements();
+        int totalPages = midpointSubstanceFactorPage.getTotalPages();
 
-        int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
-
-        if (currentPage > totalPages) {
+        if (request.getCurrentPage() > totalPages) {
             throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("currentPage", MessageConstants.CURRENT_PAGE_EXCEED_TOTAL_PAGES));
         }
 
+        // cái này có thể viết thành 1 converter List<> to List<> thôi. như nhau th nhma viết thế này ngầu vl =))
+        // cái nữa là dùng converter line-by-line sẽ ổn định về performance hơn là tạo 1 stream.
         List<MidpointSubstanceFactorsDto> midpointSubstanceFactorsDtoList = midpointSubstanceFactorPage.getContent().stream()
                 .map(midpointConverter::fromQueryResultsToDto)
                 .collect(Collectors.toList());
+
         PageList<MidpointSubstanceFactorsDto> midpointSubstanceFactorsDtoPageList = new PageList<>();
-        midpointSubstanceFactorsDtoPageList.setCurrentPage(currentPage);
+        midpointSubstanceFactorsDtoPageList.setCurrentPage(request.getCurrentPage());
         midpointSubstanceFactorsDtoPageList.setTotalPage(totalPages);
         midpointSubstanceFactorsDtoPageList.setListResult(midpointSubstanceFactorsDtoList);
         return midpointConverter.fromMidpointSubstanceFactorPageListDtoToMidpointSubstanceFactorPageListResponse(midpointSubstanceFactorsDtoPageList);
