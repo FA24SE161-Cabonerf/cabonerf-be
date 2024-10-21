@@ -43,7 +43,9 @@ public class UserServiceImpl implements UserService {
         long user_id = Integer.parseInt(userId);
         var user = userRepository.findById(user_id)
                 .orElseThrow(() -> CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, "User not exist"));
-
+        if(user.getUserStatus().getId() == 3){
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR,"User is banned");
+        }
         UserProfileDto userProfileDtoDto = userConverter.fromUserToUserProfileDto(user);
 
         return userConverter.fromUserProfileDtoToGetProfileResponse(userProfileDtoDto);
