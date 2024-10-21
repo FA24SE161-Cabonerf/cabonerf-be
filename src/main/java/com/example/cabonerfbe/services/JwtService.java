@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Date;
@@ -97,38 +98,7 @@ public class JwtService {
         return generateGatewayToken(clientGatewaySecretKey, GATEWAY_TOKEN_EXPIRATION);
     }
 
-    private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, String secretKey, long expiration) {
-        int token_type = 0;
-        switch (secretKey) {
-            case Constants.TOKEN_TYPE_ACCESS:
-                token_type = 1;
-                break;
-            case Constants.TOKEN_TYPE_REFRESH:
-                token_type = 2;
-                break;
-            case Constants.TOKEN_TYPE_EMAIL_VERIFY:
-                token_type = 3;
-                break;
-            case Constants.TOKEN_TYPE_FORGOT_PASSWORD:
-                token_type = 4;
-                break;
-        }
-        var username = userRepository.findByEmail(userDetails.getUsername()).get();
 
-        UserVerifyStatusDto verifyStatusDto = UserVerifyStatusConverter.INSTANCE.fromUserVerifyStatusToUserVerifyStatusDto(username.getUserVerifyStatus());
-        extraClaims.put("user_verify_status", verifyStatusDto.getId());
-        extraClaims.put("user_id", username.getId());
-        extraClaims.put("role_id", username.getRole().getId());
-        extraClaims.put("token_type", token_type);
-        return Jwts
-                .builder()
-                .setClaims(extraClaims)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSignInKey(secretKey), SignatureAlgorithm.HS256)
-                .setHeaderParam("typ", "JWT")
-                .compact();
-    }
 
         private String generateGatewayToken(String secretKey, long expiration) {
             return Jwts
@@ -168,24 +138,78 @@ public class JwtService {
                 .getBody();
     }
 
-    private Key getSignInKey(String tokenType) {
-        String secretKey;
+
+    // Phương thức tạo token với các loại token khác nhau
+    private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, String tokenType, long expiration) {
+        int token_type_id = 0;
+
+        // Xác định loại token
         switch (tokenType) {
-            case Constants.TOKEN_TYPE_ACCESS, Constants.TOKEN_TYPE_REFRESH:
-                secretKey = clientGatewaySecretKey;
+            case Constants.TOKEN_TYPE_ACCESS:
+                token_type_id = 1;
+                break;
+            case Constants.TOKEN_TYPE_REFRESH:
+                token_type_id = 2;
                 break;
             case Constants.TOKEN_TYPE_EMAIL_VERIFY:
-                secretKey = emailVerifyTokenSecretKey;
+                token_type_id = 3;
                 break;
             case Constants.TOKEN_TYPE_FORGOT_PASSWORD:
-                secretKey = forgotPasswordTokenSecretKey;
-                break;
-            case Constants.TOKEN_TYPE_SERVICE:
-                secretKey = gatewayServiceSecretKey;
+                token_type_id = 4;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown token type: " + tokenType);
         }
+
+        // Lấy thông tin người dùng từ cơ sở dữ liệu
+        var user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(
+                () -> new UsernameNotFoundException("User not found"));
+
+        // Chuyển đổi trạng thái verify của người dùng
+        UserVerifyStatusDto verifyStatusDto = UserVerifyStatusConverter.INSTANCE
+                .fromUserVerifyStatusToUserVerifyStatusDto(user.getUserVerifyStatus());
+
+        // Thêm các claim vào token
+        extraClaims.put("user_verify_status", verifyStatusDto.getId());
+        extraClaims.put("user_id", user.getId());
+        extraClaims.put("role_id", user.getRole().getId());
+        extraClaims.put("token_type", token_type_id);
+
+        // Tạo JWT token
+        return Jwts
+                .builder()
+                .setClaims(extraClaims)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSignInKey(tokenType), SignatureAlgorithm.HS256) // Sử dụng key từ token type
+                .setHeaderParam("typ", "JWT")
+                .compact();
+    }
+
+    // Lấy key bí mật tương ứng dựa trên loại token
+    private Key getSignInKey(String tokenType) {
+        String secretKey;
+
+        // Xác định bí mật mã hóa dựa trên loại token
+        switch (tokenType) {
+            case Constants.TOKEN_TYPE_ACCESS:
+            case Constants.TOKEN_TYPE_REFRESH:
+                secretKey = clientGatewaySecretKey;  // Key cho ACCESS và REFRESH
+                break;
+            case Constants.TOKEN_TYPE_EMAIL_VERIFY:
+                secretKey = emailVerifyTokenSecretKey;  // Key cho email verification
+                break;
+            case Constants.TOKEN_TYPE_FORGOT_PASSWORD:
+                secretKey = forgotPasswordTokenSecretKey;  // Key cho quên mật khẩu
+                break;
+            case Constants.TOKEN_TYPE_SERVICE:
+                secretKey = gatewayServiceSecretKey;  // Key cho các dịch vụ khác
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown token type: " + tokenType);
+        }
+
+        // Giải mã Base64 secret key
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
