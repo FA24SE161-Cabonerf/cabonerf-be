@@ -25,4 +25,12 @@ public class MessageConstants {
     public static final String GET_PROJECT_LIST_SUCCESS = "Get project list success";
 
     public static final String CURRENT_PAGE_EXCEED_TOTAL_PAGES = "Current page exceeds total pages.";
+    public static final String GET_ALL_UNITS_SUCCESS = "Get all units success";
+    public static final String NO_UNIT_FOUND = "No unit found";
+    public static final String ADD_UNIT_TO_UNIT_GROUP_SUCCESS = "Add unit success";
+    public static final String GET_UNIT_BY_ID_SUCCESS = "Get unit by id success";
+    public static final String UPDATE_UNIT_BY_ID_SUCCESS = "Update unit by id success";
+    public static final String DELETE_UNIT_BY_ID_SUCCESS = "Delete unit by id success";
+
+    public static final String NO_UNIT_GROUP_FOUND = "No unit group found";
 }
