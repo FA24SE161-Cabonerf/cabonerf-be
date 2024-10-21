@@ -8,11 +8,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProcessRepository extends JpaRepository<Process, Long> {
     @Query("SELECT p FROM Process p WHERE p.project.id = ?1")
-    List<Process> findAllByProjectId(long projectId);
-    @Query("SELECT p FROM Process p WHERE p.project.id = ?1")
-    Page<Process> findAllByProjectIdWithPage(long projectId, Pageable pageable);
+    List<Process> findAll(long projectId);
+    @Query("SELECT p FROM Process p WHERE p.name like ?1 AND p.project.id = ?2")
+    Optional<Process> findByName(String name,long projectId);
 }

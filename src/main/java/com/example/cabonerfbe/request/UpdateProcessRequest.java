@@ -1,7 +1,9 @@
 package com.example.cabonerfbe.request;
 
+import com.example.cabonerfbe.models.LifeCycleStage;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,13 +16,8 @@ import lombok.experimental.SuperBuilder;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateProcessRequest {
-
-    @NotEmpty(message = "Name is required.")
+public class UpdateProcessRequest {
     private String name;
     private String description;
-    @NotNull(message = "Life Cycle Stage is required.")
     private long lifeCycleStageId;
-    @NotNull(message = "Project is required.")
-    private long projectId;
 }
