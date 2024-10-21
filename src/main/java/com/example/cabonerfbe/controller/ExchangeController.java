@@ -9,6 +9,7 @@ import com.example.cabonerfbe.services.ExchangesService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RestController
 @CrossOrigin(origins = "*")
+@Slf4j
 public class ExchangeController {
 
     @Autowired
@@ -25,6 +27,7 @@ public class ExchangeController {
 
     @PostMapping(API_PARAMS.CREATE_ELEMENTARY_EXCHANGE)
     public ResponseEntity<ResponseObject> createElementaryExchange(@Valid @RequestBody CreateElementaryRequest request){
+        log.info("Start createElementaryExchange. Request: {}", request);
         return ResponseEntity.ok().body(new ResponseObject(
                 Constants.RESPONSE_STATUS_SUCCESS,"Create elementary exchanges success",exchangesService.createElementaryExchanges(request)
         ));
@@ -32,6 +35,7 @@ public class ExchangeController {
 
     @PostMapping(API_PARAMS.CREATE_PRODUCT_EXCHANGE)
     public ResponseEntity<ResponseObject> createProductExchange(@Valid @RequestBody CreateProductRequest request){
+        log.info("Start createProductExchange. Request: {}", request);
         return ResponseEntity.ok().body(new ResponseObject(
                 Constants.RESPONSE_STATUS_SUCCESS,"Create product exchanges success",exchangesService.createProductExchanges(request)
         ));

@@ -12,7 +12,6 @@ public class UnitDto {
     private String name;
     private double conversionFactor;
     private boolean isDefault;
-
     private UnitGroupDto unitGroup;
 
 }
