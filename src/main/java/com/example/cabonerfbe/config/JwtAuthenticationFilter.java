@@ -88,15 +88,16 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
 
         try {
             // Kiểm tra nếu header Authorization có giá trị và bắt đầu bằng "Bearer"
-            if (gateway_token == null || !gateway_token.startsWith("Bearer ")) {
-                filterChain.doFilter(request, response);
+            if (gateway_token.isEmpty()) {
+                errorData.put("gatewayToken", "Gateway token is valid");
+                sendErrorResponse(response, errorData);
                 return;
             }
 
-            token = gateway_token.substring(7);
+            token = gateway_token;
 
             try {
-                service_id = jwtService.extractUsername(token, Constants.TOKEN_TYPE_SERVICE);
+                service_id = jwtService.extractServiceId(token);
 
                 if (service_id != null ) {
 

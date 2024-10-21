@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -73,6 +75,10 @@ public class JwtService {
         return extractClaim(token, tokenType, Claims::getSubject);
     }
 
+    public String extractServiceId(String token) {
+        return extractAllClaims(token,Constants.TOKEN_TYPE_GATEWAY).get("id", String.class);
+    }
+
     public <T> T extractClaim(String token, String tokenType, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token, tokenType);
         return claimsResolver.apply(claims);
@@ -117,7 +123,7 @@ public class JwtService {
     }
 
     public boolean isGatewayTokenValid(String token, String tokenType) {
-        final String service_id = extractUsername(token, tokenType);
+        final String service_id = extractServiceId(token).trim();
         return service_id.equals(mainServiceIdKey);
     }
 
@@ -190,7 +196,6 @@ public class JwtService {
     private Key getSignInKey(String tokenType) {
         String secretKey;
 
-        // Xác định bí mật mã hóa dựa trên loại token
         switch (tokenType) {
             case Constants.TOKEN_TYPE_ACCESS:
             case Constants.TOKEN_TYPE_REFRESH:
