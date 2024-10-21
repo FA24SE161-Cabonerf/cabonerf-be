@@ -210,7 +210,6 @@ public class JwtService {
         }
 
         // Giải mã Base64 secret key
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 }
