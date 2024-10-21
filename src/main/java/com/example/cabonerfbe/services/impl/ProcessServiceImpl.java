@@ -12,6 +12,8 @@ import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.models.ProcessImpactValue;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessRequest;
+import com.example.cabonerfbe.request.GetAllProcessRequest;
+import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.CreateProcessResponse;
 import com.example.cabonerfbe.services.ProcessService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,9 +48,14 @@ public class ProcessServiceImpl implements ProcessService {
     private ExchangesRepository exchangesRepository;
     @Autowired
     private ExchangesConverter exchangesConverter;
+    @Autowired
+    private LifeCycleImpactAssessmentMethodRepository lifeCycleImpactAssessmentMethodRepository;
     @Override
     public CreateProcessResponse createProcess(CreateProcessRequest request) {
         Process process = new Process();
+        if(processRepository.findByName(request.getName(),request.getProjectId()).isPresent()){
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Project name already exist in project");
+        }
         process.setName(request.getName());
         process.setDescription(request.getDescription());
         if(lifeCycleStageRepository.findById(request.getLifeCycleStageId()).isEmpty()){
@@ -104,76 +111,50 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public PageList<CreateProcessResponse> getAllProcesses(int currentPage, int pageSize, long projectId) {
-        if (projectId == 0) {
-            if (currentPage < 1 || pageSize < 1) {
-                List<CreateProcessResponse> list = getAllProcessDefault();
-                PageList<CreateProcessResponse> pageList = new PageList<>();
-                pageList.setCurrentPage(1);
-                pageList.setTotalPage(1);
-                pageList.setListResult(list);
-                return pageList;
-            }
-
-            List<CreateProcessResponse> pagedList = getAllProcess(currentPage, pageSize);
-            int totalRecords = pagedList.size();
-
-            int totalPage = (int) Math.ceil((double) processRepository.findAll().size() / pageSize);
-
-            PageList<CreateProcessResponse> pageList = new PageList<>();
-            pageList.setCurrentPage(currentPage);
-            pageList.setTotalPage(totalPage);
-            pageList.setListResult(pagedList);
-
-            return pageList;
-        }
-        if (currentPage < 1 || pageSize < 1) {
-            List<CreateProcessResponse> list = getAllProcessDefaultWithProject(projectId);
-            PageList<CreateProcessResponse> pageList = new PageList<>();
-            pageList.setCurrentPage(1);
-            pageList.setTotalPage(1);
-            pageList.setListResult(list);
-            return pageList;
+    public List<CreateProcessResponse> getAllProcesses(GetAllProcessRequest request) {
+        if(projectRepository.findById(request.getProjectId()).isEmpty()){
+            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Project not exist");
         }
 
-        List<CreateProcessResponse> pagedList = getAllProcessWithProject(currentPage, pageSize,projectId);
-        int totalRecords = pagedList.size();
+        if(lifeCycleImpactAssessmentMethodRepository.findById(request.getMethodId()).isEmpty()){
+            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Life Cycle Impact Assessment Method not exist");
+        }
 
-        int totalPage = (int) Math.ceil((double) processRepository.findAllByProjectId(projectId).size() / pageSize);
+        List<Process> processes = processRepository.findAll(request.getProjectId());
 
-        PageList<CreateProcessResponse> pageList = new PageList<>();
-        pageList.setCurrentPage(currentPage);
-        pageList.setTotalPage(totalPage);
-        pageList.setListResult(pagedList);
-
-        return pageList;
+        return buildProcessResponse(processes,request.getMethodId());
     }
 
-    private List<CreateProcessResponse> getAllProcessDefault() {
-        List<Process> processes = processRepository.findAll();
-        return buildProcessResponse(processes);
+    @Override
+    public CreateProcessResponse updateProcess(long id, UpdateProcessRequest request) {
+        if(processRepository.findById(id).isEmpty()){
+            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Process not exist");
+        }
+        Process p = processRepository.findById(id).get();
+        if(!request.getName().isEmpty()){
+            p.setName(request.getName());
+        }
+        if(!request.getDescription().isEmpty()){
+            p.setName(request.getName());
+        }
+        if(request.getLifeCycleStageId() != 0){
+            p.setLifeCycleStage(lifeCycleStageRepository.findById(request.getLifeCycleStageId()).get());
+        }
+        p = processRepository.save(p);
+        List<ProcessImpactValue> processImpactValues = processImpactValueRepository.findByProcessId(p.getId());
+        List<Exchanges> exchanges = exchangesRepository.findAllByProcess(p.getId());
+
+        return CreateProcessResponse.builder()
+                .process(processConverter.INSTANCE.fromProcessToProcessDto(p))
+                .impactValues(processImpactValueConverter.INSTANCE.fromProcessImpactValueToProcessImpactValueDto(processImpactValues))
+                .exchanges(exchangesConverter.INSTANCE.fromExchangesToExchangesDto(exchanges))
+                .build();
     }
 
-    private List<CreateProcessResponse> getAllProcess(int currentPage, int pageSize) {
-        Page<Process> processes = processRepository.findAll(PageRequest.of(currentPage - 1, pageSize));
-        return buildProcessResponse(processes.getContent());
-    }
-
-    private List<CreateProcessResponse> getAllProcessDefaultWithProject(long projectId) {
-        List<Process> processes = processRepository.findAllByProjectId(projectId);
-        return buildProcessResponse(processes);
-    }
-
-    private List<CreateProcessResponse> getAllProcessWithProject(int currentPage, int pageSize, long projectId) {
-        Pageable pageable = PageRequest.of(currentPage - 1, pageSize);
-        Page<Process> processes = processRepository.findAllByProjectIdWithPage(projectId,pageable);
-        return buildProcessResponse(processes.getContent());
-    }
-
-    private List<CreateProcessResponse> buildProcessResponse(List<Process> processes) {
+    private List<CreateProcessResponse> buildProcessResponse(List<Process> processes, long methodId) {
         List<CreateProcessResponse> responses = new ArrayList<>();
         for (Process process : processes) {
-            List<ProcessImpactValue> processImpactValues = processImpactValueRepository.findByProcessId(process.getId());
+            List<ProcessImpactValue> processImpactValues = processImpactValueRepository.findByProcessAndMethod(process.getId(),methodId);
             List<Exchanges> exchanges = exchangesRepository.findAllByProcess(process.getId());
 
             CreateProcessResponse processResponse = CreateProcessResponse.builder()

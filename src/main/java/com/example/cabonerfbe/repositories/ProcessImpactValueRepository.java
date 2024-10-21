@@ -11,4 +11,7 @@ import java.util.List;
 public interface ProcessImpactValueRepository extends JpaRepository<ProcessImpactValue, Long> {
     @Query("SELECT p FROM ProcessImpactValue p WHERE p.process.id = ?1")
     List<ProcessImpactValue> findByProcessId(long id);
+
+    @Query("SELECT p FROM ProcessImpactValue p WHERE p.process.id = ?1 AND p.impactMethodCategory.lifeCycleImpactAssessmentMethod.id = ?2")
+    List<ProcessImpactValue> findByProcessAndMethod(long id, long methodId);
 }
