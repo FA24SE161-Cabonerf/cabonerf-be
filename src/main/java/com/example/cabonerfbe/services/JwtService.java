@@ -171,20 +171,14 @@ public class JwtService {
     private Key getSignInKey(String tokenType) {
         String secretKey;
         switch (tokenType) {
-            case Constants.TOKEN_TYPE_ACCESS:
-                secretKey = accessTokenSecretKey;
-                break;
-            case Constants.TOKEN_TYPE_REFRESH:
-                secretKey = refreshTokenSecretKey;
+            case Constants.TOKEN_TYPE_ACCESS, Constants.TOKEN_TYPE_REFRESH:
+                secretKey = clientGatewaySecretKey;
                 break;
             case Constants.TOKEN_TYPE_EMAIL_VERIFY:
                 secretKey = emailVerifyTokenSecretKey;
                 break;
             case Constants.TOKEN_TYPE_FORGOT_PASSWORD:
                 secretKey = forgotPasswordTokenSecretKey;
-                break;
-            case Constants.TOKEN_TYPE_GATEWAY:
-                secretKey = clientGatewaySecretKey;
                 break;
             case Constants.TOKEN_TYPE_SERVICE:
                 secretKey = gatewayServiceSecretKey;
