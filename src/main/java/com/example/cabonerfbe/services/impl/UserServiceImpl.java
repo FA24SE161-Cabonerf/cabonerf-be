@@ -39,14 +39,10 @@ public class UserServiceImpl implements UserService {
     UserConverter userConverter = UserConverter.INSTANCE;
 
     @Override
-    public GetProfileResponse getMe(String accessToken) {
-        if (jwtService.isTokenExpired(accessToken, Constants.TOKEN_TYPE_ACCESS)) {
-            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", MessageConstants.TOKEN_EXPIRED));
-        }
-
-        String email = jwtService.extractUsername(accessToken, Constants.TOKEN_TYPE_ACCESS);
-        var user = userRepository.findByEmail(email)
-                .orElseThrow(() -> CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("accessToken", MessageConstants.INVALID_ACCESS_TOKEN)));
+    public GetProfileResponse getMe(String userId) {
+        long user_id = Integer.parseInt(userId);
+        var user = userRepository.findById(user_id)
+                .orElseThrow(() -> CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, "User not exist"));
 
         UserProfileDto userProfileDtoDto = userConverter.fromUserToUserProfileDto(user);
 
