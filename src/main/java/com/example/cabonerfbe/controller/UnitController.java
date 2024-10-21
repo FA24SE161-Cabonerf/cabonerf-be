@@ -49,7 +49,6 @@ public class UnitController {
         );
     }
 
-    // TODO sửa lại path + validate các fields
     @PostMapping(API_PARAMS.ADD_UNIT_TO_UNIT_GROUP)
     public ResponseEntity<ResponseObject> createUnitInUnitGroup(@PathVariable Long groupId, @Valid @RequestBody CreateUnitRequest request) {
         log.info("addUnitToUnitGroup: {}", request);
