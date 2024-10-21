@@ -95,31 +95,24 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
 
             token = gateway_token.substring(7);
 
-            // Giải mã và lấy email người dùng từ token
             try {
-                // Kiểm tra token từ Gateway
-                service_id = jwtService.extractUsername(token, Constants.TOKEN_TYPE_GATEWAY);
+                service_id = jwtService.extractUsername(token, Constants.TOKEN_TYPE_SERVICE);
 
-                // Kiểm tra tính hợp lệ của token từ client đến Gateway
                 if (service_id != null ) {
-                    // Nếu token hợp lệ, chuyển đến token tiếp theo giữa Gateway và Microservice
 
-                    if(!jwtService.isGatewayTokenValid(token, Constants.TOKEN_TYPE_GATEWAY)){
+                    if(!jwtService.isGatewayTokenValid(token, Constants.TOKEN_TYPE_SERVICE)){
                         errorData.put("gatewayToken", "Gateway token is valid");
                     }
                 }
 
-                // Cho phép tiếp tục xử lý chuỗi lọc
                 filterChain.doFilter(request, response);
             } catch (Exception e) {
-                // Bắt lỗi và trả về response hợp lý khi JWT không hợp lệ
                 errorData.put("gatewayToken", "Gateway token is valid");
                 sendErrorResponse(response, errorData);
             }
 
 
         } catch (ExpiredJwtException e) {
-            // Ném ngoại lệ CustomExceptions với thông báo lỗi và thông tin liên quan
             errorData.put("gatewayToken", "Gateway token has expired");
         }
     }
@@ -135,7 +128,6 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
 
-        // Xây dựng JSON bằng cách sử dụng StringBuilder cho các trường dữ liệu lỗi
         StringBuilder dataBuilder = new StringBuilder();
         dataBuilder.append("\"data\": {");
         for (Map.Entry<String, String> entry : errorData.entrySet()) {
@@ -145,11 +137,9 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
                     .append(entry.getValue())
                     .append("\",");
         }
-        // Xóa dấu phẩy cuối cùng và đóng ngoặc
         dataBuilder.deleteCharAt(dataBuilder.length() - 1);
         dataBuilder.append("}");
 
-        // Tạo chuỗi JSON cuối cùng
         String jsonResponse = "{"
                 + "\"status\": \"Error\","
                 + "\"message\": \"Error\","
