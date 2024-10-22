@@ -70,7 +70,10 @@ public class UnitServiceImpl implements UnitService {
     public UnitResponse createUnitInUnitGroup(Long groupId, CreateUnitRequest request) {
         UnitGroup unitGroup = unitGroupRepository.findById(groupId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_UNIT_GROUP_FOUND + " id: " + groupId));
-
+        if (unitGroup.getUnitGroupType().equalsIgnoreCase(Constants.UNIT_GROUP_TYPE_NORMAL) && request.getIsDefault() == Constants.IS_DEFAULT_TRUE) {
+            if (unitRepository.existsByIsDefaultAndStatusAndUnitGroup(Constants.IS_DEFAULT_TRUE, Constants.STATUS_TRUE, unitGroup))
+                throw CustomExceptions.badRequest(MessageConstants.DEFAULT_UNIT_EXIST);
+        }
         Unit newUnit = unitConverter.fromUnitRequestToUnit(request);
         newUnit.setUnitGroup(unitGroup);
 

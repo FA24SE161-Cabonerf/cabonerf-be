@@ -31,6 +31,7 @@ public class MessageConstants {
     public static final String GET_UNIT_BY_ID_SUCCESS = "Get unit by id success";
     public static final String UPDATE_UNIT_BY_ID_SUCCESS = "Update unit by id success";
     public static final String DELETE_UNIT_BY_ID_SUCCESS = "Delete unit by id success";
+    public static final String DEFAULT_UNIT_EXIST = "Default unit exist. Please check isDefault field";
 
     public static final String NO_UNIT_GROUP_FOUND = "No unit group found";
 
