@@ -27,4 +27,5 @@ public interface UnitConverter {
     };
 
     UnitResponse fromUnitToUnitResponse(Unit savedUnit);
+    List<UnitDto> fromListUnitToUnitDto(List<Unit> units);
 }

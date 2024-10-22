@@ -63,6 +63,28 @@ public class API_PARAMS {
 
 
     /************************
+     *      UNIT GROUP APIs     *
+     ************************/
+    public static final String UNIT_GROUP = "/unit-groups";
+    public static final String UNIT_GROUP_BY_ID = "/{id}";
+    public static final String CREATE_UNIT_GROUP = "/";
+    public static final String UPDATE_UNIT_GROUP_BY_ID = "/{groupId}";
+    public static final String DELETE_UNIT_GROUP_BY_ID = "/{groupId}";
+
+
+    /************************
+     *      LIFE CYCLE STAGE APIs     *
+     ************************/
+    public static final String LIFE_STAGE = "/life-cycle-stages";
+    public static final String LIFE_STAGE_BY_ID = "/{id}";
+
+    /************************
+     *      UNIT APIs     *
+     ************************/
+    public static final String UNIT = "/units";
+    public static final String UNIT_BY_ID = "/{id}";
+
+    /************************
      *      ADMIN APIs      *
      ************************/
     public static final String ADMIN = "/admin";

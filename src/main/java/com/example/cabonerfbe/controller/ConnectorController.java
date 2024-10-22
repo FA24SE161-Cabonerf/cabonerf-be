@@ -8,6 +8,7 @@ import com.example.cabonerfbe.services.ConnectorService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +18,14 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RestController
 @CrossOrigin(origins = "*")
+@Slf4j
 public class ConnectorController {
     @Autowired
     private ConnectorService service;
 
     @PostMapping()
     public ResponseEntity<ResponseObject> createConnector(@Valid @RequestBody CreateConnectorRequest request){
+        log.info("Start createConnector. request: {}", request);
         return ResponseEntity.ok().body(new ResponseObject(
                 Constants.RESPONSE_STATUS_SUCCESS,"Create connector success",service.createConnector(request)
         ));

@@ -33,4 +33,17 @@ public class MessageConstants {
     public static final String DELETE_UNIT_BY_ID_SUCCESS = "Delete unit by id success";
 
     public static final String NO_UNIT_GROUP_FOUND = "No unit group found";
+
+    public static final String GET_ALL_UNIT_GROUP_SUCCESS = "Get all unit group success";
+    public static final String GET_UNIT_GROUP_BY_ID_SUCCESS = "Get unit group by success";
+    public static final String GET_UNIT_GROUP_BY_ID_NOT_FOUND = "Unit group not exist";
+
+    public static final String GET_ALL_LIFE_STAGE_SUCCESS = "Get all life cycle stage success";
+    public static final String GET_LIFE_STAGE_BY_ID_SUCCESS = "Get life cycle stage by success";
+    public static final String GET_LIFE_STAGE_BY_ID_NOT_FOUND = "Life cycle stage not exist";
+    public static final String CREATE_UNIT_GROUP_SUCCESS = "Create unit group success";
+    public static final String UNIT_GROUP_EXIST = "Unit group exist";
+    public static final String UPDATE_UNIT_GROUP_BY_ID_SUCCESS = "Update unit group by id success";
+    public static final String DELETE_UNIT_GROUP_BY_ID_SUCCESS = "Delete unit group by id success";
+
 }

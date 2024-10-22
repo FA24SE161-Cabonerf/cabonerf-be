@@ -6,25 +6,28 @@ import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.impl.ExcelServiceImpl;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR)
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 @RestController
 @CrossOrigin(origins = "*")
+@Slf4j
 public class MidpointImpactCharacterizationFactorController {
 
     @Autowired
-    private ExcelServiceImpl service;
+    private ExcelServiceImpl excelService;
 
     @PostMapping(API_PARAMS.IMPORT_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR)
     public ResponseEntity<ResponseObject> importExcel(@RequestParam("file") MultipartFile file, @RequestParam String methodName){
+        log.info("Start importExcel");
         return ResponseEntity.ok(new ResponseObject(
-                Constants.RESPONSE_STATUS_SUCCESS,"Import success",service.readExcel(file,methodName)
+                Constants.RESPONSE_STATUS_SUCCESS,"Import success", excelService.readExcel(file,methodName)
         ));
     }
 }
