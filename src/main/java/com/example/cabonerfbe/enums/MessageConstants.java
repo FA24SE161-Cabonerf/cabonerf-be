@@ -25,6 +25,14 @@ public class MessageConstants {
     public static final String GET_PROJECT_LIST_SUCCESS = "Get project list success";
 
     public static final String CURRENT_PAGE_EXCEED_TOTAL_PAGES = "Current page exceeds total pages.";
+    public static final String GET_ALL_UNITS_SUCCESS = "Get all units success";
+    public static final String NO_UNIT_FOUND = "No unit found";
+    public static final String ADD_UNIT_TO_UNIT_GROUP_SUCCESS = "Add unit success";
+    public static final String GET_UNIT_BY_ID_SUCCESS = "Get unit by id success";
+    public static final String UPDATE_UNIT_BY_ID_SUCCESS = "Update unit by id success";
+    public static final String DELETE_UNIT_BY_ID_SUCCESS = "Delete unit by id success";
+
+    public static final String NO_UNIT_GROUP_FOUND = "No unit group found";
 
     public static final String GET_ALL_UNIT_GROUP_SUCCESS = "Get all unit group success";
     public static final String GET_UNIT_GROUP_BY_ID_SUCCESS = "Get unit group by success";
@@ -33,4 +41,9 @@ public class MessageConstants {
     public static final String GET_ALL_LIFE_STAGE_SUCCESS = "Get all life cycle stage success";
     public static final String GET_LIFE_STAGE_BY_ID_SUCCESS = "Get life cycle stage by success";
     public static final String GET_LIFE_STAGE_BY_ID_NOT_FOUND = "Life cycle stage not exist";
+    public static final String CREATE_UNIT_GROUP_SUCCESS = "Create unit group success";
+    public static final String UNIT_GROUP_EXIST = "Unit group exist";
+    public static final String UPDATE_UNIT_GROUP_BY_ID_SUCCESS = "Update unit group by id success";
+    public static final String DELETE_UNIT_GROUP_BY_ID_SUCCESS = "Delete unit group by id success";
+
 }

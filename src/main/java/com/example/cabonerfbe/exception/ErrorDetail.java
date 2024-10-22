@@ -10,7 +10,8 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ErrorDetail {
-    Object value;
     String message;
-    String path;
+    String cause;
+    String stackTrace;
 }
+

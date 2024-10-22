@@ -18,6 +18,12 @@ public interface UnitRepository extends JpaRepository<Unit, Long> {
     @Query("SELECT u FROM Unit u WHERE u.name like ?1 ")
     Unit findByNameUnit(String name);
 
+    List<Unit> findAllByStatus(boolean statusTrue);
+
+    List<Unit> findAllByStatusAndUnitGroupId(boolean status, Long unitGroupId);
+
+    Unit findByIdAndStatus(long unitId, boolean statusTrue);
+
     @Query("SELECT u FROM Unit u WHERE u.unitGroup.id = ?1")
     List<Unit> findAllByUnitGroupId(long unitGroupId);
     @Query("SELECT u FROM Unit u WHERE u.unitGroup.id = ?1")

@@ -1,109 +1,112 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.UnitConverter;
-import com.example.cabonerfbe.dto.PageList;
-import com.example.cabonerfbe.dto.UnitDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.Exchanges;
 import com.example.cabonerfbe.models.Unit;
+import com.example.cabonerfbe.models.UnitGroup;
+import com.example.cabonerfbe.repositories.UnitGroupRepository;
 import com.example.cabonerfbe.repositories.UnitRepository;
-import com.example.cabonerfbe.response.CreateProcessResponse;
+import com.example.cabonerfbe.request.CreateUnitRequest;
+import com.example.cabonerfbe.request.UpdateUnitRequest;
+import com.example.cabonerfbe.response.UnitResponse;
 import com.example.cabonerfbe.services.UnitService;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Data
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@NoArgsConstructor(force = true)
+@SuperBuilder
+@AllArgsConstructor
 public class UnitServiceImpl implements UnitService {
-
     @Autowired
     private UnitRepository unitRepository;
+
     @Autowired
-    private UnitConverter converter;
+    private UnitConverter unitConverter;
+
+    @Autowired
+    private UnitGroupRepository unitGroupRepository;
 
     @Override
-    public PageList<UnitDto> getAllUnit(int currentPage, int pageSize, long unitGroupId) {
-        if (unitGroupId == 0) {
-            if (currentPage < 1 || pageSize < 1) {
-                List<UnitDto> list = getAllUnitDefault();
-                PageList<UnitDto> pageList = new PageList<>();
-                pageList.setCurrentPage(1);
-                pageList.setTotalPage(1);
-                pageList.setListResult(list);
-                return pageList;
-            }
-
-            List<UnitDto> pagedList = getAllUnit(currentPage, pageSize);
-            int totalRecords = pagedList.size();
-
-            int totalPage = (int) Math.ceil((double) unitRepository.findAll().size() / pageSize);
-
-            PageList<UnitDto> pageList = new PageList<>();
-            pageList.setCurrentPage(currentPage);
-            pageList.setTotalPage(totalPage);
-            pageList.setListResult(pagedList);
-
-            return pageList;
+    public List<UnitResponse> getAllUnits() {
+        List<Unit> units = unitRepository.findAllByStatus(Constants.STATUS_TRUE);
+        if (units.isEmpty()) {
+            throw CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND);
         }
-        if (currentPage < 1 || pageSize < 1) {
-            List<UnitDto> list = getAllUnitDefaultWithUnitGroup(unitGroupId);
-            PageList<UnitDto> pageList = new PageList<>();
-            pageList.setCurrentPage(1);
-            pageList.setTotalPage(1);
-            pageList.setListResult(list);
-            return pageList;
-        }
-
-        List<UnitDto> pagedList = getAllUnitWithUnitGroup(currentPage, pageSize,unitGroupId);
-        int totalRecords = pagedList.size();
-
-        int totalPage = (int) Math.ceil((double) unitRepository.findAllByUnitGroupId(unitGroupId).size() / pageSize);
-
-        PageList<UnitDto> pageList = new PageList<>();
-        pageList.setCurrentPage(currentPage);
-        pageList.setTotalPage(totalPage);
-        pageList.setListResult(pagedList);
-
-        return pageList;
+        return unitConverter.fromUnitListToUnitResponseList(units);
     }
 
     @Override
-    public UnitDto getById(long id) {
-        if(unitRepository.findById(id).isEmpty()){
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Unit not exist");
+    public UnitResponse getUnitById(Long unitId) {
+        Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE);
+        if (unit == null) {
+            throw CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND);
         }
-        return converter.INSTANCE.fromUnitToUnitDto(unitRepository.findById(id).get());
+        return unitConverter.fromUnitToUnitResponse(unit);
     }
 
-    private List<UnitDto> getAllUnitDefault() {
-        List<Unit> units = unitRepository.findAll();
-        return buildUnitResponse(units);
+    @Override
+    public List<UnitResponse> getAllUnitsFromGroupId(long id) {
+        List<Unit> units = unitRepository.findAllByStatusAndUnitGroupId(Constants.STATUS_TRUE, id);
+        if (units.isEmpty()) {
+            throw CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND);
+        }
+        return unitConverter.fromUnitListToUnitResponseList(units);
     }
 
-    private List<UnitDto> getAllUnit(int currentPage, int pageSize) {
-        Page<Unit> units = unitRepository.findAll(PageRequest.of(currentPage - 1, pageSize));
-        return buildUnitResponse(units.getContent());
+    @Override
+    public UnitResponse createUnitInUnitGroup(Long groupId, CreateUnitRequest request) {
+        UnitGroup unitGroup = unitGroupRepository.findById(groupId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_UNIT_GROUP_FOUND + " id: " + groupId));
+
+        Unit newUnit = unitConverter.fromUnitRequestToUnit(request);
+        newUnit.setUnitGroup(unitGroup);
+
+        return unitConverter.fromUnitToUnitResponse(unitRepository.save(newUnit));
     }
 
-    private List<UnitDto> getAllUnitDefaultWithUnitGroup(long unitGroupId) {
-        List<Unit> units = unitRepository.findAllByUnitGroupId(unitGroupId);
-        return buildUnitResponse(units);
+    @Override
+    public UnitResponse updateUnitById(Long unitId, UpdateUnitRequest request) {
+        Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE);
+        if (unit == null) {
+            throw CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND + " id: " + unitId);
+        }
+        UnitGroup unitGroup = unitGroupRepository.findByIdAndStatus(request.getUnitGroupId(), Constants.STATUS_TRUE);
+        if (unitGroup == null) {
+            throw CustomExceptions.notFound(MessageConstants.NO_UNIT_GROUP_FOUND + " id: " + request.getUnitGroupId());
+        }
+        unit.setName(request.getUnitName());
+        unit.setConversionFactor(request.getConversionFactor());
+        unit.setIsDefault(request.getIsDefault());
+        unit.setUnitGroup(unitGroup);
+        unitRepository.save(unit);
+
+        return unitConverter.fromUnitToUnitResponse(unit);
     }
 
-    private List<UnitDto> getAllUnitWithUnitGroup(int currentPage, int pageSize, long unitGroupId) {
-        Pageable pageable = PageRequest.of(currentPage - 1, pageSize);
-        Page<Unit> units = unitRepository.findAllByUnitGroupIdWithPage(unitGroupId,pageable);
-        return buildUnitResponse(units.getContent());
+    @Override
+    public UnitResponse deleteUnitById(Long unitId) {
+        Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE);
+        if (unit == null) {
+            throw CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND + " id: " + unitId);
+        }
+
+        unit.setStatus(Constants.STATUS_FALSE);
+        unitRepository.save(unit);
+
+        return unitConverter.fromUnitToUnitResponse(unit);
     }
 
-    private List<UnitDto> buildUnitResponse(List<Unit> units) {
-        return converter.INSTANCE.fromListUnitToUnitDto(units);
-    }
 }

@@ -26,6 +26,7 @@ public class UserController {
 
     @GetMapping(API_PARAMS.ME)
     public ResponseEntity<ResponseObject> getMe(@RequestHeader("x-user-id") String userId) {
+        log.info("Start getMe. userId: {}", userId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get current user successfully", userService.getMe(userId))
         );

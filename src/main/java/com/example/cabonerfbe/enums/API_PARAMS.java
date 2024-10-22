@@ -50,10 +50,27 @@ public class API_PARAMS {
     public static final String PROCESS_BY_ID = "/{id}";
 
     /************************
+     *      UNIT APIs     *
+     ************************/
+    public static final String GET_ALL_UNITS = "/units";
+    public static final String GET_UNIT_BY_ID = "/units/{unitId}";
+    public static final String GET_ALL_UNITS_FROM_UNIT_GROUP_ID = "/unit-groups/{groupId}/units";
+    public static final String UPDATE_UNIT_BY_ID = "/units/{unitId}";
+    public static final String DELETE_UNIT_BY_ID = "/units/{unitId}";
+    public static final String ADD_UNIT_TO_UNIT_GROUP = "/unit-groups/{groupId}/units";
+
+    public static final String GET_ALL_UNIT_GROUPS = "/unit-group";
+
+
+    /************************
      *      UNIT GROUP APIs     *
      ************************/
     public static final String UNIT_GROUP = "/unit-groups";
     public static final String UNIT_GROUP_BY_ID = "/{id}";
+    public static final String CREATE_UNIT_GROUP = "/";
+    public static final String UPDATE_UNIT_GROUP_BY_ID = "/{groupId}";
+    public static final String DELETE_UNIT_GROUP_BY_ID = "/{groupId}";
+
 
     /************************
      *      LIFE CYCLE STAGE APIs     *
