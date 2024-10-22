@@ -10,6 +10,5 @@ public class Constants {
     public static final String TOKEN_TYPE_GATEWAY = "client-gateway";
     public static final String TOKEN_TYPE_SERVICE = "gateway-service";
     public static final boolean STATUS_TRUE = true;
-
-
+    public static final boolean STATUS_FALSE = false;
 }

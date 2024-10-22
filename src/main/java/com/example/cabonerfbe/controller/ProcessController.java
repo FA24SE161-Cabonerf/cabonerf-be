@@ -10,6 +10,7 @@ import com.example.cabonerfbe.services.ProcessService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,38 +20,43 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RestController
 @CrossOrigin(origins = "*")
+@Slf4j
 public class ProcessController {
     @Autowired
-    private ProcessService service;
+    private ProcessService processService;
 
     @GetMapping()
     public ResponseEntity<ResponseObject> getAllProcess(@Valid @RequestBody GetAllProcessRequest request) {
+        log.info("Start getAllProcess. request: {}", request);
         return ResponseEntity.ok().body(new ResponseObject(
-                        Constants.RESPONSE_STATUS_SUCCESS, "Get all process success", service.getAllProcesses(request)
+                        Constants.RESPONSE_STATUS_SUCCESS, "Get all process success", processService.getAllProcesses(request)
                 )
         );
     }
 
     @GetMapping(API_PARAMS.PROCESS_BY_ID)
     public ResponseEntity<ResponseObject> getProcessById(@PathVariable long id) {
+        log.info("Start getProcessById. id: {}", id);
         return ResponseEntity.ok().body(new ResponseObject(
-                        Constants.RESPONSE_STATUS_SUCCESS, "Get process by id success", service.getProcessById(id)
+                        Constants.RESPONSE_STATUS_SUCCESS, "Get process by id success", processService.getProcessById(id)
                 )
         );
     }
 
     @PostMapping()
     public ResponseEntity<ResponseObject> createProcess(@Valid @RequestBody CreateProcessRequest request) {
+        log.info("Start createProcess. request: {}", request);
         return ResponseEntity.ok().body(new ResponseObject(
-                        Constants.RESPONSE_STATUS_SUCCESS, "Create process success", service.createProcess(request)
+                        Constants.RESPONSE_STATUS_SUCCESS, "Create process success", processService.createProcess(request)
                 )
         );
     }
 
     @PutMapping(API_PARAMS.PROCESS_BY_ID)
     public ResponseEntity<ResponseObject> updateProcess(@Valid @RequestBody UpdateProcessRequest request, @PathVariable long id) {
+        log.info("Start updateProcess. id: {}, request: {}", id, request);
         return ResponseEntity.ok().body(new ResponseObject(
-                        Constants.RESPONSE_STATUS_SUCCESS, "Create process success", service.updateProcess(id, request)
+                        Constants.RESPONSE_STATUS_SUCCESS, "Create process success", processService.updateProcess(id, request)
                 )
         );
     }

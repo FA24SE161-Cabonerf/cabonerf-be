@@ -7,6 +7,7 @@ import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.ImpactCategoryService;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,12 +17,14 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RestController
 @CrossOrigin(origins = "*")
+@Slf4j
 public class ImpactCategoryController {
     @Autowired
     private ImpactCategoryService impactCategoryService;
 
     @GetMapping(API_PARAMS.GET_ALL_IMPACT_CATEGORIES)
     public ResponseEntity<ResponseObject> getImpactCategoryList() {
+        log.info("Start getImpactCategoryList");
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_ALL_IMPACT_CATEGORIES_SUCCESS, impactCategoryService.getImpactCategoryList())
         );
@@ -29,6 +32,7 @@ public class ImpactCategoryController {
 
     @GetMapping(API_PARAMS.GET_IMPACT_CATEGORY_BY_ID)
     public ResponseEntity<ResponseObject> getImpactCategoryById(@PathVariable long id) {
+        log.info("Start getImpactCategoryById id: {}", id);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_IMPACT_CATEGORY_BY_ID_SUCCESS, impactCategoryService.getImpactCategoryById(id))
         );

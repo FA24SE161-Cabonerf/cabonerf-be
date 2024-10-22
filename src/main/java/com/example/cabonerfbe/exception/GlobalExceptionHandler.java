@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestControllerAdvice
 @Slf4j
@@ -45,19 +47,57 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(CustomExceptions.class)
-    public ResponseEntity<ErrorResponse> handleGlobalException(CustomExceptions ex){
+    public ResponseEntity<ErrorResponse> handleGlobalException(CustomExceptions ex) {
         return new ResponseEntity<>(ex.getError(), ex.getStatus());
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)
-    public ResponseEntity<ResponseObject> handleMissingHeader(MissingRequestHeaderException ex){
+    public ResponseEntity<ResponseObject> handleMissingHeader(MissingRequestHeaderException ex) {
         return ResponseEntity.status(401).body(
-                new ResponseObject(Constants.RESPONSE_STATUS_ERROR,"Error", Map.of("Authorization","Unauthorized access")));
+                new ResponseObject(Constants.RESPONSE_STATUS_ERROR, "Error", Map.of("Authorization", "Unauthorized access")));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ResponseObject> handleValidationBody(HttpMessageNotReadableException ex) {
-        return ResponseEntity.status(401).body(
-                new ResponseObject(Constants.RESPONSE_STATUS_ERROR,"Error", Map.of("RequestBody","RequestBody is required")));
+    public ResponseEntity<ErrorResponse> handleValidationBody(HttpMessageNotReadableException ex) {
+        // Log the detailed error for debugging
+        log.error("JSON parse error: ", ex);
+
+        // Extract the specific error message
+        String errorMessage = ex.getCause() != null ? ex.getCause().getMessage() : "Invalid request body";
+        // Dynamically detect the field names from the error message (improved logic)
+        Map<String, String> errors = extractFieldNamesFromMessage(errorMessage);
+
+        // Prepare the error response
+        ErrorResponse response = ErrorResponse.builder()
+                .status("Error")
+                .message("Validation failed")
+                .data(errors)
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    // Helper method to extract all field names from the error message
+    private Map<String, String> extractFieldNamesFromMessage(String errorMessage) {
+        Map<String, String> errors = new HashMap<>();
+
+        // Look for all occurrences of the reference chain pattern (multiple fields)
+        Pattern pattern = Pattern.compile("through reference chain: .*?\\[\"(.*?)\"]");
+        Matcher matcher = pattern.matcher(errorMessage);
+
+        // Add all matching field names to the error map
+        while (matcher.find()) {
+            String fieldName = matcher.group(1); // Extract field name
+            errors.put(fieldName, "Invalid value for field: " + fieldName);
+        }
+
+        // If no fields were found, add a default error
+        if (errors.isEmpty()) {
+            errors.put("UnknownField", "Invalid request body");
+        }
+
+        return errors;
+    }
+
 }
+
