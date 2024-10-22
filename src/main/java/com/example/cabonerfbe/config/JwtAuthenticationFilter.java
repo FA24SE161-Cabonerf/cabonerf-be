@@ -35,17 +35,22 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
     private UserDetailsService userService;
     @Autowired
     private UserRepository userRepository;
+
+    private static final String SWAGGER_UI_PATH = "/swagger-ui/";
+    private static final String API_DOCS_PATH = "/v3/api-docs";
+
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
         String requestURI = request.getRequestURI();
-        if (requestURI.contains("/register") || requestURI.contains("/login")) {
-            // Cho phép tiếp tục xử lý mà không qua filter
+
+        if (isSwaggerRequest(requestURI) || isPublicPath(requestURI)) {
             filterChain.doFilter(request, response);
             return;
         }
+
         final String userId = request.getHeader("x-user-id");
         final String userRole = request.getHeader("x-user-role");
         final String userActive = request.getHeader("x-user-active");
@@ -89,7 +94,7 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
         try {
             // Kiểm tra nếu header Authorization có giá trị và bắt đầu bằng "Bearer"
             if (gateway_token.isEmpty()) {
-                errorData.put("gatewayToken", "Gateway token is valid");
+                errorData.put("gatewayToken", "Gateway token is invalid");
                 sendErrorResponse(response, errorData);
                 return;
             }
@@ -102,13 +107,13 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
                 if (service_id != null ) {
 
                     if(!jwtService.isGatewayTokenValid(token, Constants.TOKEN_TYPE_SERVICE)){
-                        errorData.put("gatewayToken", "Gateway token is valid");
+                        errorData.put("gatewayToken", "Gateway token is invalid");
                     }
                 }
 
                 filterChain.doFilter(request, response);
             } catch (Exception e) {
-                errorData.put("gatewayToken", "Gateway token is valid");
+                errorData.put("gatewayToken", "Gateway token is invalid");
                 sendErrorResponse(response, errorData);
             }
 
@@ -124,6 +129,12 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
             return false;
         }
         return str.matches("-?\\d+");
+    }
+    private boolean isSwaggerRequest(String uri) {
+        return uri.contains(SWAGGER_UI_PATH) || uri.contains(API_DOCS_PATH);
+    }
+    private boolean isPublicPath(String uri) {
+        return uri.contains("/register") || uri.contains("/login");
     }
     private void sendErrorResponse(HttpServletResponse response, Map<String, String> errorData) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

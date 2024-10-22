@@ -23,13 +23,27 @@ public class SwaggerConfig {
     OpenAPI cabonerfApi() {
         return new OpenAPI()
                 .info(new Info().title("Cabonerf API").version("1.0"))
-                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
-                .components(
-                        new Components()
-                                .addSecuritySchemes("bearerAuth", new SecurityScheme()
-                                        .type(SecurityScheme.Type.HTTP)
-                                        .scheme("bearer")
-                                        .bearerFormat("JWT"))
-                );
+                .components(new Components()
+                        .addSecuritySchemes("x-user-id", new SecurityScheme()
+                                .type(SecurityScheme.Type.APIKEY)
+                                .in(SecurityScheme.In.HEADER)
+                                .name("x-user-id"))
+                        .addSecuritySchemes("x-user-role", new SecurityScheme()
+                                .type(SecurityScheme.Type.APIKEY)
+                                .in(SecurityScheme.In.HEADER)
+                                .name("x-user-role"))
+                        .addSecuritySchemes("x-user-active", new SecurityScheme()
+                                .type(SecurityScheme.Type.APIKEY)
+                                .in(SecurityScheme.In.HEADER)
+                                .name("x-user-active"))
+                        .addSecuritySchemes("gatewayToken", new SecurityScheme()
+                                .type(SecurityScheme.Type.APIKEY)
+                                .in(SecurityScheme.In.HEADER)
+                                .name("gatewayToken")))
+                .addSecurityItem(new SecurityRequirement()
+                        .addList("x-user-id")
+                        .addList("x-user-role")
+                        .addList("x-user-active")
+                        .addList("gatewayToken"));
     }
 }
