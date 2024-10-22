@@ -76,7 +76,7 @@ public class JwtService {
     }
 
     public String extractServiceId(String token) {
-        return extractAllClaims(token,Constants.TOKEN_TYPE_GATEWAY).get("id", String.class);
+        return extractAllClaims(token,Constants.TOKEN_TYPE_SERVICE).get("id", String.class);
     }
 
     public <T> T extractClaim(String token, String tokenType, Function<Claims, T> claimsResolver) {
