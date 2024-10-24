@@ -7,8 +7,9 @@ import lombok.*;
 @Data
 @Getter
 @Setter
-public class PerspectiveDto {
+public class ProjectImpactCategoryDto {
     private long id;
     private String name;
-    private String abbr;
+
+    private ProjectMidpointDto midpointImpactCategory;
 }

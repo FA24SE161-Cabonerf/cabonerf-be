@@ -2,6 +2,9 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -12,4 +15,8 @@ public class ProjectDto {
     private String name;
     private String description;
     private String location;
+    private MethodDto method;
+    private LocalDate modifiedAt;
+    private OwnerDto createBy;
+    private List<ProjectImpactDto> impacts;
 }

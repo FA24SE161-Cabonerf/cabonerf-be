@@ -2,6 +2,8 @@ package com.example.cabonerfbe.repositories;
 
 import com.example.cabonerfbe.dto.ProjectDetailResponseDto;
 import com.example.cabonerfbe.models.Project;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,5 +25,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
             "WHERE p.id = :projectId")
     List<ProjectDetailResponseDto> getProjectLevelDetail(@Param("projectId") Long projectId);
 
-    Project findByName(String name);
+    Project findByNameAndStatus(String name, boolean status);
+
+    Page<Project> findAll(Pageable pageable);
 }
