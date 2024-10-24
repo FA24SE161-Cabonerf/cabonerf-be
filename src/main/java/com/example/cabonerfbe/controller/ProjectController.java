@@ -25,19 +25,23 @@ public class ProjectController {
     @Autowired
     private ProjectService projectService;
 
-    @GetMapping(API_PARAMS.GET_PROJECT_LIST_BY_METHOD_ID)
-    public ResponseEntity<ResponseObject> getProjectListByMethodId(@PathVariable long id) {
-        log.info("Start getProjectListByMethodId. id: {}", id);
+    @GetMapping()
+    public ResponseEntity<ResponseObject> getProjectListByMethodId(
+            @RequestParam(defaultValue = "1") int pageCurrent,
+            @RequestParam(defaultValue = "1") int pageSize) {
+        log.info("Start getAllProject");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_LIST_SUCCESS, projectService.getProjectListByMethodId(id)
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_LIST_SUCCESS, projectService.getAllProject(pageCurrent,pageSize)
                 ));
     }
 
     @PostMapping()
-    public ResponseEntity<ResponseObject> createProject(@Valid @RequestBody CreateProjectRequest request){
+    public ResponseEntity<ResponseObject> createProject(@RequestHeader("x-user-id") long userId, @Valid @RequestBody CreateProjectRequest request){
         log.info("Start createProject. request: {}", request);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Create project success", projectService.createProject(request)
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Create project success", projectService.createProject(userId, request)
                 ));
     }
+
+
 }

@@ -7,8 +7,7 @@ import lombok.*;
 @Data
 @Getter
 @Setter
-public class PerspectiveDto {
+public class WorkspaceDto {
     private long id;
     private String name;
-    private String abbr;
 }

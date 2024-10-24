@@ -1,23 +1,30 @@
 package com.example.cabonerfbe.services.impl;
 
-import com.example.cabonerfbe.converter.ProjectConverter;
-import com.example.cabonerfbe.converter.ProjectImpactValueConverter;
+import com.example.cabonerfbe.converter.*;
+import com.example.cabonerfbe.dto.PageList;
+import com.example.cabonerfbe.dto.ProjectDto;
+import com.example.cabonerfbe.dto.ProjectImpactDto;
 import com.example.cabonerfbe.enums.Constants;
+import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.ImpactMethodCategory;
+import com.example.cabonerfbe.models.ProcessImpactValue;
 import com.example.cabonerfbe.models.Project;
 import com.example.cabonerfbe.models.ProjectImpactValue;
-import com.example.cabonerfbe.repositories.ImpactMethodCategoryRepository;
-import com.example.cabonerfbe.repositories.ProjectImpactValueRepository;
-import com.example.cabonerfbe.repositories.ProjectRepository;
+import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.response.CreateProjectResponse;
+import com.example.cabonerfbe.response.GetAllProjectResponse;
 import com.example.cabonerfbe.services.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -32,6 +39,20 @@ public class ProjectServiceImpl implements ProjectService {
     private ProjectConverter projectConverter;
     @Autowired
     private ProjectImpactValueConverter projectImpactValueConverter;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private WorkspaceRepository workspaceRepository;
+    @Autowired
+    private LifeCycleImpactAssessmentMethodRepository methodRepository;
+    @Autowired
+    private LifeCycleImpactAssessmentMethodConverter methodConverter;
+    @Autowired
+    private ImpactCategoryConverter categoryConverter;
+    @Autowired
+    private UnitConverter unitConverter;
+
+    private static final int PAGE_INDEX_ADJUSTMENT = 1;
 
     @Override
     public List<Project> getProjectListByMethodId(long id) {
@@ -45,34 +66,88 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public CreateProjectResponse createProject(CreateProjectRequest request) {
-        if(projectRepository.findByName(request.getName()) != null){
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Project name already exists");
+    public CreateProjectResponse createProject(long userId, CreateProjectRequest request) {
+//        if(projectRepository.findByNameAndStatus(request.getName(),true) != null){
+//            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Project name already exists");
+//        }
+
+        if(userRepository.findById(userId).isEmpty()){
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "User not exist");
+        }
+
+        if(workspaceRepository.findById(request.getWorkspaceId()).isEmpty()){
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Workspace not exist");
+        }
+
+        if(methodRepository.findById(request.getMethodId()).isEmpty()){
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Method not exist");
         }
 
         Project project = new Project();
         project.setName(request.getName());
         project.setDescription(request.getDescription());
         project.setLocation(request.getLocation());
-        project.setStatus(true);
+        project.setUser(userRepository.findById(userId).get());
+        project.setWorkspace(workspaceRepository.findById(request.getWorkspaceId()).get());
+        project.setLifeCycleImpactAssessmentMethod(methodRepository.findById(request.getMethodId()).get());
 
         project = projectRepository.save(project);
 
-        List<ImpactMethodCategory> list = impactMethodCategoryRepository.findAll();
-        List<ProjectImpactValue> projectImpactValues = new ArrayList<>();
-        for (ImpactMethodCategory impactMethodCategory : list) {
-            ProjectImpactValue projectImpactValue = new ProjectImpactValue();
-            projectImpactValue.setProject(project);
-            projectImpactValue.setImpactMethodCategory(impactMethodCategory);
-            projectImpactValue.setValue(0);
-            projectImpactValue.setStatus(true);
-            projectImpactValues.add(projectImpactValue);
-        }
-        projectImpactValues = projectImpactValueRepository.saveAll(projectImpactValues);
-
+//        List<ImpactMethodCategory> list = impactMethodCategoryRepository.findByMethod(request.getMethodId());
+//        List<ProjectImpactValue> listValues = new ArrayList<>();
+//        for(ImpactMethodCategory x:list){
+//            ProjectImpactValue values = new ProjectImpactValue();
+//            values.setProject(project);
+//            values.setValue(0);
+//            values.setImpactMethodCategory(x);
+//            listValues.add(values);
+//        }
+//
+//        projectImpactValueRepository.saveAll(listValues);
         return CreateProjectResponse.builder()
-                .project(projectConverter.INSTANCE.fromProjectToProjectDto(project))
-                .projectImpactValue(projectImpactValueConverter.INSTANCE.fromListProjectImpactValueToProjectImpactValueDto(projectImpactValues))
+                .projectId(project.getId())
                 .build();
+    }
+
+    @Override
+    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize) {
+        Pageable pageable = PageRequest.of(pageCurrent - PAGE_INDEX_ADJUSTMENT, pageSize);
+
+        Page<Project> projects = projectRepository.findAll(pageable);
+
+        int totalPage = projects.getTotalPages();
+        if (pageCurrent > totalPage) {
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("currentPage", MessageConstants.CURRENT_PAGE_EXCEED_TOTAL_PAGES));
+        }
+        List<ProjectDto> list = new ArrayList<>();
+        for (Project project : projects) {
+            ProjectDto projectDto = projectConverter.toDto(project);
+            projectDto.setImpacts(converterData(projectImpactValueRepository.findAllByProjectId(project.getId())));
+            list.add(projectDto);
+        }
+
+        GetAllProjectResponse response = new GetAllProjectResponse();
+        response.setPageCurrent(pageCurrent);
+        response.setPageSize(pageSize);
+        response.setTotalPage(totalPage);
+        response.setProjects(list);
+
+        return response;
+    }
+
+    private List<ProjectImpactDto> converterData(List<ProjectImpactValue> list){
+        List<ProjectImpactDto> result = new ArrayList<>();
+
+        for (ProjectImpactValue x : list){
+            ProjectImpactDto p = new ProjectImpactDto();
+            p.setId(x.getId());
+            p.setValue(x.getValue());
+            p.setMethod(methodConverter.fromMethodToMethodDto(x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod()));
+            p.setImpactCategory(categoryConverter.fromProjectToImpactCategoryDto(x.getImpactMethodCategory().getImpactCategory()));
+            p.setUnit(unitConverter.fromProjectToUnitResponse(x.getImpactMethodCategory().getImpactCategory().getMidpointImpactCategory().getUnit()));
+            result.add(p);
+        }
+
+        return result;
     }
 }

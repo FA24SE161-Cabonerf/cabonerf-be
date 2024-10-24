@@ -7,8 +7,9 @@ import lombok.*;
 @Data
 @Getter
 @Setter
-public class PerspectiveDto {
+public class MethodDto {
     private long id;
     private String name;
-    private String abbr;
+    private String version;
+    private PerspectiveDto perspective;
 }

@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.converter;
 
+import com.example.cabonerfbe.dto.OwnerDto;
 import com.example.cabonerfbe.dto.UserDto;
 import com.example.cabonerfbe.dto.UserProfileDto;
 import com.example.cabonerfbe.models.Users;
@@ -16,4 +17,6 @@ public interface UserConverter {
     GetProfileResponse fromUserProfileDtoToGetProfileResponse(UserProfileDto userProfileDto);
 
     UserProfileDto fromUserToUserProfileDto(Users user);
+
+    OwnerDto fromUserToOwnerDto(Users user);
 }

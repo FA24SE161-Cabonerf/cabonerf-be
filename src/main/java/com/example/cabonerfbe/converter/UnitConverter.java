@@ -1,6 +1,7 @@
 package com.example.cabonerfbe.converter;
 
 import com.example.cabonerfbe.dto.UnitDto;
+import com.example.cabonerfbe.dto.UnitProjectImpactDto;
 import com.example.cabonerfbe.models.Unit;
 import com.example.cabonerfbe.request.CreateUnitRequest;
 import com.example.cabonerfbe.response.UnitResponse;
@@ -28,4 +29,5 @@ public interface UnitConverter {
 
     UnitResponse fromUnitToUnitResponse(Unit savedUnit);
     List<UnitDto> fromListUnitToUnitDto(List<Unit> units);
+    UnitProjectImpactDto fromProjectToUnitResponse(Unit unit);
 }

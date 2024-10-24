@@ -1,7 +1,6 @@
 package com.example.cabonerfbe.response;
 
 import com.example.cabonerfbe.dto.ProjectDto;
-import com.example.cabonerfbe.dto.ProjectImpactValueDto;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,6 +15,9 @@ import java.util.List;
 @NoArgsConstructor
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CreateProjectResponse {
-    private long projectId;
+public class GetAllProjectResponse {
+    private int pageCurrent;
+    private int pageSize;
+    private int totalPage;
+    private List<ProjectDto> projects;
 }
