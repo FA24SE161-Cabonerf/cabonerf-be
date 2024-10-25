@@ -104,30 +104,36 @@ public class ProjectServiceImpl implements ProjectService {
 
         project = projectRepository.save(project);
 
-//        List<ImpactMethodCategory> list = impactMethodCategoryRepository.findByMethod(request.getMethodId());
-//        List<ProjectImpactValue> listValues = new ArrayList<>();
-//        for(ImpactMethodCategory x:list){
-//            ProjectImpactValue values = new ProjectImpactValue();
-//            values.setProject(project);
-//            values.setValue(0);
-//            values.setImpactMethodCategory(x);
-//            listValues.add(values);
-//        }
-//
-//        projectImpactValueRepository.saveAll(listValues);
+        List<ImpactMethodCategory> list = impactMethodCategoryRepository.findByMethod(request.getMethodId());
+        List<ProjectImpactValue> listValues = new ArrayList<>();
+        for(ImpactMethodCategory x:list){
+            ProjectImpactValue values = new ProjectImpactValue();
+            values.setProject(project);
+            values.setValue(0);
+            values.setImpactMethodCategory(x);
+            listValues.add(values);
+        }
+
+        projectImpactValueRepository.saveAll(listValues);
         return CreateProjectResponse.builder()
                 .projectId(project.getId())
                 .build();
     }
 
     @Override
-    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize) {
+    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize,String userId) {
         Pageable pageable = PageRequest.of(pageCurrent - PAGE_INDEX_ADJUSTMENT, pageSize);
 
-        Page<Project> projects = projectRepository.findAll(pageable);
+        Page<Project> projects = projectRepository.findAll(Long.parseLong(userId),pageable);
 
         if(projects.isEmpty()){
-            throw CustomExceptions.noContent(Constants.RESPONSE_STATUS_SUCCESS,"No Data");
+            GetAllProjectResponse response = new GetAllProjectResponse();
+            response.setPageCurrent(0);
+            response.setPageSize(0);
+            response.setTotalPage(0);
+            response.setProjects(null);
+
+            return response;
         }
 
         int totalPage = projects.getTotalPages();

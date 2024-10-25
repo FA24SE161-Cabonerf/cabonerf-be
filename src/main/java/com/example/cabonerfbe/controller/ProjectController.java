@@ -28,11 +28,12 @@ public class ProjectController {
 
     @GetMapping()
     public ResponseEntity<ResponseObject> getProjectListByMethodId(
+            @RequestHeader("x-user-id") String userId,
             @RequestParam(defaultValue = "1") int pageCurrent,
-            @RequestParam(defaultValue = "1") int pageSize) {
+            @RequestParam(defaultValue = "5") int pageSize) {
         log.info("Start getAllProject");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_LIST_SUCCESS, projectService.getAllProject(pageCurrent,pageSize)
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_LIST_SUCCESS, projectService.getAllProject(pageCurrent,pageSize,userId)
                 ));
     }
 
