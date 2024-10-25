@@ -49,7 +49,7 @@ public class ImpactMethodController {
     }
 
     @PostMapping(API_PARAMS.CREATE_IMPACT_METHOD)
-    public ResponseEntity<ResponseObject> createImpactMethod(@Valid @RequestBody BaseImpactMethodRequest request){
+    public ResponseEntity<ResponseObject> createImpactMethod(@Valid @RequestBody BaseImpactMethodRequest request) {
         log.info("Start createImpactMethod. request {}", request);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CREATE_IMPACT_METHOD_SUCCESS, impactMethodService.createImpactMethod(request))
@@ -57,7 +57,7 @@ public class ImpactMethodController {
     }
 
     @PutMapping(API_PARAMS.UPDATE_IMPACT_METHOD_BY_ID)
-    public ResponseEntity<ResponseObject> updateImpactMethodById(@PathVariable long methodId, @Valid @RequestBody BaseImpactMethodRequest request){
+    public ResponseEntity<ResponseObject> updateImpactMethodById(@PathVariable long methodId, @Valid @RequestBody BaseImpactMethodRequest request) {
         log.info("Start updateImpactMethodById, methodId {}, request {}", methodId, request);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.UPDATE_IMPACT_METHOD_SUCCESS, impactMethodService.updateImpactMethodById(methodId, request))
@@ -65,10 +65,18 @@ public class ImpactMethodController {
     }
 
     @DeleteMapping(API_PARAMS.DELETE_IMPACT_METHOD_BY_ID)
-    public ResponseEntity<ResponseObject> deleteImpactMethodById(@PathVariable long methodId){
+    public ResponseEntity<ResponseObject> deleteImpactMethodById(@PathVariable long methodId) {
         log.info("Start deleteImpactMethodById, methodId {}", methodId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.DELETE_IMPACT_METHOD_SUCCESS, impactMethodService.deleteImpactMethodById(methodId))
+        );
+    }
+
+    @PostMapping(API_PARAMS.ADD_IMPACT_CATEGORY_TO_IMPACT_METHOD)
+    public ResponseEntity<ResponseObject> addImpactCategoryToImpactMethod(@PathVariable long methodId, @PathVariable long categoryId) {
+        log.info("Start addImpactCategoryToImpactMethod. methodId {}, categoryId {}", methodId, categoryId);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.ADD_IMPACT_CATEGORY_TO_IMPACT_METHOD_SUCCESS, impactMethodService.addImpactCategoryToImpactMethod(methodId, categoryId))
         );
     }
 

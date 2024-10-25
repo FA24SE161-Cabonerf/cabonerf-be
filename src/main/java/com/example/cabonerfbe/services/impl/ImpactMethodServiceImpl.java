@@ -8,12 +8,15 @@ import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.ImpactCategory;
+import com.example.cabonerfbe.models.ImpactMethodCategory;
 import com.example.cabonerfbe.models.LifeCycleImpactAssessmentMethod;
 import com.example.cabonerfbe.models.Perspective;
 import com.example.cabonerfbe.repositories.ImpactCategoryRepository;
+import com.example.cabonerfbe.repositories.ImpactMethodCategoryRepository;
 import com.example.cabonerfbe.repositories.ImpactMethodRepository;
 import com.example.cabonerfbe.repositories.PerspectiveRepository;
 import com.example.cabonerfbe.request.BaseImpactMethodRequest;
+import com.example.cabonerfbe.response.ImpactMethodCategoryResponse;
 import com.example.cabonerfbe.response.ImpactMethodResponse;
 import com.example.cabonerfbe.services.ImpactMethodService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,9 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
 
     @Autowired
     private PerspectiveRepository perspectiveRepository;
+
+    @Autowired
+    private ImpactMethodCategoryRepository impactMethodCategoryRepository;
 
     @Autowired
     private LifeCycleImpactAssessmentMethodConverter impactMethodConverter;
@@ -86,6 +92,22 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND + " id: " + methodId));
         impactMethod.setStatus(Constants.STATUS_FALSE);
         return impactMethodConverter.fromImpactMethodToImpactMethodResponse(impactMethodRepository.save(impactMethod));
+    }
+
+    @Override
+    public ImpactMethodCategoryResponse addImpactCategoryToImpactMethod(long methodId, long categoryId) {
+        LifeCycleImpactAssessmentMethod impactMethod = impactMethodRepository.findByIdAndStatus(methodId, Constants.STATUS_TRUE)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND + " id: " + methodId));
+        ImpactCategory impactCategory = impactCategoryRepository.findByIdAndStatus(categoryId, Constants.STATUS_TRUE)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND + " id: " + categoryId));
+        if (impactMethodCategoryRepository.existsByImpactCategoryAndLifeCycleImpactAssessmentMethod(impactCategory, impactMethod)) {
+            throw CustomExceptions.badRequest(MessageConstants.IMPACT_CATEGORY_ALREADY_IN_METHOD);
+        }
+        impactMethodCategoryRepository.save(new ImpactMethodCategory(impactMethod, impactCategory));
+        ImpactMethodCategoryResponse response = new ImpactMethodCategoryResponse();
+        response.setImpactMethod(impactMethodConverter.fromImpactMethodToImpactMethodResponse(impactMethod));
+        response.setImpactCategory(impactCategoryConverter.fromImpactCategoryToImpactCategoryDto(impactCategory));
+        return response;
     }
 
     private LifeCycleImpactAssessmentMethod mapRequestToImpactMethod(LifeCycleImpactAssessmentMethod impactMethod, BaseImpactMethodRequest request) {

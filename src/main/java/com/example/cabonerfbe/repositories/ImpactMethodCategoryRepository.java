@@ -1,6 +1,8 @@
 package com.example.cabonerfbe.repositories;
 
+import com.example.cabonerfbe.models.ImpactCategory;
 import com.example.cabonerfbe.models.ImpactMethodCategory;
+import com.example.cabonerfbe.models.LifeCycleImpactAssessmentMethod;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -14,4 +16,6 @@ public interface ImpactMethodCategoryRepository extends JpaRepository<ImpactMeth
 
     @Query("SELECT a FROM ImpactMethodCategory a WHERE a.lifeCycleImpactAssessmentMethod.id = ?1")
     List<ImpactMethodCategory> findByMethod(long methodId);
+
+    boolean existsByImpactCategoryAndLifeCycleImpactAssessmentMethod(ImpactCategory impactCategory, LifeCycleImpactAssessmentMethod lifeCycleImpactAssessmentMethod);
 }
