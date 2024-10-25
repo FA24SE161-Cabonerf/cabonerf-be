@@ -1,6 +1,7 @@
 package com.example.cabonerfbe.converter;
 
 import com.example.cabonerfbe.dto.ProjectDto;
+import com.example.cabonerfbe.dto.UpdateProjectDto;
 import com.example.cabonerfbe.models.Project;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -15,4 +16,7 @@ public interface ProjectConverter {
     @Mapping(source = "lifeCycleImpactAssessmentMethod", target = "method")
     @Mapping(source = "user", target = "createBy")
     ProjectDto toDto(Project project);
+
+    @Mapping(source = "lifeCycleImpactAssessmentMethod", target = "method")
+    UpdateProjectDto fromDetailToDto(Project project);
 }

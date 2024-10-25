@@ -9,9 +9,10 @@ import lombok.*;
 @Setter
 public class ProcessImpactValueDto {
     private long id;
-    private ImpactMethodCategoryDto impactMethodCategory;
     private double unitLevel;
     private double systemLevel;
     private double overallImpactContribution;
-    private double previousProcessValue;
+    private MethodDto method;
+    private ProjectImpactCategoryDto impactCategory;
+    private UnitProjectImpactDto unit;
 }

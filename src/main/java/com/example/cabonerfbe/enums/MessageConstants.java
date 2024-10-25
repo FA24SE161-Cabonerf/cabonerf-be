@@ -23,6 +23,7 @@ public class MessageConstants {
     public static final String GET_ALL_MIDPOINT_SUBSTANCE_FACTORS_SUCCESS = "Get all midpoint substance factors with perspectives for admin success";
     public static final String GET_MIDPOINT_FACTOR_BY_ID_SUCCESS = "Get midpoint impact factor by id success";
     public static final String GET_PROJECT_LIST_SUCCESS = "Get project list success";
+    public static final String GET_PROJECT_BY_ID_SUCCESS = "Get project by id success";
 
     public static final String CURRENT_PAGE_EXCEED_TOTAL_PAGES = "Current page exceeds total pages.";
     public static final String GET_ALL_UNITS_SUCCESS = "Get all units success";

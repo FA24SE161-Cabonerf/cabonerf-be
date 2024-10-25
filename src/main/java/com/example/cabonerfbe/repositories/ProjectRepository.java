@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     ProjectDetailResponseDto dto = new ProjectDetailResponseDto();
@@ -27,5 +29,9 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     Project findByNameAndStatus(String name, boolean status);
 
+    @Query("SELECT p FROM Project p WHERE p.status = true")
     Page<Project> findAll(Pageable pageable);
+
+    @Query("SELECT p FROM Project p WHERE p.id = ?1 AND p.status = true")
+    Optional<Project> findById(long id);
 }

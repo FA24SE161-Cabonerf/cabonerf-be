@@ -10,7 +10,6 @@ import lombok.*;
 public class ExchangesDto {
     private long id;
     private String name;
-    private String description;
     private double value;
     private ExchangesTypeDto exchangesType;
     private UnitDto unit;

@@ -4,6 +4,7 @@ import com.example.cabonerfbe.enums.API_PARAMS;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.request.CreateProjectRequest;
+import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.ProjectService;
 import jakarta.validation.Valid;
@@ -43,5 +44,27 @@ public class ProjectController {
                 ));
     }
 
+    @GetMapping(API_PARAMS.GET_PROJECT_BY_ID)
+    public ResponseEntity<ResponseObject> getProjectById(@PathVariable long id) {
+        log.info("Start getProjectById, id: " + id);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_BY_ID_SUCCESS, projectService.getById(id)
+                ));
+    }
 
+    @PutMapping(API_PARAMS.UPDATE_DETAIL_PROJECT_BY_ID)
+    public ResponseEntity<ResponseObject> update(@PathVariable long id, @Valid @RequestBody UpdateProjectDetailRequest request){
+        log.info("Start updateDetailProject. request: {}", request);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Update project details success", projectService.updateDetail(id,request)
+                ));
+    }
+
+    @DeleteMapping(API_PARAMS.DELETE_PROJECT)
+    public ResponseEntity<ResponseObject> delete(@PathVariable long id){
+        log.info("Start deleteProject with id: ", +id);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Delete project success", projectService.deleteProject(id)
+                ));
+    }
 }
