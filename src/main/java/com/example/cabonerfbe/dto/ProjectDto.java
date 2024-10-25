@@ -17,6 +17,7 @@ public class ProjectDto {
     private String location;
     private MethodDto method;
     private LocalDate modifiedAt;
-    private OwnerDto createBy;
+    private OwnerDto owner;
+    private WorkspaceDto workspace;
     private List<ProjectImpactDto> impacts;
 }
