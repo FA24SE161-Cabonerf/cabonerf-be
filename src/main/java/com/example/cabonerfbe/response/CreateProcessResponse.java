@@ -1,6 +1,7 @@
 package com.example.cabonerfbe.response;
 
 import com.example.cabonerfbe.dto.ExchangesDto;
+import com.example.cabonerfbe.dto.ProcessDetailDto;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.dto.ProcessImpactValueDto;
 import lombok.AccessLevel;
@@ -18,7 +19,5 @@ import java.util.List;
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CreateProcessResponse {
-    private ProcessDto process;
-    private List<ProcessImpactValueDto> impactValues;
-    private List<ExchangesDto> exchanges;
+    private ProcessDetailDto process;
 }

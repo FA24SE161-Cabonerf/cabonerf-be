@@ -10,6 +10,7 @@ import lombok.*;
 public class ProjectImpactCategoryDto {
     private long id;
     private String name;
+    private String iconUrl;
 
     private ProjectMidpointDto midpointImpactCategory;
 }

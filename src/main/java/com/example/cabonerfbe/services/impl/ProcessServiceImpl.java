@@ -88,8 +88,7 @@ public class ProcessServiceImpl implements ProcessService {
         processImpactValueRepository.saveAll(processImpactValues);
 
         return CreateProcessResponse.builder()
-                .process(processConverter.INSTANCE.fromProcessToProcessDto(process))
-                .impactValues(processImpactValueConverter.INSTANCE.fromProcessImpactValueToProcessImpactValueDto(processImpactValues))
+                .process(processConverter.INSTANCE.fromProcessDetailToProcessDto(process))
                 .build();
     }
 
@@ -104,9 +103,7 @@ public class ProcessServiceImpl implements ProcessService {
         List<Exchanges> exchanges = exchangesRepository.findAllByProcess(process.get().getId());
 
         return CreateProcessResponse.builder()
-                .process(processConverter.INSTANCE.fromProcessToProcessDto(process.get()))
-                .impactValues(processImpactValueConverter.INSTANCE.fromProcessImpactValueToProcessImpactValueDto(processImpactValues))
-                .exchanges(exchangesConverter.INSTANCE.fromExchangesToExchangesDto(exchanges))
+                .process(processConverter.INSTANCE.fromProcessDetailToProcessDto(process.get()))
                 .build();
     }
 
@@ -145,9 +142,7 @@ public class ProcessServiceImpl implements ProcessService {
         List<Exchanges> exchanges = exchangesRepository.findAllByProcess(p.getId());
 
         return CreateProcessResponse.builder()
-                .process(processConverter.INSTANCE.fromProcessToProcessDto(p))
-                .impactValues(processImpactValueConverter.INSTANCE.fromProcessImpactValueToProcessImpactValueDto(processImpactValues))
-                .exchanges(exchangesConverter.INSTANCE.fromExchangesToExchangesDto(exchanges))
+                .process(processConverter.INSTANCE.fromProcessDetailToProcessDto(p))
                 .build();
     }
 
@@ -158,9 +153,7 @@ public class ProcessServiceImpl implements ProcessService {
             List<Exchanges> exchanges = exchangesRepository.findAllByProcess(process.getId());
 
             CreateProcessResponse processResponse = CreateProcessResponse.builder()
-                    .process(processConverter.INSTANCE.fromProcessToProcessDto(process))
-                    .exchanges(exchangesConverter.INSTANCE.fromExchangesToExchangesDto(exchanges))
-                    .impactValues(processImpactValueConverter.INSTANCE.fromProcessImpactValueToProcessImpactValueDto(processImpactValues))
+                    .process(processConverter.INSTANCE.fromProcessDetailToProcessDto(process))
                     .build();
 
             responses.add(processResponse);

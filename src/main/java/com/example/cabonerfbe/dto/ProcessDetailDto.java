@@ -7,10 +7,9 @@ import lombok.*;
 @Data
 @Getter
 @Setter
-public class ProcessGetProjectByIdDto {
+public class ProcessDetailDto {
     private long id;
     private String name;
     private String description;
     private LifeCycleStageDto lifeCycleStage;
-    private String overallProductFlowRequired;
 }
