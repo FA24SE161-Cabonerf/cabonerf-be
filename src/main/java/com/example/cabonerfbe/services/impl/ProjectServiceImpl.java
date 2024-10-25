@@ -250,6 +250,7 @@ public class ProjectServiceImpl implements ProjectService {
             p.setMethod(methodConverter.fromMethodToMethodDto(x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod()));
             p.setImpactCategory(categoryConverter.fromProjectToImpactCategoryDto(x.getImpactMethodCategory().getImpactCategory()));
             p.setUnit(unitConverter.fromProjectToUnitResponse(x.getImpactMethodCategory().getImpactCategory().getMidpointImpactCategory().getUnit()));
+            result.add(p);
         }
         return result;
     }
