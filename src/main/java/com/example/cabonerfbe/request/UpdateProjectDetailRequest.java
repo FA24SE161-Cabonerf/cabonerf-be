@@ -1,6 +1,5 @@
-package com.example.cabonerfbe.response;
+package com.example.cabonerfbe.request;
 
-import com.example.cabonerfbe.dto.GetProjectByIdDto;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,11 +7,13 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+@SuperBuilder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
-@FieldDefaults(level = AccessLevel.PRIVATE)
-public class GetProjectByIdResponse {
-    private GetProjectByIdDto project;
+public class UpdateProjectDetailRequest {
+    private String name;
+    private String description;
+    private String location;
 }

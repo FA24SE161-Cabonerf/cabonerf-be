@@ -1,9 +1,7 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.*;
-import com.example.cabonerfbe.dto.PageList;
-import com.example.cabonerfbe.dto.ProjectDto;
-import com.example.cabonerfbe.dto.ProjectImpactDto;
+import com.example.cabonerfbe.dto.*;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -13,8 +11,10 @@ import com.example.cabonerfbe.models.Project;
 import com.example.cabonerfbe.models.ProjectImpactValue;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProjectRequest;
+import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.CreateProjectResponse;
 import com.example.cabonerfbe.response.GetAllProjectResponse;
+import com.example.cabonerfbe.response.GetProjectByIdResponse;
 import com.example.cabonerfbe.services.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,10 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ProjectServiceImpl implements ProjectService {
@@ -51,6 +48,20 @@ public class ProjectServiceImpl implements ProjectService {
     private ImpactCategoryConverter categoryConverter;
     @Autowired
     private UnitConverter unitConverter;
+    @Autowired
+    private ProcessRepository processRepository;
+    @Autowired
+    private ProcessConverter processConverter;
+    @Autowired
+    private ProcessImpactValueRepository processImpactValueRepository;
+    @Autowired
+    private ExchangesRepository exchangesRepository;
+    @Autowired
+    private ExchangesConverter exchangesConverter;
+    @Autowired
+    private ConnectorRepository connectorRepository;
+    @Autowired
+    private ConnectorConverter connectorConverter;
 
     private static final int PAGE_INDEX_ADJUSTMENT = 1;
 
@@ -122,7 +133,7 @@ public class ProjectServiceImpl implements ProjectService {
         List<ProjectDto> list = new ArrayList<>();
         for (Project project : projects) {
             ProjectDto projectDto = projectConverter.toDto(project);
-            projectDto.setImpacts(converterData(projectImpactValueRepository.findAllByProjectId(project.getId())));
+            projectDto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
             list.add(projectDto);
         }
 
@@ -135,7 +146,75 @@ public class ProjectServiceImpl implements ProjectService {
         return response;
     }
 
-    private List<ProjectImpactDto> converterData(List<ProjectImpactValue> list){
+    @Override
+    public GetProjectByIdResponse getById(long id) {
+        if(projectRepository.findById(id).isEmpty()){
+            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Project not exist");
+        }
+
+        Project project = projectRepository.findById(id).get();
+        GetProjectByIdDto dto = new GetProjectByIdDto();
+        List<ProcessDto> processDto = processConverter.fromListToListDto(processRepository.findAll(project.getId()));
+
+        for(ProcessDto x: processDto){
+            x.setImpacts(converterProcess(processImpactValueRepository.findByProcessId(x.getId())));
+            x.setExchanges(exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(x.getId())));
+        }
+
+        dto.setId(id);
+        dto.setName(project.getName());
+        dto.setDescription(project.getDescription());
+        dto.setLocation(project.getLocation());
+        dto.setMethod(methodConverter.fromMethodToMethodDto(project.getLifeCycleImpactAssessmentMethod()));
+        dto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
+        dto.setProcesses(processDto);
+        dto.setConnectors(connectorConverter.fromListConnectorToConnectorDto(connectorRepository.findAllByProject(project.getId())));
+
+        return GetProjectByIdResponse.builder()
+                .project(dto)
+                .build();
+    }
+
+    @Override
+    public UpdateProjectDto updateDetail(long id, UpdateProjectDetailRequest request) {
+        if ((Objects.isNull(request.getName()) || request.getName().isEmpty())
+                && (Objects.isNull(request.getDescription()) || request.getDescription().isEmpty())
+                && (Objects.isNull(request.getLocation()) || request.getLocation().isEmpty())) {
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Update at least 1 field");
+        }
+
+        Optional<Project> p = projectRepository.findById(id);
+        if (p.isEmpty()) {
+            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Project not exist");
+        }
+
+        if (!Objects.isNull(request.getName()) && !request.getName().isEmpty()) {
+            p.get().setName(request.getName());
+        }
+        if (!Objects.isNull(request.getDescription()) && !request.getDescription().isEmpty()) {
+            p.get().setDescription(request.getDescription());
+        }
+        if (!Objects.isNull(request.getLocation()) && !request.getLocation().isEmpty()) {
+            p.get().setLocation(request.getLocation());
+        }
+
+
+        return projectConverter.fromDetailToDto(projectRepository.save(p.get()));
+    }
+
+    @Override
+    public List<Project> deleteProject(long id) {
+        Optional<Project> project = projectRepository.findById(id);
+        if(project.isEmpty()){
+            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Project not exist");
+        }
+
+        project.get().setStatus(false);
+        projectRepository.save(project.get());
+        return new ArrayList<>();
+    }
+
+    private List<ProjectImpactDto> converterProject(List<ProjectImpactValue> list){
         List<ProjectImpactDto> result = new ArrayList<>();
 
         for (ProjectImpactValue x : list){
@@ -147,7 +226,21 @@ public class ProjectServiceImpl implements ProjectService {
             p.setUnit(unitConverter.fromProjectToUnitResponse(x.getImpactMethodCategory().getImpactCategory().getMidpointImpactCategory().getUnit()));
             result.add(p);
         }
+        return result;
+    }
 
+    private List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list){
+        List<ProcessImpactValueDto> result = new ArrayList<>();
+        for(ProcessImpactValue x: list){
+            ProcessImpactValueDto p = new ProcessImpactValueDto();
+            p.setId(x.getId());
+            p.setSystemLevel(x.getSystemLevel());
+            p.setUnitLevel(x.getUnitLevel());
+            p.setOverallImpactContribution(x.getOverallImpactContribution());
+            p.setMethod(methodConverter.fromMethodToMethodDto(x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod()));
+            p.setImpactCategory(categoryConverter.fromProjectToImpactCategoryDto(x.getImpactMethodCategory().getImpactCategory()));
+            p.setUnit(unitConverter.fromProjectToUnitResponse(x.getImpactMethodCategory().getImpactCategory().getMidpointImpactCategory().getUnit()));
+        }
         return result;
     }
 }

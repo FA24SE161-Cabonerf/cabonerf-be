@@ -9,12 +9,13 @@ import java.util.List;
 @Data
 @Getter
 @Setter
-public class ProcessDto {
+public class GetProjectByIdDto {
     private long id;
     private String name;
     private String description;
-    private LifeCycleStageDto lifeCycleStage;
-    private String overallProductFlowRequired;
-    private List<ProcessImpactValueDto> impacts;
-    private List<ExchangesDto> exchanges;
+    private String location;
+    private MethodDto method;
+    private List<ProjectImpactDto> impacts;
+    private List<ProcessDto> processes;
+    private List<ConnectorDto> connectors;
 }
