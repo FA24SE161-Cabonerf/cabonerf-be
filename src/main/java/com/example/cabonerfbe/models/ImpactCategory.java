@@ -14,6 +14,7 @@ public class ImpactCategory extends Base{
     private String indicator;
     private String indicatorDescription;
     private String unit;
+    private String iconUrl;
 
     @ManyToOne
     @JoinColumn(name = "midpoint_impact_category_id")
