@@ -126,6 +126,10 @@ public class ProjectServiceImpl implements ProjectService {
 
         Page<Project> projects = projectRepository.findAll(pageable);
 
+        if(projects.isEmpty()){
+            throw CustomExceptions.noContent(Constants.RESPONSE_STATUS_SUCCESS,"No Data");
+        }
+
         int totalPage = projects.getTotalPages();
         if (pageCurrent > totalPage) {
             throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("currentPage", MessageConstants.CURRENT_PAGE_EXCEED_TOTAL_PAGES));
