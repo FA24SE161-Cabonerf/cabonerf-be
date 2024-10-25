@@ -14,9 +14,10 @@ public interface ProjectConverter {
     ProjectDto fromProjectToProjectDto(Project project);
 
     @Mapping(source = "lifeCycleImpactAssessmentMethod", target = "method")
-    @Mapping(source = "user", target = "createBy")
+    @Mapping(source = "user", target = "owner")
     ProjectDto toDto(Project project);
 
     @Mapping(source = "lifeCycleImpactAssessmentMethod", target = "method")
+
     UpdateProjectDto fromDetailToDto(Project project);
 }
