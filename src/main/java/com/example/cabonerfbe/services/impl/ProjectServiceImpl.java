@@ -104,17 +104,17 @@ public class ProjectServiceImpl implements ProjectService {
 
         project = projectRepository.save(project);
 
-        List<ImpactMethodCategory> list = impactMethodCategoryRepository.findByMethod(request.getMethodId());
-        List<ProjectImpactValue> listValues = new ArrayList<>();
-        for(ImpactMethodCategory x:list){
-            ProjectImpactValue values = new ProjectImpactValue();
-            values.setProject(project);
-            values.setValue(0);
-            values.setImpactMethodCategory(x);
-            listValues.add(values);
-        }
-
-        projectImpactValueRepository.saveAll(listValues);
+//        List<ImpactMethodCategory> list = impactMethodCategoryRepository.findByMethod(request.getMethodId());
+//        List<ProjectImpactValue> listValues = new ArrayList<>();
+//        for(ImpactMethodCategory x:list){
+//            ProjectImpactValue values = new ProjectImpactValue();
+//            values.setProject(project);
+//            values.setValue(0);
+//            values.setImpactMethodCategory(x);
+//            listValues.add(values);
+//        }
+//
+//        projectImpactValueRepository.saveAll(listValues);
         return CreateProjectResponse.builder()
                 .projectId(project.getId())
                 .build();
