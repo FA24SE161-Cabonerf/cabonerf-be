@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LifeCycleImpactAssessmentMethodRepository extends JpaRepository<LifeCycleImpactAssessmentMethod,Long> {
@@ -16,5 +17,5 @@ public interface LifeCycleImpactAssessmentMethodRepository extends JpaRepository
     @Query("SELECT a FROM LifeCycleImpactAssessmentMethod a WHERE a.name like ?1 ")
     List<LifeCycleImpactAssessmentMethod> findAllByName(String name);
 
-    LifeCycleImpactAssessmentMethod findByIdAndStatus(Long id, boolean status);
+    Optional<LifeCycleImpactAssessmentMethod> findByIdAndStatus(Long id, boolean status);
 }

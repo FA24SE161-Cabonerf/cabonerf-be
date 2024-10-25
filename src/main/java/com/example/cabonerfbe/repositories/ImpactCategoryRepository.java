@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ImpactCategoryRepository extends JpaRepository<ImpactCategory,Long> {
@@ -17,4 +18,6 @@ public interface ImpactCategoryRepository extends JpaRepository<ImpactCategory,L
     List<ImpactCategory> findAllByStatus(boolean status);
     @Query(QueryStrings.FIND_CATEGORY_BY_IMPACT_METHOD_ID)
     List<ImpactCategory> findAllByImpactMethodId(@Param("methodId") long methodId);
+
+    Optional<ImpactCategory> findByIdAndStatus(long categoryId, boolean statusTrue);
 }
