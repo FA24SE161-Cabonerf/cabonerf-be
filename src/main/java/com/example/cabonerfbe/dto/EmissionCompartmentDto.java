@@ -10,4 +10,5 @@ import lombok.*;
 public class EmissionCompartmentDto {
     private long id;
     private String name;
+    private String description;
 }

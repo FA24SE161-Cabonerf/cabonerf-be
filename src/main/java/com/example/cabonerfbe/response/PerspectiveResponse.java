@@ -1,7 +1,5 @@
-package com.example.cabonerfbe.models;
+package com.example.cabonerfbe.response;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,9 +9,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table
-public class EmissionCompartment extends Base{
+public class PerspectiveResponse {
+    private long id;
     private String name;
     private String description;
+    private String abbr;
 }

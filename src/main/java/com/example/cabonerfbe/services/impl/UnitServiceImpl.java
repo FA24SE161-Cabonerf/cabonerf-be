@@ -70,7 +70,10 @@ public class UnitServiceImpl implements UnitService {
     public UnitResponse createUnitInUnitGroup(Long groupId, CreateUnitRequest request) {
         UnitGroup unitGroup = unitGroupRepository.findById(groupId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_UNIT_GROUP_FOUND + " id: " + groupId));
-
+        if (unitGroup.getUnitGroupType().equalsIgnoreCase(Constants.UNIT_GROUP_TYPE_NORMAL) && request.getIsDefault() == Constants.IS_DEFAULT_TRUE) {
+            if (unitRepository.existsByIsDefaultAndStatusAndUnitGroup(Constants.IS_DEFAULT_TRUE, Constants.STATUS_TRUE, unitGroup))
+                throw CustomExceptions.badRequest(MessageConstants.DEFAULT_UNIT_EXIST);
+        }
         Unit newUnit = unitConverter.fromUnitRequestToUnit(request);
         newUnit.setUnitGroup(unitGroup);
 
@@ -83,18 +86,30 @@ public class UnitServiceImpl implements UnitService {
         if (unit == null) {
             throw CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND + " id: " + unitId);
         }
+
         UnitGroup unitGroup = unitGroupRepository.findByIdAndStatus(request.getUnitGroupId(), Constants.STATUS_TRUE);
         if (unitGroup == null) {
             throw CustomExceptions.notFound(MessageConstants.NO_UNIT_GROUP_FOUND + " id: " + request.getUnitGroupId());
         }
+
+        if (request.getIsDefault() == Constants.IS_DEFAULT_TRUE) {
+            if (!unit.getIsDefault() && Constants.UNIT_GROUP_TYPE_NORMAL.equalsIgnoreCase(unitGroup.getUnitGroupType())) {
+                if (unitRepository.existsByIsDefaultAndStatusAndUnitGroup(Constants.IS_DEFAULT_TRUE, Constants.STATUS_TRUE, unitGroup)) {
+                    throw CustomExceptions.badRequest(MessageConstants.DEFAULT_UNIT_EXIST);
+                }
+            }
+        }
+
         unit.setName(request.getUnitName());
         unit.setConversionFactor(request.getConversionFactor());
         unit.setIsDefault(request.getIsDefault());
         unit.setUnitGroup(unitGroup);
+
         unitRepository.save(unit);
 
         return unitConverter.fromUnitToUnitResponse(unit);
     }
+
 
     @Override
     public UnitResponse deleteUnitById(Long unitId) {

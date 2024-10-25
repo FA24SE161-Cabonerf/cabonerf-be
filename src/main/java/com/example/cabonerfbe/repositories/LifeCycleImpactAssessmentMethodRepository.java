@@ -15,4 +15,6 @@ public interface LifeCycleImpactAssessmentMethodRepository extends JpaRepository
 
     @Query("SELECT a FROM LifeCycleImpactAssessmentMethod a WHERE a.name like ?1 ")
     List<LifeCycleImpactAssessmentMethod> findAllByName(String name);
+
+    LifeCycleImpactAssessmentMethod findByIdAndStatus(Long id, boolean status);
 }
