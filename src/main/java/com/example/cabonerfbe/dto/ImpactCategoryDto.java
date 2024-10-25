@@ -11,6 +11,7 @@ public class ImpactCategoryDto {
     private long id;
     private String name;
     private String indicator;
+    private String iconUrl;
     private String indicatorDescription;
     private String unit;
 
