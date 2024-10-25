@@ -121,13 +121,19 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize) {
+    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize,String userId) {
         Pageable pageable = PageRequest.of(pageCurrent - PAGE_INDEX_ADJUSTMENT, pageSize);
 
-        Page<Project> projects = projectRepository.findAll(pageable);
+        Page<Project> projects = projectRepository.findAll(Long.parseLong(userId),pageable);
 
         if(projects.isEmpty()){
-            throw CustomExceptions.noContent(Constants.RESPONSE_STATUS_SUCCESS,"No Data");
+            GetAllProjectResponse response = new GetAllProjectResponse();
+            response.setPageCurrent(0);
+            response.setPageSize(0);
+            response.setTotalPage(0);
+            response.setProjects(null);
+
+            return response;
         }
 
         int totalPage = projects.getTotalPages();

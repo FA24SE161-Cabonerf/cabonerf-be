@@ -15,7 +15,7 @@ public interface ProjectService {
     List<Project> getProjectListByMethodId(long id);
     Optional<Project> getProjectById(long id);
     CreateProjectResponse createProject(long userId, CreateProjectRequest request);
-    GetAllProjectResponse getAllProject(int pageCurrent, int pageSize);
+    GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, String userId);
     GetProjectByIdResponse getById(long id);
     UpdateProjectDto updateDetail(long id, UpdateProjectDetailRequest request);
     List<Project> deleteProject(long id);

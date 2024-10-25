@@ -29,8 +29,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     Project findByNameAndStatus(String name, boolean status);
 
-    @Query("SELECT p FROM Project p WHERE p.status = true")
-    Page<Project> findAll(Pageable pageable);
+    @Query("SELECT p FROM Project p WHERE p.user.id = ?1 AND p.status = true")
+    Page<Project> findAll(long userId, Pageable pageable);
 
     @Query("SELECT p FROM Project p WHERE p.id = ?1 AND p.status = true")
     Optional<Project> findById(long id);
