@@ -28,13 +28,25 @@ public class API_PARAMS {
 
     public static final String IMPACT = "/impacts";
     public static final String GET_ALL_IMPACT_CATEGORIES = "/impact-categories";
-    public static final String GET_IMPACT_CATEGORY_BY_ID = "/impact-categories/{id}";
+    public static final String GET_IMPACT_CATEGORY_BY_ID = "/impact-categories/{categoryId}";
+    public static final String CREATE_IMPACT_CATEGORY_FOR_IMPACT_METHOD = "/impact-methods/{methodId}/categories";
+    public static final String GET_CATEGORY_BY_METHOD_ID = "/impact-methods/{methodId}/categories";
+
 
     public static final String GET_ALL_IMPACT_METHODS = "/impact-methods";
-    public static final String GET_IMPACT_METHOD_BY_ID = "/impact-methods/{id}";
-    public static final String GET_CATEGORY_BY_METHOD_ID = "/impact-methods/{id}/categories";
-    public static final String GET_ALL_MIDPOINT_FACTORS = "/midpoints";
-    public static final String GET_MIDPOINT_FACTOR_BY_ID = "/midpoints/{id}";
+    public static final String GET_IMPACT_METHOD_BY_ID = "/impact-methods/{methodId}";
+    public static final String CREATE_IMPACT_METHOD = "/impact-methods";
+    public static final String UPDATE_IMPACT_METHOD_BY_ID = "/impact-methods/{methodId}";
+    public static final String DELETE_IMPACT_METHOD_BY_ID = "/impact-methods/{methodId}";
+
+
+    public static final String GET_ALL_MIDPOINT_FACTORS = "/midpoint-factors";
+    public static final String GET_MIDPOINT_FACTOR_BY_ID = "/midpoint-factors/{id}";
+
+    public static final String GET_ALL_MIDPOINT_IMPACT_CATEGORY = "/midpoint-categories";
+    public static final String GET_MIDPOINT_IMPACT_CATEGORY_BY_ID = "/midpoint-categories";
+
+
 
     /************************
      *      PROJECTS APIs     *
@@ -89,4 +101,16 @@ public class API_PARAMS {
      ************************/
     public static final String ADMIN = "/admin";
 
+    /************************
+     *   PERSPECTIVE APIs   *
+     ************************/
+    public static final String PERSPECTIVE = "/perspectives";
+    public static final String GET_ALL_PERSPECTIVE = "/";
+
+    /************************
+     *   EMISSIONS APIs   *
+     ************************/
+    public static final String EMISSIONS = "/emissions";
+    public static final String GET_ALL_EMISSION_COMPARTMENTS = "/emission-compartments";
+    public static final String GET_EMISSION_COMPARTMENTS_BY_ID = "/emission-compartments/{id}";
 }

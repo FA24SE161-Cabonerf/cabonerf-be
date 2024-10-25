@@ -2,6 +2,7 @@ package com.example.cabonerfbe.converter;
 
 import com.example.cabonerfbe.dto.LifeCycleImpactAssessmentMethodDto;
 import com.example.cabonerfbe.models.LifeCycleImpactAssessmentMethod;
+import com.example.cabonerfbe.response.ImpactMethodResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
@@ -14,4 +15,6 @@ public interface LifeCycleImpactAssessmentMethodConverter {
     LifeCycleImpactAssessmentMethodDto fromLifeCycleImpactAssessmentMethodToLifeCycleImpactAssessmentMethodDto(LifeCycleImpactAssessmentMethod lifeCycleImpactAssessmentMethod);
 
     List<LifeCycleImpactAssessmentMethodDto> fromMethodListToMethodDtoList(List<LifeCycleImpactAssessmentMethod> impactMethods);
+
+    ImpactMethodResponse fromImpactMethodToImpactMethodResponse(LifeCycleImpactAssessmentMethod impactMethod);
 }

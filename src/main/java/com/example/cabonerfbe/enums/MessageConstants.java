@@ -47,4 +47,16 @@ public class MessageConstants {
     public static final String UPDATE_UNIT_GROUP_BY_ID_SUCCESS = "Update unit group by id success";
     public static final String DELETE_UNIT_GROUP_BY_ID_SUCCESS = "Delete unit group by id success";
 
+    public static final String CREATE_IMPACT_METHOD_SUCCESS = "Create impact method success";
+    public static final String IMPACT_METHOD_EXIST = "Impact method exist";
+    public static final String NO_PERSPECTIVE_FOUND = "No perspective found";
+    public static final String UPDATE_IMPACT_METHOD_SUCCESS = "Update impact method by id success";
+    public static final String DELETE_IMPACT_METHOD_SUCCESS = "Delete impact method by id success";
+    public static final String CREATE_IMPACT_CATEGORY_FOR_IMPACT_METHOD_SUCCESS = "Create impact category for impact method success";
+    public static final String GET_ALL_PERSPECTIVE_SUCCESS = "Get all perspective success";
+    public static final String GET_ALL_EMISSION_COMPARTMENTS_SUCCESS = "Get all emission compartments success";
+    public static final String NO_EMISSION_COMPARTMENT_FOUND = "No emission compartment found";
+    public static final String GET_ALL_MIDPOINT_IMPACT_CATEGORY_SUCCESS = "Get all midpoint impact categories success";
+
+    public static final String NO_MIDPOINT_IMPACT_CATEGORY_FOUND = "No midpoint impact category found";
 }
