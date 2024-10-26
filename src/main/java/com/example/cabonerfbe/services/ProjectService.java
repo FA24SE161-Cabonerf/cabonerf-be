@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.services;
 
+import com.example.cabonerfbe.dto.GetProjectByIdDto;
 import com.example.cabonerfbe.dto.UpdateProjectDto;
 import com.example.cabonerfbe.models.Project;
 import com.example.cabonerfbe.request.CreateProjectRequest;
@@ -17,7 +18,7 @@ public interface ProjectService {
     Optional<Project> getProjectById(UUID id);
     CreateProjectResponse createProject(UUID userId, CreateProjectRequest request);
     GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId);
-    GetProjectByIdResponse getById(UUID id);
+    GetProjectByIdDto getById(UUID id);
     UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request);
     List<Project> deleteProject(UUID id);
 }

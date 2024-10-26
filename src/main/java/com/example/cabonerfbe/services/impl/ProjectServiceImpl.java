@@ -157,7 +157,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public GetProjectByIdResponse getById(UUID id) {
+    public GetProjectByIdDto getById(UUID id) {
         if(projectRepository.findById(id).isEmpty()){
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Project not exist");
         }
@@ -180,9 +180,7 @@ public class ProjectServiceImpl implements ProjectService {
         dto.setProcesses(processDto);
         dto.setConnectors(connectorConverter.fromListConnectorToConnectorDto(connectorRepository.findAllByProject(project.getId())));
 
-        return GetProjectByIdResponse.builder()
-                .project(dto)
-                .build();
+        return dto;
     }
 
     @Override
