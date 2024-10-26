@@ -2,13 +2,15 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.util.UUID;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Getter
 @Setter
 public class SubscriptionTypeDto {
-    long id;
+    UUID id;
     String subscriptionName;
     String description;
     int projectLimit;

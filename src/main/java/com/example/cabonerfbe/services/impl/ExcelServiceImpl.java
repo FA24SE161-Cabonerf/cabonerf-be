@@ -136,7 +136,8 @@ public class ExcelServiceImpl implements ExcelService {
 
     }
 
-    private ImpactMethodCategory getImpactMethodCategory(String methodName, long categoryId, String lifeCycleImpactAssessmentMethodName) {
+    private ImpactMethodCategory getImpactMethodCategory(String methodName,
+                                                         UUID categoryId, String lifeCycleImpactAssessmentMethodName) {
         LifeCycleImpactAssessmentMethod method = methodRepository.findByName(methodName, lifeCycleImpactAssessmentMethodName);
         return impactMethodCategoryRepository.findByImpactCategoryAndImpactMethod(categoryId, method.getId());
     }

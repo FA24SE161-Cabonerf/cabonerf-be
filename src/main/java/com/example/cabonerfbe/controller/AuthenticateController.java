@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.USERS)
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
@@ -48,7 +50,7 @@ public class AuthenticateController {
     }
 
     @PostMapping(API_PARAMS.LOGOUT)
-    public ResponseEntity<ResponseObject> logout(@RequestHeader(value = "x-user-id", required = true) String userId, @Valid @RequestBody(required = true) LogoutRequest logoutRequest) {
+    public ResponseEntity<ResponseObject> logout(@RequestHeader(value = "x-user-id", required = true) UUID userId, @Valid @RequestBody(required = true) LogoutRequest logoutRequest) {
         log.info("Start logout. userID: {}, request: {}", userId, logoutRequest);
         return ResponseEntity.ok().body(
                 authenticationService.logout(logoutRequest, userId)

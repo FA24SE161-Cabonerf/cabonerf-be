@@ -7,9 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface LifeCycleImpactAssessmentMethodRepository extends JpaRepository<LifeCycleImpactAssessmentMethod,Long> {
+public interface LifeCycleImpactAssessmentMethodRepository extends JpaRepository<LifeCycleImpactAssessmentMethod, UUID> {
 
     @Query("SELECT a FROM LifeCycleImpactAssessmentMethod a WHERE a.perspective.name like ?1 and a.name like ?2 ")
     LifeCycleImpactAssessmentMethod findByName(String name, String lifeCycleImpactAssessmentMethodName);
@@ -17,5 +18,5 @@ public interface LifeCycleImpactAssessmentMethodRepository extends JpaRepository
     @Query("SELECT a FROM LifeCycleImpactAssessmentMethod a WHERE a.name like ?1 ")
     List<LifeCycleImpactAssessmentMethod> findAllByName(String name);
 
-    Optional<LifeCycleImpactAssessmentMethod> findByIdAndStatus(Long id, boolean status);
+    Optional<LifeCycleImpactAssessmentMethod> findByIdAndStatus(UUID id, boolean status);
 }

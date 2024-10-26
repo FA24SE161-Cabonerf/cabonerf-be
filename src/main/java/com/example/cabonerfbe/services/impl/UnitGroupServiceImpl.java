@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UnitGroupServiceImpl implements UnitGroupService {
@@ -34,7 +35,7 @@ public class UnitGroupServiceImpl implements UnitGroupService {
     }
 
     @Override
-    public UnitGroupDto getUnitGroupById(long id) {
+    public UnitGroupDto getUnitGroupById(UUID id) {
         UnitGroup unitGroup = unitGroupRepository.findByIdAndStatus(id, Constants.STATUS_TRUE);
         if (unitGroup == null) {
             throw CustomExceptions.badRequest(MessageConstants.GET_UNIT_GROUP_BY_ID_NOT_FOUND);
@@ -56,7 +57,7 @@ public class UnitGroupServiceImpl implements UnitGroupService {
     }
 
     @Override
-    public UnitGroupResponse updateUnitGroupById(Long groupId, UpdateUnitGroupRequest request) {
+    public UnitGroupResponse updateUnitGroupById(UUID groupId, UpdateUnitGroupRequest request) {
         UnitGroup unitGroup = unitGroupRepository.findByIdAndStatus(groupId, Constants.STATUS_TRUE);
         if (unitGroup == null) {
             throw CustomExceptions.notFound(MessageConstants.NO_UNIT_GROUP_FOUND);
@@ -67,7 +68,7 @@ public class UnitGroupServiceImpl implements UnitGroupService {
     }
 
     @Override
-    public UnitGroupResponse deleteUnitGroupById(Long groupId) {
+    public UnitGroupResponse deleteUnitGroupById(UUID groupId) {
         UnitGroup unitGroup = unitGroupRepository.findByIdAndStatus(groupId, Constants.STATUS_TRUE);
         if (unitGroup == null) {
             throw CustomExceptions.notFound(MessageConstants.NO_UNIT_GROUP_FOUND);

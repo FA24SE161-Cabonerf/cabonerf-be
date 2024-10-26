@@ -5,20 +5,22 @@ import com.example.cabonerfbe.request.UpdateUnitRequest;
 import com.example.cabonerfbe.response.UnitResponse;
 
 import java.util.List;
+import java.util.UUID;
+
 import com.example.cabonerfbe.dto.PageList;
 import com.example.cabonerfbe.dto.UnitDto;
 
 public interface UnitService {
-    List<UnitResponse> getAllUnitsFromGroupId(long id);
+    List<UnitResponse> getAllUnitsFromGroupId(UUID id);
 
-    UnitResponse createUnitInUnitGroup(Long groupId, CreateUnitRequest request);
+    UnitResponse createUnitInUnitGroup(UUID groupId, CreateUnitRequest request);
 
     List<UnitResponse> getAllUnits();
 
-    UnitResponse getUnitById(Long unitId);
+    UnitResponse getUnitById(UUID unitId);
 
-    UnitResponse updateUnitById(Long unitId, UpdateUnitRequest request);
+    UnitResponse updateUnitById(UUID unitId, UpdateUnitRequest request);
 
-    UnitResponse deleteUnitById(Long unitId);
+    UnitResponse deleteUnitById(UUID unitId);
 
 }

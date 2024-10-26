@@ -10,13 +10,14 @@ import com.example.cabonerfbe.response.GetProjectByIdResponse;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface ProjectService {
-    List<Project> getProjectListByMethodId(long id);
-    Optional<Project> getProjectById(long id);
-    CreateProjectResponse createProject(long userId, CreateProjectRequest request);
-    GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, String userId);
-    GetProjectByIdResponse getById(long id);
-    UpdateProjectDto updateDetail(long id, UpdateProjectDetailRequest request);
-    List<Project> deleteProject(long id);
+    List<Project> getProjectListByMethodId(UUID id);
+    Optional<Project> getProjectById(UUID id);
+    CreateProjectResponse createProject(UUID userId, CreateProjectRequest request);
+    GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId);
+    GetProjectByIdResponse getById(UUID id);
+    UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request);
+    List<Project> deleteProject(UUID id);
 }

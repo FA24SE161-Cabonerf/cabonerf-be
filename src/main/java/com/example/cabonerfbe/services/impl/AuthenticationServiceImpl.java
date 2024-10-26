@@ -105,10 +105,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .email(request.getEmail())
                 .fullName(request.getFullName())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .userStatus(statusRepository.findById(1L).get())
-                .userVerifyStatus(userVerifyStatusRepository.findById(2L).get())
-                .role(roleRepository.findById(4L).get())
-                .subscription(subscriptionTypeRepository.findById(1L).get())
+                .userStatus(statusRepository.findUserStatusByName("Active").get())
+                .userVerifyStatus(userVerifyStatusRepository.findByName("Verified").get())
+                .role(roleRepository.findByName("LCA Staff").get())
+                .subscription(subscriptionTypeRepository.findBySubscriptionName("Basic").get())
                 .status(true)
                 .build();
 
@@ -151,9 +151,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public ResponseObject logout(LogoutRequest request, String userId) {
+    public ResponseObject logout(LogoutRequest request, UUID userId) {
 
-        long user_id = Long.parseLong(userId);
         String refresh_token = "";
 
         refresh_token = request.getRefreshToken().substring(7);
@@ -164,7 +163,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
         Optional<RefreshToken> _refresh_token = refreshTokenRepository.findByToken(refresh_token);
         var user = userRepository.findById(_refresh_token.get().getUsers().getId()).get();
-        if(user.getId() != user_id) {
+        if(user.getId() != userId) {
             throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token does not belong to user with id " + userId));
         }
         try {
@@ -222,7 +221,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var user = userRepository.findByEmail(email).get();
         token.setValid(false);
         verificationTokenRepository.save(token);
-        user.setUserVerifyStatus(userVerifyStatusRepository.findById(2L).get());
+        user.setUserVerifyStatus(userVerifyStatusRepository.findByName("Verified").get());
 
         Optional<RefreshToken> refreshToken = refreshTokenRepository.findTopByTokenOrderByCreatedAtDesc(user.getId());
         refreshToken.get().setValid(false);

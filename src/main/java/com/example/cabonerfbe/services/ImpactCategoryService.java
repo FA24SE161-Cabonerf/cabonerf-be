@@ -5,14 +5,15 @@ import com.example.cabonerfbe.request.BaseImpactCategoryRequest;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface ImpactCategoryService {
     List<ImpactCategoryDto> getImpactCategoryList();
-    ImpactCategoryDto getImpactCategoryById(long id);
+    ImpactCategoryDto getImpactCategoryById(UUID id);
 
     ImpactCategoryDto createImpactCategory(BaseImpactCategoryRequest request);
 
-    ImpactCategoryDto updateImpactCategoryById(long categoryId, BaseImpactCategoryRequest request);
+    ImpactCategoryDto updateImpactCategoryById(UUID categoryId, BaseImpactCategoryRequest request);
 
-    ImpactCategoryDto deleteImpactCategoryById(long categoryId);
+    ImpactCategoryDto deleteImpactCategoryById(UUID categoryId);
 }

@@ -3,6 +3,7 @@ package com.example.cabonerfbe.dto;
 import lombok.*;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -10,7 +11,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 public class UserVerifyStatusDto implements Serializable {
-    long id;
+    UUID id;
     String statusName;
     String description;
 }

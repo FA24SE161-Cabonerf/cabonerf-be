@@ -6,10 +6,11 @@ import com.example.cabonerfbe.response.MidpointImpactCharacterizationFactorsResp
 import com.example.cabonerfbe.response.MidpointSubstanceFactorsResponse;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface MidpointService {
     List<MidpointImpactCharacterizationFactorsResponse> getAllMidpointFactors();
-    MidpointImpactCharacterizationFactorsResponse getMidpointFactorById(Long id);
+    MidpointImpactCharacterizationFactorsResponse getMidpointFactorById(UUID id);
 
     PageList<MidpointSubstanceFactorsResponse> getAllMidpointFactorsAdmin(PaginationRequest request);
 }

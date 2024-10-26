@@ -9,15 +9,16 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface ImpactCategoryRepository extends JpaRepository<ImpactCategory,Long> {
+public interface ImpactCategoryRepository extends JpaRepository<ImpactCategory, UUID> {
     @Query("SELECT a FROM ImpactCategory a WHERE UPPER(a.name) LIKE CONCAT('%', ?1, '%')")
     ImpactCategory findByName(String name);
 
     List<ImpactCategory> findAllByStatus(boolean status);
     @Query(QueryStrings.FIND_CATEGORY_BY_IMPACT_METHOD_ID)
-    List<ImpactCategory> findAllByImpactMethodId(@Param("methodId") long methodId);
+    List<ImpactCategory> findAllByImpactMethodId(@Param("methodId") UUID methodId);
 
-    Optional<ImpactCategory> findByIdAndStatus(long categoryId, boolean statusTrue);
+    Optional<ImpactCategory> findByIdAndStatus(UUID categoryId, boolean statusTrue);
 }

@@ -7,14 +7,15 @@ import com.example.cabonerfbe.response.UnitGroupResponse;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface UnitGroupService {
     List<UnitGroupDto> getAllUnitGroup();
-    UnitGroupDto getUnitGroupById(long id);
+    UnitGroupDto getUnitGroupById(UUID id);
 
     UnitGroupResponse createUnitGroup(CreateUnitGroupRequest request);
 
-    UnitGroupResponse updateUnitGroupById(Long groupId, UpdateUnitGroupRequest request);
+    UnitGroupResponse updateUnitGroupById(UUID groupId, UpdateUnitGroupRequest request);
 
-    UnitGroupResponse deleteUnitGroupById(Long groupId);
+    UnitGroupResponse deleteUnitGroupById(UUID groupId);
 }

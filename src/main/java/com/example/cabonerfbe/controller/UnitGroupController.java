@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.UNIT_GROUP)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -35,7 +37,7 @@ public class UnitGroupController {
     }
 
     @GetMapping(API_PARAMS.UNIT_GROUP_BY_ID)
-    public ResponseEntity<ResponseObject> getUnitGroupById(@PathVariable long id) {
+    public ResponseEntity<ResponseObject> getUnitGroupById(@PathVariable UUID id) {
         log.info("Start getUnitGroupById. id:{}", id);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_UNIT_GROUP_BY_ID_SUCCESS, unitGroupService.getUnitGroupById(id)
@@ -51,7 +53,7 @@ public class UnitGroupController {
     }
 
     @PutMapping(API_PARAMS.UPDATE_UNIT_GROUP_BY_ID)
-    public ResponseEntity<ResponseObject> updateUnitGroupById(@PathVariable Long groupId, @Valid @RequestBody UpdateUnitGroupRequest request) {
+    public ResponseEntity<ResponseObject> updateUnitGroupById(@PathVariable UUID groupId, @Valid @RequestBody UpdateUnitGroupRequest request) {
         log.info("Start updateUnitGroupById. groupId: {}, request:{}", groupId, request);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.UPDATE_UNIT_GROUP_BY_ID_SUCCESS, unitGroupService.updateUnitGroupById(groupId, request))
@@ -59,7 +61,7 @@ public class UnitGroupController {
     }
 
     @DeleteMapping(API_PARAMS.DELETE_UNIT_GROUP_BY_ID)
-    public ResponseEntity<ResponseObject> deleteUnitGroupById(@PathVariable Long groupId) {
+    public ResponseEntity<ResponseObject> deleteUnitGroupById(@PathVariable UUID groupId) {
         log.info("Start deleteUnitGroupById. groupId: {}", groupId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.DELETE_UNIT_GROUP_BY_ID_SUCCESS, unitGroupService.deleteUnitGroupById(groupId))

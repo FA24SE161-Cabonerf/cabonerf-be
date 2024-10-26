@@ -2,6 +2,8 @@ package com.example.cabonerfbe.response;
 
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -9,7 +11,7 @@ import lombok.*;
 @Builder
 @Data
 public class MidpointSubstanceFactorsResponse {
-    private String id;
+    private UUID id;
     private String casNumber;
     private String name;
     private String chemicalName;

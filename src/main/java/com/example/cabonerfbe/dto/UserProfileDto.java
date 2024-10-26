@@ -2,13 +2,15 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.util.UUID;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Getter
 @Setter
 public class UserProfileDto {
-    long id;
+    UUID id;
     String fullName;
     String email;
     String phone;

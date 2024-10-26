@@ -2,13 +2,15 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.util.UUID;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Getter
 @Setter
 public class MidpointImpactCharacterizationFactorsDto {
-    private long id;
+    private UUID id;
     private ImpactMethodCategoryDto impactMethodCategory;
     private EmissionSubstancesDto emissionSubstances;
     private String scientificValue;

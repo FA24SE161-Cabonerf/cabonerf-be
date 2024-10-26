@@ -7,11 +7,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface ProjectImpactValueRepository extends JpaRepository<ProjectImpactValue, Long> {
+public interface ProjectImpactValueRepository extends JpaRepository<ProjectImpactValue, UUID> {
 
     @Query("SELECT p FROM ProjectImpactValue p WHERE p.project.id = ?1")
-    List<ProjectImpactValue> findAllByProjectId(long id);
+    List<ProjectImpactValue> findAllByProjectId(UUID id);
 
 }

@@ -66,18 +66,18 @@ public class ProjectServiceImpl implements ProjectService {
     private static final int PAGE_INDEX_ADJUSTMENT = 1;
 
     @Override
-    public List<Project> getProjectListByMethodId(long id) {
+    public List<Project> getProjectListByMethodId(UUID id) {
 //        return projectRepository.getProjectLevelDetail(id);
         return null;
     }
 
     @Override
-    public Optional<Project> getProjectById(long id) {
+    public Optional<Project> getProjectById(UUID id) {
         return Optional.empty();
     }
 
     @Override
-    public CreateProjectResponse createProject(long userId, CreateProjectRequest request) {
+    public CreateProjectResponse createProject(UUID userId, CreateProjectRequest request) {
 //        if(projectRepository.findByNameAndStatus(request.getName(),true) != null){
 //            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Project name already exists");
 //        }
@@ -121,10 +121,10 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize,String userId) {
+    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize,UUID userId) {
         Pageable pageable = PageRequest.of(pageCurrent - PAGE_INDEX_ADJUSTMENT, pageSize);
 
-        Page<Project> projects = projectRepository.findAll(Long.parseLong(userId),pageable);
+        Page<Project> projects = projectRepository.findAll(userId,pageable);
 
         if(projects.isEmpty()){
             GetAllProjectResponse response = new GetAllProjectResponse();
@@ -157,7 +157,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public GetProjectByIdResponse getById(long id) {
+    public GetProjectByIdResponse getById(UUID id) {
         if(projectRepository.findById(id).isEmpty()){
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Project not exist");
         }
@@ -186,7 +186,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public UpdateProjectDto updateDetail(long id, UpdateProjectDetailRequest request) {
+    public UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request) {
         if ((Objects.isNull(request.getName()) || request.getName().isEmpty())
                 && (Objects.isNull(request.getDescription()) || request.getDescription().isEmpty())
                 && (Objects.isNull(request.getLocation()) || request.getLocation().isEmpty())) {
@@ -213,7 +213,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public List<Project> deleteProject(long id) {
+    public List<Project> deleteProject(UUID id) {
         Optional<Project> project = projectRepository.findById(id);
         if(project.isEmpty()){
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Project not exist");

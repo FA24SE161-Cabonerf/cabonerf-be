@@ -12,6 +12,7 @@ import java.sql.Timestamp;
 @Entity
 @Table
 public class EmailVerificationToken extends Base{
+    @Column(length = 500)
     private String token;
     private Timestamp expiryDate;
     private boolean isValid;

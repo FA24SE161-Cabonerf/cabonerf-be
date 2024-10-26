@@ -7,18 +7,19 @@ import com.example.cabonerfbe.response.ImpactMethodCategoryResponse;
 import com.example.cabonerfbe.response.ImpactMethodResponse;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface ImpactMethodService {
     List<LifeCycleImpactAssessmentMethodDto> getAllImpactMethods();
-    LifeCycleImpactAssessmentMethodDto getImpactMethodById(long id);
+    LifeCycleImpactAssessmentMethodDto getImpactMethodById(UUID id);
 
-    List<ImpactCategoryDto> getCategoryByMethodId(long id);
+    List<ImpactCategoryDto> getCategoryByMethodId(UUID id);
 
     ImpactMethodResponse createImpactMethod(BaseImpactMethodRequest request);
 
-    ImpactMethodResponse updateImpactMethodById(long methodId, BaseImpactMethodRequest request);
+    ImpactMethodResponse updateImpactMethodById(UUID methodId, BaseImpactMethodRequest request);
 
-    ImpactMethodResponse deleteImpactMethodById(long methodId);
+    ImpactMethodResponse deleteImpactMethodById(UUID methodId);
 
-    ImpactMethodCategoryResponse addImpactCategoryToImpactMethod(long methodId, long categoryId);
+    ImpactMethodCategoryResponse addImpactCategoryToImpactMethod(UUID methodId, UUID categoryId);
 }

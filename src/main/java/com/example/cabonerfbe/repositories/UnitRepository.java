@@ -10,9 +10,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface UnitRepository extends JpaRepository<Unit, Long> {
+public interface UnitRepository extends JpaRepository<Unit, UUID> {
     @Query("SELECT a FROM Unit a WHERE a.name LIKE CONCAT('%', ?1, '%')")
     List<Unit> findByName(String name);
 
@@ -21,14 +22,14 @@ public interface UnitRepository extends JpaRepository<Unit, Long> {
 
     List<Unit> findAllByStatus(boolean statusTrue);
 
-    List<Unit> findAllByStatusAndUnitGroupId(boolean status, Long unitGroupId);
+    List<Unit> findAllByStatusAndUnitGroupId(boolean status, UUID unitGroupId);
 
-    Unit findByIdAndStatus(long unitId, boolean statusTrue);
+    Unit findByIdAndStatus(UUID unitId, boolean statusTrue);
 
     @Query("SELECT u FROM Unit u WHERE u.unitGroup.id = ?1")
-    List<Unit> findAllByUnitGroupId(long unitGroupId);
+    List<Unit> findAllByUnitGroupId(UUID unitGroupId);
     @Query("SELECT u FROM Unit u WHERE u.unitGroup.id = ?1")
-    Page<Unit> findAllByUnitGroupIdWithPage(long unitGroupId, Pageable pageable);
+    Page<Unit> findAllByUnitGroupIdWithPage(UUID unitGroupId, Pageable pageable);
 
     boolean existsByIsDefaultAndStatusAndUnitGroup(Boolean isDefault, boolean status, UnitGroup unitGroup);
 }

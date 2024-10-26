@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.IMPACT)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,7 +35,7 @@ public class ImpactMethodController {
     }
 
     @GetMapping(API_PARAMS.GET_IMPACT_METHOD_BY_ID)
-    public ResponseEntity<ResponseObject> getImpactMethodById(@PathVariable long methodId) {
+    public ResponseEntity<ResponseObject> getImpactMethodById(@PathVariable UUID methodId) {
         log.info("Start getImpactMethodById. id {}", methodId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_IMPACT_METHOD_BY_ID_SUCCESS, impactMethodService.getImpactMethodById(methodId))
@@ -41,7 +43,7 @@ public class ImpactMethodController {
     }
 
     @GetMapping(API_PARAMS.GET_CATEGORY_BY_METHOD_ID)
-    public ResponseEntity<ResponseObject> getCategoryByMethodId(@PathVariable long methodId) {
+    public ResponseEntity<ResponseObject> getCategoryByMethodId(@PathVariable UUID methodId) {
         log.info("Start getCategoryByMethodId. id {}", methodId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_CATEGORY_BY_METHOD_ID_SUCCESS, impactMethodService.getCategoryByMethodId(methodId))
@@ -57,7 +59,7 @@ public class ImpactMethodController {
     }
 
     @PutMapping(API_PARAMS.UPDATE_IMPACT_METHOD_BY_ID)
-    public ResponseEntity<ResponseObject> updateImpactMethodById(@PathVariable long methodId, @Valid @RequestBody BaseImpactMethodRequest request) {
+    public ResponseEntity<ResponseObject> updateImpactMethodById(@PathVariable UUID methodId, @Valid @RequestBody BaseImpactMethodRequest request) {
         log.info("Start updateImpactMethodById, methodId {}, request {}", methodId, request);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.UPDATE_IMPACT_METHOD_SUCCESS, impactMethodService.updateImpactMethodById(methodId, request))
@@ -65,7 +67,7 @@ public class ImpactMethodController {
     }
 
     @DeleteMapping(API_PARAMS.DELETE_IMPACT_METHOD_BY_ID)
-    public ResponseEntity<ResponseObject> deleteImpactMethodById(@PathVariable long methodId) {
+    public ResponseEntity<ResponseObject> deleteImpactMethodById(@PathVariable UUID methodId) {
         log.info("Start deleteImpactMethodById, methodId {}", methodId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.DELETE_IMPACT_METHOD_SUCCESS, impactMethodService.deleteImpactMethodById(methodId))
@@ -73,7 +75,7 @@ public class ImpactMethodController {
     }
 
     @PostMapping(API_PARAMS.ADD_IMPACT_CATEGORY_TO_IMPACT_METHOD)
-    public ResponseEntity<ResponseObject> addImpactCategoryToImpactMethod(@PathVariable long methodId, @PathVariable long categoryId) {
+    public ResponseEntity<ResponseObject> addImpactCategoryToImpactMethod(@PathVariable UUID methodId, @PathVariable UUID categoryId) {
         log.info("Start addImpactCategoryToImpactMethod. methodId {}, categoryId {}", methodId, categoryId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.ADD_IMPACT_CATEGORY_TO_IMPACT_METHOD_SUCCESS, impactMethodService.addImpactCategoryToImpactMethod(methodId, categoryId))

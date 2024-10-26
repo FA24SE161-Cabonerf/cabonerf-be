@@ -4,6 +4,8 @@ package com.example.cabonerfbe.request;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -11,5 +13,5 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RefreshTokenRequest {
     String refreshToken;
-    Long userId;
+    UUID userId;
 }

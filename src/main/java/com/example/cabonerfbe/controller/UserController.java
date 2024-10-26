@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.UUID;
 
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.USERS)
 @NoArgsConstructor(force = true)
@@ -25,7 +26,7 @@ public class UserController {
     UserService userService;
 
     @GetMapping(API_PARAMS.ME)
-    public ResponseEntity<ResponseObject> getMe(@RequestHeader("x-user-id") String userId) {
+    public ResponseEntity<ResponseObject> getMe(@RequestHeader("x-user-id") UUID userId) {
         log.info("Start getMe. userId: {}", userId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get current user successfully", userService.getMe(userId))

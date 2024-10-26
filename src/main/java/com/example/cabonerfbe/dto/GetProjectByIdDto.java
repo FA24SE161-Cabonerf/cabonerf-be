@@ -3,6 +3,7 @@ package com.example.cabonerfbe.dto;
 import lombok.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -10,7 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 public class GetProjectByIdDto {
-    private long id;
+    private UUID id;
     private String name;
     private String description;
     private String location;

@@ -6,11 +6,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface ExchangesRepository extends JpaRepository<Exchanges, Long> {
+public interface ExchangesRepository extends JpaRepository<Exchanges, UUID> {
     @Query("SELECT e FROM Exchanges e WHERE e.process.id = ?1")
-    List<Exchanges> findAllByProcess(long processId);
+    List<Exchanges> findAllByProcess(UUID processId);
     @Query("SELECT e FROM Exchanges e WHERE e.process.id = ?1 AND e.input = false")
-    Exchanges findByProcess(long processId);
+    Exchanges findByProcess(UUID processId);
 }

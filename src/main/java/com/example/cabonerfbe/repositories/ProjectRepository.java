@@ -11,9 +11,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface ProjectRepository extends JpaRepository<Project, Long> {
+public interface ProjectRepository extends JpaRepository<Project, UUID> {
     ProjectDetailResponseDto dto = new ProjectDetailResponseDto();
     @Query("SELECT dto(" +
             "p.name, p.modifiedAt, lciam.name, ic.name, mic.name, mic.abbr, piv.value, mic.unit.name) " +
@@ -25,13 +26,13 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
             "JOIN MidpointImpactCategory mic ON mic.id = ic.midpointImpactCategory.id " +
             "JOIN Unit u ON u.id = mic.unit.id " +
             "WHERE p.id = :projectId")
-    List<ProjectDetailResponseDto> getProjectLevelDetail(@Param("projectId") Long projectId);
+    List<ProjectDetailResponseDto> getProjectLevelDetail(@Param("projectId") UUID projectId);
 
     Project findByNameAndStatus(String name, boolean status);
 
     @Query("SELECT p FROM Project p WHERE p.user.id = ?1 AND p.status = true")
-    Page<Project> findAll(long userId, Pageable pageable);
+    Page<Project> findAll(UUID userId, Pageable pageable);
 
     @Query("SELECT p FROM Project p WHERE p.id = ?1 AND p.status = true")
-    Optional<Project> findById(long id);
+    Optional<Project> findById(UUID id);
 }

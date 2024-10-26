@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Data
@@ -49,7 +50,7 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public UnitResponse getUnitById(Long unitId) {
+    public UnitResponse getUnitById(UUID unitId) {
         Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE);
         if (unit == null) {
             throw CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND);
@@ -58,7 +59,7 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public List<UnitResponse> getAllUnitsFromGroupId(long id) {
+    public List<UnitResponse> getAllUnitsFromGroupId(UUID id) {
         List<Unit> units = unitRepository.findAllByStatusAndUnitGroupId(Constants.STATUS_TRUE, id);
         if (units.isEmpty()) {
             throw CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND);
@@ -67,7 +68,7 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public UnitResponse createUnitInUnitGroup(Long groupId, CreateUnitRequest request) {
+    public UnitResponse createUnitInUnitGroup(UUID groupId, CreateUnitRequest request) {
         UnitGroup unitGroup = unitGroupRepository.findById(groupId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_UNIT_GROUP_FOUND + " id: " + groupId));
         if (unitGroup.getUnitGroupType().equalsIgnoreCase(Constants.UNIT_GROUP_TYPE_NORMAL) && request.getIsDefault() == Constants.IS_DEFAULT_TRUE) {
@@ -81,7 +82,7 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public UnitResponse updateUnitById(Long unitId, UpdateUnitRequest request) {
+    public UnitResponse updateUnitById(UUID unitId, UpdateUnitRequest request) {
         Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE);
         if (unit == null) {
             throw CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND + " id: " + unitId);
@@ -112,7 +113,7 @@ public class UnitServiceImpl implements UnitService {
 
 
     @Override
-    public UnitResponse deleteUnitById(Long unitId) {
+    public UnitResponse deleteUnitById(UUID unitId) {
         Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE);
         if (unit == null) {
             throw CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND + " id: " + unitId);

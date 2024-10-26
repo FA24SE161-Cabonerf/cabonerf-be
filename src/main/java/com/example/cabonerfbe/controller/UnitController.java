@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RequestMapping(API_PARAMS.API_VERSION)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,7 +36,7 @@ public class UnitController {
     }
 
     @GetMapping(API_PARAMS.GET_UNIT_BY_ID)
-    public ResponseEntity<ResponseObject> getUnitById(@PathVariable Long unitId) {
+    public ResponseEntity<ResponseObject> getUnitById(@PathVariable UUID unitId) {
         log.info("getUnitById: {}", unitId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_UNIT_BY_ID_SUCCESS, unitService.getUnitById(unitId))
@@ -42,7 +44,7 @@ public class UnitController {
     }
 
     @GetMapping(API_PARAMS.GET_ALL_UNITS_FROM_UNIT_GROUP_ID)
-    public ResponseEntity<ResponseObject> getAllUnitsFromGroupId(@PathVariable long groupId) {
+    public ResponseEntity<ResponseObject> getAllUnitsFromGroupId(@PathVariable UUID groupId) {
         log.info("getAllUnitsFromGroupId: {}", groupId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_ALL_UNITS_SUCCESS, unitService.getAllUnitsFromGroupId(groupId))
@@ -50,7 +52,7 @@ public class UnitController {
     }
 
     @PostMapping(API_PARAMS.ADD_UNIT_TO_UNIT_GROUP)
-    public ResponseEntity<ResponseObject> createUnitInUnitGroup(@PathVariable Long groupId, @Valid @RequestBody CreateUnitRequest request) {
+    public ResponseEntity<ResponseObject> createUnitInUnitGroup(@PathVariable UUID groupId, @Valid @RequestBody CreateUnitRequest request) {
         log.info("addUnitToUnitGroup: {}", request);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.ADD_UNIT_TO_UNIT_GROUP_SUCCESS, unitService.createUnitInUnitGroup(groupId ,request))
@@ -58,7 +60,7 @@ public class UnitController {
     }
 
     @PutMapping(API_PARAMS.UPDATE_UNIT_BY_ID)
-    public ResponseEntity<ResponseObject> updateUnitById(@PathVariable Long unitId, @Valid @RequestBody UpdateUnitRequest request) {
+    public ResponseEntity<ResponseObject> updateUnitById(@PathVariable UUID unitId, @Valid @RequestBody UpdateUnitRequest request) {
         log.info("updateUnitById: {}", unitId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.UPDATE_UNIT_BY_ID_SUCCESS, unitService.updateUnitById(unitId, request))
@@ -66,7 +68,7 @@ public class UnitController {
     }
 
     @DeleteMapping(API_PARAMS.DELETE_UNIT_BY_ID)
-    public ResponseEntity<ResponseObject> deleteUnitById(@PathVariable Long unitId) {
+    public ResponseEntity<ResponseObject> deleteUnitById(@PathVariable UUID unitId) {
         log.info("deleteUnitById: {}", unitId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.DELETE_UNIT_BY_ID_SUCCESS, unitService.deleteUnitById(unitId))

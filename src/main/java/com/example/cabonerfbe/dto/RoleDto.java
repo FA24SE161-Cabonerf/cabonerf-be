@@ -2,12 +2,14 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.util.UUID;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Getter
 @Setter
 public class RoleDto {
-    long id;
+    UUID id;
     String name;
 }

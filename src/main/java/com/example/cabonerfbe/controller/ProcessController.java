@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.PROCESS)
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
@@ -35,7 +37,7 @@ public class ProcessController {
     }
 
     @GetMapping(API_PARAMS.PROCESS_BY_ID)
-    public ResponseEntity<ResponseObject> getProcessById(@PathVariable long id) {
+    public ResponseEntity<ResponseObject> getProcessById(@PathVariable UUID id) {
         log.info("Start getProcessById. id: {}", id);
         return ResponseEntity.ok().body(new ResponseObject(
                         Constants.RESPONSE_STATUS_SUCCESS, "Get process by id success", processService.getProcessById(id)
@@ -53,7 +55,7 @@ public class ProcessController {
     }
 
     @PutMapping(API_PARAMS.PROCESS_BY_ID)
-    public ResponseEntity<ResponseObject> updateProcess(@Valid @RequestBody UpdateProcessRequest request, @PathVariable long id) {
+    public ResponseEntity<ResponseObject> updateProcess(@Valid @RequestBody UpdateProcessRequest request, @PathVariable UUID id) {
         log.info("Start updateProcess. id: {}, request: {}", id, request);
         return ResponseEntity.ok().body(new ResponseObject(
                         Constants.RESPONSE_STATUS_SUCCESS, "Create process success", processService.updateProcess(id, request)
