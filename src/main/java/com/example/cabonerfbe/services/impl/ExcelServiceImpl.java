@@ -8,9 +8,7 @@ import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.response.ImportEmissionSubstanceResponse;
 import com.example.cabonerfbe.services.ExcelService;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,129 +34,133 @@ public class ExcelServiceImpl implements ExcelService {
     @Autowired
     private ImpactMethodCategoryRepository impactMethodCategoryRepository;
     @Autowired
-    private LifeCycleImpactAssessmentMethodRepository lifeCycleImpactAssessmentMethodRepository;
+    private LifeCycleImpactAssessmentMethodRepository methodRepository;
     @Autowired
     private UnitRepository unitRepository;
+    @Autowired
+    private SubstancesCompartmentsRepository substancesCompartmentsRepository;
 
     private Map<String, String> error = new HashMap<>();
 
     @Override
-    public ImportEmissionSubstanceResponse readExcel(MultipartFile file, String name) {
-
-        if(lifeCycleImpactAssessmentMethodRepository.findAllByName(name).isEmpty()){
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, Map.of("request", "Life Cycle Impact Assessment Method not found"));
-        }
-
-        List<MidpointImpactCharacterizationFactorsDto> list = new ArrayList<>();
-
-        try (InputStream inputStream = file.getInputStream();
-             Workbook workbook = new XSSFWorkbook(inputStream)) {
-
-            // Duyệt qua từng sheet trong workbook
+    public void readExcel(MultipartFile file, String name) throws IOException {
+        try {
+            Workbook workbook = WorkbookFactory.create(file.getInputStream());
+            List<MidpointImpactCharacterizationFactors> list = new ArrayList<>();
             for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
                 Sheet sheet = workbook.getSheetAt(i);
-                String sheetName = workbook.getSheetName(i); // Lấy tên sheet hiện tại
-                Iterator<Row> rows = sheet.iterator();
-                String categoryName = "";
                 ImpactCategory category = new ImpactCategory();
-                category = impactCategoryRepository.findByName(sheetName.toUpperCase());
-
-                if (category == null) {
-                    error.put("Sheet excel with name: " + sheetName, "Impact Category not exist");
-                    continue;
-                }
-                while (rows.hasNext()) {
-                    Row currentRow = rows.next();
-                    if (currentRow.getRowNum() < 5) {
-                        // Bỏ qua hàng tiêu đề
-                        continue;
+                category = impactCategoryRepository.findByName(workbook.getSheetName(i).toUpperCase());
+                for (Row row : sheet) {
+                    if (row.getRowNum() < 5) {
+                        continue; // Skip header
                     }
+                    try {
+                        String cas = row.getCell(0).getStringCellValue();
+                        String substanceName = row.getCell(1).getStringCellValue();
+                        String chemicalName = row.getCell(2).getStringCellValue();
+                        String molecularFormula = row.getCell(3) != null ? row.getCell(3).getStringCellValue() : null;
+                        String alternativeFormula = row.getCell(4) != null ? row.getCell(4).getStringCellValue() : null;
+                        String compartmentName = row.getCell(5).getStringCellValue();
+                        Double individualist = getDoubleValueFromCell(row.getCell(6));
+                        Double hierarchist = getDoubleValueFromCell(row.getCell(7));
+                        Double egalitarian = getDoubleValueFromCell(row.getCell(8));
 
-                    list.add(insertData(currentRow, 6, category.getId(), name, sheetName));
-                    list.add(insertData(currentRow, 7, category.getId(), name, sheetName));
-                    list.add(insertData(currentRow, 8, category.getId(), name, sheetName));
+
+                        // Create or find emission substance
+                        EmissionSubstances emissionSubstance = emissionSubstancesRepository.findByName(substanceName)
+                                .orElseGet(() -> {
+                                    EmissionSubstances newSubstance = new EmissionSubstances();
+                                    newSubstance.setName(substanceName);
+                                    newSubstance.setChemicalName(chemicalName);
+                                    newSubstance.setMolecularFormula(molecularFormula);
+                                    newSubstance.setAlternativeFormula(alternativeFormula);
+                                    return emissionSubstancesRepository.save(newSubstance);
+                                });
+
+                        // Find emission compartment
+                        EmissionCompartment emissionCompartment = emissionCompartmentRepository.findByName(compartmentName)
+                                .orElseThrow(() -> new IllegalArgumentException("Emission compartment '" + compartmentName + "' not found"));
+
+                        // Create substance compartment
+                        SubstancesCompartments substanceCompartment = new SubstancesCompartments();
+                        substanceCompartment.setEmissionSubstance(emissionSubstance);
+                        substanceCompartment.setEmissionCompartment(emissionCompartment);
+                        substancesCompartmentsRepository.save(substanceCompartment);
+
+
+                        MidpointImpactCharacterizationFactors factor = new MidpointImpactCharacterizationFactors();
+                        MidpointImpactCharacterizationFactors factorIndividualist = new MidpointImpactCharacterizationFactors();
+                        factorIndividualist.setSubstancesCompartments(substanceCompartment);
+                        factorIndividualist.setDecimalValue(individualist);
+                        String scientific_value_individualist = String.format("%.2e", individualist);
+                        factorIndividualist.setScientificValue(scientific_value_individualist);
+                        factorIndividualist.setCas(cas);
+                        factorIndividualist.setImpactMethodCategory(getImpactMethodCategory("Individualist", category.getId(), name));
+                        List<Unit> units = unitRepository.findByName("-eq");
+                        for (Unit unit : units) {
+                            if (unit.getName().contains(factorIndividualist.getImpactMethodCategory().getImpactCategory().getMidpointImpactCategory().getUnit().getName())) {
+                                factorIndividualist.setUnit(unit);
+                            }
+                        }
+                        list.add(factorIndividualist);
+
+                        MidpointImpactCharacterizationFactors factorHierarchist = new MidpointImpactCharacterizationFactors();
+                        factorHierarchist.setSubstancesCompartments(substanceCompartment);
+                        factorHierarchist.setDecimalValue(hierarchist);
+                        String scientific_value_hierarchist = String.format("%.2e", hierarchist);
+                        factorHierarchist.setScientificValue(scientific_value_hierarchist);
+                        factorHierarchist.setCas(cas);
+                        factorHierarchist.setImpactMethodCategory(getImpactMethodCategory("Hierarchist", category.getId(), name));
+                        list.add(factorHierarchist);
+
+                        MidpointImpactCharacterizationFactors factorEgalitarian = new MidpointImpactCharacterizationFactors();
+                        factorEgalitarian.setSubstancesCompartments(substanceCompartment);
+                        factorEgalitarian.setDecimalValue(egalitarian);
+                        String scientific_value_egalitarian = String.format("%.2e", egalitarian);
+                        factorEgalitarian.setScientificValue(scientific_value_egalitarian);
+                        factorEgalitarian.setCas(cas);
+                        factorEgalitarian.setImpactMethodCategory(getImpactMethodCategory("Egalitarian", category.getId(), name));
+                        list.add(factorEgalitarian);
+
+                    } catch (Exception rowException) {
+                    }
                 }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        list.removeIf(Objects::isNull);
-        return ImportEmissionSubstanceResponse.builder()
-                .dataImportSuccess(list)
-                .dataImportFailure(error)
-                .build();
-    }
-
-    private MidpointImpactCharacterizationFactorsDto insertData(
-            Row currentRow,
-            int rowValue,
-            long categoryId, String lifeCycleImpactAssessmentMethodName, String sheetName) {
-        try {
-            MidpointImpactCharacterizationFactors data = new MidpointImpactCharacterizationFactors();
-            EmissionSubstances emissionSubstances;
-
-            switch (rowValue) {
-                case 6:
-                    data.setImpactMethodCategory(getImpactMethodCategory("Individualist", categoryId, lifeCycleImpactAssessmentMethodName));
-                    break;
-                case 7:
-                    data.setImpactMethodCategory(getImpactMethodCategory("Hierarchist", categoryId, lifeCycleImpactAssessmentMethodName));
-                    break;
-                case 8:
-                    data.setImpactMethodCategory(getImpactMethodCategory("Egalitarian", categoryId, lifeCycleImpactAssessmentMethodName));
-                    break;
 
             }
-            data.setCas(currentRow.getCell(0).getStringCellValue());
-            emissionSubstances = emissionSubstancesRepository.findByName(currentRow.getCell(1).getStringCellValue(),currentRow.getCell(3).getStringCellValue());
-            if (emissionSubstances == null) {
-                emissionSubstances = new EmissionSubstances();
-                emissionSubstances.setName(currentRow.getCell(1).getStringCellValue());
-                emissionSubstances.setChemicalName(currentRow.getCell(2).getStringCellValue());
-                emissionSubstances.setMolecularFormula(currentRow.getCell(3).getStringCellValue());
-                emissionSubstances.setAlternativeFormula(currentRow.getCell(4).getStringCellValue());
-
-                if (emissionSubstancesRepository.findByName(emissionSubstances.getName(),currentRow.getCell(3).getStringCellValue()) == null) {
-                    emissionSubstancesRepository.save(emissionSubstances);
-                } else {
-                    emissionSubstances = emissionSubstancesRepository.findByName(emissionSubstances.getName(),currentRow.getCell(3).getStringCellValue());
-                }
-            }
-            List<Unit> units = unitRepository.findByName("-eq");
-            for(Unit unit : units) {
-                if(unit.getName().contains(data.getImpactMethodCategory().getImpactCategory().getMidpointImpactCategory().getUnit().getName())){
-                    data.setUnit(unit);
-                }
-            }
-            data.setEmissionSubstances(emissionSubstances);
-            EmissionCompartment emissionCompartment = emissionCompartmentRepository.findByName(currentRow.getCell(5).getStringCellValue());
-            data.setEmissionCompartment(emissionCompartment);
-            if (currentRow.getCell(rowValue).getNumericCellValue() == 0) {
-                data.setDecimalValue(0);
-                data.setScientificValue("0");
-            } else {
-                data.setDecimalValue(currentRow.getCell(rowValue).getNumericCellValue());
-                String scientific_value = String.format("%.2e", currentRow.getCell(rowValue).getNumericCellValue());
-                data.setScientificValue(scientific_value);
-            }
-            MidpointImpactCharacterizationFactors exist = repository.findByImpactMethodCategoryIdAndEmissionSubstancesName(data.getImpactMethodCategory().getId(), data.getEmissionSubstances().getName(), data.getEmissionCompartment().getId(), data.getEmissionSubstances().getMolecularFormula());
-            if (exist != null) {
-                if (exist.getDecimalValue() == data.getDecimalValue()) {
-                    error.put(sheetName, "Row: " + (currentRow.getRowNum() + 1) + " - Column: " + (rowValue + 1) + " - Midpoint Impact Characterization Factors already exist");
-                    return null;
-                }
-            }
-            data = repository.save(data);
-            return converter.INSTANCE.fromMidpointToMidpointDto(data);
-
+            repository.saveAll(list);
+            workbook.close();
         } catch (Exception e) {
-            error.put(sheetName, "Row: " + (currentRow.getRowNum() + 1) + " - Column: " + (rowValue + 1) + " - " + e.getMessage());
+            System.out.println(e.getMessage());
         }
-        return null;
+
     }
 
     private ImpactMethodCategory getImpactMethodCategory(String methodName, long categoryId, String lifeCycleImpactAssessmentMethodName) {
-        LifeCycleImpactAssessmentMethod method = lifeCycleImpactAssessmentMethodRepository.findByName(methodName, lifeCycleImpactAssessmentMethodName);
+        LifeCycleImpactAssessmentMethod method = methodRepository.findByName(methodName, lifeCycleImpactAssessmentMethodName);
         return impactMethodCategoryRepository.findByImpactCategoryAndImpactMethod(categoryId, method.getId());
     }
+
+    private Double getDoubleValueFromCell(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
+        switch (cell.getCellType()) {
+            case NUMERIC:
+                return cell.getNumericCellValue();
+            case STRING:
+                String stringValue = cell.getStringCellValue();
+                try {
+                    // Cố gắng chuyển chuỗi về double
+                    return Double.parseDouble(stringValue);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            case BLANK:
+                return null;
+            default:
+                return null;
+        }
+    }
+
 }

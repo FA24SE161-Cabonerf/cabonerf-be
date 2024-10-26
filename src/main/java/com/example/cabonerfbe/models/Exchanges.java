@@ -28,4 +28,8 @@ public class Exchanges extends Base{
     private Unit unit;
 
     private boolean input;
+
+    @ManyToOne
+    @JoinColumn(name = "substances_compartments_id")
+    private SubstancesCompartments substancesCompartments;
 }

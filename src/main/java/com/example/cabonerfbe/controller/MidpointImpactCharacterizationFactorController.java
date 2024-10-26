@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR)
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
@@ -24,10 +26,11 @@ public class MidpointImpactCharacterizationFactorController {
     private ExcelServiceImpl excelService;
 
     @PostMapping(API_PARAMS.IMPORT_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR)
-    public ResponseEntity<ResponseObject> importExcel(@RequestParam("file") MultipartFile file, @RequestParam String methodName){
+    public ResponseEntity<ResponseObject> importExcel(@RequestParam("file") MultipartFile file, @RequestParam String methodName) throws IOException {
         log.info("Start importExcel");
+        excelService.readExcel(file,methodName);
         return ResponseEntity.ok(new ResponseObject(
-                Constants.RESPONSE_STATUS_SUCCESS,"Import success", excelService.readExcel(file,methodName)
+                Constants.RESPONSE_STATUS_SUCCESS,"Import success","[]"
         ));
     }
 }

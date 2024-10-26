@@ -3,6 +3,8 @@ package com.example.cabonerfbe.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,5 +16,4 @@ public class EmissionSubstances extends Base{
     private String chemicalName;
     private String molecularFormula;
     private String alternativeFormula;
-
 }
