@@ -76,7 +76,7 @@ public class JwtService {
     }
 
     public String extractServiceId(String token) {
-        return extractAllClaims(token,Constants.TOKEN_TYPE_SERVICE).get("id", String.class);
+        return extractAllClaims(token, Constants.TOKEN_TYPE_SERVICE).get("id", String.class);
     }
 
     public <T> T extractClaim(String token, String tokenType, Function<Claims, T> claimsResolver) {
@@ -105,17 +105,16 @@ public class JwtService {
     }
 
 
-
-        private String generateGatewayToken(String secretKey, long expiration) {
-            return Jwts
-                    .builder()
-                    .claim("service_id", mainServiceIdKey)
-                    .setIssuedAt(new Date(System.currentTimeMillis()))
-                    .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                    .signWith(SignatureAlgorithm.HS256, secretKey)
-                    .setHeaderParam("typ", "JWT")
-                    .compact();
-        }
+    private String generateGatewayToken(String secretKey, long expiration) {
+        return Jwts
+                .builder()
+                .claim("service_id", mainServiceIdKey)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .setHeaderParam("typ", "JWT")
+                .compact();
+    }
 
     public boolean isTokenValid(String token, UserDetails userDetails, String tokenType) {
         final String username = extractUsername(token, tokenType);
@@ -175,8 +174,14 @@ public class JwtService {
         UserVerifyStatusDto verifyStatusDto = UserVerifyStatusConverter.INSTANCE
                 .fromUserVerifyStatusToUserVerifyStatusDto(user.getUserVerifyStatus());
 
+        int verifyId = switch (verifyStatusDto.getStatusName()) {
+            case "Pending" -> 1;
+            case "Verified" -> 2;
+            case "Suspended" -> 3;
+            default -> 0;
+        };
         // Thêm các claim vào token
-        extraClaims.put("user_verify_status", verifyStatusDto.getId());
+        extraClaims.put("user_verify_status", verifyId);
         extraClaims.put("user_id", user.getId());
         extraClaims.put("role_id", user.getRole().getId());
         extraClaims.put("token_type", token_type_id);
