@@ -40,13 +40,28 @@ public class ImpactCategoryController {
         );
     }
 
-    @PostMapping(API_PARAMS.CREATE_IMPACT_CATEGORY_FOR_IMPACT_METHOD)
-    public ResponseEntity<ResponseObject> createImpactCategoryForImpactMethod(@PathVariable long methodId, @Valid @RequestBody BaseImpactCategoryRequest request) {
-        log.info("Start createImpactCategoryForImpactMethod methodId: {}", methodId);
+    @PostMapping(API_PARAMS.CREATE_IMPACT_CATEGORY)
+    public ResponseEntity<ResponseObject> createImpactCategory(@Valid @RequestBody BaseImpactCategoryRequest request) {
+        log.info("Start createImpactCategory. request: {}", request);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CREATE_IMPACT_CATEGORY_FOR_IMPACT_METHOD_SUCCESS, impactCategoryService.createImpactCategoryForImpactMethod(methodId, request))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CREATE_IMPACT_CATEGORY_SUCCESS, impactCategoryService.createImpactCategory(request))
         );
     }
 
+    @PutMapping(API_PARAMS.UPDATE_IMPACT_CATEGORY_BY_ID)
+    public ResponseEntity<ResponseObject> updateImpactCategoryById(@PathVariable long categoryId, @Valid @RequestBody BaseImpactCategoryRequest request) {
+        log.info("Start updateImpactCategoryById. id: {}, request: {}", categoryId, request);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.UPDATE_IMPACT_CATEGORY_SUCCESS, impactCategoryService.updateImpactCategoryById(categoryId, request))
+        );
+    }
+
+    @DeleteMapping(API_PARAMS.DELETE_IMPACT_CATEGORY_BY_ID)
+    public ResponseEntity<ResponseObject> deleteImpactCategoryById(@PathVariable long categoryId) {
+        log.info("Start deleteImpactCategoryById. id: {}", categoryId);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.DELETE_IMPACT_CATEGORY_SUCCESS, impactCategoryService.deleteImpactCategoryById(categoryId))
+        );
+    }
 
 }
