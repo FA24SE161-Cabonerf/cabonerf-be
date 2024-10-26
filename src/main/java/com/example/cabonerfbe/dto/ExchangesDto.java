@@ -12,6 +12,7 @@ public class ExchangesDto {
     private String name;
     private double value;
     private ExchangesTypeDto exchangesType;
+    private SubstancesCompartmentsDto substancesCompartments;
     private UnitDto unit;
     private boolean input;
 

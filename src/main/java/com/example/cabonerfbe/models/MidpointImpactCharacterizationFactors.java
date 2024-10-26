@@ -16,8 +16,8 @@ public class MidpointImpactCharacterizationFactors extends Base{
     private ImpactMethodCategory impactMethodCategory;
 
     @ManyToOne
-    @JoinColumn(name = "emission_substances_id")
-    private EmissionSubstances emissionSubstances;
+    @JoinColumn(name = "substances_compartments_id")
+    private SubstancesCompartments substancesCompartments;
 
     private String scientificValue;
     private double decimalValue;
@@ -26,7 +26,4 @@ public class MidpointImpactCharacterizationFactors extends Base{
     @JoinColumn(name = "unit_id")
     private Unit unit;
 
-    @ManyToOne
-    @JoinColumn(name = "emission_compartment_id")
-    private EmissionCompartment emissionCompartment;
 }

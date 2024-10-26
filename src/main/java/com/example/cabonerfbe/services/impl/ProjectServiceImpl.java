@@ -103,7 +103,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setLifeCycleImpactAssessmentMethod(methodRepository.findById(request.getMethodId()).get());
 
         project = projectRepository.save(project);
-
+//
 //        List<ImpactMethodCategory> list = impactMethodCategoryRepository.findByMethod(request.getMethodId());
 //        List<ProjectImpactValue> listValues = new ArrayList<>();
 //        for(ImpactMethodCategory x:list){

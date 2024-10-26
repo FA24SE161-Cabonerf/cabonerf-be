@@ -10,9 +10,9 @@ import java.util.Optional;
 
 @Repository
 public interface EmissionCompartmentRepository extends JpaRepository<EmissionCompartment, Long> {
-    EmissionCompartment findByName(String name);
+    Optional<EmissionCompartment> findByName(String name);
 
     List<EmissionCompartment> findByStatus(boolean statusTrue);
-
+  
     Optional<EmissionCompartment> findByIdAndStatus(long emissionCompartmentId, boolean statusTrue);
 }

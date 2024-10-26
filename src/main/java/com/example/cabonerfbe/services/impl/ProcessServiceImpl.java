@@ -1,9 +1,10 @@
 package com.example.cabonerfbe.services.impl;
 
-import com.example.cabonerfbe.converter.ExchangesConverter;
-import com.example.cabonerfbe.converter.ProcessConverter;
-import com.example.cabonerfbe.converter.ProcessImpactValueConverter;
+import com.example.cabonerfbe.converter.*;
 import com.example.cabonerfbe.dto.PageList;
+import com.example.cabonerfbe.dto.ProcessDetailDto;
+import com.example.cabonerfbe.dto.ProcessDto;
+import com.example.cabonerfbe.dto.ProcessImpactValueDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.Exchanges;
@@ -49,13 +50,16 @@ public class ProcessServiceImpl implements ProcessService {
     @Autowired
     private ExchangesConverter exchangesConverter;
     @Autowired
-    private LifeCycleImpactAssessmentMethodRepository lifeCycleImpactAssessmentMethodRepository;
+    private LifeCycleImpactAssessmentMethodRepository methodRepository;
+    @Autowired
+    private LifeCycleImpactAssessmentMethodConverter methodConverter;
+    @Autowired
+    private ImpactCategoryConverter categoryConverter;
+    @Autowired
+    private UnitConverter unitConverter;
     @Override
-    public CreateProcessResponse createProcess(CreateProcessRequest request) {
+    public ProcessDetailDto createProcess(CreateProcessRequest request) {
         Process process = new Process();
-        if(processRepository.findByName(request.getName(),request.getProjectId()).isPresent()){
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Project name already exist in project");
-        }
         process.setName(request.getName());
         process.setDescription(request.getDescription());
         if(lifeCycleStageRepository.findById(request.getLifeCycleStageId()).isEmpty()){
@@ -74,94 +78,48 @@ public class ProcessServiceImpl implements ProcessService {
         List<ImpactMethodCategory> list = impactMethodCategoryRepository.findAll();
         List<ProcessImpactValue> processImpactValues = new ArrayList<>();
 
-        for(ImpactMethodCategory impactMethodCategory : list){
-            ProcessImpactValue processImpactValue = new ProcessImpactValue();
-            processImpactValue.setProcess(process);
-            processImpactValue.setImpactMethodCategory(impactMethodCategory);
-            processImpactValue.setSystemLevel(0);
-            processImpactValue.setSystemLevel(0);
-            processImpactValue.setOverallImpactContribution(0);
-            processImpactValue.setPreviousProcessValue(0);
-            processImpactValues.add(processImpactValue);
-        }
-
-        processImpactValueRepository.saveAll(processImpactValues);
-
-        return CreateProcessResponse.builder()
-                .process(processConverter.INSTANCE.fromProcessDetailToProcessDto(process))
-                .build();
+        return processConverter.INSTANCE.fromProcessDetailToProcessDto(process);
     }
 
     @Override
-    public CreateProcessResponse getProcessById(long id) {
+    public ProcessDto getProcessById(long id) {
         Optional<Process> process = processRepository.findById(id);
         if(process.isEmpty()){
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Process not exist");
         }
 
-        List<ProcessImpactValue> processImpactValues = processImpactValueRepository.findByProcessId(process.get().getId());
-        List<Exchanges> exchanges = exchangesRepository.findAllByProcess(process.get().getId());
+        ProcessDto dto = processConverter.fromProcessToProcessDto(process.get());
 
-        return CreateProcessResponse.builder()
-                .process(processConverter.INSTANCE.fromProcessDetailToProcessDto(process.get()))
-                .build();
+        dto.setImpacts(converterProcess(processImpactValueRepository.findByProcessId(process.get().getId())));
+        dto.setExchanges(exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(process.get().getId())));
+
+        return dto;
     }
 
     @Override
     public List<CreateProcessResponse> getAllProcesses(GetAllProcessRequest request) {
-        if(projectRepository.findById(request.getProjectId()).isEmpty()){
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Project not exist");
-        }
-
-        if(lifeCycleImpactAssessmentMethodRepository.findById(request.getMethodId()).isEmpty()){
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Life Cycle Impact Assessment Method not exist");
-        }
-
-        List<Process> processes = processRepository.findAll(request.getProjectId());
-
-        return buildProcessResponse(processes,request.getMethodId());
+        return null;
     }
 
     @Override
     public CreateProcessResponse updateProcess(long id, UpdateProcessRequest request) {
-        if(processRepository.findById(id).isEmpty()){
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Process not exist");
-        }
-        Process p = processRepository.findById(id).get();
-        if(!request.getName().isEmpty()){
-            p.setName(request.getName());
-        }
-        if(!request.getDescription().isEmpty()){
-            p.setName(request.getName());
-        }
-        if(request.getLifeCycleStageId() != 0){
-            p.setLifeCycleStage(lifeCycleStageRepository.findById(request.getLifeCycleStageId()).get());
-        }
-        p = processRepository.save(p);
-        List<ProcessImpactValue> processImpactValues = processImpactValueRepository.findByProcessId(p.getId());
-        List<Exchanges> exchanges = exchangesRepository.findAllByProcess(p.getId());
-
-        return CreateProcessResponse.builder()
-                .process(processConverter.INSTANCE.fromProcessDetailToProcessDto(p))
-                .build();
-    }
-
-    private List<CreateProcessResponse> buildProcessResponse(List<Process> processes, long methodId) {
-        List<CreateProcessResponse> responses = new ArrayList<>();
-        for (Process process : processes) {
-            List<ProcessImpactValue> processImpactValues = processImpactValueRepository.findByProcessAndMethod(process.getId(),methodId);
-            List<Exchanges> exchanges = exchangesRepository.findAllByProcess(process.getId());
-
-            CreateProcessResponse processResponse = CreateProcessResponse.builder()
-                    .process(processConverter.INSTANCE.fromProcessDetailToProcessDto(process))
-                    .build();
-
-            responses.add(processResponse);
-        }
-        return responses;
+        return null;
     }
 
 
-
-
+    private List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list){
+        List<ProcessImpactValueDto> result = new ArrayList<>();
+        for(ProcessImpactValue x: list){
+            ProcessImpactValueDto p = new ProcessImpactValueDto();
+            p.setId(x.getId());
+            p.setSystemLevel(x.getSystemLevel());
+            p.setUnitLevel(x.getUnitLevel());
+            p.setOverallImpactContribution(x.getOverallImpactContribution());
+            p.setMethod(methodConverter.fromMethodToMethodDto(x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod()));
+            p.setImpactCategory(categoryConverter.fromProjectToImpactCategoryDto(x.getImpactMethodCategory().getImpactCategory()));
+            p.setUnit(unitConverter.fromProjectToUnitResponse(x.getImpactMethodCategory().getImpactCategory().getMidpointImpactCategory().getUnit()));
+            result.add(p);
+        }
+        return result;
+    }
 }
