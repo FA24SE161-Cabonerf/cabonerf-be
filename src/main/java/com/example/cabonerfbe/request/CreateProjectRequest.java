@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.util.UUID;
+
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
@@ -21,7 +23,7 @@ public class CreateProjectRequest {
     private String description;
     private String location;
     @NotNull(message = "Method is required")
-    private long methodId;
+    private UUID methodId;
     @NotNull(message = "Workspace is required")
-    private long workspaceId;
+    private UUID workspaceId;
 }

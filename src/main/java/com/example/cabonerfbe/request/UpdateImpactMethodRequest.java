@@ -2,12 +2,15 @@ package com.example.cabonerfbe.request;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
 
 @Data
 @Builder
@@ -24,6 +27,6 @@ public class UpdateImpactMethodRequest {
     private String version;
     @Nullable
     private String reference;
-    @NotNull(message = "Method perspective is required.")
-    private Long perspectiveId;
+    @NotEmpty(message = "Method perspective is required.")
+    private UUID perspectiveId;
 }

@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.util.UUID;
+
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
@@ -19,8 +21,8 @@ public class CreateProcessRequest {
     @NotEmpty(message = "Name is required.")
     private String name;
     private String description;
-    @NotNull(message = "Life Cycle Stage is required.")
-    private long lifeCycleStageId;
-    @NotNull(message = "Project is required.")
-    private long projectId;
+    @NotEmpty(message = "Life Cycle Stage is required.")
+    private UUID lifeCycleStageId;
+    @NotEmpty(message = "Project is required.")
+    private UUID projectId;
 }

@@ -2,13 +2,15 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.util.UUID;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Getter
 @Setter
 public class ProcessImpactValueDto {
-    private long id;
+    private UUID id;
     private double unitLevel;
     private double systemLevel;
     private double overallImpactContribution;

@@ -6,9 +6,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface MidpointImpactCharacterizationFactorsRepository extends JpaRepository<MidpointImpactCharacterizationFactors,Long> {
+public interface MidpointImpactCharacterizationFactorsRepository extends JpaRepository<MidpointImpactCharacterizationFactors, UUID> {
 
 //    @Query("SELECT f FROM MidpointImpactCharacterizationFactors f WHERE f.impactMethodCategory.id = ?1 AND f.emissionSubstances.name like ?2 AND f.emissionCompartment.id = ?3 AND f.emissionSubstances.molecularFormula like ?4")
 //    MidpointImpactCharacterizationFactors findByImpactMethodCategoryIdAndEmissionSubstancesName(long methodId, String name, long emissionCompartmentId, String molecular);

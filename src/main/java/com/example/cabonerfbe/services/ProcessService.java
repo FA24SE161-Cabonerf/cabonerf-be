@@ -9,10 +9,11 @@ import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.CreateProcessResponse;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface ProcessService {
     ProcessDetailDto createProcess(CreateProcessRequest request);
-    ProcessDto getProcessById(long id);
+    ProcessDto getProcessById(UUID id);
     List<CreateProcessResponse> getAllProcesses(GetAllProcessRequest request);
-    CreateProcessResponse updateProcess(long id, UpdateProcessRequest request);
+    CreateProcessResponse updateProcess(UUID id, UpdateProcessRequest request);
 }

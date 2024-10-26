@@ -11,13 +11,15 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.util.UUID;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MidpointImpactCharacterizationFactorsResponse {
-    private long id;
+    private UUID id;
     private ImpactMethodCategoryDto impactMethodCategory;
     private EmissionSubstancesDto emissionSubstances;
     private String scientificValue;

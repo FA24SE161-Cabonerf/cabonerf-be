@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.IMPACT)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,7 +35,7 @@ public class ImpactCategoryController {
     }
 
     @GetMapping(API_PARAMS.GET_IMPACT_CATEGORY_BY_ID)
-    public ResponseEntity<ResponseObject> getImpactCategoryById(@PathVariable long categoryId) {
+    public ResponseEntity<ResponseObject> getImpactCategoryById(@PathVariable UUID categoryId) {
         log.info("Start getImpactCategoryById id: {}", categoryId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_IMPACT_CATEGORY_BY_ID_SUCCESS, impactCategoryService.getImpactCategoryById(categoryId))
@@ -49,7 +51,7 @@ public class ImpactCategoryController {
     }
 
     @PutMapping(API_PARAMS.UPDATE_IMPACT_CATEGORY_BY_ID)
-    public ResponseEntity<ResponseObject> updateImpactCategoryById(@PathVariable long categoryId, @Valid @RequestBody BaseImpactCategoryRequest request) {
+    public ResponseEntity<ResponseObject> updateImpactCategoryById(@PathVariable UUID categoryId, @Valid @RequestBody BaseImpactCategoryRequest request) {
         log.info("Start updateImpactCategoryById. id: {}, request: {}", categoryId, request);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.UPDATE_IMPACT_CATEGORY_SUCCESS, impactCategoryService.updateImpactCategoryById(categoryId, request))
@@ -57,7 +59,7 @@ public class ImpactCategoryController {
     }
 
     @DeleteMapping(API_PARAMS.DELETE_IMPACT_CATEGORY_BY_ID)
-    public ResponseEntity<ResponseObject> deleteImpactCategoryById(@PathVariable long categoryId) {
+    public ResponseEntity<ResponseObject> deleteImpactCategoryById(@PathVariable UUID categoryId) {
         log.info("Start deleteImpactCategoryById. id: {}", categoryId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.DELETE_IMPACT_CATEGORY_SUCCESS, impactCategoryService.deleteImpactCategoryById(categoryId))

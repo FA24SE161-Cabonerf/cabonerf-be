@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table
 public class RefreshToken extends Base{
+    @Column(length = 500)
     private String token;
     private LocalDateTime createdAt;
     private boolean isValid;

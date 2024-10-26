@@ -8,8 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.UUID;
 
-public interface MidpointRepository extends JpaRepository<MidpointImpactCharacterizationFactors, Long> {
+public interface MidpointRepository extends JpaRepository<MidpointImpactCharacterizationFactors, UUID> {
     List<MidpointImpactCharacterizationFactors> findAllByStatus(boolean status);
 
     @Query(value = QueryStrings.FIND_MIDPOINT_SUBSTANCE_FACTORS_WITH_PERSPECTIVES,

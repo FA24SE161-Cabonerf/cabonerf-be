@@ -20,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @Data
@@ -39,11 +41,10 @@ public class UserServiceImpl implements UserService {
     UserConverter userConverter = UserConverter.INSTANCE;
 
     @Override
-    public GetProfileResponse getMe(String userId) {
-        long user_id = Integer.parseInt(userId);
-        var user = userRepository.findById(user_id)
+    public GetProfileResponse getMe(UUID userId) {
+        var user = userRepository.findById(userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, "User not exist"));
-        if(user.getUserStatus().getId() == 3){
+        if(Objects.equals(user.getUserStatus().getStatusName(), "Banned")){
             throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR,"User is banned");
         }
         UserProfileDto userProfileDtoDto = userConverter.fromUserToUserProfileDto(user);

@@ -23,10 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ProcessServiceImpl implements ProcessService {
@@ -82,7 +79,7 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public ProcessDto getProcessById(long id) {
+    public ProcessDto getProcessById(UUID id) {
         Optional<Process> process = processRepository.findById(id);
         if(process.isEmpty()){
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Process not exist");
@@ -102,7 +99,7 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public CreateProcessResponse updateProcess(long id, UpdateProcessRequest request) {
+    public CreateProcessResponse updateProcess(UUID id, UpdateProcessRequest request) {
         return null;
     }
 

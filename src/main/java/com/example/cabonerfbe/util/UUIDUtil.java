@@ -10,4 +10,7 @@ public class UUIDUtil {
     public static String generateUUIDWithoutDashes() {
         return UUID.randomUUID().toString().replace("-", "");
     }
+    public static UUID fromString(String uuidString) {
+        return UUID.fromString(uuidString);
+    }
 }

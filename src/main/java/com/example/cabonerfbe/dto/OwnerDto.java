@@ -2,6 +2,8 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -9,7 +11,7 @@ import lombok.*;
 @Builder
 @Data
 public class OwnerDto {
-    private long id;
+    private UUID id;
     private String name;
     private String email;
     private String profilePictureUrl;

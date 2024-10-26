@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.IMPACT)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,7 +35,7 @@ public class MidpointController {
     }
 
     @GetMapping(API_PARAMS.GET_MIDPOINT_FACTOR_BY_ID)
-    public ResponseEntity<ResponseObject> getMidpointFactorById(@PathVariable long id) {
+    public ResponseEntity<ResponseObject> getMidpointFactorById(@PathVariable UUID id) {
         log.info("Start getMidpointFactorById. id: {}", id);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_MIDPOINT_FACTOR_BY_ID_SUCCESS, midpointService.getMidpointFactorById(id))

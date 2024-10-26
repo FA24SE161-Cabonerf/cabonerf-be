@@ -9,6 +9,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @MappedSuperclass
 @NoArgsConstructor
@@ -19,8 +20,8 @@ import java.time.LocalDate;
 @EntityListeners(AuditingEntityListener.class)
 public class Base {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
     @Column
     @CreatedDate
     @JsonIgnore

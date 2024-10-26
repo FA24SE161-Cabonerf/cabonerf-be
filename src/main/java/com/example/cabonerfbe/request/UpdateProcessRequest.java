@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.util.UUID;
+
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
@@ -19,5 +21,5 @@ import lombok.experimental.SuperBuilder;
 public class UpdateProcessRequest {
     private String name;
     private String description;
-    private long lifeCycleStageId;
+    private UUID lifeCycleStageId;
 }

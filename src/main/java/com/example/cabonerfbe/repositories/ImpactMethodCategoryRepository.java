@@ -8,14 +8,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface ImpactMethodCategoryRepository extends JpaRepository<ImpactMethodCategory,Long> {
+public interface ImpactMethodCategoryRepository extends JpaRepository<ImpactMethodCategory, UUID> {
     @Query("SELECT a FROM ImpactMethodCategory a WHERE a.impactCategory.id = ?1 AND a.lifeCycleImpactAssessmentMethod.id = ?2")
-    ImpactMethodCategory findByImpactCategoryAndImpactMethod(long impactCategoryId, long impactMethodId);
+    ImpactMethodCategory findByImpactCategoryAndImpactMethod(UUID impactCategoryId, UUID impactMethodId);
 
     @Query("SELECT a FROM ImpactMethodCategory a WHERE a.lifeCycleImpactAssessmentMethod.id = ?1")
-    List<ImpactMethodCategory> findByMethod(long methodId);
+    List<ImpactMethodCategory> findByMethod(UUID methodId);
 
     boolean existsByImpactCategoryAndLifeCycleImpactAssessmentMethod(ImpactCategory impactCategory, LifeCycleImpactAssessmentMethod lifeCycleImpactAssessmentMethod);
 }

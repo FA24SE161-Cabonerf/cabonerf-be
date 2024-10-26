@@ -5,10 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface UnitGroupRepository extends JpaRepository<UnitGroup, Long> {
-    UnitGroup findByIdAndStatus(Long unitGroupId, boolean statusTrue);
+public interface UnitGroupRepository extends JpaRepository<UnitGroup, UUID> {
+    UnitGroup findByIdAndStatus(UUID unitGroupId, boolean statusTrue);
 
     UnitGroup findByNameAndUnitGroupType(String name, String unitGroupType);
 

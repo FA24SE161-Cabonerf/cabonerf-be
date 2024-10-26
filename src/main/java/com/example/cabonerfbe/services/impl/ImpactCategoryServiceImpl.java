@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ImpactCategoryServiceImpl implements ImpactCategoryService {
@@ -43,7 +44,7 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
     }
 
     @Override
-    public ImpactCategoryDto getImpactCategoryById(long id) {
+    public ImpactCategoryDto getImpactCategoryById(UUID id) {
         ImpactCategory impactCategory = impactCategoryRepository.findById(id).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND));
         return impactCategoryConverter.fromImpactCategoryToImpactCategoryDto(impactCategory);
@@ -51,16 +52,16 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
 
     @Override
     public ImpactCategoryDto createImpactCategory(BaseImpactCategoryRequest request) {
-        return mapRequestToImpactCategory(request, NO_UPDATE);
+        return mapRequestToImpactCategory(request, null);
     }
 
     @Override
-    public ImpactCategoryDto updateImpactCategoryById(long categoryId, BaseImpactCategoryRequest request) {
+    public ImpactCategoryDto updateImpactCategoryById(UUID categoryId, BaseImpactCategoryRequest request) {
         return mapRequestToImpactCategory(request, categoryId);
     }
 
     @Override
-    public ImpactCategoryDto deleteImpactCategoryById(long categoryId) {
+    public ImpactCategoryDto deleteImpactCategoryById(UUID categoryId) {
         ImpactCategory impactCategory = impactCategoryRepository.findById(categoryId).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND)
         );
@@ -68,13 +69,13 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
         return impactCategoryConverter.fromImpactCategoryToImpactCategoryDto(impactCategoryRepository.save(impactCategory));
     }
 
-    private ImpactCategoryDto mapRequestToImpactCategory(BaseImpactCategoryRequest request, long updateId) {
+    private ImpactCategoryDto mapRequestToImpactCategory(BaseImpactCategoryRequest request, UUID updateId) {
         MidpointImpactCategory midpointImpactCategory = midpointImpactCategoryRepository.findByIdAndStatus(request.getMidpointImpactCategoryId(), Constants.STATUS_TRUE)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_MIDPOINT_IMPACT_CATEGORY_FOUND));
         EmissionCompartment emissionCompartment = emissionCompartmentRepository.findByIdAndStatus(request.getEmissionCompartmentId(), Constants.STATUS_TRUE)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_EMISSION_COMPARTMENT_FOUND));
         ImpactCategory impactCategory = new ImpactCategory();
-        if (updateId != NO_UPDATE) {
+        if (updateId != null) {
             impactCategory = impactCategoryRepository.findById(updateId).orElseThrow(
                     () -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND)
             );

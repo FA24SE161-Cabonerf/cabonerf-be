@@ -3,8 +3,11 @@ package com.example.cabonerfbe.config;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
+import com.example.cabonerfbe.models.UserVerifyStatus;
 import com.example.cabonerfbe.repositories.UserRepository;
+import com.example.cabonerfbe.repositories.UserVerifyStatusRepository;
 import com.example.cabonerfbe.services.JwtService;
+import com.example.cabonerfbe.util.UUIDUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -25,6 +28,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -35,6 +40,8 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
     private UserDetailsService userService;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private UserVerifyStatusRepository userVerifyStatusRepository;
 
     private static final String SWAGGER_UI_PATH = "/swagger-ui/";
     private static final String API_DOCS_PATH = "/v3/api-docs";
@@ -58,29 +65,47 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
         final String token;
         final String service_id;
         Map<String, String> errorData = new HashMap<>();
-        if(!isNumeric(userId)){
-            errorData.put("x-user-id", "Invalid user id");
+        if (userId == null || userId.isEmpty()) {
+            errorData.put("x-user-id", "User ID is required");
         }
-        if(!isNumeric(userRole)){
-            errorData.put("x-user-role", "Invalid user role");
+        if (userRole == null || userRole.isEmpty()) {
+            errorData.put("x-user-role", "User role is required");
         }
-        if(!isNumeric(userActive)){
-            errorData.put("x-user-active", "Invalid user verify active");
+        if (userActive == null || userActive.isEmpty()) {
+            errorData.put("x-user-active", "User active status is required");
+        }
+        if (gateway_token == null || gateway_token.isEmpty()) {
+            errorData.put("gatewayToken", "Gateway token is required");
         }
         if(!errorData.isEmpty()){
             sendErrorResponse(response, errorData);
             return;
         }
-        int user_id = Integer.parseInt(userId);
-        int user_role = Integer.parseInt(userRole);
-        int user_active = Integer.parseInt(userActive);
+        if (!isValidUUID(userId)) {
+            errorData.put("x-user-id", "Invalid UUID format for user id");
+        }
+        if (!isValidUUID(userRole)) {
+            errorData.put("x-user-role", "Invalid UUID format for user role");
+        }
+        if (!isValidUUID(userActive)) {
+            errorData.put("x-user-active", "Invalid UUID format for user verify active");
+        }
+        if(!errorData.isEmpty()){
+            sendErrorResponse(response, errorData);
+            return;
+        }
+        UUID user_id = UUIDUtil.fromString(userId);
+        UUID user_role = UUIDUtil.fromString(userRole);
+        UUID user_active = UUIDUtil.fromString(userActive);
 
-        if(user_active != 2){
-            switch (user_active){
-                case 1:
+        UserVerifyStatus verifyStatus = userVerifyStatusRepository.findById(user_active).get();
+
+        if(!Objects.equals(verifyStatus.getStatusName(), "Verified")){
+            switch (verifyStatus.getStatusName()){
+                case "Pending":
                     errorData.put("userVerifyActive", "Email has not been verified");
                     break;
-                case 3:
+                case "Suspended":
                     errorData.put("userVerifyActive", "Email has suspended");
                     break;
             }
@@ -124,11 +149,13 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
     }
 
 
-    private boolean isNumeric(String str) {
-        if (str == null || str.trim().isEmpty()) {
+    private boolean isValidUUID(String value) {
+        try {
+            UUID.fromString(value);
+            return true;
+        } catch (IllegalArgumentException e) {
             return false;
         }
-        return str.matches("-?\\d+");
     }
     private boolean isSwaggerRequest(String uri) {
         return uri.contains(SWAGGER_UI_PATH) || uri.contains(API_DOCS_PATH);

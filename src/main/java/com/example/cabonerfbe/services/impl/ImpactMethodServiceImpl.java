@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ImpactMethodServiceImpl implements ImpactMethodService {
@@ -54,7 +55,7 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
     }
 
     @Override
-    public LifeCycleImpactAssessmentMethodDto getImpactMethodById(long id) {
+    public LifeCycleImpactAssessmentMethodDto getImpactMethodById(UUID id) {
         LifeCycleImpactAssessmentMethod impactMethod = impactMethodRepository.findById(id).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND)
         );
@@ -62,7 +63,7 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
     }
 
     @Override
-    public List<ImpactCategoryDto> getCategoryByMethodId(long id) {
+    public List<ImpactCategoryDto> getCategoryByMethodId(UUID id) {
         List<ImpactCategory> impactCategories = impactCategoryRepository.findAllByImpactMethodId(id);
         if (impactCategories.isEmpty()) {
             throw CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND);
@@ -78,7 +79,7 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
     }
 
     @Override
-    public ImpactMethodResponse updateImpactMethodById(long methodId, BaseImpactMethodRequest request) {
+    public ImpactMethodResponse updateImpactMethodById(UUID methodId, BaseImpactMethodRequest request) {
         LifeCycleImpactAssessmentMethod impactMethod = impactMethodRepository.findByIdAndStatus(methodId, Constants.STATUS_TRUE)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND + " id: " + methodId));
         mapRequestToImpactMethod(impactMethod, request);
@@ -87,7 +88,7 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
     }
 
     @Override
-    public ImpactMethodResponse deleteImpactMethodById(long methodId) {
+    public ImpactMethodResponse deleteImpactMethodById(UUID methodId) {
         LifeCycleImpactAssessmentMethod impactMethod = impactMethodRepository.findByIdAndStatus(methodId, Constants.STATUS_TRUE)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND + " id: " + methodId));
         impactMethod.setStatus(Constants.STATUS_FALSE);
@@ -95,7 +96,7 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
     }
 
     @Override
-    public ImpactMethodCategoryResponse addImpactCategoryToImpactMethod(long methodId, long categoryId) {
+    public ImpactMethodCategoryResponse addImpactCategoryToImpactMethod(UUID methodId, UUID categoryId) {
         LifeCycleImpactAssessmentMethod impactMethod = impactMethodRepository.findByIdAndStatus(methodId, Constants.STATUS_TRUE)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND + " id: " + methodId));
         ImpactCategory impactCategory = impactCategoryRepository.findByIdAndStatus(categoryId, Constants.STATUS_TRUE)
@@ -115,7 +116,7 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
         String description = request.getDescription();
         String version = request.getVersion();
         String reference = request.getReference();
-        long perspectiveId = request.getPerspectiveId();
+        UUID perspectiveId = request.getPerspectiveId();
 
         if (impactMethodRepository.existsByNameIgnoreCaseAndVersionIgnoreCaseAndPerspectiveId(methodName, version, perspectiveId)) {
             throw CustomExceptions.badRequest(MessageConstants.IMPACT_METHOD_EXIST);

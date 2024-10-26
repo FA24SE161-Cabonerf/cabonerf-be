@@ -27,7 +27,7 @@ public interface MidpointImpactCharacterizationFactorConverter {
 
     default MidpointSubstanceFactorsDto fromQueryResultsToDto(Object[] result) {
         MidpointSubstanceFactorsDto dto = new MidpointSubstanceFactorsDto();
-        dto.setId(UUIDUtil.generateUUID());
+        dto.setId(UUIDUtil.fromString(UUIDUtil.generateUUID()));
         dto.setCasNumber((String) result[0]);
         dto.setName((String) result[1]);
         dto.setChemicalName((String) result[2]);

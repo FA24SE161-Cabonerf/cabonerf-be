@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.util.UUID;
+
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
@@ -16,7 +18,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class CreateProductRequest {
     @NotNull(message = "Process id is required.")
-    private long processId;
+    private UUID processId;
     @NotEmpty(message = "Name is required.")
     private String name;
     @NotNull(message = "Input is required.")
