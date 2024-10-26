@@ -33,7 +33,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter  extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private JwtService jwtService;
     @Autowired
@@ -77,7 +77,7 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
         if (gateway_token == null || gateway_token.isEmpty()) {
             errorData.put("gatewayToken", "Gateway token is required");
         }
-        if(!errorData.isEmpty()){
+        if (!errorData.isEmpty()) {
             sendErrorResponse(response, errorData);
             return;
         }
@@ -87,31 +87,33 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
         if (!isValidUUID(userRole)) {
             errorData.put("x-user-role", "Invalid UUID format for user role");
         }
-        if (!isValidUUID(userActive)) {
-            errorData.put("x-user-active", "Invalid UUID format for user verify active");
+        if (userActive == null || !userActive.matches("\\d+")) {
+            errorData.put("x-user-active", "User active invalid");
         }
-        if(!errorData.isEmpty()){
+        if (!errorData.isEmpty()) {
             sendErrorResponse(response, errorData);
             return;
         }
         UUID user_id = UUIDUtil.fromString(userId);
         UUID user_role = UUIDUtil.fromString(userRole);
-        UUID user_active = UUIDUtil.fromString(userActive);
+        int user_active = Integer.parseInt(userActive);
 
-        UserVerifyStatus verifyStatus = userVerifyStatusRepository.findById(user_active).get();
 
-        if(!Objects.equals(verifyStatus.getStatusName(), "Verified")){
-            switch (verifyStatus.getStatusName()){
-                case "Pending":
+        if (user_active != 2) {
+            switch (user_active) {
+                case 1:
                     errorData.put("userVerifyActive", "Email has not been verified");
                     break;
-                case "Suspended":
+                case 3:
                     errorData.put("userVerifyActive", "Email has suspended");
+                    break;
+                default:
+                    errorData.put("userVerifyActive", "user active id invalid");
                     break;
             }
         }
 
-        if(!errorData.isEmpty()){
+        if (!errorData.isEmpty()) {
             sendErrorResponse(response, errorData);
             return;
         }
@@ -129,9 +131,9 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
             try {
                 service_id = jwtService.extractServiceId(token);
 
-                if (service_id != null ) {
+                if (service_id != null) {
 
-                    if(!jwtService.isGatewayTokenValid(token, Constants.TOKEN_TYPE_SERVICE)){
+                    if (!jwtService.isGatewayTokenValid(token, Constants.TOKEN_TYPE_SERVICE)) {
                         errorData.put("gatewayToken", "Gateway token is invalid");
                     }
                 }
@@ -157,12 +159,15 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
             return false;
         }
     }
+
     private boolean isSwaggerRequest(String uri) {
         return uri.contains(SWAGGER_UI_PATH) || uri.contains(API_DOCS_PATH);
     }
+
     private boolean isPublicPath(String uri) {
         return uri.contains("/register") || uri.contains("/login");
     }
+
     private void sendErrorResponse(HttpServletResponse response, Map<String, String> errorData) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
