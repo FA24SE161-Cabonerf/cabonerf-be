@@ -162,10 +162,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token format is wrong"));
         }
         Optional<RefreshToken> _refresh_token = refreshTokenRepository.findByToken(refresh_token);
-        var user = userRepository.findById(_refresh_token.get().getUsers().getId()).get();
-        if(user.getId() != userId) {
+        if(_refresh_token.isEmpty()){
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token not exist"));
+        }
+        Users user = userRepository.findById(_refresh_token.get().getUsers().getId()).get();
+
+        if (!user.getId().equals(userId)) {
             throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token does not belong to user with id " + userId));
         }
+
         try {
             if (jwtService.isTokenExpired(refresh_token, "refresh")) {
                 throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token is expired"));
