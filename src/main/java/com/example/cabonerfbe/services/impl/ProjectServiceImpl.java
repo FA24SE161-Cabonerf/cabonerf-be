@@ -103,18 +103,18 @@ public class ProjectServiceImpl implements ProjectService {
         project.setLifeCycleImpactAssessmentMethod(methodRepository.findById(request.getMethodId()).get());
 
         project = projectRepository.save(project);
-//
-//        List<ImpactMethodCategory> list = impactMethodCategoryRepository.findByMethod(request.getMethodId());
-//        List<ProjectImpactValue> listValues = new ArrayList<>();
-//        for(ImpactMethodCategory x:list){
-//            ProjectImpactValue values = new ProjectImpactValue();
-//            values.setProject(project);
-//            values.setValue(0);
-//            values.setImpactMethodCategory(x);
-//            listValues.add(values);
-//        }
-//
-//        projectImpactValueRepository.saveAll(listValues);
+
+        List<ImpactMethodCategory> list = impactMethodCategoryRepository.findByMethod(request.getMethodId());
+        List<ProjectImpactValue> listValues = new ArrayList<>();
+        for(ImpactMethodCategory x:list){
+            ProjectImpactValue values = new ProjectImpactValue();
+            values.setProject(project);
+            values.setValue(0);
+            values.setImpactMethodCategory(x);
+            listValues.add(values);
+        }
+
+        projectImpactValueRepository.saveAll(listValues);
         return CreateProjectResponse.builder()
                 .projectId(project.getId())
                 .build();
@@ -231,7 +231,6 @@ public class ProjectServiceImpl implements ProjectService {
             p.setValue(x.getValue());
             p.setMethod(methodConverter.fromMethodToMethodDto(x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod()));
             p.setImpactCategory(categoryConverter.fromProjectToImpactCategoryDto(x.getImpactMethodCategory().getImpactCategory()));
-            p.setUnit(unitConverter.fromProjectToUnitResponse(x.getImpactMethodCategory().getImpactCategory().getMidpointImpactCategory().getUnit()));
             result.add(p);
         }
         return result;

@@ -14,5 +14,4 @@ public class ProjectImpactDto {
     private double value;
     private MethodDto method;
     private ProjectImpactCategoryDto impactCategory;
-    private UnitProjectImpactDto unit;
 }
