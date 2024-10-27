@@ -12,6 +12,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
+import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface MidpointImpactCharacterizationFactorConverter {
@@ -27,16 +28,16 @@ public interface MidpointImpactCharacterizationFactorConverter {
 
     default MidpointSubstanceFactorsDto fromQueryResultsToDto(Object[] result) {
         MidpointSubstanceFactorsDto dto = new MidpointSubstanceFactorsDto();
-        dto.setId(UUIDUtil.fromString(UUIDUtil.generateUUID()));
-        dto.setCasNumber((String) result[0]);
-        dto.setName((String) result[1]);
-        dto.setChemicalName((String) result[2]);
-        dto.setMolecularFormula((String) result[3]);
-        dto.setAlternativeFormula((String) result[4]);
-        dto.setCompartmentName((String) result[5]);
-        dto.setIndividualist((Double) result[6]);
-        dto.setHierarchist((Double) result[7]);
-        dto.setEgalitarian((Double) result[8]);
+        dto.setId((UUID) result[0]);
+        dto.setCasNumber((String) result[1]);
+        dto.setName((String) result[2]);
+        dto.setChemicalName((String) result[3]);
+        dto.setMolecularFormula((String) result[4]);
+        dto.setAlternativeFormula((String) result[5]);
+        dto.setCompartmentName((String) result[6]);
+        dto.setIndividualist((Double) result[7]);
+        dto.setHierarchist((Double) result[8]);
+        dto.setEgalitarian((Double) result[9]);
         return dto;
     }
 
