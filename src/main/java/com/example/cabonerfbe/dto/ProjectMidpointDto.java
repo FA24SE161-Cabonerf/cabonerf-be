@@ -13,4 +13,5 @@ public class ProjectMidpointDto {
     private UUID id;
     private String name;
     private String abbr;
+    private UnitProjectImpactDto unit;
 }
