@@ -45,7 +45,7 @@ public class UnitGroupServiceImpl implements UnitGroupService {
 
     @Override
     public UnitGroupResponse createUnitGroup(CreateUnitGroupRequest request) {
-        UnitGroup unitGroup = unitGroupRepository.findByNameAndUnitGroupType(request.getUnitGroupName(), request.getUnitGroupType());
+        UnitGroup unitGroup = unitGroupRepository.findByNameAndUnitGroupTypeAndStatus(request.getUnitGroupName(), request.getUnitGroupType(),true);
         if (unitGroup != null) {
             throw CustomExceptions.notFound(MessageConstants.UNIT_GROUP_EXIST);
         }
@@ -62,6 +62,10 @@ public class UnitGroupServiceImpl implements UnitGroupService {
         if (unitGroup == null) {
             throw CustomExceptions.notFound(MessageConstants.NO_UNIT_GROUP_FOUND);
         }
+        if(unitGroupRepository.checkExist(groupId,request.getUnitGroupName()).isPresent()){
+            throw CustomExceptions.badRequest(MessageConstants.UNIT_GROUP_NAME_EXIST);
+        }
+
         unitGroup.setName(request.getUnitGroupName());
         unitGroup.setUnitGroupType(request.getUnitGroupType());
         return unitGroupConverter.fromUnitGroupToUnitGroupResponse(unitGroupRepository.save(unitGroup));

@@ -45,16 +45,18 @@ public class MessageConstants {
     public static final String GET_LIFE_STAGE_BY_ID_NOT_FOUND = "Life cycle stage not exist";
     public static final String CREATE_UNIT_GROUP_SUCCESS = "Create unit group success";
     public static final String UNIT_GROUP_EXIST = "Unit group exist";
+    public static final String UNIT_GROUP_NAME_EXIST = "Unit group name exist";
     public static final String UPDATE_UNIT_GROUP_BY_ID_SUCCESS = "Update unit group by id success";
     public static final String DELETE_UNIT_GROUP_BY_ID_SUCCESS = "Delete unit group by id success";
 
     public static final String CREATE_IMPACT_METHOD_SUCCESS = "Create impact method success";
     public static final String IMPACT_METHOD_EXIST = "Impact method exist";
-    public static final String NO_PERSPECTIVE_FOUND = "No perspective found";
+    public static final String NO_PERSPECTIVE_FOUND = "No perspective not exist";
     public static final String UPDATE_IMPACT_METHOD_SUCCESS = "Update impact method by id success";
     public static final String DELETE_IMPACT_METHOD_SUCCESS = "Delete impact method by id success";
     public static final String CREATE_IMPACT_CATEGORY_SUCCESS = "Create impact category success";
     public static final String GET_ALL_PERSPECTIVE_SUCCESS = "Get all perspective success";
+    public static final String UPDATE_PERSPECTIVE_SUCCESS = "Update perspective success";
     public static final String GET_ALL_EMISSION_COMPARTMENTS_SUCCESS = "Get all emission compartments success";
     public static final String NO_EMISSION_COMPARTMENT_FOUND = "No emission compartment found";
     public static final String GET_ALL_MIDPOINT_IMPACT_CATEGORY_SUCCESS = "Get all midpoint impact categories success";
