@@ -12,7 +12,9 @@ import java.util.List;
 public interface PerspectiveConverter {
     PerspectiveConverter INSTANCE = Mappers.getMapper(PerspectiveConverter.class);
 
-    PerspectiveDto fromPerspectiveToPerspectiveDto(Perspective perspective);
+    PerspectiveResponse fromPerspectiveToPerspectiveDto(Perspective perspective);
 
     List<PerspectiveResponse> fromListPerspectiveToListPerspectiveResponse(List<Perspective> perspective);
+
+
 }

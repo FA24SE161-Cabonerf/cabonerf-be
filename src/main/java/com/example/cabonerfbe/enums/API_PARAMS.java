@@ -111,6 +111,7 @@ public class API_PARAMS {
      ************************/
     public static final String PERSPECTIVE = "/perspectives";
     public static final String GET_ALL_PERSPECTIVE = "/";
+    public static final String GET_BY_ID_PERSPECTIVE = "/{id}";
 
     /************************
      *   EMISSIONS APIs   *
