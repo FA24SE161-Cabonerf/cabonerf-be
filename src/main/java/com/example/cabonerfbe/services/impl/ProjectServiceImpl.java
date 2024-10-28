@@ -121,11 +121,14 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize,UUID userId) {
+    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize,UUID userId,UUID methodId) {
         Pageable pageable = PageRequest.of(pageCurrent - PAGE_INDEX_ADJUSTMENT, pageSize);
-
-        Page<Project> projects = projectRepository.findAll(userId,pageable);
-
+        Page<Project> projects = null;
+        if(methodId == null){
+            projects = projectRepository.findAll(userId,pageable);
+        }else{
+            projects = projectRepository.sortByMethod(userId,methodId,pageable);
+        }
         if(projects.isEmpty()){
             GetAllProjectResponse response = new GetAllProjectResponse();
             response.setPageCurrent(0);
@@ -157,12 +160,17 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public GetProjectByIdDto getById(UUID id) {
+    public GetProjectByIdDto getById(UUID id, UUID userId) {
         if(projectRepository.findById(id).isEmpty()){
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Project not exist");
         }
 
         Project project = projectRepository.findById(id).get();
+
+        if(!project.getUser().getId().equals(userId)){
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR,"Project not owned by user with id: " + userId);
+        }
+
         GetProjectByIdDto dto = new GetProjectByIdDto();
         List<ProcessDto> processDto = processConverter.fromListToListDto(processRepository.findAll(project.getId()));
 
