@@ -12,7 +12,7 @@ import java.util.UUID;
 @Repository
 public interface ProjectImpactValueRepository extends JpaRepository<ProjectImpactValue, UUID> {
 
-    @Query("SELECT p FROM ProjectImpactValue p WHERE p.project.id = ?1")
+    @Query("SELECT p FROM ProjectImpactValue p WHERE p.project.id = ?1 ORDER BY p.impactMethodCategory.impactCategory.id ASC")
     List<ProjectImpactValue> findAllByProjectId(UUID id);
 
 }
