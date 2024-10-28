@@ -17,8 +17,8 @@ public interface ProjectService {
     List<Project> getProjectListByMethodId(UUID id);
     Optional<Project> getProjectById(UUID id);
     CreateProjectResponse createProject(UUID userId, CreateProjectRequest request);
-    GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId);
-    GetProjectByIdDto getById(UUID id);
+    GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId, UUID methodId);
+    GetProjectByIdDto getById(UUID id, UUID userId);
     UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request);
     List<Project> deleteProject(UUID id);
 }

@@ -32,10 +32,11 @@ public class ProjectController {
     public ResponseEntity<ResponseObject> getProjectListByMethodId(
             @RequestHeader("x-user-id") UUID userId,
             @RequestParam(defaultValue = "1") int pageCurrent,
-            @RequestParam(defaultValue = "5") int pageSize) {
+            @RequestParam(defaultValue = "5") int pageSize,
+            @RequestParam(required = false) UUID methodId) {
         log.info("Start getAllProject");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_LIST_SUCCESS, projectService.getAllProject(pageCurrent,pageSize,userId)
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_LIST_SUCCESS, projectService.getAllProject(pageCurrent,pageSize,userId, methodId)
                 ));
     }
 
@@ -48,10 +49,10 @@ public class ProjectController {
     }
 
     @GetMapping(API_PARAMS.GET_PROJECT_BY_ID)
-    public ResponseEntity<ResponseObject> getProjectById(@PathVariable UUID id) {
+    public ResponseEntity<ResponseObject> getProjectById(@PathVariable UUID id, @RequestHeader("x-user-id") UUID userId) {
         log.info("Start getProjectById, id: " + id);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_BY_ID_SUCCESS, projectService.getById(id)
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_BY_ID_SUCCESS, projectService.getById(id, userId)
                 ));
     }
 

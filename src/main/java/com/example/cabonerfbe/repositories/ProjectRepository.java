@@ -33,6 +33,9 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
     @Query("SELECT p FROM Project p WHERE p.user.id = ?1 AND p.status = true")
     Page<Project> findAll(UUID userId, Pageable pageable);
 
+    @Query("SELECT p FROM Project p WHERE p.user.id = ?1 AND p.status = true AND p.lifeCycleImpactAssessmentMethod.id = ?2")
+    Page<Project> sortByMethod(UUID userId, UUID methodId, Pageable pageable);
+
     @Query("SELECT p FROM Project p WHERE p.id = ?1 AND p.status = true")
     Optional<Project> findById(UUID id);
 }
