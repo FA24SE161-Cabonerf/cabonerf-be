@@ -2,6 +2,9 @@ package com.example.cabonerfbe.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Setter
@@ -12,7 +15,7 @@ import lombok.*;
 public class LifeCycleStage extends Base{
     private String name;
     private String description;
-    @Lob
-    @Column(columnDefinition = "XML")
+    @Column(length = 9000)
     private String iconUrl;
+
 }
