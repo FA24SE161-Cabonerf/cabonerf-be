@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -24,7 +25,7 @@ public interface UnitRepository extends JpaRepository<Unit, UUID> {
 
     List<Unit> findAllByStatusAndUnitGroupId(boolean status, UUID unitGroupId);
 
-    Unit findByIdAndStatus(UUID unitId, boolean statusTrue);
+    Optional<Unit> findByIdAndStatus(UUID unitId, boolean statusTrue);
 
     @Query("SELECT u FROM Unit u WHERE u.unitGroup.id = ?1")
     List<Unit> findAllByUnitGroupId(UUID unitGroupId);

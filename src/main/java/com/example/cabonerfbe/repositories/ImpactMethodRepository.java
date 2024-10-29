@@ -5,6 +5,7 @@ import com.example.cabonerfbe.models.Perspective;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,4 +18,6 @@ public interface ImpactMethodRepository extends JpaRepository<LifeCycleImpactAss
     boolean existsByNameIgnoreCaseAndVersionIgnoreCaseAndPerspectiveId(String name, String version, UUID perspectiveId);
 
     Optional<LifeCycleImpactAssessmentMethod> findByIdAndStatus(UUID methodId, boolean status);
+
+    List<LifeCycleImpactAssessmentMethod> findByStatus(boolean statusTrue);
 }

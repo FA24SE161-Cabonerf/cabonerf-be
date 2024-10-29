@@ -51,10 +51,10 @@ public class UnitServiceImpl implements UnitService {
 
     @Override
     public UnitResponse getUnitById(UUID unitId) {
-        Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE);
-        if (unit == null) {
-            throw CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND);
-        }
+        Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
+                () ->CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
+        );
+
         return unitConverter.fromUnitToUnitResponse(unit);
     }
 
@@ -69,7 +69,7 @@ public class UnitServiceImpl implements UnitService {
 
     @Override
     public UnitResponse createUnitInUnitGroup(UUID groupId, CreateUnitRequest request) {
-        UnitGroup unitGroup = unitGroupRepository.findById(groupId)
+        UnitGroup unitGroup = unitGroupRepository.findByIdAndStatus(groupId, Constants.STATUS_TRUE)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_UNIT_GROUP_FOUND + " id: " + groupId));
         if (unitGroup.getUnitGroupType().equalsIgnoreCase(Constants.UNIT_GROUP_TYPE_NORMAL) && request.getIsDefault() == Constants.IS_DEFAULT_TRUE) {
             if (unitRepository.existsByIsDefaultAndStatusAndUnitGroup(Constants.IS_DEFAULT_TRUE, Constants.STATUS_TRUE, unitGroup))
@@ -83,15 +83,12 @@ public class UnitServiceImpl implements UnitService {
 
     @Override
     public UnitResponse updateUnitById(UUID unitId, UpdateUnitRequest request) {
-        Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE);
-        if (unit == null) {
-            throw CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND + " id: " + unitId);
-        }
-
-        UnitGroup unitGroup = unitGroupRepository.findByIdAndStatus(request.getUnitGroupId(), Constants.STATUS_TRUE);
-        if (unitGroup == null) {
-            throw CustomExceptions.notFound(MessageConstants.NO_UNIT_GROUP_FOUND + " id: " + request.getUnitGroupId());
-        }
+        Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND + " id: " + unitId)
+        );
+        UnitGroup unitGroup = unitGroupRepository.findByIdAndStatus(request.getUnitGroupId(), Constants.STATUS_TRUE).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_GROUP_FOUND + " id: " + request.getUnitGroupId())
+        );
 
         if (request.getIsDefault() == Constants.IS_DEFAULT_TRUE) {
             if (!unit.getIsDefault() && Constants.UNIT_GROUP_TYPE_NORMAL.equalsIgnoreCase(unitGroup.getUnitGroupType())) {
@@ -114,11 +111,9 @@ public class UnitServiceImpl implements UnitService {
 
     @Override
     public UnitResponse deleteUnitById(UUID unitId) {
-        Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE);
-        if (unit == null) {
-            throw CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND + " id: " + unitId);
-        }
-
+        Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND + " id: " + unitId)
+        );
         unit.setStatus(Constants.STATUS_FALSE);
         unitRepository.save(unit);
 
