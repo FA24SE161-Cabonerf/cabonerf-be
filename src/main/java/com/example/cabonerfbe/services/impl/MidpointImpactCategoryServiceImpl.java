@@ -23,9 +23,6 @@ public class MidpointImpactCategoryServiceImpl implements MidpointImpactCategory
     @Override
     public List<MidpointImpactCategoryResponse> getAllMidpointImpactCategories() {
         List<MidpointImpactCategory> midpointImpactCategoryList = midpointImpactCategoryRepository.findByStatus(Constants.STATUS_TRUE);
-        if (midpointImpactCategoryList.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_MIDPOINT_IMPACT_CATEGORY_FOUND);
-        }
         return midpointImpactCategoryConverter.fromListMidpointImpactCategoryToListMidpointImpactCategoryResponse(midpointImpactCategoryList);
     }
 }

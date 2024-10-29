@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface MidpointRepository extends JpaRepository<MidpointImpactCharacterizationFactors, UUID> {
@@ -17,4 +18,6 @@ public interface MidpointRepository extends JpaRepository<MidpointImpactCharacte
             countQuery = QueryStrings.COUNT_MIDPOINT_SUBSTANCE_FACTORS_WITH_PERSPECTIVE,
             nativeQuery = true)
     Page<Object[]> findAllWithPerspective(Pageable pageable);
+
+    Optional<MidpointImpactCharacterizationFactors> findByIdAndStatus(UUID id, boolean status);
 }

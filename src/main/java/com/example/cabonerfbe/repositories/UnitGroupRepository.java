@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Repository
 public interface UnitGroupRepository extends JpaRepository<UnitGroup, UUID> {
-    UnitGroup findByIdAndStatus(UUID unitGroupId, boolean statusTrue);
+    Optional<UnitGroup> findByIdAndStatus(UUID unitGroupId, boolean statusTrue);
 
     UnitGroup findByNameAndUnitGroupTypeAndStatus(String name, String unitGroupType, boolean status);
 

@@ -40,20 +40,15 @@ public class MidpointServiceImpl implements MidpointService {
     @Override
     public List<MidpointImpactCharacterizationFactorsResponse> getAllMidpointFactors() {
         List<MidpointImpactCharacterizationFactors> factors  = midpointRepository.findAllByStatus(Constants.STATUS_TRUE);
-        if (factors .isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR);
-        }
-
         return midpointConverter.fromMidpointListToMidpointResponseList(factors);
 
     }
 
     @Override
     public MidpointImpactCharacterizationFactorsResponse getMidpointFactorById(UUID id) {
-        MidpointImpactCharacterizationFactors factor  = midpointRepository.findById(id).orElseThrow(()
+        MidpointImpactCharacterizationFactors factor  = midpointRepository.findByIdAndStatus(id, Constants.STATUS_TRUE).orElseThrow(()
                 -> CustomExceptions.notFound(MessageConstants.NO_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR)
         );
-
         return midpointConverter.fromMidpointToMidpointResponse(factor);
     }
 

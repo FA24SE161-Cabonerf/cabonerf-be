@@ -26,9 +26,6 @@ public class PerspectiveServiceImpl implements PerspectiveService {
     @Override
     public List<PerspectiveResponse> getAllPerspective() {
         List<Perspective> perspective = perspectiveRepository.findByStatus(Constants.STATUS_TRUE);
-        if (perspective.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_PERSPECTIVE_FOUND);
-        }
         return perspectiveConverter.fromListPerspectiveToListPerspectiveResponse(perspective);
     }
 

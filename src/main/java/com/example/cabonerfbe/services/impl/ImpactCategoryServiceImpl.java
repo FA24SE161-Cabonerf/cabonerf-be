@@ -36,16 +36,12 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
     @Override
     public List<ImpactCategoryDto> getImpactCategoryList() {
         List<ImpactCategory> impactCategories = impactCategoryRepository.findAllByStatus(Constants.STATUS_TRUE);
-        if (impactCategories.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND);
-        }
-
         return impactCategoryConverter.fromImpactCategoryListToDtoList(impactCategories);
     }
 
     @Override
     public ImpactCategoryDto getImpactCategoryById(UUID id) {
-        ImpactCategory impactCategory = impactCategoryRepository.findById(id).orElseThrow(
+        ImpactCategory impactCategory = impactCategoryRepository.findByIdAndStatus(id, Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND));
         return impactCategoryConverter.fromImpactCategoryToImpactCategoryDto(impactCategory);
     }
@@ -62,7 +58,7 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
 
     @Override
     public ImpactCategoryDto deleteImpactCategoryById(UUID categoryId) {
-        ImpactCategory impactCategory = impactCategoryRepository.findById(categoryId).orElseThrow(
+        ImpactCategory impactCategory = impactCategoryRepository.findByIdAndStatus(categoryId, Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND)
         );
         impactCategory.setStatus(Constants.STATUS_FALSE);
@@ -76,7 +72,7 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_EMISSION_COMPARTMENT_FOUND));
         ImpactCategory impactCategory = new ImpactCategory();
         if (updateId != null) {
-            impactCategory = impactCategoryRepository.findById(updateId).orElseThrow(
+            impactCategory = impactCategoryRepository.findByIdAndStatus(updateId, Constants.STATUS_TRUE).orElseThrow(
                     () -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND)
             );
         }

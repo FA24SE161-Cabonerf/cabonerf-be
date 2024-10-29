@@ -47,16 +47,13 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
 
     @Override
     public List<LifeCycleImpactAssessmentMethodDto> getAllImpactMethods() {
-        List<LifeCycleImpactAssessmentMethod> impactMethods = impactMethodRepository.findAll();
-        if (impactMethods.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND);
-        }
+        List<LifeCycleImpactAssessmentMethod> impactMethods = impactMethodRepository.findByStatus(Constants.STATUS_TRUE);
         return impactMethodConverter.fromMethodListToMethodDtoList(impactMethods);
     }
 
     @Override
     public LifeCycleImpactAssessmentMethodDto getImpactMethodById(UUID id) {
-        LifeCycleImpactAssessmentMethod impactMethod = impactMethodRepository.findById(id).orElseThrow(
+        LifeCycleImpactAssessmentMethod impactMethod = impactMethodRepository.findByIdAndStatus(id, Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND)
         );
         return impactMethodConverter.fromLifeCycleImpactAssessmentMethodToLifeCycleImpactAssessmentMethodDto(impactMethod);
