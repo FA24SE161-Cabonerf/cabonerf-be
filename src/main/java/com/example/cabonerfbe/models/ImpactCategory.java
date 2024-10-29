@@ -14,6 +14,8 @@ public class ImpactCategory extends Base{
     private String indicator;
     private String indicatorDescription;
     private String unit;
+    @Lob
+    @Column(columnDefinition = "XML")
     private String iconUrl;
 
     @ManyToOne
