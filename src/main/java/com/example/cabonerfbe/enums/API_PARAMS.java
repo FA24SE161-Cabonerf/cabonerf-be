@@ -119,4 +119,5 @@ public class API_PARAMS {
     public static final String EMISSIONS = "/emissions";
     public static final String GET_ALL_EMISSION_COMPARTMENTS = "/emission-compartments";
     public static final String GET_EMISSION_COMPARTMENTS_BY_ID = "/emission-compartments/{id}";
+    public static final String EMISSION_SUBSTANCE = "/emission-substance";
 }
