@@ -16,20 +16,9 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface LifeCycleStageConverter {
     LifeCycleStageConverter INSTANCE = Mappers.getMapper(LifeCycleStageConverter.class);
-    @Mapping(target = "iconUrl", expression = "java(extractXmlContent(lifecycleStage.getIconUrl()))")
+
     LifeCycleStageDto fromLifecycleStageToLifecycleStageDto(LifeCycleStage lifecycleStage);
     List<LifeCycleStageDto> fromListLifecycleStageToLifecycleStageDto(List<LifeCycleStage> lifecycleStage);
 
-    default String extractXmlContent(String xmlContent) {
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            org.w3c.dom.Document document = builder.parse(new InputSource(new StringReader(xmlContent)));
-            // Trả về nguyên chuỗi hoặc nội dung tùy chọn từ XML
-            return xmlContent; // hoặc dùng document.getDocumentElement().getTextContent();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null; // Xử lý lỗi tùy ý
-        }
-    }
+
 }
