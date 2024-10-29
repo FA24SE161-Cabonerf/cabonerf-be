@@ -12,4 +12,7 @@ import lombok.*;
 public class LifeCycleStage extends Base{
     private String name;
     private String description;
+    @Lob
+    @Column(columnDefinition = "XML")
+    private String iconUrl;
 }
