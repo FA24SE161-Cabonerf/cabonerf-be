@@ -30,7 +30,7 @@ public class API_PARAMS {
     public static final String GET_ALL_IMPACT_CATEGORIES = "/impact-categories";
     public static final String GET_IMPACT_CATEGORY_BY_ID = "/impact-categories/{categoryId}";
     public static final String CREATE_IMPACT_CATEGORY = "/impact-categories";
-    public static final String ADD_IMPACT_CATEGORY_TO_IMPACT_METHOD = "/impact-methods/{methodId}/categories/{categoryId}";
+    public static final String ADD_IMPACT_CATEGORY_TO_IMPACT_METHOD = "/impact-methods/{methodId}/impact-categories/{categoryId}";
     public static final String GET_CATEGORY_BY_METHOD_ID = "/impact-methods/{methodId}/impact-categories";
     public static final String UPDATE_IMPACT_CATEGORY_BY_ID = "/impact-categories/{categoryId}";
     public static final String DELETE_IMPACT_CATEGORY_BY_ID = "/impact-categories/{categoryId}";
