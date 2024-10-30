@@ -1,6 +1,5 @@
 package com.example.cabonerfbe.request;
 
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -16,13 +15,10 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateProcessRequest {
-
-    @NotEmpty(message = "Name is required.")
-    private String name;
-    private String description;
-    @NotNull(message = "Life Cycle Stage is required.")
-    private UUID lifeCycleStageId;
-    @NotNull(message = "Project is required.")
-    private UUID projectId;
+public class SearchElementaryRequest{
+    String search;
+    UUID emissionCompartmentId;
+    @NotNull(message = "Method is required")
+    UUID methodId;
+    UUID impactCategoryId;
 }

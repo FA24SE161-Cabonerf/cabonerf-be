@@ -27,14 +27,14 @@ public class ProcessController {
     @Autowired
     private ProcessService processService;
 
-    @GetMapping()
-    public ResponseEntity<ResponseObject> getAllProcess(@Valid @RequestBody GetAllProcessRequest request) {
-        log.info("Start getAllProcess. request: {}", request);
-        return ResponseEntity.ok().body(new ResponseObject(
-                        Constants.RESPONSE_STATUS_SUCCESS, "Get all process success", processService.getAllProcesses(request)
-                )
-        );
-    }
+//    @GetMapping()
+//    public ResponseEntity<ResponseObject> getAllProcess(@Valid @RequestBody GetAllProcessRequest request) {
+//        log.info("Start getAllProcess. request: {}", request);
+//        return ResponseEntity.ok().body(new ResponseObject(
+//                        Constants.RESPONSE_STATUS_SUCCESS, "Get all process success", processService.getAllProcesses(request)
+//                )
+//        );
+//    }
 
     @GetMapping(API_PARAMS.PROCESS_BY_ID)
     public ResponseEntity<ResponseObject> getProcessById(@PathVariable UUID id) {
@@ -59,6 +59,15 @@ public class ProcessController {
         log.info("Start updateProcess. id: {}, request: {}", id, request);
         return ResponseEntity.ok().body(new ResponseObject(
                         Constants.RESPONSE_STATUS_SUCCESS, "Create process success", processService.updateProcess(id, request)
+                )
+        );
+    }
+
+    @DeleteMapping(API_PARAMS.PROCESS_BY_ID)
+    public ResponseEntity<ResponseObject> deleteProcess(@PathVariable UUID id) {
+        log.info("Start updateProcess. id: {}", id);
+        return ResponseEntity.ok().body(new ResponseObject(
+                        Constants.RESPONSE_STATUS_SUCCESS, "Create process success", processService.deleteProcess(id)
                 )
         );
     }

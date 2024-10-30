@@ -17,8 +17,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetAllProcessRequest {
-    @NotEmpty(message = "Project id is required.")
+    @NotNull(message = "Project is required.")
     private UUID projectId;
-    @NotEmpty(message = "Life Cycle Impact Assessment Method id is required.")
-    private UUID methodId;
 }

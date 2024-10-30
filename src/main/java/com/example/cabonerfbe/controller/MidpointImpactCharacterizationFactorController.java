@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,9 +29,16 @@ public class MidpointImpactCharacterizationFactorController {
     @PostMapping(API_PARAMS.IMPORT_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR)
     public ResponseEntity<ResponseObject> importExcel(@RequestParam("file") MultipartFile file, @RequestParam String methodName) throws IOException {
         log.info("Start importExcel");
-        excelService.readExcel(file,methodName);
+
         return ResponseEntity.ok(new ResponseObject(
-                Constants.RESPONSE_STATUS_SUCCESS,"Import success","[]"
+                Constants.RESPONSE_STATUS_SUCCESS,"Import success",excelService.readExcel(file,methodName)
         ));
+    }
+
+    @GetMapping("/download")
+    public ResponseEntity<Resource> downloadFileLog(@RequestParam String fileName) throws IOException {
+        log.info("Download File Log");
+
+        return excelService.downloadErrorLog(fileName);
     }
 }
