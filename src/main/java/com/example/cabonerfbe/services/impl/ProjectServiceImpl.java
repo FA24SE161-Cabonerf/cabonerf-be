@@ -15,6 +15,7 @@ import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.CreateProjectResponse;
 import com.example.cabonerfbe.response.GetAllProjectResponse;
 import com.example.cabonerfbe.response.GetProjectByIdResponse;
+import com.example.cabonerfbe.services.ProcessService;
 import com.example.cabonerfbe.services.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -62,6 +63,8 @@ public class ProjectServiceImpl implements ProjectService {
     private ConnectorRepository connectorRepository;
     @Autowired
     private ConnectorConverter connectorConverter;
+    @Autowired
+    private ProcessService processService;
 
     private static final int PAGE_INDEX_ADJUSTMENT = 1;
 
@@ -172,12 +175,6 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         GetProjectByIdDto dto = new GetProjectByIdDto();
-        List<ProcessDto> processDto = processConverter.fromListToListDto(processRepository.findAll(project.getId()));
-
-        for(ProcessDto x: processDto){
-            x.setImpacts(converterProcess(processImpactValueRepository.findByProcessId(x.getId())));
-            x.setExchanges(exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(x.getId())));
-        }
 
         dto.setId(id);
         dto.setName(project.getName());
@@ -185,7 +182,7 @@ public class ProjectServiceImpl implements ProjectService {
         dto.setLocation(project.getLocation());
         dto.setMethod(methodConverter.fromMethodToMethodDto(project.getLifeCycleImpactAssessmentMethod()));
         dto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
-        dto.setProcesses(processDto);
+        dto.setProcesses(processService.getAllProcesses(id));
         dto.setConnectors(connectorConverter.fromListConnectorToConnectorDto(connectorRepository.findAllByProject(project.getId())));
 
         return dto;

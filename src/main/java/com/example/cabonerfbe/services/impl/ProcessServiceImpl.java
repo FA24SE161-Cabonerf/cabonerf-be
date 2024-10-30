@@ -7,10 +7,8 @@ import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.dto.ProcessImpactValueDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.Exchanges;
-import com.example.cabonerfbe.models.ImpactMethodCategory;
+import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.models.Process;
-import com.example.cabonerfbe.models.ProcessImpactValue;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.GetAllProcessRequest;
@@ -63,8 +61,8 @@ public class ProcessServiceImpl implements ProcessService {
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Life cycle stage not exist");
         }
         process.setLifeCycleStage(lifeCycleStageRepository.findById(request.getLifeCycleStageId()).get());
-
-        if(projectRepository.findById(request.getProjectId()).isEmpty()){
+        Optional<Project> project = projectRepository.findById(request.getProjectId());
+        if(project.isEmpty()){
             throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, Map.of("projectId","Not exist"));
         }
         process.setProject(projectRepository.findById(request.getProjectId()).get());
@@ -72,15 +70,27 @@ public class ProcessServiceImpl implements ProcessService {
 
         process = processRepository.save(process);
 
-        List<ImpactMethodCategory> list = impactMethodCategoryRepository.findAll();
-        List<ProcessImpactValue> processImpactValues = new ArrayList<>();
+//        List<ImpactMethodCategory> list = impactMethodCategoryRepository.findByMethod(project.get().getLifeCycleImpactAssessmentMethod().getId());
+//        List<ProcessImpactValue> processImpactValues = new ArrayList<>();
+
+//        for(ImpactMethodCategory x: list){
+//            ProcessImpactValue piv = new ProcessImpactValue();
+//            piv.setUnitLevel(0);
+//            piv.setProcess(process);
+//            piv.setImpactMethodCategory(x);
+//            piv.setSystemLevel(0);
+//            piv.setOverallImpactContribution(0);
+//            processImpactValues.add(piv);
+//        }
+//
+//        processImpactValueRepository.saveAll(processImpactValues);
 
         return processConverter.INSTANCE.fromProcessDetailToProcessDto(process);
     }
 
     @Override
     public ProcessDto getProcessById(UUID id) {
-        Optional<Process> process = processRepository.findById(id);
+        Optional<Process> process = processRepository.findByProcessId(id);
         if(process.isEmpty()){
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Process not exist");
         }
@@ -94,13 +104,52 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public List<CreateProcessResponse> getAllProcesses(GetAllProcessRequest request) {
-        return null;
+    public List<ProcessDto> getAllProcesses(UUID projectId) {
+        Optional<Project> project = projectRepository.findById(projectId);
+        if(project.isEmpty()){
+            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Project not exist");
+        }
+        List<ProcessDto> processDtos = processConverter.fromListToListDto(processRepository.findAll(projectId));
+
+        if(processDtos.isEmpty()){
+            return processDtos;
+        }
+        for(ProcessDto x : processDtos){
+            x.setImpacts(converterProcess(processImpactValueRepository.findByProcessId(x.getId())));
+            x.setExchanges(exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(x.getId())));
+        }
+
+        return processDtos;
     }
 
     @Override
-    public CreateProcessResponse updateProcess(UUID id, UpdateProcessRequest request) {
-        return null;
+    public ProcessDetailDto updateProcess(UUID id, UpdateProcessRequest request) {
+        Optional<Process> process = processRepository.findByProcessId(id);
+        if(process.isEmpty()){
+            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Process not exist");
+        }
+        Optional<LifeCycleStage> lifeCycleStage = lifeCycleStageRepository.findById(request.getLifeCycleStageId());
+
+        if(lifeCycleStage.isEmpty()){
+            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Life cycle stage not found");
+        }
+
+        process.get().setLifeCycleStage(lifeCycleStage.get());
+        process.get().setDescription(request.getDescription());
+        process.get().setName(request.getName());
+
+        return processConverter.fromProcessDetailToProcessDto(processRepository.save(process.get()));
+    }
+
+    @Override
+    public String deleteProcess(UUID id) {
+        Optional<Process> process = processRepository.findByProcessId(id);
+        if(process.isEmpty()){
+            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Process not exist");
+        }
+        process.get().setStatus(false);
+        processRepository.save(process.get());
+        return "[]";
     }
 
 

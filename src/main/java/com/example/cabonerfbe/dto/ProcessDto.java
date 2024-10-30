@@ -15,7 +15,7 @@ public class ProcessDto {
     private String name;
     private String description;
     private LifeCycleStageDto lifeCycleStage;
-    private String overallProductFlowRequired;
+    private double overallProductFlowRequired;
     private List<ProcessImpactValueDto> impacts;
     private List<ExchangesDto> exchanges;
 }
