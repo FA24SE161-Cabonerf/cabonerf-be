@@ -9,6 +9,7 @@ import com.example.cabonerfbe.request.UpdatePerspectiveRequest;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.PerspectiveService;
 import com.example.cabonerfbe.services.impl.PerspectiveServiceImpl;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +54,7 @@ public class PerspectiveController {
     }
 
     @PostMapping()
-    public ResponseEntity<ResponseObject> createPerspective(@RequestBody CreatePerspectiveRequest request){
+    public ResponseEntity<ResponseObject> createPerspective(@Valid @RequestBody CreatePerspectiveRequest request){
         log.info("Start createPerspective");
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Create Perspective success", perspectiveService.createPerspective(request))
