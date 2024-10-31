@@ -13,4 +13,6 @@ import java.util.UUID;
 public interface LifeCycleStageRepository extends JpaRepository<LifeCycleStage, UUID> {
 
     Optional<LifeCycleStage> findByIdAndStatus(UUID id, boolean status);
+    @Query("SELECT l FROM LifeCycleStage l ORDER BY l.id ASC")
+    List<LifeCycleStage> findAll();
 }
