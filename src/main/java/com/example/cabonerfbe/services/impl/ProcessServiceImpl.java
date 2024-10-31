@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ProcessServiceImpl implements ProcessService {
@@ -72,13 +73,15 @@ public class ProcessServiceImpl implements ProcessService {
 
 //        List<ImpactMethodCategory> list = impactMethodCategoryRepository.findByMethod(project.get().getLifeCycleImpactAssessmentMethod().getId());
 //        List<ProcessImpactValue> processImpactValues = new ArrayList<>();
-
+//
+//
 //        for(ImpactMethodCategory x: list){
 //            ProcessImpactValue piv = new ProcessImpactValue();
-//            piv.setUnitLevel(0);
+//            Random random = new Random();
+//            piv.setUnitLevel(random.nextDouble());
 //            piv.setProcess(process);
 //            piv.setImpactMethodCategory(x);
-//            piv.setSystemLevel(0);
+//            piv.setSystemLevel(random.nextDouble());
 //            piv.setOverallImpactContribution(0);
 //            processImpactValues.add(piv);
 //        }
@@ -109,7 +112,7 @@ public class ProcessServiceImpl implements ProcessService {
         if(project.isEmpty()){
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Project not exist");
         }
-        List<ProcessDto> processDtos = processConverter.fromListToListDto(processRepository.findAll(projectId));
+        List<ProcessDto> processDtos = processRepository.findAll(projectId).stream().map(processConverter::fromProcessToProcessDto).collect(Collectors.toList());
 
         if(processDtos.isEmpty()){
             return processDtos;
@@ -163,7 +166,6 @@ public class ProcessServiceImpl implements ProcessService {
             p.setOverallImpactContribution(x.getOverallImpactContribution());
             p.setMethod(methodConverter.fromMethodToMethodDto(x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod()));
             p.setImpactCategory(categoryConverter.fromProjectToImpactCategoryDto(x.getImpactMethodCategory().getImpactCategory()));
-            p.setUnit(unitConverter.fromProjectToUnitResponse(x.getImpactMethodCategory().getImpactCategory().getMidpointImpactCategory().getUnit()));
             result.add(p);
         }
         return result;

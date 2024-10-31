@@ -16,5 +16,4 @@ public class ProcessImpactValueDto {
     private double overallImpactContribution;
     private MethodDto method;
     private ProjectImpactCategoryDto impactCategory;
-    private UnitProjectImpactDto unit;
 }
