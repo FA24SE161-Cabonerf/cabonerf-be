@@ -26,6 +26,5 @@ public class UpdateUnitRequest {
     private Boolean isDefault;
 
     @NotNull(message = "Unit group ID cannot be null")
-    @Positive(message = "Unit group ID must be a positive number")
     private UUID unitGroupId;
 }
