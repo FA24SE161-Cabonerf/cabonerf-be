@@ -24,6 +24,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -69,59 +70,61 @@ public class ExchangesServiceImpl implements ExchangesService {
     }
 
     @Override
-    public SearchElementaryResponse search(int pageCurrent, int pageSize, String keyWord, UUID methodId, UUID emissionCompartmentId, UUID impactCategoryId) {
+    @Transactional(readOnly = true) // Add this to optimize read operations
+    public SearchElementaryResponse search(int pageCurrent, int pageSize, String keyWord, UUID methodId,
+                                           UUID emissionCompartmentId, UUID impactCategoryId) {
+        // Validate method existence first
+        LifeCycleImpactAssessmentMethod method = methodRepository.findByIdAndStatus(methodId, true)
+                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Method not exist"));
+
+        // Get total elements and create pageable
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
+        Page<SubstancesCompartments> scPage;
 
-        Optional<LifeCycleImpactAssessmentMethod> method = methodRepository.findByIdAndStatus(methodId, true);
-        if (method.isEmpty()) {
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Method not exist");
-        }
-
-        List<SubstancesCompartments> scList = new ArrayList<>();
-        Page<SubstancesCompartments> scPage = null;
-
-        List<EmissionSubstances> esList = new ArrayList<>();
-
+        // Optimize queries using JOIN FETCH to reduce N+1 problems
         if (keyWord == null && emissionCompartmentId == null) {
-            scPage = scRepository.findAll(pageable);
+            scPage = scRepository.findAllWithJoinFetch(pageable);
         } else if (keyWord != null && emissionCompartmentId == null) {
-            esList = esRepository.findAll(EmissionSubstancesSpecification.containsKeywordInAllFields(keyWord));
-            for (EmissionSubstances es : esList) {
-                scList.addAll(scRepository.searchBySubstance(es.getId()));
-            }
-            scPage = new PageImpl<>(scList, pageable, scList.size());
-        } else if(keyWord == null && emissionCompartmentId != null){
-            EmissionCompartment ec = ecRepository.findByIdAndStatus(emissionCompartmentId,true).get();
-            scList.addAll(scRepository.searchByCompartment(ec.getId()));
-            scPage = new PageImpl<>(scList, pageable, scList.size());
-        }else{
-            EmissionCompartment ec = ecRepository.findByIdAndStatus(emissionCompartmentId,true).get();
-            esList = esRepository.findAll(EmissionSubstancesSpecification.containsKeywordInAllFields(keyWord));
-            for (EmissionSubstances es : esList) {
-                scList.addAll(scRepository.searchBySubstanceAndCompartment(es.getId(),ec.getId()));
-            }
-            scPage = new PageImpl<>(scList, pageable, scList.size());
+            scPage = scRepository.searchByKeywordWithJoinFetch(keyWord, pageable);
+        } else if(keyWord == null && emissionCompartmentId != null) {
+            EmissionCompartment ec = ecRepository.findByIdAndStatus(emissionCompartmentId, true)
+                    .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Compartment not exist"));
+            scPage = scRepository.searchByCompartmentWithJoinFetch(ec.getId(), pageable);
+        } else {
+            EmissionCompartment ec = ecRepository.findByIdAndStatus(emissionCompartmentId, true)
+                    .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Compartment not exist"));
+            scPage = scRepository.searchBySubstanceAndCompartmentWithJoinFetch(keyWord, ec.getId(), pageable);
         }
 
         int totalPage = scPage.getTotalPages();
-
         if (pageCurrent > totalPage) {
-            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("currentPage", MessageConstants.CURRENT_PAGE_EXCEED_TOTAL_PAGES));
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,
+                    Map.of("currentPage", MessageConstants.CURRENT_PAGE_EXCEED_TOTAL_PAGES));
         }
-        List<SearchElementaryDto> list = new ArrayList<>();
 
-        for(SubstancesCompartments sc : scPage){
-            List<MidpointImpactCharacterizationFactors> factors = new ArrayList<>();
-            if(impactCategoryId == null){
-                factors = factorRepository.searchByMethod(sc.getId(),methodId);
-            }
+        // Process results in batch using streams
+        List<SearchElementaryDto> list = scPage.getContent()
+                .parallelStream() // Use parallel stream for better performance with large datasets
+                .map(sc -> {
+                    SearchElementaryDto dto = new SearchElementaryDto();
+                    dto.setSubstancesCompartments(scConverter.ToDto(sc));
+                    if(impactCategoryId == null) {
+                        List<MidpointImpactCharacterizationFactors> factors =
+                                factorRepository.findBySubstanceCompartmentAndMethodWithJoinFetch(sc.getId(), methodId);
+                        dto.setFactors(factors.stream()
+                                .map(factorConverter::fromMidpointToFactor)
+                                .collect(Collectors.toList()));
+                    }else{
+                        List<MidpointImpactCharacterizationFactors> factors =
+                                factorRepository.findBySubstanceCompartmentAndMethodAndCategoryWithJoinFetch(sc.getId(), methodId, impactCategoryId);
+                        dto.setFactors(factors.stream()
+                                .map(factorConverter::fromMidpointToFactor)
+                                .collect(Collectors.toList()));
+                    }
+                    return dto;
+                })
+                .collect(Collectors.toList());
 
-            SearchElementaryDto dto = new SearchElementaryDto();
-            dto.setSubstancesCompartments(scConverter.ToDto(sc));
-            dto.setFactors(factors.stream().map(factorConverter::fromMidpointToFactor).collect(Collectors.toList()));
-
-            list.add(dto);
-        }
         return SearchElementaryResponse.builder()
                 .totalPage(totalPage)
                 .pageSize(pageSize)
