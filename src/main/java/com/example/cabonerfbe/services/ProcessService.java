@@ -7,6 +7,7 @@ import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.GetAllProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.CreateProcessResponse;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.UUID;

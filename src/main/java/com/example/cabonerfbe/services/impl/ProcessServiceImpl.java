@@ -22,6 +22,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,23 +56,26 @@ public class ProcessServiceImpl implements ProcessService {
     private ImpactCategoryConverter categoryConverter;
     @Autowired
     private UnitConverter unitConverter;
+
+    private final ExecutorService executorService = Executors.newFixedThreadPool(50);
+
     @Override
     public ProcessDetailDto createProcess(CreateProcessRequest request) {
         Process process = new Process();
         process.setName(request.getName());
 
-        if(processRepository.findById(request.getId()).isPresent()){
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Process with id " + request.getId() + " already exists");
+        if (processRepository.findById(request.getId()).isPresent()) {
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Process with id " + request.getId() + " already exists");
         }
 
         process.setId(request.getId());
-        if(lifeCycleStageRepository.findById(request.getLifeCycleStagesId()).isEmpty()){
+        if (lifeCycleStageRepository.findById(request.getLifeCycleStagesId()).isEmpty()) {
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Life cycle stage not exist");
         }
         process.setLifeCycleStage(lifeCycleStageRepository.findById(request.getLifeCycleStagesId()).get());
         Optional<Project> project = projectRepository.findById(request.getProjectId());
-        if(project.isEmpty()){
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, Map.of("projectId","Not exist"));
+        if (project.isEmpty()) {
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, Map.of("projectId", "Not exist"));
         }
         process.setProject(projectRepository.findById(request.getProjectId()).get());
         process.setOverAllProductFlowRequired(0);
@@ -99,7 +105,7 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public ProcessDto getProcessById(UUID id) {
         Optional<Process> process = processRepository.findByProcessId(id);
-        if(process.isEmpty()){
+        if (process.isEmpty()) {
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Process not exist");
         }
 
@@ -114,15 +120,15 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public List<ProcessDto> getAllProcesses(UUID projectId) {
         Optional<Project> project = projectRepository.findById(projectId);
-        if(project.isEmpty()){
+        if (project.isEmpty()) {
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Project not exist");
         }
         List<ProcessDto> processDtos = processRepository.findAll(projectId).stream().map(processConverter::fromProcessToProcessDto).collect(Collectors.toList());
 
-        if(processDtos.isEmpty()){
+        if (processDtos.isEmpty()) {
             return processDtos;
         }
-        for(ProcessDto x : processDtos){
+        for (ProcessDto x : processDtos) {
             x.setImpacts(converterProcess(processImpactValueRepository.findByProcessId(x.getId())));
             x.setExchanges(exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(x.getId())));
         }
@@ -133,12 +139,12 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public ProcessDetailDto updateProcess(UUID id, UpdateProcessRequest request) {
         Optional<Process> process = processRepository.findByProcessId(id);
-        if(process.isEmpty()){
+        if (process.isEmpty()) {
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Process not exist");
         }
         Optional<LifeCycleStage> lifeCycleStage = lifeCycleStageRepository.findById(request.getLifeCycleStagesId());
 
-        if(lifeCycleStage.isEmpty()){
+        if (lifeCycleStage.isEmpty()) {
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Life cycle stage not found");
         }
 
@@ -152,7 +158,7 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public String deleteProcess(UUID id) {
         Optional<Process> process = processRepository.findByProcessId(id);
-        if(process.isEmpty()){
+        if (process.isEmpty()) {
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Process not exist");
         }
         process.get().setStatus(false);
@@ -161,18 +167,27 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
 
-    private List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list){
-        List<ProcessImpactValueDto> result = new ArrayList<>();
-        for(ProcessImpactValue x: list){
-            ProcessImpactValueDto p = new ProcessImpactValueDto();
-            p.setId(x.getId());
-            p.setSystemLevel(x.getSystemLevel());
-            p.setUnitLevel(x.getUnitLevel());
-            p.setOverallImpactContribution(x.getOverallImpactContribution());
-            p.setMethod(methodConverter.fromMethodToMethodDto(x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod()));
-            p.setImpactCategory(categoryConverter.fromProjectToImpactCategoryDto(x.getImpactMethodCategory().getImpactCategory()));
-            result.add(p);
-        }
+    private List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list) {
+
+        List<CompletableFuture<ProcessImpactValueDto>> futures = list.stream()
+                .map(x -> CompletableFuture.supplyAsync(() -> {
+                    ProcessImpactValueDto p = new ProcessImpactValueDto();
+                    p.setId(x.getId());
+                    p.setSystemLevel(x.getSystemLevel());
+                    p.setUnitLevel(x.getUnitLevel());
+                    p.setOverallImpactContribution(x.getOverallImpactContribution());
+                    p.setMethod(methodConverter.fromMethodToMethodDto(x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod()));
+                    p.setImpactCategory(categoryConverter.fromProjectToImpactCategoryDto(x.getImpactMethodCategory().getImpactCategory()));
+                    return p;
+                }, executorService))
+                .collect(Collectors.toList());
+
+        CompletableFuture<Void> allFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        allFuture.join();
+
+        List<ProcessImpactValueDto> result = futures.stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
         return result;
     }
 }

@@ -24,6 +24,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectServiceImpl implements ProjectService {
@@ -68,6 +72,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     private static final int PAGE_INDEX_ADJUSTMENT = 1;
 
+    private final ExecutorService executorService = Executors.newFixedThreadPool(50);
+
     @Override
     public List<Project> getProjectListByMethodId(UUID id) {
 //        return projectRepository.getProjectLevelDetail(id);
@@ -81,9 +87,6 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public CreateProjectResponse createProject(UUID userId, CreateProjectRequest request) {
-//        if(projectRepository.findByNameAndStatus(request.getName(),true) != null){
-//            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Project name already exists");
-//        }
 
         if(userRepository.findById(userId).isEmpty()){
             throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "User not exist");
@@ -124,21 +127,23 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize,UUID userId,UUID methodId) {
+    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId, UUID methodId) {
+
         Pageable pageable = PageRequest.of(pageCurrent - PAGE_INDEX_ADJUSTMENT, pageSize);
+
         Page<Project> projects = null;
-        if(methodId == null){
-            projects = projectRepository.findAll(userId,pageable);
-        }else{
-            projects = projectRepository.sortByMethod(userId,methodId,pageable);
+        if (methodId == null) {
+            projects = projectRepository.findAll(userId, pageable);
+        } else {
+            projects = projectRepository.sortByMethod(userId, methodId, pageable);
         }
-        if(projects.isEmpty()){
+
+        if (projects.isEmpty()) {
             GetAllProjectResponse response = new GetAllProjectResponse();
             response.setPageCurrent(0);
             response.setPageSize(0);
             response.setTotalPage(0);
             response.setProjects(null);
-
             return response;
         }
 
@@ -146,10 +151,14 @@ public class ProjectServiceImpl implements ProjectService {
         if (pageCurrent > totalPage) {
             throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("currentPage", MessageConstants.CURRENT_PAGE_EXCEED_TOTAL_PAGES));
         }
+
+
         List<ProjectDto> list = new ArrayList<>();
         for (Project project : projects) {
             ProjectDto projectDto = projectConverter.toDto(project);
+
             projectDto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
+
             list.add(projectDto);
         }
 
@@ -158,6 +167,7 @@ public class ProjectServiceImpl implements ProjectService {
         response.setPageSize(pageSize);
         response.setTotalPage(totalPage);
         response.setProjects(list);
+
 
         return response;
     }
@@ -227,32 +237,31 @@ public class ProjectServiceImpl implements ProjectService {
         return new ArrayList<>();
     }
 
-    private List<ProjectImpactDto> converterProject(List<ProjectImpactValue> list){
-        List<ProjectImpactDto> result = new ArrayList<>();
+    public List<ProjectImpactDto> converterProject(List<ProjectImpactValue> list) {
 
-        for (ProjectImpactValue x : list){
-            ProjectImpactDto p = new ProjectImpactDto();
-            p.setId(x.getId());
-            p.setValue(x.getValue());
-            p.setMethod(methodConverter.fromMethodToMethodDto(x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod()));
-            p.setImpactCategory(categoryConverter.fromProjectToImpactCategoryDto(x.getImpactMethodCategory().getImpactCategory()));
-            result.add(p);
-        }
+        List<CompletableFuture<ProjectImpactDto>> futures = list.stream()
+                .map(x -> CompletableFuture.supplyAsync(() -> {
+                    ProjectImpactDto p = new ProjectImpactDto();
+                    p.setId(x.getId());
+                    p.setValue(x.getValue());
+                    p.setMethod(methodConverter.fromMethodToMethodDto(
+                            x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod()));
+                    p.setImpactCategory(categoryConverter.fromProjectToImpactCategoryDto(
+                            x.getImpactMethodCategory().getImpactCategory()));
+                    return p;
+                }, executorService))
+                .collect(Collectors.toList());
+
+        CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        allFutures.join();
+
+        List<ProjectImpactDto> result = futures.stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
+
+
         return result;
     }
 
-    private List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list){
-        List<ProcessImpactValueDto> result = new ArrayList<>();
-        for(ProcessImpactValue x: list){
-            ProcessImpactValueDto p = new ProcessImpactValueDto();
-            p.setId(x.getId());
-            p.setSystemLevel(x.getSystemLevel());
-            p.setUnitLevel(x.getUnitLevel());
-            p.setOverallImpactContribution(x.getOverallImpactContribution());
-            p.setMethod(methodConverter.fromMethodToMethodDto(x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod()));
-            p.setImpactCategory(categoryConverter.fromProjectToImpactCategoryDto(x.getImpactMethodCategory().getImpactCategory()));
-            result.add(p);
-        }
-        return result;
-    }
+
 }
