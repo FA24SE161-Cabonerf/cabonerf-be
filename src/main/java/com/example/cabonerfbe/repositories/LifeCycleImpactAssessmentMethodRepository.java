@@ -12,8 +12,11 @@ import java.util.UUID;
 @Repository
 public interface LifeCycleImpactAssessmentMethodRepository extends JpaRepository<LifeCycleImpactAssessmentMethod, UUID> {
 
-    @Query("SELECT a FROM LifeCycleImpactAssessmentMethod a WHERE a.perspective.name like ?1 and a.name like ?2 ")
-    LifeCycleImpactAssessmentMethod findByName(String name, String lifeCycleImpactAssessmentMethodName);
+    @Query("SELECT a FROM LifeCycleImpactAssessmentMethod a " +
+            "JOIN FETCH a.perspective p " +
+            "WHERE p.name LIKE ?1 AND a.name LIKE ?2")
+    LifeCycleImpactAssessmentMethod findByName(String perspectiveName, String lifeCycleImpactAssessmentMethodName);
+
 
     @Query("SELECT a FROM LifeCycleImpactAssessmentMethod a WHERE a.name like ?1 ")
     List<LifeCycleImpactAssessmentMethod> findAllByName(String name);
