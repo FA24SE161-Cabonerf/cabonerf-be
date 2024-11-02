@@ -57,11 +57,16 @@ public class ProcessServiceImpl implements ProcessService {
     public ProcessDetailDto createProcess(CreateProcessRequest request) {
         Process process = new Process();
         process.setName(request.getName());
-        process.setDescription(request.getDescription());
-        if(lifeCycleStageRepository.findById(request.getLifeCycleStageId()).isEmpty()){
+
+        if(processRepository.findById(request.getId()).isPresent()){
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Process with id " + request.getId() + " already exists");
+        }
+
+        process.setId(request.getId());
+        if(lifeCycleStageRepository.findById(request.getLifeCycleStagesId()).isEmpty()){
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Life cycle stage not exist");
         }
-        process.setLifeCycleStage(lifeCycleStageRepository.findById(request.getLifeCycleStageId()).get());
+        process.setLifeCycleStage(lifeCycleStageRepository.findById(request.getLifeCycleStagesId()).get());
         Optional<Project> project = projectRepository.findById(request.getProjectId());
         if(project.isEmpty()){
             throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, Map.of("projectId","Not exist"));
@@ -131,7 +136,7 @@ public class ProcessServiceImpl implements ProcessService {
         if(process.isEmpty()){
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Process not exist");
         }
-        Optional<LifeCycleStage> lifeCycleStage = lifeCycleStageRepository.findById(request.getLifeCycleStageId());
+        Optional<LifeCycleStage> lifeCycleStage = lifeCycleStageRepository.findById(request.getLifeCycleStagesId());
 
         if(lifeCycleStage.isEmpty()){
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Life cycle stage not found");
