@@ -12,7 +12,7 @@ import java.util.UUID;
 public class FactorDto {
     UUID id;
     String cas;
-    ProjectImpactCategoryDto impactCategory;
+    ImpactMethodCategoryDto impactMethodCategory;
     String scientificValue;
     double decimalValue;
 }
