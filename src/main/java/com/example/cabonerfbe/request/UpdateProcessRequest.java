@@ -26,5 +26,5 @@ public class UpdateProcessRequest {
     @NotNull(message = "Description is required")
     private String description;
     @NotNull(message = "Life Cycle Stage is required")
-    private UUID lifeCycleStageId;
+    private UUID lifeCycleStagesId;
 }
