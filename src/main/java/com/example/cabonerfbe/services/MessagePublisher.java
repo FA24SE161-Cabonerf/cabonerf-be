@@ -26,6 +26,11 @@ public class MessagePublisher {
 
     public void sendMessage(RabbitMqJsonRequest request) {
         rabbitTemplate.convertAndSend(exchangeName, routingKey, request);
-        log.info("Sent message: {}", request.toString());
+        log.info("Sent message json request: {}", request.toString());
+    }
+
+    public void sendMessage(String exchangeName, String routingKey, String request) {
+        rabbitTemplate.convertAndSend(exchangeName, routingKey, request);
+        log.info("Sent message: {}, exchange: {}, key: {}", request, exchangeName, routingKey);
     }
 }

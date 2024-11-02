@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.services.impl;
 
+import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.converter.*;
 import com.example.cabonerfbe.dto.PageList;
 import com.example.cabonerfbe.dto.ProcessDetailDto;
@@ -15,6 +16,7 @@ import com.example.cabonerfbe.request.GetAllProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.CreateProcessResponse;
 import com.example.cabonerfbe.services.ProcessService;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -189,5 +191,10 @@ public class ProcessServiceImpl implements ProcessService {
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());
         return result;
+    }
+
+    @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
+    public String createProcessListener(String message) {
+        return "Received message: " + message + " from create process queue.";
     }
 }

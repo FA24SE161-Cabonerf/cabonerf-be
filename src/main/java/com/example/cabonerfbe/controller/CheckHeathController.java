@@ -34,4 +34,11 @@ public class CheckHeathController {
         // send message xong thì message listener sẽ bắt (message) và xử lí
         return ResponseEntity.ok().body("Test send message - queued by rabbitMQ");
     }
+
+    @PostMapping("/test-create-process-queue")
+    public ResponseEntity<String> testCreateProcessQueue(@RequestBody String string) {
+        log.info("Start send message to rabbitmq with create process queue. request: {}", string);
+        messagePublisher.sendMessage("create.process.exchange", "create.process.key", string);
+        return ResponseEntity.ok().body("OK");
+    }
 }

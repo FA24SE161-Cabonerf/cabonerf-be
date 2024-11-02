@@ -27,15 +27,24 @@ public class RabbitMQConfig {
     public static final String EXCHANGE = "java.exchange";
     public static final String ROUTING_KEY = "java.key";
 
+    public static final String CREATE_PROCESS_QUEUE = "create.process.queue";
+    public static final String CREATE_PROCESS_EXCHANGE = "create.process.exchange";
+    public static final String CREATE_PROCESS_ROUTING_KEY = "create.process.key";
+
     @Bean
     public Queue queue() {
         return new Queue(QUEUE);
     }
 
-//    @Bean
-//    public TopicExchange exchange() {
-//        return new TopicExchange(EXCHANGE);
-//    }
+    @Bean
+    public Queue createProcessQueue() {
+        return new Queue(CREATE_PROCESS_QUEUE);
+    }
+
+    @Bean
+    public DirectExchange createProcessExchange() {
+        return new DirectExchange(CREATE_PROCESS_EXCHANGE);
+    }
 
     @Bean
     public DirectExchange exchange() {
@@ -46,5 +55,11 @@ public class RabbitMQConfig {
     public Binding binding(Queue queue, DirectExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
     }
+
+    @Bean
+    public Binding processBinding(Queue createProcessQueue, DirectExchange createProcessExchange) {
+        return BindingBuilder.bind(createProcessQueue).to(createProcessExchange).with(CREATE_PROCESS_ROUTING_KEY);
+    }
+
 
 }
