@@ -15,5 +15,5 @@ public interface ExchangesService {
 
     CreateProcessResponse createProductExchanges(CreateProductRequest request);
 
-    List<SearchElementaryResponse> search(int pageCurrent, int pageSize, String keyWord, UUID methodId, UUID emissionCompartmentId, UUID impactCategoryId);
+    SearchElementaryResponse search(int pageCurrent, int pageSize, String keyWord, UUID methodId, UUID emissionCompartmentId, UUID impactCategoryId);
 }

@@ -18,4 +18,12 @@ public interface SubstancesCompartmentsRepository extends JpaRepository<Substanc
     @Query("SELECT sc FROM SubstancesCompartments sc WHERE sc.emissionSubstance.id = ?1 AND sc.emissionCompartment.id = ?2")
     Optional<SubstancesCompartments> checkExist(UUID substanceId, UUID compartmentId);
 
+    @Query("SELECT sc FROM SubstancesCompartments sc WHERE sc.emissionSubstance.id = ?1 AND sc.emissionCompartment.id = ?2")
+    List<SubstancesCompartments> searchBySubstanceAndCompartment(UUID emissionSubstanceId, UUID emissionCompartmentId);
+
+    @Query("SELECT sc FROM SubstancesCompartments sc WHERE sc.emissionSubstance.id = ?1")
+    List<SubstancesCompartments> searchBySubstance(UUID emissionSubstanceId);
+
+    @Query("SELECT sc FROM SubstancesCompartments sc WHERE sc.emissionCompartment.id = ?1")
+    List<SubstancesCompartments> searchByCompartment(UUID emissionCompartmentId);
 }

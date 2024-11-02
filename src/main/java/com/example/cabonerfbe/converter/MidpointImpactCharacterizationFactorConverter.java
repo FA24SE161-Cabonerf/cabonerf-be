@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.converter;
 
+import com.example.cabonerfbe.dto.FactorDto;
 import com.example.cabonerfbe.dto.MidpointImpactCharacterizationFactorsDto;
 import com.example.cabonerfbe.dto.MidpointSubstanceFactorsDto;
 import com.example.cabonerfbe.dto.PageList;
@@ -46,4 +47,5 @@ public interface MidpointImpactCharacterizationFactorConverter {
     List<MidpointImpactCharacterizationFactorsResponse> fromMidpointListToMidpointResponseList(List<MidpointImpactCharacterizationFactors> factors);
 
     MidpointImpactCharacterizationFactorsResponse fromMidpointToMidpointResponse(MidpointImpactCharacterizationFactors factor);
+    FactorDto fromMidpointToFactor(MidpointImpactCharacterizationFactors factor);
 }

@@ -20,4 +20,10 @@ public interface MidpointImpactCharacterizationFactorsRepository extends JpaRepo
 
     @Query("SELECT f FROM MidpointImpactCharacterizationFactors f WHERE f.substancesCompartments.id = ?1 AND f.impactMethodCategory.id = ?2")
     Optional<MidpointImpactCharacterizationFactors> checkExist(UUID substanceCompartmentId, UUID impactMethodCategoryId);
+
+    @Query("SELECT f FROM MidpointImpactCharacterizationFactors f WHERE f.substancesCompartments.id = ?1 AND f.impactMethodCategory.lifeCycleImpactAssessmentMethod.id = ?2")
+    List<MidpointImpactCharacterizationFactors> searchByMethod(UUID substanceCompartmentId, UUID methodId);
+
+    @Query("SELECT f FROM MidpointImpactCharacterizationFactors f WHERE f.substancesCompartments.id = ?1 AND f.impactMethodCategory.lifeCycleImpactAssessmentMethod.id = ?2 AND f.impactMethodCategory.impactCategory.id = ?3")
+    List<MidpointImpactCharacterizationFactors> searchByMethodAndImpactCategory(UUID substanceCompartmentId, UUID methodId, UUID categoryId);
 }

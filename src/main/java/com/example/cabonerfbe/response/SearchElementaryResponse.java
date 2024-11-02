@@ -1,8 +1,7 @@
 package com.example.cabonerfbe.response;
 
-import com.example.cabonerfbe.dto.EmissionCompartmentDto;
-import com.example.cabonerfbe.dto.EmissionSubstancesDto;
-import com.example.cabonerfbe.dto.FactorDto;
+import com.example.cabonerfbe.dto.*;
+import com.example.cabonerfbe.models.SubstancesCompartments;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,8 +15,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @SuperBuilder
 public class SearchElementaryResponse {
-    UUID id;
-    EmissionSubstancesDto emissionSubstances;
-    EmissionCompartmentDto emissionCompartment;
-    List<FactorDto> factors;
+    private int pageCurrent;
+    private int pageSize;
+    private int totalPage;
+    List<SearchElementaryDto> list;
 }

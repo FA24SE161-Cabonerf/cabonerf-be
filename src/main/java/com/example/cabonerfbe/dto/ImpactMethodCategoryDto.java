@@ -12,5 +12,5 @@ import java.util.UUID;
 public class ImpactMethodCategoryDto {
     private UUID id;
     private LifeCycleImpactAssessmentMethodDto lifeCycleImpactAssessmentMethod;
-    private ImpactCategoryDto impactCategory;
+    private ProjectImpactCategoryDto impactCategory;
 }
