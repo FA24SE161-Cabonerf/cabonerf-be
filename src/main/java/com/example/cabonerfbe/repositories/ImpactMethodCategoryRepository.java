@@ -12,8 +12,12 @@ import java.util.UUID;
 
 @Repository
 public interface ImpactMethodCategoryRepository extends JpaRepository<ImpactMethodCategory, UUID> {
-    @Query("SELECT a FROM ImpactMethodCategory a WHERE a.impactCategory.id = ?1 AND a.lifeCycleImpactAssessmentMethod.id = ?2")
+    @Query("SELECT a FROM ImpactMethodCategory a " +
+            "JOIN FETCH a.impactCategory ic " +
+            "JOIN FETCH a.lifeCycleImpactAssessmentMethod lcim " +
+            "WHERE ic.id = ?1 AND lcim.id = ?2")
     ImpactMethodCategory findByImpactCategoryAndImpactMethod(UUID impactCategoryId, UUID impactMethodId);
+
 
     @Query("SELECT a FROM ImpactMethodCategory a WHERE a.lifeCycleImpactAssessmentMethod.id = ?1")
     List<ImpactMethodCategory> findByMethod(UUID methodId);

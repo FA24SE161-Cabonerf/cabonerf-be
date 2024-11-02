@@ -13,20 +13,12 @@ import java.util.UUID;
 @Repository
 public interface MidpointImpactCharacterizationFactorsRepository extends JpaRepository<MidpointImpactCharacterizationFactors, UUID> {
 
-//    @Query("SELECT f FROM MidpointImpactCharacterizationFactors f WHERE f.impactMethodCategory.id = ?1 AND f.emissionSubstances.name like ?2 AND f.emissionCompartment.id = ?3 AND f.emissionSubstances.molecularFormula like ?4")
-//    MidpointImpactCharacterizationFactors findByImpactMethodCategoryIdAndEmissionSubstancesName(long methodId, String name, long emissionCompartmentId, String molecular);
-//
-//    @Query("SELECT f FROM MidpointImpactCharacterizationFactors f WHERE f.emissionSubstances.id = ?1")
-//    List<MidpointImpactCharacterizationFactors> findByEmissionSubstancesId(long emissionSubstancesId);
-
-    @Query("SELECT f FROM MidpointImpactCharacterizationFactors f WHERE f.substancesCompartments.id = ?1 AND f.impactMethodCategory.id = ?2")
+    @Query("SELECT f FROM MidpointImpactCharacterizationFactors f " +
+            "JOIN FETCH f.substancesCompartments sc " +
+            "JOIN FETCH f.impactMethodCategory imc " +
+            "WHERE sc.id = ?1 AND imc.id = ?2")
     Optional<MidpointImpactCharacterizationFactors> checkExist(UUID substanceCompartmentId, UUID impactMethodCategoryId);
 
-    @Query("SELECT f FROM MidpointImpactCharacterizationFactors f WHERE f.substancesCompartments.id = ?1 AND f.impactMethodCategory.lifeCycleImpactAssessmentMethod.id = ?2")
-    List<MidpointImpactCharacterizationFactors> searchByMethod(UUID substanceCompartmentId, UUID methodId);
-
-    @Query("SELECT f FROM MidpointImpactCharacterizationFactors f WHERE f.substancesCompartments.id = ?1 AND f.impactMethodCategory.lifeCycleImpactAssessmentMethod.id = ?2 AND f.impactMethodCategory.impactCategory.id = ?3")
-    List<MidpointImpactCharacterizationFactors> searchByMethodAndImpactCategory(UUID substanceCompartmentId, UUID methodId, UUID categoryId);
 
     @Query("SELECT DISTINCT f FROM MidpointImpactCharacterizationFactors f " +
             "LEFT JOIN FETCH f.impactMethodCategory " +

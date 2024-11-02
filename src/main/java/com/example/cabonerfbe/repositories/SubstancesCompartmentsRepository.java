@@ -18,17 +18,12 @@ public interface SubstancesCompartmentsRepository extends JpaRepository<Substanc
     @Query("SELECT sc FROM SubstancesCompartments sc WHERE sc.status = true")
     List<SubstancesCompartments> findAll();
 
-    @Query("SELECT sc FROM SubstancesCompartments sc WHERE sc.emissionSubstance.id = ?1 AND sc.emissionCompartment.id = ?2")
+    @Query("SELECT sc FROM SubstancesCompartments sc " +
+            "JOIN FETCH sc.emissionSubstance es " +
+            "JOIN FETCH sc.emissionCompartment ec " +
+            "WHERE es.id = ?1 AND ec.id = ?2")
     Optional<SubstancesCompartments> checkExist(UUID substanceId, UUID compartmentId);
 
-    @Query("SELECT sc FROM SubstancesCompartments sc WHERE sc.emissionSubstance.id = ?1 AND sc.emissionCompartment.id = ?2")
-    List<SubstancesCompartments> searchBySubstanceAndCompartment(UUID emissionSubstanceId, UUID emissionCompartmentId);
-
-    @Query("SELECT sc FROM SubstancesCompartments sc WHERE sc.emissionSubstance.id = ?1")
-    List<SubstancesCompartments> searchBySubstance(UUID emissionSubstanceId);
-
-    @Query("SELECT sc FROM SubstancesCompartments sc WHERE sc.emissionCompartment.id = ?1")
-    List<SubstancesCompartments> searchByCompartment(UUID emissionCompartmentId);
 
     @Query("SELECT DISTINCT sc FROM SubstancesCompartments sc " +
             "LEFT JOIN FETCH sc.emissionSubstance " +
