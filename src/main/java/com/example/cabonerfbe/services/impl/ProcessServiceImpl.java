@@ -7,6 +7,7 @@ import com.example.cabonerfbe.dto.ProcessDetailDto;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.dto.ProcessImpactValueDto;
 import com.example.cabonerfbe.enums.Constants;
+import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.models.Process;
@@ -15,7 +16,9 @@ import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.GetAllProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.CreateProcessResponse;
+import com.example.cabonerfbe.services.MessagePublisher;
 import com.example.cabonerfbe.services.ProcessService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -30,6 +33,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class ProcessServiceImpl implements ProcessService {
 
     @Autowired
@@ -58,50 +62,35 @@ public class ProcessServiceImpl implements ProcessService {
     private ImpactCategoryConverter categoryConverter;
     @Autowired
     private UnitConverter unitConverter;
+    @Autowired
+    private MessagePublisher messagePublisher;
+
+    public static final double NEW_OVERALL_FLOW = 0;
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(50);
 
     @Override
-    public ProcessDetailDto createProcess(CreateProcessRequest request) {
+    public ProcessDto createProcess(CreateProcessRequest request) {
+        LifeCycleStage lifeCycleStage = lifeCycleStageRepository.findByIdAndStatus(request.getLifeCycleStagesId(), Constants.STATUS_TRUE).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND)
+        );
+
+        Project project = projectRepository.findById(request.getProjectId()).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND)
+        );
+
         Process process = new Process();
         process.setName(request.getName());
-
-        if (processRepository.findById(request.getId()).isPresent()) {
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Process with id " + request.getId() + " already exists");
-        }
-
-        process.setId(request.getId());
-        if (lifeCycleStageRepository.findById(request.getLifeCycleStagesId()).isEmpty()) {
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Life cycle stage not exist");
-        }
-        process.setLifeCycleStage(lifeCycleStageRepository.findById(request.getLifeCycleStagesId()).get());
-        Optional<Project> project = projectRepository.findById(request.getProjectId());
-        if (project.isEmpty()) {
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, Map.of("projectId", "Not exist"));
-        }
-        process.setProject(projectRepository.findById(request.getProjectId()).get());
-        process.setOverAllProductFlowRequired(0);
-
+        process.setLifeCycleStage(lifeCycleStage);
+        process.setProject(project);
+        process.setOverAllProductFlowRequired(NEW_OVERALL_FLOW);
         process = processRepository.save(process);
 
-//        List<ImpactMethodCategory> list = impactMethodCategoryRepository.findByMethod(project.get().getLifeCycleImpactAssessmentMethod().getId());
-//        List<ProcessImpactValue> processImpactValues = new ArrayList<>();
-//
-//
-//        for(ImpactMethodCategory x: list){
-//            ProcessImpactValue piv = new ProcessImpactValue();
-//            Random random = new Random();
-//            piv.setUnitLevel(random.nextDouble());
-//            piv.setProcess(process);
-//            piv.setImpactMethodCategory(x);
-//            piv.setSystemLevel(random.nextDouble());
-//            piv.setOverallImpactContribution(0);
-//            processImpactValues.add(piv);
-//        }
-//
-//        processImpactValueRepository.saveAll(processImpactValues);
+        ProcessDto processDto = processConverter.fromProcessToProcessDto(process);
+        processDto.setImpacts(new ArrayList<>());
+        processDto.setExchanges(new ArrayList<>());
 
-        return processConverter.INSTANCE.fromProcessDetailToProcessDto(process);
+        return processDto;
     }
 
     @Override
@@ -120,7 +109,7 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public List<ProcessDto> getAllProcesses(UUID projectId) {
+    public List<ProcessDto> getAllProcessesByProjectId(UUID projectId) {
         Optional<Project> project = projectRepository.findById(projectId);
         if (project.isEmpty()) {
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Project not exist");
@@ -182,19 +171,20 @@ public class ProcessServiceImpl implements ProcessService {
                     p.setImpactCategory(categoryConverter.fromProjectToImpactCategoryDto(x.getImpactMethodCategory().getImpactCategory()));
                     return p;
                 }, executorService))
-                .collect(Collectors.toList());
+                .toList();
 
         CompletableFuture<Void> allFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         allFuture.join();
 
-        List<ProcessImpactValueDto> result = futures.stream()
+        return futures.stream()
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());
-        return result;
     }
 
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
-    public String createProcessListener(String message) {
-        return "Received message: " + message + " from create process queue.";
+    public void createProcessListener(CreateProcessRequest request) {
+        log.info("create process message from nodeBased server: {}", request);
+        ProcessDto processDto = createProcess(request);
+        messagePublisher.publishCreateProcess(RabbitMQConfig.CREATED_PROCESS_EXCHANGE, RabbitMQConfig.CREATED_PROCESS_ROUTING_KEY, processDto);
     }
 }

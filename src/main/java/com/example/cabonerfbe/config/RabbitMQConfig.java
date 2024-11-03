@@ -27,9 +27,13 @@ public class RabbitMQConfig {
     public static final String EXCHANGE = "java.exchange";
     public static final String ROUTING_KEY = "java.key";
 
-    public static final String CREATE_PROCESS_QUEUE = "create.process.queue";
-    public static final String CREATE_PROCESS_EXCHANGE = "create.process.exchange";
-    public static final String CREATE_PROCESS_ROUTING_KEY = "create.process.key";
+    public static final String CREATE_PROCESS_QUEUE = "process.queue.create";
+    public static final String CREATE_PROCESS_EXCHANGE = "process.exchange.create";
+    public static final String CREATE_PROCESS_ROUTING_KEY = "process.key.create";
+
+    public static final String CREATED_PROCESS_QUEUE = "process.queue.created";
+    public static final String CREATED_PROCESS_EXCHANGE = "process.exchange.created";
+    public static final String CREATED_PROCESS_ROUTING_KEY = "process.key.created";
 
     @Bean
     public Queue queue() {
@@ -42,8 +46,18 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue createdProcessQueue() {
+        return new Queue(CREATED_PROCESS_QUEUE);
+    }
+
+    @Bean
     public DirectExchange createProcessExchange() {
         return new DirectExchange(CREATE_PROCESS_EXCHANGE);
+    }
+
+    @Bean
+    public DirectExchange createdProcessExchange() {
+        return new DirectExchange(CREATED_PROCESS_EXCHANGE);
     }
 
     @Bean
@@ -57,9 +71,13 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding processBinding(Queue createProcessQueue, DirectExchange createProcessExchange) {
+    public Binding createProcessBinding(Queue createProcessQueue, DirectExchange createProcessExchange) {
         return BindingBuilder.bind(createProcessQueue).to(createProcessExchange).with(CREATE_PROCESS_ROUTING_KEY);
     }
 
+    @Bean
+    public Binding createdProcessBinding(Queue createdProcessQueue, DirectExchange createdProcessExchange) {
+        return BindingBuilder.bind(createdProcessQueue).to(createdProcessExchange).with(CREATED_PROCESS_ROUTING_KEY);
+    }
 
 }

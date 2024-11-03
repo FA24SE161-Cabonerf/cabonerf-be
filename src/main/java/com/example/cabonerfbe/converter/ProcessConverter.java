@@ -14,7 +14,6 @@ public interface ProcessConverter {
     ProcessConverter INSTANCE = Mappers.getMapper(ProcessConverter.class);
 
 
-    @Mapping(source = "lifeCycleStage",target = "lifeCycleStages")
     ProcessDto fromProcessToProcessDto(Process process);
 
     @Mapping(source = "lifeCycleStage",target = "lifeCycleStages")
