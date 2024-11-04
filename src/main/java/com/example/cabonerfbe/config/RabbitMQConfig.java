@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.config;
 
+import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -79,5 +80,15 @@ public class RabbitMQConfig {
     public Binding createdProcessBinding(Queue createdProcessQueue, DirectExchange createdProcessExchange) {
         return BindingBuilder.bind(createdProcessQueue).to(createdProcessExchange).with(CREATED_PROCESS_ROUTING_KEY);
     }
+
+    // RPC queue
+
+    public static final String RPC_QUEUE = "rpc_queue";
+
+    @Bean
+    public Queue rpcQueue() {
+        return new Queue(RPC_QUEUE);
+    }
+
 
 }
