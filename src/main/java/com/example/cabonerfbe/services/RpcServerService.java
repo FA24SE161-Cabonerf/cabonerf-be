@@ -50,7 +50,7 @@ public class RpcServerService {
 
     private void handleCreateProcess(String requestMessage, String correlationId, String replyTo) {
         try {
-            CreateProcessRequest request = objectMapper.readValue(requestMessage, CreateProcessRequest.class);
+            CreateProcessRequest request = extractCreateProcessRequest(requestMessage);
             ProcessDto processDto = processService.createProcess(request);
             sendSuccessResponse(replyTo, correlationId, processDto);
         } catch (Exception e) {
@@ -65,6 +65,22 @@ public class RpcServerService {
             sendSuccessResponse(replyTo, correlationId, processService.deleteProcess(UUID.fromString(id)));
         } catch (Exception e) {
             sendErrorResponse(replyTo, correlationId, "Error processing delete request: " + e.getMessage());
+        }
+    }
+
+    public CreateProcessRequest extractCreateProcessRequest(String requestMessage) {
+        try {
+            // Parse the root of the JSON
+            JsonNode rootNode = objectMapper.readTree(requestMessage);
+
+            // Isolate the "data" node
+            JsonNode dataNode = rootNode.path("data");
+
+            // Convert the "data" node into CreateProcessRequest
+            return objectMapper.treeToValue(dataNode, CreateProcessRequest.class);
+        } catch (Exception e) {
+            log.error("Failed to extract CreateProcessRequest: {}", e.getMessage());
+            return null;
         }
     }
 
