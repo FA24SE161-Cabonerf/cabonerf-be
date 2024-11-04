@@ -56,6 +56,27 @@ public class QueryStrings {
     ) AS subquery;
     """;
 
-
+    public static final String FIND_MIDPOINT_SUBSTANCE_FACTORS =
+            "SELECT \n" +
+                    "sc.id,\n" +
+                    "f.cas,\n" +
+                    "es.name,\n" +
+                    "es.chemical_name,\n" +
+                    "es.molecular_formula,\n" +
+                    "es.alternative_formula,\n" +
+                    "ec.name AS compartment_name,\n" +
+                    "MAX(CASE WHEN p.name = 'Individualist' THEN f.decimal_value END) AS individualist,\n" +
+                    "MAX(CASE WHEN p.name = 'Hierarchist' THEN f.decimal_value END) AS hierarchist,\n" +
+                    "MAX(CASE WHEN p.name = 'Egalitarian' THEN f.decimal_value END) AS egalitarian \n" +
+                    "FROM substances_compartments sc \n" +
+                    "JOIN emission_substances es ON sc.emission_substance_id = es.id AND es.status = true \n" +
+                    "JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true \n" +
+                    "JOIN midpoint_impact_characterization_factors f ON sc.id = f.substances_compartments_id AND f.status = true \n" +
+                    "JOIN impact_method_category imc ON imc.id = f.impact_method_category_id AND imc.status = true \n" +
+                    "JOIN life_cycle_impact_assessment_method lciam ON lciam.id = imc.life_cycle_impact_assessment_method_id AND lciam.status = true \n" +
+                    "JOIN perspective p ON p.id = lciam.perspective_id AND p.status = true \n" +
+                    "WHERE sc.status = true AND sc.id = :id \n" +
+                    "GROUP BY sc.id, f.cas, es.name, es.chemical_name, es.molecular_formula, es.alternative_formula, ec.name \n" +
+                    "ORDER BY sc.id ASC;";
 }
 

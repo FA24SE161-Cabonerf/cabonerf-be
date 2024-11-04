@@ -6,8 +6,9 @@ import com.example.cabonerfbe.dto.PageList;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.MidpointImpactCharacterizationFactors;
-import com.example.cabonerfbe.repositories.MidpointRepository;
+import com.example.cabonerfbe.models.*;
+import com.example.cabonerfbe.repositories.*;
+import com.example.cabonerfbe.request.CreateFactorRequest;
 import com.example.cabonerfbe.request.PaginationRequest;
 import com.example.cabonerfbe.response.MidpointImpactCharacterizationFactorsResponse;
 import com.example.cabonerfbe.response.MidpointSubstanceFactorsResponse;
@@ -19,10 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,9 +28,26 @@ import java.util.stream.Collectors;
 public class MidpointServiceImpl implements MidpointService {
     @Autowired
     private MidpointRepository midpointRepository;
-
     @Autowired
     private MidpointImpactCharacterizationFactorConverter midpointConverter;
+    @Autowired
+    private EmissionSubstancesRepository esRepository;
+    @Autowired
+    private EmissionCompartmentRepository ecRepository;
+    @Autowired
+    private MidpointImpactCharacterizationFactorsRepository factorsRepository;
+    @Autowired
+    private SubstancesCompartmentsRepository scRepository;
+    @Autowired
+    private UnitGroupRepository ugRepository;
+    @Autowired
+    private UnitRepository uRepository;
+    @Autowired
+    private ImpactCategoryRepository categoryRepository;
+    @Autowired
+    private LifeCycleImpactAssessmentMethodRepository methodRepository;
+    @Autowired
+    private ImpactMethodCategoryRepository imcRepository;
 
     private static final int PAGE_INDEX_ADJUSTMENT = 1;
 
@@ -74,5 +89,79 @@ public class MidpointServiceImpl implements MidpointService {
         midpointSubstanceFactorsDtoPageList.setTotalPage(totalPages);
         midpointSubstanceFactorsDtoPageList.setListResult(midpointSubstanceFactorsDtoList);
         return midpointConverter.fromMidpointSubstanceFactorPageListDtoToMidpointSubstanceFactorPageListResponse(midpointSubstanceFactorsDtoPageList);
+    }
+
+    @Override
+    public List<MidpointSubstanceFactorsDto> create(CreateFactorRequest request) {
+
+        LifeCycleImpactAssessmentMethod method = methodRepository.findByIdAndStatus(request.getMethodId(),true)
+                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Method not exist"));
+
+        ImpactCategory category = categoryRepository.findByIdAndStatus(request.getCategoryId(),true)
+                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Impact category not exist"));
+
+
+        ImpactMethodCategory imc = imcRepository.findByMethodAndCategory(request.getCategoryId(),request.getMethodId())
+                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Impact method category not exist"));
+
+
+
+        EmissionSubstances es = esRepository.findByName(request.getName())
+                .orElseGet(() -> {
+                    EmissionSubstances newSubstance = new EmissionSubstances();
+                    newSubstance.setName(request.getName());
+                    newSubstance.setChemicalName(
+                            request.getChemicalName() == null || request.getChemicalName().isEmpty() ? "-" : request.getChemicalName()
+                    );
+                    newSubstance.setMolecularFormula(
+                            request.getMolecularFormula() == null || request.getMolecularFormula().isEmpty() ? "-" : request.getMolecularFormula()
+                    );
+                    newSubstance.setAlternativeFormula(
+                            request.getAlternativeFormula() == null || request.getAlternativeFormula().isEmpty() ? "-" : request.getAlternativeFormula()
+                    );
+
+                    return esRepository.save(newSubstance);
+                });
+
+        EmissionCompartment ec = ecRepository.getReferenceById(request.getEmissionCompartmentId());
+
+        UnitGroup ug = ugRepository.findByIdAndStatus(request.getUnitGroupId(),true)
+                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Unit group not exist"));
+
+        Unit u = uRepository.findDefault(ug.getId());
+
+        SubstancesCompartments sc = scRepository.checkExist(es.getId(),ec.getId())
+                .orElseGet(() ->{
+                    return scRepository.save(new SubstancesCompartments(es,ec,u));
+                });
+
+        MidpointImpactCharacterizationFactors factors = new MidpointImpactCharacterizationFactors();
+        factors.setImpactMethodCategory(imc);
+        factors.setCas(
+                request.getCas() == null || request.getCas().isEmpty() ? "-" : request.getCas()
+        );
+        factors.setDecimalValue(request.getValue());
+        factors.setScientificValue(String.format("%.2e", request.getValue()));
+        factors.setSubstancesCompartments(sc);
+        factorsRepository.save(factors);
+
+        List<Object[]> factor = midpointRepository.getWhenCreate(sc.getId());
+        List<MidpointSubstanceFactorsDto> response = factor.stream()
+                .map(midpointConverter::fromQueryResultsToDto)
+                .collect(Collectors.toList());
+        return response;
+    }
+
+    @Override
+    public List<MidpointSubstanceFactorsDto> delete(UUID id) {
+        SubstancesCompartments sc = scRepository.findById(id)
+                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Substance Emission not exist"));
+        sc.setStatus(false);
+        scRepository.save(sc);
+        List<Object[]> factor = midpointRepository.getWhenCreate(sc.getId());
+        List<MidpointSubstanceFactorsDto> response = factor.stream()
+                .map(midpointConverter::fromQueryResultsToDto)
+                .collect(Collectors.toList());
+        return response;
     }
 }

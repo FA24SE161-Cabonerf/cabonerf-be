@@ -42,6 +42,7 @@ public interface MidpointImpactCharacterizationFactorConverter {
         return dto;
     }
 
+
     PageList<MidpointSubstanceFactorsResponse> fromMidpointSubstanceFactorPageListDtoToMidpointSubstanceFactorPageListResponse(PageList<MidpointSubstanceFactorsDto> midpointSubstanceFactorsDtoPageList);
 
     List<MidpointImpactCharacterizationFactorsResponse> fromMidpointListToMidpointResponseList(List<MidpointImpactCharacterizationFactors> factors);

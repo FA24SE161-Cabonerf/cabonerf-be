@@ -22,8 +22,4 @@ public class MidpointImpactCharacterizationFactors extends Base{
     private String scientificValue;
     private double decimalValue;
 
-    @ManyToOne
-    @JoinColumn(name = "unit_id")
-    private Unit unit;
-
 }
