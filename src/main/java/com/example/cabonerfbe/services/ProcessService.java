@@ -13,5 +13,5 @@ public interface ProcessService {
     ProcessDto getProcessById(UUID id);
     List<ProcessDto> getAllProcessesByProjectId(UUID projectId);
     ProcessDetailDto updateProcess(UUID id, UpdateProcessRequest request);
-    String deleteProcess(UUID id);
+    ProcessDetailDto deleteProcess(UUID id);
 }

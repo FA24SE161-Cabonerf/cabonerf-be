@@ -68,4 +68,5 @@ public class MessageConstants {
     public static final String DELETE_IMPACT_CATEGORY_SUCCESS = "Delete impact category by id success";
     public static final String NO_LIFE_CYCLE_STAGE_FOUND = "Life cycle stage not exist";
     public static final String NO_PROJECT_FOUND = "Project not exist";
+    public static final String NO_PROCESS_FOUND = "Process not exist";
 }

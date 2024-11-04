@@ -95,25 +95,22 @@ public class ProcessServiceImpl implements ProcessService {
 
     @Override
     public ProcessDto getProcessById(UUID id) {
-        Optional<Process> process = processRepository.findByProcessId(id);
-        if (process.isEmpty()) {
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Process not exist");
-        }
+        Process process = processRepository.findByProcessId(id).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
+        );
+        ProcessDto dto = processConverter.fromProcessToProcessDto(process);
 
-        ProcessDto dto = processConverter.fromProcessToProcessDto(process.get());
-
-        dto.setImpacts(converterProcess(processImpactValueRepository.findByProcessId(process.get().getId())));
-        dto.setExchanges(exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(process.get().getId())));
+        dto.setImpacts(converterProcess(processImpactValueRepository.findByProcessId(process.getId())));
+        dto.setExchanges(exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(process.getId())));
 
         return dto;
     }
 
     @Override
     public List<ProcessDto> getAllProcessesByProjectId(UUID projectId) {
-        Optional<Project> project = projectRepository.findById(projectId);
-        if (project.isEmpty()) {
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Project not exist");
-        }
+        Project project = projectRepository.findById(projectId).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND)
+        );
         List<ProcessDto> processDtos = processRepository.findAll(projectId).stream().map(processConverter::fromProcessToProcessDto).collect(Collectors.toList());
 
         if (processDtos.isEmpty()) {
@@ -129,34 +126,29 @@ public class ProcessServiceImpl implements ProcessService {
 
     @Override
     public ProcessDetailDto updateProcess(UUID id, UpdateProcessRequest request) {
-        Optional<Process> process = processRepository.findByProcessId(id);
-        if (process.isEmpty()) {
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Process not exist");
-        }
-        Optional<LifeCycleStage> lifeCycleStage = lifeCycleStageRepository.findById(request.getLifeCycleStagesId());
+        Process process = processRepository.findByProcessId(id).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
+        );
 
-        if (lifeCycleStage.isEmpty()) {
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Life cycle stage not found");
-        }
+        LifeCycleStage lifeCycleStage = lifeCycleStageRepository.findByIdAndStatus(request.getLifeCycleStagesId(), Constants.STATUS_TRUE).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND)
+        );
 
-        process.get().setLifeCycleStage(lifeCycleStage.get());
-        process.get().setDescription(request.getDescription());
-        process.get().setName(request.getName());
+        process.setLifeCycleStage(lifeCycleStage);
+        process.setDescription(request.getDescription());
+        process.setName(request.getName());
 
-        return processConverter.fromProcessDetailToProcessDto(processRepository.save(process.get()));
+        return processConverter.fromProcessDetailToProcessDto(processRepository.save(process));
     }
 
     @Override
-    public String deleteProcess(UUID id) {
-        Optional<Process> process = processRepository.findByProcessId(id);
-        if (process.isEmpty()) {
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Process not exist");
-        }
-        process.get().setStatus(false);
-        processRepository.save(process.get());
-        return "[]";
+    public ProcessDetailDto deleteProcess(UUID id) {
+        Process process = processRepository.findByProcessId(id).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
+        );
+        process.setStatus(false);
+        return processConverter.fromProcessDetailToProcessDto(processRepository.save(process));
     }
-
 
     private List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list) {
 
