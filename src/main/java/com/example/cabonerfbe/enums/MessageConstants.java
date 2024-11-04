@@ -69,4 +69,5 @@ public class MessageConstants {
     public static final String NO_LIFE_CYCLE_STAGE_FOUND = "Life cycle stage not exist";
     public static final String NO_PROJECT_FOUND = "Project not exist";
     public static final String NO_PROCESS_FOUND = "Process not exist";
+    public static final String NO_ELEMENTARY_FLOW_FOUND = "Elementary flow not exist";
 }

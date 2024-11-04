@@ -2,7 +2,6 @@ package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.converter.*;
-import com.example.cabonerfbe.dto.PageList;
 import com.example.cabonerfbe.dto.ProcessDetailDto;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.dto.ProcessImpactValueDto;
@@ -13,17 +12,11 @@ import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessRequest;
-import com.example.cabonerfbe.request.GetAllProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
-import com.example.cabonerfbe.response.CreateProcessResponse;
 import com.example.cabonerfbe.services.MessagePublisher;
 import com.example.cabonerfbe.services.ProcessService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -142,12 +135,13 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public ProcessDetailDto deleteProcess(UUID id) {
+    public String deleteProcess(UUID id) {
         Process process = processRepository.findByProcessId(id).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
         );
         process.setStatus(false);
-        return processConverter.fromProcessDetailToProcessDto(processRepository.save(process));
+        processRepository.save(process);
+        return process.getId().toString();
     }
 
     private List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list) {
