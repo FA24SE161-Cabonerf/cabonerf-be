@@ -173,7 +173,7 @@ public class ProcessServiceImpl implements ProcessService {
                 .collect(Collectors.toList());
     }
 
-    @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
+//    @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     public void createProcessListener(CreateProcessRequest request) {
         log.info("create process message from nodeBased server: {}", request);
         ProcessDto processDto = createProcess(request);
