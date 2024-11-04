@@ -31,13 +31,10 @@ public class RpcServerService {
         String replyTo = message.getMessageProperties().getReplyTo();
         String requestMessage = new String(message.getBody());
 
-        log.info("request msg: {}", requestMessage);
-
         CreateProcessRequest request;
         try {
             // Convert the message body to CreateProcessRequest
             request = objectMapper.readValue(message.getBody(), CreateProcessRequest.class);
-            log.info("request sau khi convert: {}", request);
         } catch (Exception e) {
             // Handle the exception, e.g., log an error and return an error response
             String errorMessage = "Invalid request format: " + e.getMessage();
@@ -45,9 +42,7 @@ public class RpcServerService {
             return;
         }
 
-        log.info("start create process through rpc queue");
         ProcessDto processDto = processService.createProcess(request);
-        log.info("created process: {}", processDto);
         try {
             // Convert ProcessDto to JSON for response
             String responseJson = objectMapper.writeValueAsString(processDto);
@@ -56,8 +51,6 @@ public class RpcServerService {
             MessageProperties responseProperties = new MessageProperties();
             responseProperties.setCorrelationId(correlationId);
             Message response = new Message(responseJson.getBytes(), responseProperties);
-            log.info("response json: {}", responseJson);
-            log.info("response amqp: {}", response);
             rabbitTemplate.convertAndSend(replyTo, response);
         } catch (Exception e) {
             // Handle serialization error
@@ -67,7 +60,6 @@ public class RpcServerService {
     }
 
     private void sendErrorResponse(String replyTo, String correlationId, String errorMessage) {
-        log.info("loi vcc");
         MessageProperties responseProperties = new MessageProperties();
         responseProperties.setCorrelationId(correlationId);
         Message errorResponse = new Message(errorMessage.getBytes(), responseProperties);
