@@ -44,10 +44,10 @@ public class MidpointController {
     }
 
     @GetMapping(API_PARAMS.ADMIN + API_PARAMS.GET_ALL_MIDPOINT_FACTORS)
-    public ResponseEntity<ResponseObject> getAllMidpointSubstanceFactorsAdmin(@Valid PaginationRequest request) {
+    public ResponseEntity<ResponseObject> getAllMidpointSubstanceFactorsAdmin(@Valid PaginationRequest request, @RequestParam(required = false) UUID compartmentId, @RequestParam(required = false) String keyword) {
         log.info("Start getAllMidpointSubstanceFactorsAdmin. request: {}", request);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_ALL_MIDPOINT_SUBSTANCE_FACTORS_SUCCESS, midpointService.getAllMidpointFactorsAdmin(request))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_ALL_MIDPOINT_SUBSTANCE_FACTORS_SUCCESS, midpointService.getAllMidpointFactorsAdmin(request, compartmentId, keyword))
         );
     }
 

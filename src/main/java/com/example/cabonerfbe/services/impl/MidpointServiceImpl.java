@@ -68,10 +68,20 @@ public class MidpointServiceImpl implements MidpointService {
     }
 
     @Override
-    public PageList<MidpointSubstanceFactorsResponse> getAllMidpointFactorsAdmin(PaginationRequest request) {
+    public PageList<MidpointSubstanceFactorsResponse> getAllMidpointFactorsAdmin(PaginationRequest request, UUID compartmentId, String keyword) {
         Pageable pageable = PageRequest.of(request.getCurrentPage() - PAGE_INDEX_ADJUSTMENT, request.getPageSize());
 
-        Page<Object[]> midpointSubstanceFactorPage = midpointRepository.findAllWithPerspective(pageable);
+        Page<Object[]> midpointSubstanceFactorPage = null;
+        if ((keyword == null || keyword.isEmpty()) && compartmentId == null) {
+            midpointSubstanceFactorPage = midpointRepository.findAllWithPerspective(pageable);
+        } else if (compartmentId == null) {
+            midpointSubstanceFactorPage = midpointRepository.findByKeyWord(keyword, pageable);
+        } else if (keyword == null || keyword.isEmpty()) {
+            midpointSubstanceFactorPage = midpointRepository.filterByCompartment(compartmentId, pageable);
+        } else {
+            midpointSubstanceFactorPage = midpointRepository.findByKeyWordAndCompartmentId(keyword, compartmentId, pageable);
+        }
+
         int totalPages = midpointSubstanceFactorPage.getTotalPages();
 
         if (request.getCurrentPage() > totalPages) {
