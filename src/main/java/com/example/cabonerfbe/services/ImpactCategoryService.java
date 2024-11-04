@@ -1,6 +1,8 @@
 package com.example.cabonerfbe.services;
 
 import com.example.cabonerfbe.dto.ImpactCategoryDto;
+import com.example.cabonerfbe.dto.LifeCycleImpactAssessmentMethodDto;
+import com.example.cabonerfbe.dto.MethodDto;
 import com.example.cabonerfbe.request.BaseImpactCategoryRequest;
 import jakarta.validation.Valid;
 
@@ -16,4 +18,8 @@ public interface ImpactCategoryService {
     ImpactCategoryDto updateImpactCategoryById(UUID categoryId, BaseImpactCategoryRequest request);
 
     ImpactCategoryDto deleteImpactCategoryById(UUID categoryId);
+
+    List<MethodDto> getMethodByImpactCategoryId(UUID categoryId);
+
+    List<String> deleteCategoryFromMethod(UUID categoryId, UUID methodId);
 }

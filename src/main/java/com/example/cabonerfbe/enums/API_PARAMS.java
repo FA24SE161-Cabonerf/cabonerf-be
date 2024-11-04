@@ -34,7 +34,8 @@ public class API_PARAMS {
     public static final String GET_CATEGORY_BY_METHOD_ID = "/impact-methods/{methodId}/impact-categories";
     public static final String UPDATE_IMPACT_CATEGORY_BY_ID = "/impact-categories/{categoryId}";
     public static final String DELETE_IMPACT_CATEGORY_BY_ID = "/impact-categories/{categoryId}";
-
+    public static final String GET_METHOD_BY_IMPACT_CATEGORY_ID = "/impact-categories/{categoryId}/impact-methods";
+    public static final String DELETE_IMPACT_CATEGORY_IN_METHOD = "/impact-categories/{categoryId}/impact-methods/{methodId}";
 
     public static final String GET_ALL_IMPACT_METHODS = "/impact-methods";
     public static final String GET_IMPACT_METHOD_BY_ID = "/impact-methods/{methodId}";

@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,6 +64,22 @@ public class ImpactCategoryController {
         log.info("Start deleteImpactCategoryById. id: {}", categoryId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.DELETE_IMPACT_CATEGORY_SUCCESS, impactCategoryService.deleteImpactCategoryById(categoryId))
+        );
+    }
+
+    @GetMapping(API_PARAMS.GET_METHOD_BY_IMPACT_CATEGORY_ID)
+    public ResponseEntity<ResponseObject> getMethodWithCategoryId(@PathVariable UUID categoryId){
+        log.info("Start getMethodWithCategoryId. id: {}", categoryId);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_METHOD_BY_IMPACT_CATEGORY_SUCCESS,impactCategoryService.getMethodByImpactCategoryId(categoryId) )
+        );
+    }
+
+    @DeleteMapping(API_PARAMS.DELETE_IMPACT_CATEGORY_IN_METHOD)
+    public ResponseEntity<ResponseObject> deleteImpactCategoryFromMethod(@PathVariable UUID categoryId, @PathVariable UUID methodId){
+        log.info("Start deleteImpactCategoryFromMethod. categoryId: {}, methodId: {}", categoryId,methodId);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.DELETE_CATEGORY_FROM_METHOD_SUCCESS,impactCategoryService.deleteCategoryFromMethod(categoryId,methodId))
         );
     }
 
