@@ -5,9 +5,11 @@ import com.example.cabonerfbe.models.ImpactMethodCategory;
 import com.example.cabonerfbe.models.LifeCycleImpactAssessmentMethod;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -23,4 +25,15 @@ public interface ImpactMethodCategoryRepository extends JpaRepository<ImpactMeth
     List<ImpactMethodCategory> findByMethod(UUID methodId);
 
     boolean existsByImpactCategoryAndLifeCycleImpactAssessmentMethod(ImpactCategory impactCategory, LifeCycleImpactAssessmentMethod lifeCycleImpactAssessmentMethod);
+
+    @Query("SELECT imc FROM ImpactMethodCategory imc " +
+            "JOIN FETCH imc.lifeCycleImpactAssessmentMethod m " +
+            "WHERE imc.impactCategory.id = :categoryId AND imc.status = true")
+    List<ImpactMethodCategory> findMethodByCategory(@Param("categoryId") UUID categoryId);
+
+    @Query("SELECT imc FROM ImpactMethodCategory imc " +
+            "JOIN FETCH imc.lifeCycleImpactAssessmentMethod m " +
+            "JOIN FETCH imc.impactCategory c " +
+            "WHERE imc.impactCategory.id = :categoryId AND imc.lifeCycleImpactAssessmentMethod.id = :methodId AND imc.status = true")
+    Optional<ImpactMethodCategory> findByMethodAndCategory(@Param("categoryId") UUID categoryId, @Param("methodId") UUID methodId);
 }
