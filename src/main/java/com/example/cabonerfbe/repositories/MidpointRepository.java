@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +19,9 @@ public interface MidpointRepository extends JpaRepository<MidpointImpactCharacte
             countQuery = QueryStrings.COUNT_MIDPOINT_SUBSTANCE_FACTORS_WITH_PERSPECTIVE,
             nativeQuery = true)
     Page<Object[]> findAllWithPerspective(Pageable pageable);
+
+    @Query(value = QueryStrings.FIND_MIDPOINT_SUBSTANCE_FACTORS, nativeQuery = true)
+    List<Object[]> getWhenCreate(@Param("id") UUID id);
 
     Optional<MidpointImpactCharacterizationFactors> findByIdAndStatus(UUID id, boolean status);
 }

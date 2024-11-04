@@ -18,6 +18,10 @@ public interface SubstancesCompartmentsRepository extends JpaRepository<Substanc
     @Query("SELECT sc FROM SubstancesCompartments sc WHERE sc.status = true")
     List<SubstancesCompartments> findAll();
 
+    @Query("SELECT sc FROM SubstancesCompartments sc WHERE sc.id = :id AND sc.status = true")
+    Optional<SubstancesCompartments> findById(@Param("id") UUID substanceCompartmentId);
+
+
     @Query("SELECT sc FROM SubstancesCompartments sc " +
             "JOIN FETCH sc.emissionSubstance es " +
             "JOIN FETCH sc.emissionCompartment ec " +

@@ -117,6 +117,7 @@ public class ExcelServiceImpl implements ExcelService {
                                     SubstancesCompartments newSubstancesCompartments = new SubstancesCompartments();
                                     newSubstancesCompartments.setEmissionSubstance(emissionSubstance);
                                     newSubstancesCompartments.setEmissionCompartment(emissionCompartment);
+                                    newSubstancesCompartments.setUnit(findAppropriateUnit(category));
                                     return substancesCompartmentsRepository.save(newSubstancesCompartments);
                                 });
 
@@ -261,7 +262,6 @@ public class ExcelServiceImpl implements ExcelService {
                             factor.setScientificValue(String.format("%.2e", value));
                             factor.setCas(cas);
                             factor.setImpactMethodCategory(methodCategory);
-                            factor.setUnit(findAppropriateUnit(methodCategory));
 
                             // Add to the list and update isNewRecord
                             list.add(factor);
@@ -274,14 +274,10 @@ public class ExcelServiceImpl implements ExcelService {
 
 
 
-    private Unit findAppropriateUnit(ImpactMethodCategory methodCategory) {
-        List<Unit> units = unitRepository.findByName("-eq");
-        for (Unit unit : units) {
-            if (unit.getName().contains(methodCategory.getImpactCategory().getMidpointImpactCategory().getUnit().getName())) {
-                return unit;
-            }
-        }
-        return null; // or handle appropriately if no matching unit is found
+    private Unit findAppropriateUnit(ImpactCategory category) {
+        String unitName = category.getMidpointImpactCategory().getUnit().getName().split(" ")[0];
+
+        return unitRepository.findByNameUnit(unitName);
     }
 
     private int getColumnWithError(Exception e, Row row) {

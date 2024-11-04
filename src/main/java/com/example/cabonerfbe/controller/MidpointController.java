@@ -3,6 +3,7 @@ package com.example.cabonerfbe.controller;
 import com.example.cabonerfbe.enums.API_PARAMS;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
+import com.example.cabonerfbe.request.CreateFactorRequest;
 import com.example.cabonerfbe.request.PaginationRequest;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.MidpointService;
@@ -50,6 +51,21 @@ public class MidpointController {
         );
     }
 
+    @PostMapping(API_PARAMS.ADMIN)
+    public ResponseEntity<ResponseObject> create(@Valid @RequestBody CreateFactorRequest request){
+        log.info("Start createFactor. request: {}", request);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Create factor success",midpointService.create(request))
+        );
+    }
+
+    @DeleteMapping(API_PARAMS.ADMIN + API_PARAMS.DELETE_MIDPOINT_FACTOR_BY_ID)
+    public ResponseEntity<ResponseObject> delete(@PathVariable UUID id){
+        log.info("Start deleteFactor. Id: {}",id);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Delete factor success",midpointService.delete(id))
+        );
+    }
 
 
 }

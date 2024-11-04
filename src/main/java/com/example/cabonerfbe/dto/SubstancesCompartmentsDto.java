@@ -14,4 +14,5 @@ public class SubstancesCompartmentsDto {
     private UUID id;
     private EmissionSubstancesDto emissionSubstance;
     private EmissionCompartmentDto emissionCompartment;
+    private UnitProjectImpactDto unit;
 }

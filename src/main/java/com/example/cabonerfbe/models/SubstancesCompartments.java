@@ -20,4 +20,8 @@ public class SubstancesCompartments extends Base{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "emission_compartment_id", nullable = false)
     private EmissionCompartment emissionCompartment;
+
+    @ManyToOne
+    @JoinColumn(name = "unit_id")
+    private Unit unit;
 }
