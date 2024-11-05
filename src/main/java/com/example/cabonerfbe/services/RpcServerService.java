@@ -3,7 +3,6 @@ package com.example.cabonerfbe.services;
 import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.request.CreateProcessRequest;
-import com.example.cabonerfbe.request.RabbitMqJsonRequest;
 import com.example.cabonerfbe.services.impl.ProcessServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,31 +19,30 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class RpcServerService {
+
+    private final RabbitTemplate rabbitTemplate;
+    private final ProcessServiceImpl processService;
+    private final ObjectMapper objectMapper;
+
     @Autowired
-    private RabbitTemplate rabbitTemplate;
-    @Autowired
-    private ProcessServiceImpl processService;
-    @Autowired
-    private ObjectMapper objectMapper;
+    public RpcServerService(RabbitTemplate rabbitTemplate, ProcessServiceImpl processService, ObjectMapper objectMapper) {
+        this.rabbitTemplate = rabbitTemplate;
+        this.processService = processService;
+        this.objectMapper = objectMapper;
+    }
 
     @RabbitListener(queues = RabbitMQConfig.RPC_QUEUE)
     public void receiveRpcRequest(Message message) {
-        // Extract correlationId and replyTo from the received message
         String correlationId = message.getMessageProperties().getCorrelationId();
         String replyTo = message.getMessageProperties().getReplyTo();
         String requestMessage = new String(message.getBody());
 
-        String taskType = extractTaskType(requestMessage);
+        String taskType = extractJsonField(requestMessage, "taskType");
 
         switch (taskType) {
-            case "createProcess":
-                handleCreateProcess(requestMessage, correlationId, replyTo);
-                break;
-            case "deleteProcess":
-                handleDeleteProcess(requestMessage, correlationId, replyTo);
-                break;
-            default:
-                sendErrorResponse(replyTo, correlationId, "Unknown task type: " + taskType);
+            case "createProcess" -> handleCreateProcess(requestMessage, correlationId, replyTo);
+            case "deleteProcess" -> handleDeleteProcess(requestMessage, correlationId, replyTo);
+            default -> sendResponse(replyTo, correlationId, "Unknown task type: " + taskType, false);
         }
     }
 
@@ -52,79 +50,53 @@ public class RpcServerService {
         try {
             CreateProcessRequest request = extractCreateProcessRequest(requestMessage);
             ProcessDto processDto = processService.createProcess(request);
-            sendSuccessResponse(replyTo, correlationId, processDto);
+            sendResponse(replyTo, correlationId, objectMapper.writeValueAsString(processDto), true);
         } catch (Exception e) {
-            sendErrorResponse(replyTo, correlationId, "Error processing create request: " + e.getMessage());
+            logAndSendError(replyTo, correlationId, "Error processing create request", e);
         }
     }
-    
+
     private void handleDeleteProcess(String requestMessage, String correlationId, String replyTo) {
         try {
-            JsonNode jsonNode = objectMapper.readTree(requestMessage);
-            String id = jsonNode.path("data").path("id").asText();
-            sendSuccessResponse(replyTo, correlationId, processService.deleteProcess(UUID.fromString(id)));
+            String id = extractJsonField(requestMessage, "data.id");
+            sendResponse(replyTo, correlationId, processService.deleteProcess(UUID.fromString(id)).toString(), true);
         } catch (Exception e) {
-            sendErrorResponse(replyTo, correlationId, "Error processing delete request: " + e.getMessage());
+            logAndSendError(replyTo, correlationId, "Error processing delete request", e);
         }
     }
 
-    public CreateProcessRequest extractCreateProcessRequest(String requestMessage) {
+    private CreateProcessRequest extractCreateProcessRequest(String requestMessage) throws Exception {
+        JsonNode dataNode = objectMapper.readTree(requestMessage).path("data");
+        return objectMapper.treeToValue(dataNode, CreateProcessRequest.class);
+    }
+
+    private String extractJsonField(String jsonMessage, String fieldPath) {
         try {
-            // Parse the root of the JSON
-            JsonNode rootNode = objectMapper.readTree(requestMessage);
-
-            // Isolate the "data" node
-            JsonNode dataNode = rootNode.path("data");
-
-            // Convert the "data" node into CreateProcessRequest
-            return objectMapper.treeToValue(dataNode, CreateProcessRequest.class);
+            JsonNode jsonNode = objectMapper.readTree(jsonMessage);
+            for (String field : fieldPath.split("\\.")) {
+                jsonNode = jsonNode.path(field);
+            }
+            return jsonNode.asText();
         } catch (Exception e) {
-            log.error("Failed to extract CreateProcessRequest: {}", e.getMessage());
+            log.error("Failed to extract field {} from message: {}", fieldPath, e.getMessage());
             return null;
         }
     }
 
-    private void sendSuccessResponse(String replyTo, String correlationId, Object responseObject) {
+    private void sendResponse(String replyTo, String correlationId, String messageContent, boolean isSuccess) {
         try {
-            // Convert the response object (e.g., ProcessDto) to JSON
-            String responseJson = objectMapper.writeValueAsString(responseObject);
-
-            // Set up the message properties with the correlation ID
-            MessageProperties responseProperties = new MessageProperties();
-            responseProperties.setCorrelationId(correlationId);
-
-            // Create the response message
-            Message responseMessage = new Message(responseJson.getBytes(), responseProperties);
-
-            // Send the response back to the replyTo queue
+            MessageProperties properties = new MessageProperties();
+            properties.setCorrelationId(correlationId);
+            Message responseMessage = new Message(messageContent.getBytes(), properties);
             rabbitTemplate.convertAndSend(replyTo, responseMessage);
-
-            log.info("Success response sent to queue: {} with correlationId: {}", replyTo, correlationId);
+            log.info("{} response sent to queue: {} with correlationId: {}", isSuccess ? "Success" : "Error", replyTo, correlationId);
         } catch (Exception e) {
-            log.error("Failed to send success response: {}", e.getMessage());
-            // Optionally, send an error response here or handle the exception
+            log.error("Failed to send {} response: {}", isSuccess ? "success" : "error", e.getMessage());
         }
     }
 
-    private void sendErrorResponse(String replyTo, String correlationId, String errorMessage) {
-        MessageProperties responseProperties = new MessageProperties();
-        responseProperties.setCorrelationId(correlationId);
-        Message errorResponse = new Message(errorMessage.getBytes(), responseProperties);
-        rabbitTemplate.convertAndSend(replyTo, errorResponse);
+    private void logAndSendError(String replyTo, String correlationId, String errorMessage, Exception e) {
+        log.error("{}: {}", errorMessage, e.getMessage());
+        sendResponse(replyTo, correlationId, errorMessage, false);
     }
-
-    private String extractTaskType(String requestMessage) {
-        try {
-            // Parse the request message as JSON
-            JsonNode jsonNode = objectMapper.readTree(requestMessage);
-
-            // Extract the taskType field
-            return jsonNode.get("taskType").asText();
-        } catch (Exception e) {
-            // Handle exceptions (e.g., log error and return a default task type or throw an exception)
-            log.error("Failed to extract task type from message: {}", e.getMessage());
-            return "unknown"; // or throw an exception if necessary
-        }
-    }
-
 }
