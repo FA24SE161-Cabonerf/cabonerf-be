@@ -4,6 +4,7 @@ import com.example.cabonerfbe.dto.ProcessDetailDto;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
+import com.example.cabonerfbe.response.DeleteProcessResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,5 +14,5 @@ public interface ProcessService {
     ProcessDto getProcessById(UUID id);
     List<ProcessDto> getAllProcessesByProjectId(UUID projectId);
     ProcessDetailDto updateProcess(UUID id, UpdateProcessRequest request);
-    String deleteProcess(UUID id);
+    DeleteProcessResponse deleteProcess(UUID id);
 }
