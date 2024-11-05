@@ -3,9 +3,11 @@ package com.example.cabonerfbe.repositories;
 import com.example.cabonerfbe.models.Exchanges;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -13,5 +15,7 @@ public interface ExchangesRepository extends JpaRepository<Exchanges, UUID> {
     @Query("SELECT e FROM Exchanges e WHERE e.process.id = ?1")
     List<Exchanges> findAllByProcess(UUID processId);
     @Query("SELECT e FROM Exchanges e WHERE e.process.id = ?1 AND e.input = false")
-    Exchanges findByProcess(UUID processId);
+    Optional<Exchanges> findProductOut(UUID processId);
+    @Query("SELECT e FROM Exchanges e WHERE e.process.id = :processId AND e.substancesCompartments.id = :substanceCompartmentId AND e.status = true")
+    Optional<Exchanges> findByElementary(@Param("processId") UUID processId,@Param("substanceCompartmentId") UUID substanceCompartmentId);
 }

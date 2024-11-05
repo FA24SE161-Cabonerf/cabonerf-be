@@ -3,6 +3,8 @@ package com.example.cabonerfbe.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -32,4 +34,8 @@ public class Exchanges extends Base{
     @ManyToOne
     @JoinColumn(name = "substances_compartments_id")
     private SubstancesCompartments substancesCompartments;
+
+    public UUID getProcessId() {
+        return process != null ? process.getId() : null;
+    }
 }
