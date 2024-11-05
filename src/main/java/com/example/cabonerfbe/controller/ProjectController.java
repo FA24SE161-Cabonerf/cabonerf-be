@@ -57,18 +57,18 @@ public class ProjectController {
     }
 
     @PutMapping(API_PARAMS.UPDATE_DETAIL_PROJECT_BY_ID)
-    public ResponseEntity<ResponseObject> update(@PathVariable UUID id, @Valid @RequestBody UpdateProjectDetailRequest request){
+    public ResponseEntity<ResponseObject> update(@PathVariable UUID projectId, @Valid @RequestBody UpdateProjectDetailRequest request){
         log.info("Start updateDetailProject. request: {}", request);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Update project details success", projectService.updateDetail(id,request)
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Update project details success", projectService.updateDetail(projectId,request)
                 ));
     }
 
     @DeleteMapping(API_PARAMS.DELETE_PROJECT)
-    public ResponseEntity<ResponseObject> delete(@PathVariable UUID id){
-        log.info("Start deleteProject with id: ", id);
+    public ResponseEntity<ResponseObject> delete(@PathVariable UUID projectId){
+        log.info("Start deleteProject with id: ", projectId);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Delete project success", projectService.deleteProject(id)
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Delete project success", projectService.deleteProject(projectId)
                 ));
     }
 }
