@@ -13,5 +13,5 @@ public class ProcessDetailDto {
     private UUID id;
     private String name;
     private String description;
-    private LifeCycleStageDto lifeCycleStages;
+    private LifeCycleStageDto lifeCycleStage;
 }

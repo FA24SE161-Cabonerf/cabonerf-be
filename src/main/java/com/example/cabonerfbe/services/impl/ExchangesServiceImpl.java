@@ -13,14 +13,11 @@ import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateElementaryRequest;
 import com.example.cabonerfbe.request.CreateProductRequest;
-import com.example.cabonerfbe.request.SearchElementaryRequest;
-import com.example.cabonerfbe.response.CreateProcessResponse;
+import com.example.cabonerfbe.response.CreateElementaryResponse;
 import com.example.cabonerfbe.response.SearchElementaryResponse;
 import com.example.cabonerfbe.services.ExchangesService;
-import com.example.specification.EmissionSubstancesSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -60,12 +57,24 @@ public class ExchangesServiceImpl implements ExchangesService {
     EmissionSubstancesRepository esRepository;
 
     @Override
-    public CreateProcessResponse createElementaryExchanges(CreateElementaryRequest request) {
+    public CreateElementaryResponse createElementaryExchanges(CreateElementaryRequest request) {
+        // check process, emissionSubstanceId
+        EmissionSubstances emissionSubstances = esRepository.findByIdAndStatus(request.getEmissionSubstanceId(), Constants.STATUS_TRUE).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_ELEMENTARY_FLOW_FOUND)
+        );
+        Process process = processRepository.findByProcessId(request.getProcessId()).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
+        );
+
+        Exchanges newExchange = new Exchanges();
+        newExchange.setName(emissionSubstances.getName());
+//        newExchange.set
+        // todo: Thắng nhìn hộ tí đê
         return null;
     }
 
     @Override
-    public CreateProcessResponse createProductExchanges(CreateProductRequest request) {
+    public CreateElementaryResponse createProductExchanges(CreateProductRequest request) {
         return null;
     }
 
@@ -86,7 +95,7 @@ public class ExchangesServiceImpl implements ExchangesService {
             scPage = scRepository.findAllWithJoinFetch(pageable);
         } else if (keyWord != null && emissionCompartmentId == null) {
             scPage = scRepository.searchByKeywordWithJoinFetch(keyWord, pageable);
-        } else if(keyWord == null && emissionCompartmentId != null) {
+        } else if (keyWord == null && emissionCompartmentId != null) {
             EmissionCompartment ec = ecRepository.findByIdAndStatus(emissionCompartmentId, true)
                     .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Compartment not exist"));
             scPage = scRepository.searchByCompartmentWithJoinFetch(ec.getId(), pageable);
@@ -108,13 +117,13 @@ public class ExchangesServiceImpl implements ExchangesService {
                 .map(sc -> {
                     SearchElementaryDto dto = new SearchElementaryDto();
                     dto.setSubstancesCompartments(scConverter.ToDto(sc));
-                    if(impactCategoryId == null) {
+                    if (impactCategoryId == null) {
                         List<MidpointImpactCharacterizationFactors> factors =
                                 factorRepository.findBySubstanceCompartmentAndMethodWithJoinFetch(sc.getId(), methodId);
                         dto.setFactors(factors.stream()
                                 .map(factorConverter::fromMidpointToFactor)
                                 .collect(Collectors.toList()));
-                    }else{
+                    } else {
                         List<MidpointImpactCharacterizationFactors> factors =
                                 factorRepository.findBySubstanceCompartmentAndMethodAndCategoryWithJoinFetch(sc.getId(), methodId, impactCategoryId);
                         dto.setFactors(factors.stream()

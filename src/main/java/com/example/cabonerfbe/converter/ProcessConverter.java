@@ -13,14 +13,11 @@ import java.util.List;
 public interface ProcessConverter {
     ProcessConverter INSTANCE = Mappers.getMapper(ProcessConverter.class);
 
-
-    @Mapping(source = "lifeCycleStage",target = "lifeCycleStages")
+    @Mapping(source = "project.id", target = "projectId")
     ProcessDto fromProcessToProcessDto(Process process);
 
-    @Mapping(source = "lifeCycleStage",target = "lifeCycleStages")
     ProcessDetailDto fromProcessDetailToProcessDto(Process process);
 
-    @Mapping(source = "lifeCycleStage",target = "lifeCycleStages")
     List<ProcessDto> fromListToListDto(List<Process> process);
 
 }
