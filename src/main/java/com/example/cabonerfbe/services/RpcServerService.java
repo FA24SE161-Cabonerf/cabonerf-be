@@ -89,7 +89,6 @@ public class RpcServerService {
         try {
             MessageProperties properties = new MessageProperties();
             properties.setCorrelationId(correlationId);
-            log.error("msg content: {}", messageContent);
             Message responseMessage = new Message(messageContent.getBytes(), properties);
             rabbitTemplate.convertAndSend(replyTo, responseMessage);
             log.info("{} response sent to queue: {} with correlationId: {}", isSuccess ? "Success" : "Error", replyTo, correlationId);

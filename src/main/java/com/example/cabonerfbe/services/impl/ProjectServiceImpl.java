@@ -170,15 +170,19 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public GetProjectByIdDto getById(UUID id, UUID userId) {
+    public GetProjectByIdDto getById(UUID id, UUID workspaceId) {
         if(projectRepository.findById(id).isEmpty()){
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Project not exist");
         }
 
         Project project = projectRepository.findById(id).get();
 
-        if(!project.getUser().getId().equals(userId)){
-            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR,"Project not owned by user with id: " + userId);
+//        if(!project.getUser().getId().equals(userId)){
+//            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR,"Project not owned by user with id: " + userId);
+//        }
+
+        if (workspaceId == null) {
+            throw CustomExceptions.unauthorized("workspace not exist");
         }
 
         GetProjectByIdDto dto = new GetProjectByIdDto();
