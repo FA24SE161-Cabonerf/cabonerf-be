@@ -98,7 +98,7 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND + " id: " + methodId));
         ImpactCategory impactCategory = impactCategoryRepository.findByIdAndStatus(categoryId, Constants.STATUS_TRUE)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND + " id: " + categoryId));
-        if (impactMethodCategoryRepository.existsByImpactCategoryAndLifeCycleImpactAssessmentMethod(impactCategory, impactMethod)) {
+        if (impactMethodCategoryRepository.existsByImpactCategoryAndLifeCycleImpactAssessmentMethodAndStatus(impactCategory, impactMethod,true)) {
             throw CustomExceptions.badRequest(MessageConstants.IMPACT_CATEGORY_ALREADY_IN_METHOD);
         }
         impactMethodCategoryRepository.save(new ImpactMethodCategory(impactMethod, impactCategory));
