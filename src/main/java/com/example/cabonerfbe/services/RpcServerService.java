@@ -59,7 +59,7 @@ public class RpcServerService {
     private void handleDeleteProcess(String requestMessage, String correlationId, String replyTo) {
         try {
             String id = extractJsonField(requestMessage, "data.id");
-            sendResponse(replyTo, correlationId, processService.deleteProcess(UUID.fromString(id)), true);
+            sendResponse(replyTo, correlationId, processService.deleteProcess(UUID.fromString(id)).toString(), true);
         } catch (Exception e) {
             logAndSendError(replyTo, correlationId, "Error processing delete request", e);
         }
