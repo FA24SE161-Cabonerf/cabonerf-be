@@ -19,7 +19,6 @@ public class RabbitMqTest implements CommandLineRunner {
     public void run(String... args) {
         try {
             String message = "Hello RabbitMQ!";
-            rabbitTemplate.convertAndSend("testExchange", "testRoutingKey", message);
             System.out.println("Message sent: " + message);
         } catch (Exception e) {
             System.err.println("Failed to send message: " + e.getMessage());

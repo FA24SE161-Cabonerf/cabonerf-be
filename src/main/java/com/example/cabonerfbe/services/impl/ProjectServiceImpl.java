@@ -5,8 +5,6 @@ import com.example.cabonerfbe.dto.*;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.ImpactMethodCategory;
-import com.example.cabonerfbe.models.ProcessImpactValue;
 import com.example.cabonerfbe.models.Project;
 import com.example.cabonerfbe.models.ProjectImpactValue;
 import com.example.cabonerfbe.repositories.*;
@@ -14,7 +12,6 @@ import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.CreateProjectResponse;
 import com.example.cabonerfbe.response.GetAllProjectResponse;
-import com.example.cabonerfbe.response.GetProjectByIdResponse;
 import com.example.cabonerfbe.services.ProcessService;
 import com.example.cabonerfbe.services.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -192,7 +189,7 @@ public class ProjectServiceImpl implements ProjectService {
         dto.setLocation(project.getLocation());
         dto.setMethod(methodConverter.fromMethodToMethodDto(project.getLifeCycleImpactAssessmentMethod()));
         dto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
-        dto.setProcesses(processService.getAllProcesses(id));
+        dto.setProcesses(processService.getAllProcessesByProjectId(id));
         dto.setConnectors(connectorConverter.fromListConnectorToConnectorDto(connectorRepository.findAllByProject(project.getId())));
 
         return dto;

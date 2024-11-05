@@ -3,6 +3,8 @@ package com.example.cabonerfbe.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,4 +24,8 @@ public class ProcessImpactValue extends Base{
     private double systemLevel;
     private double overallImpactContribution;
     private double previousProcessValue;
+
+    public UUID getProcessId() {
+        return process != null ? process.getId() : null;
+    }
 }

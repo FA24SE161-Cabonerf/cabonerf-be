@@ -14,5 +14,5 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GetAllProcessResponse {
-    private PageList<CreateProcessResponse> processes;
+    private PageList<CreateElementaryResponse> processes;
 }

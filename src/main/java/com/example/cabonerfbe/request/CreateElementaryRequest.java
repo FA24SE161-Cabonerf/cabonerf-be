@@ -17,10 +17,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateElementaryRequest {
-    @NotEmpty(message = "Process id is required.")
+    @NotNull(message = "Process id is required.")
     private UUID processId;
-    @NotEmpty(message = "Emission Substance id is required.")
-    private UUID emissionSubstanceId;
+    @NotNull(message = "Substance compartment id is required.")
+    private UUID substanceCompartmentId;
     @NotNull(message = "Input is required.")
     private boolean input;
 }
