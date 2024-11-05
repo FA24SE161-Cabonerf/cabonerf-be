@@ -66,7 +66,7 @@ public class ProjectController {
 
     @DeleteMapping(API_PARAMS.DELETE_PROJECT)
     public ResponseEntity<ResponseObject> delete(@PathVariable UUID projectId){
-        log.info("Start deleteProject with id: ", projectId);
+        log.info("Start deleteProject with projectId: {}", projectId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Delete project success", projectService.deleteProject(projectId)
                 ));
