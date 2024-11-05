@@ -3,6 +3,7 @@ package com.example.cabonerfbe.services;
 import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.request.CreateProcessRequest;
+import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.impl.ProcessServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,7 +60,8 @@ public class RpcServerService {
     private void handleDeleteProcess(String requestMessage, String correlationId, String replyTo) {
         try {
             String id = extractJsonField(requestMessage, "data.id");
-            sendResponse(replyTo, correlationId, processService.deleteProcess(UUID.fromString(id)).toString(), true);
+            DeleteProcessResponse deleteProcessResponse = processService.deleteProcess(UUID.fromString(id));
+            sendResponse(replyTo, correlationId, objectMapper.writeValueAsString(deleteProcessResponse), true);
         } catch (Exception e) {
             logAndSendError(replyTo, correlationId, "Error processing delete request", e);
         }
@@ -87,6 +89,7 @@ public class RpcServerService {
         try {
             MessageProperties properties = new MessageProperties();
             properties.setCorrelationId(correlationId);
+            log.error("msg content: {}", messageContent);
             Message responseMessage = new Message(messageContent.getBytes(), properties);
             rabbitTemplate.convertAndSend(replyTo, responseMessage);
             log.info("{} response sent to queue: {} with correlationId: {}", isSuccess ? "Success" : "Error", replyTo, correlationId);

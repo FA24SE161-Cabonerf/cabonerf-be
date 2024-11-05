@@ -13,6 +13,7 @@ import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
+import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.MessagePublisher;
 import com.example.cabonerfbe.services.ProcessService;
 import lombok.extern.slf4j.Slf4j;
@@ -135,13 +136,13 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public String deleteProcess(UUID id) {
+    public DeleteProcessResponse deleteProcess(UUID id) {
         Process process = processRepository.findByProcessId(id).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
         );
         process.setStatus(false);
         processRepository.save(process);
-        return process.getId().toString();
+        return new DeleteProcessResponse(process.getId());
     }
 
     private List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list) {
