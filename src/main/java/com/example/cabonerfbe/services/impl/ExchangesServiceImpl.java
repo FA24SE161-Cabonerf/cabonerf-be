@@ -67,7 +67,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         Process process = processRepository.findByProcessId(request.getProcessId()).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
         );
-        Optional<Exchanges> e = exchangesRepository.findByElementary(process.getId(),substancesCompartments.getId());
+        Optional<Exchanges> e = exchangesRepository.findElementary(process.getId(),substancesCompartments.getId());
         if(e.isPresent()){
             throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Elementary already exist");
         }

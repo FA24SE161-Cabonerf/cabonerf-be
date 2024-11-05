@@ -20,7 +20,7 @@ public class CreateProcessRequest {
     @NotEmpty(message = "Name is required.")
     private String name;
     @NotNull(message = "Life Cycle Stage is required.")
-    private UUID lifeCycleStagesId;
+    private UUID lifeCycleStageId;
     @NotNull(message = "Project is required.")
     private UUID projectId;
 }
