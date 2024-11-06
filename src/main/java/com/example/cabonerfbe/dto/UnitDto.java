@@ -13,7 +13,7 @@ public class UnitDto {
     private UUID id;
     private String name;
     private double conversionFactor;
-    private boolean isDefault;
+    private Boolean isDefault;
     private UnitGroupDto unitGroup;
 
 }
