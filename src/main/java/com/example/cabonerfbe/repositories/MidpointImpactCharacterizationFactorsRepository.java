@@ -35,4 +35,20 @@ public interface MidpointImpactCharacterizationFactorsRepository extends JpaRepo
     List<MidpointImpactCharacterizationFactors> findBySubstanceCompartmentAndMethodAndCategoryWithJoinFetch(
             @Param("scId") UUID scId,
             @Param("methodId") UUID methodId, @Param("categoryId") UUID categoryId);
+
+    @Query("SELECT DISTINCT f FROM MidpointImpactCharacterizationFactors f " +
+            "LEFT JOIN FETCH f.impactMethodCategory " +
+            "WHERE f.impactMethodCategory.lifeCycleImpactAssessmentMethod.id = :methodId " +
+            "AND f.impactMethodCategory.impactCategory.id = :categoryId " +
+            "AND LOWER(f.cas) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    List<MidpointImpactCharacterizationFactors> findByCategoryAndKeywordWithJoinFetch(@Param("methodId") UUID methodId,
+                                                                                      @Param("keyword") String keyWord,
+                                                                                      @Param("categoryId") UUID categoryId);
+
+    @Query("SELECT DISTINCT f FROM MidpointImpactCharacterizationFactors f " +
+            "LEFT JOIN FETCH f.impactMethodCategory " +
+            "WHERE f.impactMethodCategory.lifeCycleImpactAssessmentMethod.id = :methodId " +
+            "AND LOWER(f.cas) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    List<MidpointImpactCharacterizationFactors> findByKeywordWithJoinFetch(@Param("methodId") UUID methodId,
+                                                                           @Param("keyword") String keyWord);
 }
