@@ -92,7 +92,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         if (pageCurrent > totalPage) {
             return SearchElementaryResponse.builder()
                     .totalPage(0)
-                    .pageSize(5)
+                    .pageSize(pageSize)
                     .pageCurrent(1)
                     .list(Collections.emptyList())
                     .build();
@@ -112,9 +112,29 @@ public class ExchangesServiceImpl implements ExchangesService {
     }
 
     @Override
-    public List<SubstancesCompartmentsDto> getAllAdmin() {
-        List<SubstancesCompartments> response = scRepository.findAll();
-        return response.stream().map(scConverter::modelToDto).collect(Collectors.toList());
+    public GetAllSubstanceCompartmentAdminResponse getAllAdmin(int pageCurrent, int pageSize) {
+
+        Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
+
+        Page<SubstancesCompartments> response = scRepository.findAllWithPage(pageable);
+
+        int totalPage = response.getTotalPages();
+        if (pageCurrent > totalPage) {
+            return GetAllSubstanceCompartmentAdminResponse.builder()
+                    .totalPage(0)
+                    .pageSize(pageSize)
+                    .pageCurrent(1)
+                    .list(Collections.emptyList())
+                    .build();
+
+        }
+
+        return GetAllSubstanceCompartmentAdminResponse.builder()
+                .totalPage(totalPage)
+                .pageSize(pageSize)
+                .pageCurrent(1)
+                .list(response.stream().map(scConverter::modelToDto).collect(Collectors.toList()))
+                .build();
     }
 
     private SubstancesCompartments findSubstancesCompartments(UUID id) {
