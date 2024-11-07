@@ -99,7 +99,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         }
 
-        List<SearchElementaryDto> list = scPage.isEmpty()
+        List<SearchSubstancesCompartmentsDto> list = scPage.isEmpty()
                 ? searchByCas(impactCategoryId, methodId, keyWord)
                 : searchWithoutCas(scPage, impactCategoryId, methodId);
 
@@ -168,13 +168,13 @@ public class ExchangesServiceImpl implements ExchangesService {
                 .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Compartment not exist"));
     }
 
-    private List<SearchElementaryDto> searchWithoutCas(Page<SubstancesCompartments> scPage, UUID impactCategoryId, UUID methodId) {
+    private List<SearchSubstancesCompartmentsDto> searchWithoutCas(Page<SubstancesCompartments> scPage, UUID impactCategoryId, UUID methodId) {
         return scPage.getContent().parallelStream()
                 .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
                 .collect(Collectors.toList());
     }
 
-    private List<SearchElementaryDto> searchByCas(UUID impactCategoryId, UUID methodId, String cas) {
+    private List<SearchSubstancesCompartmentsDto> searchByCas(UUID impactCategoryId, UUID methodId, String cas) {
         List<MidpointImpactCharacterizationFactors> factors = findFactorsByCas(methodId, cas, impactCategoryId);
         Set<SubstancesCompartments> scList = factors.stream()
                 .map(factor -> scRepository.findById(factor.getSubstancesCompartments().getId()).get())
@@ -191,26 +191,27 @@ public class ExchangesServiceImpl implements ExchangesService {
                 : factorRepository.findByCategoryAndKeywordWithJoinFetch(methodId, cas, impactCategoryId);
     }
 
-    private SearchElementaryDto buildSearchElementaryDto(SubstancesCompartments sc, UUID impactCategoryId, UUID methodId) {
-        SearchElementaryDto dto = new SearchElementaryDto();
-        dto.setSubstancesCompartments(scConverter.ToDto(sc));
+    private SearchSubstancesCompartmentsDto buildSearchElementaryDto(SubstancesCompartments sc, UUID impactCategoryId, UUID methodId) {
+
+        SearchSubstancesCompartmentsDto scDto = scConverter.ToDto(sc);
 
         List<MidpointImpactCharacterizationFactors> factors = impactCategoryId == null
                 ? factorRepository.findBySubstanceCompartmentAndMethodWithJoinFetch(sc.getId(), methodId)
                 : factorRepository.findBySubstanceCompartmentAndMethodAndCategoryWithJoinFetch(sc.getId(), methodId, impactCategoryId);
 
-        dto.setFactors(factors.stream()
+
+        scDto.setFactors(factors.stream()
                 .map(factorConverter::fromMidpointToFactor)
                 .collect(Collectors.toList()));
-        return dto;
+
+        return scDto;
     }
 
-    private SearchElementaryDto buildSearchElementaryDto(SubstancesCompartments sc, List<MidpointImpactCharacterizationFactors> factors) {
-        SearchElementaryDto dto = new SearchElementaryDto();
-        dto.setSubstancesCompartments(scConverter.ToDto(sc));
-        dto.setFactors(factors.stream()
+    private SearchSubstancesCompartmentsDto buildSearchElementaryDto(SubstancesCompartments sc, List<MidpointImpactCharacterizationFactors> factors) {
+        SearchSubstancesCompartmentsDto scDto = scConverter.ToDto(sc);
+        scDto.setFactors(factors.stream()
                 .map(factorConverter::fromMidpointToFactor)
                 .collect(Collectors.toList()));
-        return dto;
+        return scDto;
     }
 }
