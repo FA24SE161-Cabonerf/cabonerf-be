@@ -21,6 +21,9 @@ public interface SubstancesCompartmentsRepository extends JpaRepository<Substanc
     @Query("SELECT sc FROM SubstancesCompartments sc WHERE sc.id = :id AND sc.status = true")
     Optional<SubstancesCompartments> findById(@Param("id") UUID substanceCompartmentId);
 
+    @Query("SELECT sc FROM SubstancesCompartments sc WHERE sc.unit.id = :unitId AND sc.id = :scId AND sc.status = true ")
+    Optional<SubstancesCompartments> checkValidUnit(@Param("unitId") UUID unitId, @Param("scId") UUID scId);
+
 
     @Query("SELECT sc FROM SubstancesCompartments sc " +
             "JOIN FETCH sc.emissionSubstance es " +
