@@ -9,6 +9,5 @@ import java.util.List;
 @Getter
 @Setter
 public class SearchElementaryDto {
-    SubstancesCompartmentsDto substancesCompartments;
-    List<FactorDto> factors;
+    SearchSubstancesCompartmentsDto substancesCompartments;
 }

@@ -1,6 +1,7 @@
 package com.example.cabonerfbe.converter;
 
 import com.example.cabonerfbe.dto.RoleDto;
+import com.example.cabonerfbe.dto.SearchSubstancesCompartmentsDto;
 import com.example.cabonerfbe.dto.SubstancesCompartmentsDto;
 import com.example.cabonerfbe.models.Role;
 import com.example.cabonerfbe.models.SubstancesCompartments;
@@ -11,5 +12,5 @@ import org.mapstruct.factory.Mappers;
 public interface SubstancesCompartmentsConverter {
     SubstancesCompartmentsConverter INSTANCE = Mappers.getMapper(SubstancesCompartmentsConverter.class);
 
-    SubstancesCompartmentsDto ToDto(SubstancesCompartments substancesCompartments);
+    SearchSubstancesCompartmentsDto ToDto(SubstancesCompartments substancesCompartments);
 }
