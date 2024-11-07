@@ -25,19 +25,24 @@ public interface SubstancesCompartmentsRepository extends JpaRepository<Substanc
     @Query("SELECT sc FROM SubstancesCompartments sc " +
             "JOIN FETCH sc.emissionSubstance es " +
             "JOIN FETCH sc.emissionCompartment ec " +
-            "WHERE es.id = ?1 AND ec.id = ?2")
-    Optional<SubstancesCompartments> checkExist(UUID substanceId, UUID compartmentId);
+            "WHERE es.id = ?1 AND ec.id = ?2 AND sc.status = true")
+    Optional<SubstancesCompartments> checkExistBySubstanceAndCompartment(UUID substanceId, UUID compartmentId);
+
+    @Query("SELECT sc FROM SubstancesCompartments sc " +
+            "WHERE sc.emissionSubstance.id = :emissionSubstanceId AND sc.status = true")
+    Optional<SubstancesCompartments> checkExistBySubstance(@Param("emissionSubstanceId") UUID emissionSubstanceId);
 
 
     @Query("SELECT DISTINCT sc FROM SubstancesCompartments sc " +
             "LEFT JOIN FETCH sc.emissionSubstance " +
-            "LEFT JOIN FETCH sc.emissionCompartment")
+            "LEFT JOIN FETCH sc.emissionCompartment " +
+            "WHERE sc.status = true")
     Page<SubstancesCompartments> findAllWithJoinFetch(Pageable pageable);
 
     @Query("SELECT DISTINCT sc FROM SubstancesCompartments sc " +
             "LEFT JOIN FETCH sc.emissionSubstance es " +
             "LEFT JOIN FETCH sc.emissionCompartment " +
-            "WHERE LOWER(es.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "WHERE sc.status = true AND LOWER(es.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(es.chemicalName) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
             "OR LOWER(es.molecularFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
             "OR LOWER(es.alternativeFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))")
@@ -46,13 +51,13 @@ public interface SubstancesCompartmentsRepository extends JpaRepository<Substanc
     @Query("SELECT DISTINCT sc FROM SubstancesCompartments sc " +
             "LEFT JOIN FETCH sc.emissionSubstance " +
             "LEFT JOIN FETCH sc.emissionCompartment ec " +
-            "WHERE ec.id = :compartmentId")
+            "WHERE ec.id = :compartmentId AND sc.status = true")
     Page<SubstancesCompartments> searchByCompartmentWithJoinFetch(@Param("compartmentId") UUID compartmentId, Pageable pageable);
 
     @Query("SELECT DISTINCT sc FROM SubstancesCompartments sc " +
             "LEFT JOIN FETCH sc.emissionSubstance es " +
             "LEFT JOIN FETCH sc.emissionCompartment ec " +
-            "WHERE ec.id = :compartmentId " +
+            "WHERE sc.status = true AND ec.id = :compartmentId " +
             "AND (LOWER(es.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(es.chemicalName) LIKE LOWER(CONCAT('%', :keyword, '%')))" +
             "OR LOWER(es.molecularFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
