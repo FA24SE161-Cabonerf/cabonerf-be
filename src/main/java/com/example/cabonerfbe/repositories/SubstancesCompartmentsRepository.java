@@ -69,5 +69,8 @@ public interface SubstancesCompartmentsRepository extends JpaRepository<Substanc
             @Param("keyword") String keyword,
             @Param("compartmentId") UUID compartmentId,
             Pageable pageable);
+
+    @Query("SELECT sc FROM SubstancesCompartments sc WHERE sc.status = true")
+    Page<SubstancesCompartments> findAllWithPage(Pageable pageable);
 }
 

@@ -38,9 +38,10 @@ public class EmissionSubstancesController {
     }
 
     @GetMapping(API_PARAMS.ADMIN)
-    public ResponseEntity<ResponseObject> getAllEmissionSubstancesInAdmin(){
+    public ResponseEntity<ResponseObject> getAllEmissionSubstancesInAdmin( @RequestParam(defaultValue = "1") int pageCurrent,
+                                                                           @RequestParam(defaultValue = "5") int pageSize){
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get emission substance success", service.getAllAdmin())
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get emission substance success", service.getAllAdmin(pageCurrent,pageSize))
         );
     }
 

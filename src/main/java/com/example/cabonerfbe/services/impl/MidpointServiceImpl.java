@@ -136,14 +136,18 @@ public class MidpointServiceImpl implements MidpointService {
         } else {
             sc = scRepository.findById(request.getSubstanceCompartmentId())
                     .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Substance compartment not exist"));
-            SubstancesCompartments scWithUnit = scRepository.checkValidUnit(request.getUnitGroupId(),sc.getId())
-                    .orElseThrow(() -> CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Unit not same"));
-            SubstancesCompartments scWithCompartment = scRepository.checkExistBySubstanceAndCompartment(sc.getEmissionSubstance().getId(),request.getEmissionCompartmentId())
-                    .orElseThrow(() -> CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Emission compartment not same"));
-            Optional<MidpointImpactCharacterizationFactors> f = factorsRepository.checkExistCreate(sc.getId(),request.getMethodId(),request.getCategoryId());
-            if(f.isPresent()){
-                throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Factor already exist");
-            }
+           if(!sc.getUnit().getUnitGroup().getId().equals(request.getUnitGroupId())){
+              throw  CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Unit not same");
+           }
+           if(!sc.getEmissionCompartment().getId().equals(request.getEmissionCompartmentId())){
+             throw   CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Emission compartment not same");
+           }
+
+        }
+
+        Optional<MidpointImpactCharacterizationFactors> f = factorsRepository.checkExistCreate(sc.getId(),request.getMethodId(),request.getCategoryId());
+        if(f.isPresent()){
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Factor already exist");
         }
 
         MidpointImpactCharacterizationFactors factors = new MidpointImpactCharacterizationFactors();
