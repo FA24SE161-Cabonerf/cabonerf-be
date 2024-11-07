@@ -90,8 +90,13 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         int totalPage = scPage.getTotalPages();
         if (pageCurrent > totalPage) {
-            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,
-                    Map.of("currentPage", MessageConstants.CURRENT_PAGE_EXCEED_TOTAL_PAGES));
+            return SearchElementaryResponse.builder()
+                    .totalPage(0)
+                    .pageSize(5)
+                    .pageCurrent(1)
+                    .list(Collections.emptyList())
+                    .build();
+
         }
 
         List<SearchElementaryDto> list = scPage.isEmpty()

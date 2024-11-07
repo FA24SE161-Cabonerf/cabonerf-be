@@ -16,7 +16,7 @@ public interface MidpointImpactCharacterizationFactorsRepository extends JpaRepo
     @Query("SELECT f FROM MidpointImpactCharacterizationFactors f " +
             "JOIN FETCH f.substancesCompartments sc " +
             "JOIN FETCH f.impactMethodCategory imc " +
-            "WHERE sc.id = ?1 AND imc.id = ?2")
+            "WHERE sc.id = ?1 AND imc.id = ?2 AND f.status = true")
     Optional<MidpointImpactCharacterizationFactors> checkExist(UUID substanceCompartmentId, UUID impactMethodCategoryId);
 
 

@@ -140,7 +140,7 @@ public class MidpointServiceImpl implements MidpointService {
 
         Unit u = uRepository.findDefault(ug.getId());
 
-        SubstancesCompartments sc = scRepository.checkExist(es.getId(),ec.getId())
+        SubstancesCompartments sc = scRepository.checkExistBySubstanceAndCompartment(es.getId(),ec.getId())
                 .orElseGet(() ->{
                     return scRepository.save(new SubstancesCompartments(es,ec,u));
                 });

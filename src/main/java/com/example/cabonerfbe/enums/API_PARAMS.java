@@ -47,6 +47,8 @@ public class API_PARAMS {
     public static final String GET_ALL_MIDPOINT_FACTORS = "/midpoint-factors";
     public static final String GET_MIDPOINT_FACTOR_BY_ID = "/midpoint-factors/{id}";
     public static final String DELETE_MIDPOINT_FACTOR_BY_ID = "/midpoint-factors/{id}";
+    public static final String IMPORT_MIDPOINT_FACTOR_BY_ID = "/midpoint-factors/import";
+    public static final String DOWNLOAD_ERROR_LOG_MIDPOINT_FACTOR_BY_ID = "/midpoint-factors/download";
 
     public static final String GET_ALL_MIDPOINT_IMPACT_CATEGORY = "/midpoint-categories";
     public static final String GET_MIDPOINT_IMPACT_CATEGORY_BY_ID = "/midpoint-categories";

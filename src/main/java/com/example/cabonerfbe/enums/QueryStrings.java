@@ -21,7 +21,7 @@ public class QueryStrings {
                     "MAX(CASE WHEN p.name = 'Egalitarian' THEN f.decimal_value END) AS egalitarian \n" +
                     "FROM substances_compartments sc \n" +
                     "JOIN emission_substances es ON sc.emission_substance_id = es.id AND es.status = true \n" +
-                    "JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true \n" +
+                    "LEFT JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true \n" +
                     "JOIN midpoint_impact_characterization_factors f ON sc.id = f.substances_compartments_id AND f.status = true \n" +
                     "JOIN impact_method_category imc ON imc.id = f.impact_method_category_id AND imc.status = true \n" +
                     "JOIN life_cycle_impact_assessment_method lciam ON lciam.id = imc.life_cycle_impact_assessment_method_id AND lciam.status = true \n" +
@@ -46,7 +46,7 @@ public class QueryStrings {
             MAX(CASE WHEN p.name = 'Egalitarian' THEN f.decimal_value END) AS egalitarian
         FROM substances_compartments sc 
         JOIN emission_substances es ON sc.emission_substance_id = es.id AND es.status = true 
-        JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true 
+        LEFT JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true 
         JOIN midpoint_impact_characterization_factors f ON sc.id = f.substances_compartments_id AND f.status = true 
         JOIN impact_method_category imc ON imc.id = f.impact_method_category_id AND imc.status = true 
         JOIN life_cycle_impact_assessment_method lciam ON lciam.id = imc.life_cycle_impact_assessment_method_id AND lciam.status = true 
@@ -70,7 +70,7 @@ public class QueryStrings {
                     "MAX(CASE WHEN p.name = 'Egalitarian' THEN f.decimal_value END) AS egalitarian \n" +
                     "FROM substances_compartments sc \n" +
                     "JOIN emission_substances es ON sc.emission_substance_id = es.id AND es.status = true \n" +
-                    "JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true \n" +
+                    "LEFT JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true \n" +
                     "JOIN midpoint_impact_characterization_factors f ON sc.id = f.substances_compartments_id AND f.status = true \n" +
                     "JOIN impact_method_category imc ON imc.id = f.impact_method_category_id AND imc.status = true \n" +
                     "JOIN life_cycle_impact_assessment_method lciam ON lciam.id = imc.life_cycle_impact_assessment_method_id AND lciam.status = true \n" +
@@ -92,7 +92,7 @@ public class QueryStrings {
                     "       MAX(CASE WHEN p.name = 'Egalitarian' THEN f.decimal_value END) AS egalitarian \n" +
                     "FROM substances_compartments sc \n" +
                     "JOIN emission_substances es ON sc.emission_substance_id = es.id AND es.status = true \n" +
-                    "JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true \n" +
+                    "LEFT JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true \n" +
                     "JOIN midpoint_impact_characterization_factors f ON sc.id = f.substances_compartments_id AND f.status = true \n" +
                     "JOIN impact_method_category imc ON imc.id = f.impact_method_category_id AND imc.status = true \n" +
                     "JOIN life_cycle_impact_assessment_method lciam ON lciam.id = imc.life_cycle_impact_assessment_method_id AND lciam.status = true \n" +
@@ -118,7 +118,7 @@ public class QueryStrings {
                     "       MAX(CASE WHEN p.name = 'Egalitarian' THEN f.decimal_value END) AS egalitarian \n" +
                     "FROM substances_compartments sc \n" +
                     "JOIN emission_substances es ON sc.emission_substance_id = es.id AND es.status = true \n" +
-                    "JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true \n" +
+                    "LEFT JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true \n" +
                     "JOIN midpoint_impact_characterization_factors f ON sc.id = f.substances_compartments_id AND f.status = true \n" +
                     "JOIN impact_method_category imc ON imc.id = f.impact_method_category_id AND imc.status = true \n" +
                     "JOIN life_cycle_impact_assessment_method lciam ON lciam.id = imc.life_cycle_impact_assessment_method_id AND lciam.status = true \n" +
@@ -141,7 +141,7 @@ public class QueryStrings {
                     "       MAX(CASE WHEN p.name = 'Egalitarian' THEN f.decimal_value END) AS egalitarian \n" +
                     "FROM substances_compartments sc \n" +
                     "JOIN emission_substances es ON sc.emission_substance_id = es.id AND es.status = true \n" +
-                    "JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true \n" +
+                    "LEFT JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true \n" +
                     "JOIN midpoint_impact_characterization_factors f ON sc.id = f.substances_compartments_id AND f.status = true \n" +
                     "JOIN impact_method_category imc ON imc.id = f.impact_method_category_id AND imc.status = true \n" +
                     "JOIN life_cycle_impact_assessment_method lciam ON lciam.id = imc.life_cycle_impact_assessment_method_id AND lciam.status = true \n" +
@@ -171,7 +171,7 @@ public class QueryStrings {
             MAX(CASE WHEN p.name = 'Egalitarian' THEN f.decimal_value END) AS egalitarian
         FROM substances_compartments sc 
         JOIN emission_substances es ON sc.emission_substance_id = es.id AND es.status = true 
-        JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true 
+        LEFT JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true 
         JOIN midpoint_impact_characterization_factors f ON sc.id = f.substances_compartments_id AND f.status = true 
         JOIN impact_method_category imc ON imc.id = f.impact_method_category_id AND imc.status = true 
         JOIN life_cycle_impact_assessment_method lciam ON lciam.id = imc.life_cycle_impact_assessment_method_id AND lciam.status = true 
@@ -201,7 +201,7 @@ public class QueryStrings {
             MAX(CASE WHEN p.name = 'Egalitarian' THEN f.decimal_value END) AS egalitarian
         FROM substances_compartments sc 
         JOIN emission_substances es ON sc.emission_substance_id = es.id AND es.status = true 
-        JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true 
+        LEFT JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true 
         JOIN midpoint_impact_characterization_factors f ON sc.id = f.substances_compartments_id AND f.status = true 
         JOIN impact_method_category imc ON imc.id = f.impact_method_category_id AND imc.status = true 
         JOIN life_cycle_impact_assessment_method lciam ON lciam.id = imc.life_cycle_impact_assessment_method_id AND lciam.status = true 
@@ -228,7 +228,7 @@ public class QueryStrings {
             MAX(CASE WHEN p.name = 'Egalitarian' THEN f.decimal_value END) AS egalitarian
         FROM substances_compartments sc 
         JOIN emission_substances es ON sc.emission_substance_id = es.id AND es.status = true 
-        JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true 
+        LEFT JOIN emission_compartment ec ON sc.emission_compartment_id = ec.id AND ec.status = true 
         JOIN midpoint_impact_characterization_factors f ON sc.id = f.substances_compartments_id AND f.status = true 
         JOIN impact_method_category imc ON imc.id = f.impact_method_category_id AND imc.status = true 
         JOIN life_cycle_impact_assessment_method lciam ON lciam.id = imc.life_cycle_impact_assessment_method_id AND lciam.status = true 
