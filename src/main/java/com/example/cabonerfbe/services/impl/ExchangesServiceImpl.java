@@ -111,6 +111,12 @@ public class ExchangesServiceImpl implements ExchangesService {
                 .build();
     }
 
+    @Override
+    public List<SubstancesCompartmentsDto> getAllAdmin() {
+        List<SubstancesCompartments> response = scRepository.findAll();
+        return response.stream().map(scConverter::modelToDto).collect(Collectors.toList());
+    }
+
     private SubstancesCompartments findSubstancesCompartments(UUID id) {
         return scRepository.findById(id)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ELEMENTARY_FLOW_FOUND));

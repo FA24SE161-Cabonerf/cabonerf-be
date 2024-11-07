@@ -35,4 +35,5 @@ public class CreateFactorRequest {
     private UUID categoryId;
     @NotNull(message = "Unit group is required.")
     private UUID unitGroupId;
+    private UUID substanceCompartmentId;
 }

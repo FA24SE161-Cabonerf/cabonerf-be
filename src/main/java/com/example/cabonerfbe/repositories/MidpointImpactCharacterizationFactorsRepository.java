@@ -51,4 +51,10 @@ public interface MidpointImpactCharacterizationFactorsRepository extends JpaRepo
             "AND LOWER(f.cas) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<MidpointImpactCharacterizationFactors> findByKeywordWithJoinFetch(@Param("methodId") UUID methodId,
                                                                            @Param("keyword") String keyWord);
+
+    @Query("SELECT f FROM MidpointImpactCharacterizationFactors f " +
+            "JOIN FETCH f.substancesCompartments sc " +
+            "JOIN FETCH f.impactMethodCategory imc " +
+            "WHERE sc.id = ?1 AND imc.lifeCycleImpactAssessmentMethod.id = ?2 AND imc.impactCategory.id = ?3 AND f.status = true")
+    Optional<MidpointImpactCharacterizationFactors> checkExistCreate(UUID substanceCompartmentId, UUID methodId, UUID categoryId);
 }

@@ -104,63 +104,61 @@ public class MidpointServiceImpl implements MidpointService {
     @Override
     public List<MidpointSubstanceFactorsDto> create(CreateFactorRequest request) {
 
-        LifeCycleImpactAssessmentMethod method = methodRepository.findByIdAndStatus(request.getMethodId(),true)
+        LifeCycleImpactAssessmentMethod method = methodRepository.findByIdAndStatus(request.getMethodId(), true)
                 .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Method not exist"));
 
-        ImpactCategory category = categoryRepository.findByIdAndStatus(request.getCategoryId(),true)
-                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Impact category not exist"));
+        ImpactCategory category = categoryRepository.findByIdAndStatus(request.getCategoryId(), true)
+                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Impact category not exist"));
 
-
-        ImpactMethodCategory imc = imcRepository.findByMethodAndCategory(request.getCategoryId(),request.getMethodId())
+        ImpactMethodCategory imc = imcRepository.findByMethodAndCategory(request.getCategoryId(), request.getMethodId())
                 .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Impact method category not exist"));
 
+        SubstancesCompartments sc;
+        if (request.getSubstanceCompartmentId() == null) {
+            EmissionSubstances es = esRepository.findByName(request.getName()).orElseGet(() -> {
+                EmissionSubstances newSubstance = new EmissionSubstances();
+                newSubstance.setName(request.getName());
+                newSubstance.setChemicalName(Optional.ofNullable(request.getChemicalName()).orElse("-"));
+                newSubstance.setMolecularFormula(Optional.ofNullable(request.getMolecularFormula()).orElse("-"));
+                newSubstance.setAlternativeFormula(Optional.ofNullable(request.getAlternativeFormula()).orElse("-"));
+                return esRepository.save(newSubstance);
+            });
 
+            EmissionCompartment ec = ecRepository.getReferenceById(request.getEmissionCompartmentId());
+            UnitGroup ug = ugRepository.findByIdAndStatus(request.getUnitGroupId(), true)
+                    .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Unit group not exist"));
+            Unit u = uRepository.findDefault(ug.getId());
 
-        EmissionSubstances es = esRepository.findByName(request.getName())
-                .orElseGet(() -> {
-                    EmissionSubstances newSubstance = new EmissionSubstances();
-                    newSubstance.setName(request.getName());
-                    newSubstance.setChemicalName(
-                            request.getChemicalName() == null || request.getChemicalName().isEmpty() ? "-" : request.getChemicalName()
-                    );
-                    newSubstance.setMolecularFormula(
-                            request.getMolecularFormula() == null || request.getMolecularFormula().isEmpty() ? "-" : request.getMolecularFormula()
-                    );
-                    newSubstance.setAlternativeFormula(
-                            request.getAlternativeFormula() == null || request.getAlternativeFormula().isEmpty() ? "-" : request.getAlternativeFormula()
-                    );
+            sc = scRepository.checkExistBySubstanceAndCompartment(es.getId(), ec.getId())
+                    .orElseGet(() -> scRepository.save(new SubstancesCompartments(es, ec, u)));
 
-                    return esRepository.save(newSubstance);
-                });
-
-        EmissionCompartment ec = ecRepository.getReferenceById(request.getEmissionCompartmentId());
-
-        UnitGroup ug = ugRepository.findByIdAndStatus(request.getUnitGroupId(),true)
-                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Unit group not exist"));
-
-        Unit u = uRepository.findDefault(ug.getId());
-
-        SubstancesCompartments sc = scRepository.checkExistBySubstanceAndCompartment(es.getId(),ec.getId())
-                .orElseGet(() ->{
-                    return scRepository.save(new SubstancesCompartments(es,ec,u));
-                });
+            request.setSubstanceCompartmentId(sc.getId());
+        } else {
+            sc = scRepository.findById(request.getSubstanceCompartmentId())
+                    .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Substance compartment not exist"));
+            SubstancesCompartments scWithUnit = scRepository.checkValidUnit(request.getUnitGroupId(),sc.getId())
+                    .orElseThrow(() -> CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Unit not same"));
+            SubstancesCompartments scWithCompartment = scRepository.checkExistBySubstanceAndCompartment(sc.getEmissionSubstance().getId(),request.getEmissionCompartmentId())
+                    .orElseThrow(() -> CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Emission compartment not same"));
+            Optional<MidpointImpactCharacterizationFactors> f = factorsRepository.checkExistCreate(sc.getId(),request.getMethodId(),request.getCategoryId());
+            if(f.isPresent()){
+                throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Factor already exist");
+            }
+        }
 
         MidpointImpactCharacterizationFactors factors = new MidpointImpactCharacterizationFactors();
         factors.setImpactMethodCategory(imc);
-        factors.setCas(
-                request.getCas() == null || request.getCas().isEmpty() ? "-" : request.getCas()
-        );
+        factors.setCas(Optional.ofNullable(request.getCas()).orElse("-"));
         factors.setDecimalValue(request.getValue());
         factors.setScientificValue(String.format("%.2e", request.getValue()));
         factors.setSubstancesCompartments(sc);
         factorsRepository.save(factors);
 
-        List<Object[]> factor = midpointRepository.getWhenCreate(sc.getId());
-        List<MidpointSubstanceFactorsDto> response = factor.stream()
+        return midpointRepository.getWhenCreate(request.getSubstanceCompartmentId()).stream()
                 .map(midpointConverter::fromQueryResultsToDto)
                 .collect(Collectors.toList());
-        return response;
     }
+
 
     @Override
     public List<MidpointSubstanceFactorsDto> delete(UUID id) {

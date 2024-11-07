@@ -36,4 +36,12 @@ public class EmissionSubstancesController {
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get emission substance success",service.search(pageCurrent, pageSize, keyword, methodId, emissionCompartmentId, impactCategoryId))
         );
     }
+
+    @GetMapping(API_PARAMS.ADMIN)
+    public ResponseEntity<ResponseObject> getAllEmissionSubstancesInAdmin(){
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get emission substance success", service.getAllAdmin())
+        );
+    }
+
 }
