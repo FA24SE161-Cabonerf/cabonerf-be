@@ -112,29 +112,17 @@ public class ExchangesServiceImpl implements ExchangesService {
     }
 
     @Override
-    public GetAllSubstanceCompartmentAdminResponse getAllAdmin(int pageCurrent, int pageSize) {
+    public List<SubstancesCompartmentsDto> getAllAdmin(String keyword) {
 
-        Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
-
-        Page<SubstancesCompartments> response = scRepository.findAllWithPage(pageable);
-
-        int totalPage = response.getTotalPages();
-        if (pageCurrent > totalPage) {
-            return GetAllSubstanceCompartmentAdminResponse.builder()
-                    .totalPage(0)
-                    .pageSize(pageSize)
-                    .pageCurrent(1)
-                    .list(Collections.emptyList())
-                    .build();
-
+        List<SubstancesCompartments> list = new ArrayList<>();
+        if(keyword == null){
+            list = scRepository.findAll();
+        }
+        else{
+            list = scRepository.findByKeyword(keyword);
         }
 
-        return GetAllSubstanceCompartmentAdminResponse.builder()
-                .totalPage(totalPage)
-                .pageSize(pageSize)
-                .pageCurrent(1)
-                .list(response.stream().map(scConverter::modelToDto).collect(Collectors.toList()))
-                .build();
+        return list.stream().map(scConverter::modelToDto).collect(Collectors.toList());
     }
 
     private SubstancesCompartments findSubstancesCompartments(UUID id) {

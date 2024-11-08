@@ -70,7 +70,13 @@ public interface SubstancesCompartmentsRepository extends JpaRepository<Substanc
             @Param("compartmentId") UUID compartmentId,
             Pageable pageable);
 
-    @Query("SELECT sc FROM SubstancesCompartments sc WHERE sc.status = true")
-    Page<SubstancesCompartments> findAllWithPage(Pageable pageable);
+    @Query("SELECT sc FROM SubstancesCompartments sc " +
+            "LEFT JOIN FETCH sc.emissionSubstance es " +
+            "WHERE sc.status = true " +
+            "AND (LOWER(es.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(es.chemicalName) LIKE LOWER(CONCAT('%', :keyword, '%')))" +
+            "OR LOWER(es.molecularFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
+            "OR LOWER(es.alternativeFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    List<SubstancesCompartments> findByKeyword(@Param("keyword") String keyword);
 }
 

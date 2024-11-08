@@ -18,5 +18,5 @@ public interface ExchangesService {
     ProcessDto createProductExchanges(CreateProductRequest request);
 
     SearchElementaryResponse search(int pageCurrent, int pageSize, String keyWord, UUID methodId, UUID emissionCompartmentId, UUID impactCategoryId);
-    GetAllSubstanceCompartmentAdminResponse getAllAdmin(int pageCurrent, int pageSize);
+    List<SubstancesCompartmentsDto> getAllAdmin(String keyword);
 }
