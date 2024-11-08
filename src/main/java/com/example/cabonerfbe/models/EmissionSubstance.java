@@ -12,10 +12,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table
-public class SubstancesCompartments extends Base{
+public class EmissionSubstance extends Base{
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "emission_substance_id", nullable = false)
-    private EmissionSubstances emissionSubstance;
+    @JoinColumn(name = "substance_id", nullable = false)
+    private Substance substance;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "emission_compartment_id", nullable = true)

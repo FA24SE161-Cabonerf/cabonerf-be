@@ -27,8 +27,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -100,9 +98,9 @@ public class ExcelServiceImpl implements ExcelService {
                     }
 
                     // Tạo hoặc tìm emission substance
-                    EmissionSubstances emissionSubstance = emissionSubstancesRepository.findByName(substanceName)
+                    Substance emissionSubstance = emissionSubstancesRepository.findByName(substanceName)
                             .orElseGet(() -> {
-                                EmissionSubstances newSubstance = new EmissionSubstances();
+                                Substance newSubstance = new Substance();
                                 newSubstance.setName(substanceName);
                                 newSubstance.setChemicalName(chemicalName);
                                 newSubstance.setMolecularFormula(molecularFormula);
@@ -118,15 +116,15 @@ public class ExcelServiceImpl implements ExcelService {
                     }
 
                     EmissionCompartment finalEmissionCompartment = emissionCompartment;
-                    SubstancesCompartments substanceCompartment = new SubstancesCompartments();
+                    EmissionSubstance substanceCompartment = new EmissionSubstance();
 
                     if (!compartmentName.isBlank() || !compartmentName.isEmpty()) {
                         substanceCompartment = substancesCompartmentsRepository.checkExistBySubstanceAndCompartment(
                                 emissionSubstance.getId(),
                                 emissionCompartment.getId()
                         ).orElseGet(() -> {
-                            SubstancesCompartments newSubstancesCompartments = new SubstancesCompartments();
-                            newSubstancesCompartments.setEmissionSubstance(emissionSubstance);
+                            EmissionSubstance newSubstancesCompartments = new EmissionSubstance();
+                            newSubstancesCompartments.setSubstance(emissionSubstance);
                             newSubstancesCompartments.setEmissionCompartment(finalEmissionCompartment);
                             newSubstancesCompartments.setUnit(findAppropriateUnit(category));
                             newSubstancesCompartments.setIsInput(compartmentName.equals("Natural Resource"));
@@ -271,7 +269,7 @@ public class ExcelServiceImpl implements ExcelService {
     }
 
     private boolean createOrUpdateFactor(List<MidpointImpactCharacterizationFactors> list,
-                                         SubstancesCompartments substanceCompartment,
+                                         EmissionSubstance substanceCompartment,
                                          ImpactMethodCategory methodCategory,
                                          String cas,
                                          Double value, int sheetNumber, int rowsNumber, int columnsNumber) {

@@ -1,14 +1,12 @@
 package com.example.cabonerfbe.response;
 
 import com.example.cabonerfbe.dto.*;
-import com.example.cabonerfbe.models.SubstancesCompartments;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor

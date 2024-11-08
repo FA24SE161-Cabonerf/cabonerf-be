@@ -33,7 +33,7 @@ public class Exchanges extends Base{
 
     @ManyToOne
     @JoinColumn(name = "substances_compartments_id")
-    private SubstancesCompartments substancesCompartments;
+    private EmissionSubstance substancesCompartments;
 
     public UUID getProcessId() {
         return process != null ? process.getId() : null;
