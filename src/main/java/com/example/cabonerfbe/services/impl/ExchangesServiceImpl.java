@@ -49,40 +49,42 @@ public class ExchangesServiceImpl implements ExchangesService {
     @Autowired
     private ProcessImpactValueConverter pivConverter;
 
+    public static final String EXCHANGE_TYPE_ELEMENTARY = "Elementary";
+    public static final String EXCHANGE_TYPE_PRODUCT = "Product";
+    public static final double DEFAULT_VALUE = 0;
+    public static final String DEFAULT_PRODUCT_UNIT = "kg";
+
     @Override
-    public ProcessDto createElementaryExchanges(CreateElementaryRequest request) {
-        EmissionSubstance emissionSubstance = findSubstancesCompartments(request.getEmissionSubstanceId());
+    public ExchangesDto createElementaryExchanges(CreateElementaryRequest request) {
+        EmissionSubstance emissionSubstance = findSubstancesCompartments(request.getEmissionSubstanceId(), request.isInput());
         Process process = findProcess(request.getProcessId());
 
         if (exchangesRepository.findElementary(process.getId(), emissionSubstance.getId()).isPresent()) {
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Elementary already exists");
+            throw CustomExceptions.badRequest(MessageConstants.ELEMENTARY_EXIST);
         }
 
-        Exchanges newExchange = createNewExchange(emissionSubstance, request.isInput(), process, "Elementary", 0);
-        exchangesRepository.save(newExchange);
+        Exchanges newExchange = createNewExchange(emissionSubstance, request.isInput(), process, EXCHANGE_TYPE_ELEMENTARY);
 
-        return buildProcessDtoWithExchangesAndImpacts(process);
+        return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.save(newExchange));
     }
 
     @Override
-    public ProcessDto createProductExchanges(CreateProductRequest request) {
+    public ExchangesDto createProductExchanges(CreateProductRequest request) {
         Process process = findProcess(request.getProcessId());
 
         if (!request.isInput() && exchangesRepository.findProductOut(process.getId()).isPresent()) {
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Output product already exists in process");
+            throw CustomExceptions.badRequest(MessageConstants.PRODUCT_EXIST);
         }
 
-        Exchanges productExchange = createNewExchange(null, request.isInput(), process, "Product", 0);
+        Exchanges productExchange = createNewExchange(null, request.isInput(), process, EXCHANGE_TYPE_PRODUCT);
         productExchange.setName(request.getName());
-        productExchange.setUnit(unitRepository.findByNameUnit("kg"));
-        exchangesRepository.save(productExchange);
 
-        return buildProcessDtoWithExchangesAndImpacts(process);
+        return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.save(productExchange));
     }
 
     @Override
     public SearchElementaryResponse search(int pageCurrent, int pageSize, String keyWord, UUID methodId,
-                                           UUID emissionCompartmentId, UUID impactCategoryId,boolean input) {
+                                           UUID emissionCompartmentId, UUID impactCategoryId, boolean input) {
         validateMethod(methodId);
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
         Page<EmissionSubstance> scPage = fetchSubstancesCompartments(keyWord, emissionCompartmentId, pageable, input);
@@ -92,7 +94,7 @@ public class ExchangesServiceImpl implements ExchangesService {
                 .collect(Collectors.toList());
 
         int totalPage = scPage.getTotalPages();
-               // Kiểm tra pageCurrent với totalPage và trả về danh sách rỗng nếu cần
+        // Kiểm tra pageCurrent với totalPage và trả về danh sách rỗng nếu cần
         if (pageCurrent > totalPage) {
             return SearchElementaryResponse.builder()
                     .totalPage(0)
@@ -112,21 +114,30 @@ public class ExchangesServiceImpl implements ExchangesService {
     }
 
     @Override
-    public List<SubstancesCompartmentsDto> getAllAdmin(String keyword) {
+    public List<EmissionSubstanceDto> getAllAdmin(String keyword) {
 
         List<EmissionSubstance> list = new ArrayList<>();
-        if(keyword == null){
+        if (keyword == null) {
             list = scRepository.findAll();
-        }
-        else{
+        } else {
             list = scRepository.findByKeyword(keyword);
         }
 
         return list.stream().map(scConverter::modelToDto).collect(Collectors.toList());
     }
 
-    private EmissionSubstance findSubstancesCompartments(UUID id) {
-        return scRepository.findById(id)
+    @Override
+    public List<ExchangesDto> removeExchange(UUID exchangeId) {
+        Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
+        );
+        exchange.setStatus(Constants.STATUS_FALSE);
+        exchangesRepository.save(exchange);
+        return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(exchange.getProcessId()));
+    }
+
+    private EmissionSubstance findSubstancesCompartments(UUID id, boolean isInput) {
+        return scRepository.findByIdWithInput(id, isInput)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ELEMENTARY_FLOW_FOUND));
     }
 
@@ -140,15 +151,20 @@ public class ExchangesServiceImpl implements ExchangesService {
                 .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Method not exist"));
     }
 
-    private Exchanges createNewExchange(EmissionSubstance substancesCompartments, boolean isInput,
-                                        Process process, String exchangeTypeName, double value) {
+    private Exchanges createNewExchange(EmissionSubstance emissionSubstance, boolean isInput,
+                                        Process process, String exchangeTypeName) {
         Exchanges exchange = new Exchanges();
-        exchange.setName(substancesCompartments != null ? substancesCompartments.getSubstance().getName() : null);
         exchange.setExchangesType(exchangesTypeRepository.findByName(exchangeTypeName));
-        exchange.setValue(value);
+        exchange.setValue(DEFAULT_VALUE);
         exchange.setInput(isInput);
         exchange.setProcess(process);
-        exchange.setEmissionSubstance(substancesCompartments);
+        exchange.setEmissionSubstance(emissionSubstance);
+        if (emissionSubstance != null) {
+            exchange.setUnit(emissionSubstance.getUnit());
+            exchange.setName(emissionSubstance.getSubstance().getName());
+        } else {
+            exchange.setUnit(unitRepository.findByNameUnit(DEFAULT_PRODUCT_UNIT));
+        }
         return exchange;
     }
 
@@ -163,7 +179,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         int condition = (keyWord == null ? 0 : 1) + (emissionCompartmentId == null ? 0 : 2);
 
         return switch (condition) {
-            case 0 -> scRepository.findAllWithJoinFetch(input,pageable);
+            case 0 -> scRepository.findAllWithJoinFetch(input, pageable);
             case 1 -> scRepository.searchByKeywordWithJoinFetch(input, keyWord, pageable);
             case 2 -> {
                 EmissionCompartment ec = findEmissionCompartment(emissionCompartmentId);

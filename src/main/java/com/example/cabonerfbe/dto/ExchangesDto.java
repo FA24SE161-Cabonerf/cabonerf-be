@@ -14,7 +14,7 @@ public class ExchangesDto {
     private String name;
     private double value;
     private ExchangesTypeDto exchangesType;
-    private SubstancesCompartmentsDto substancesCompartments;
+    private EmissionSubstanceDto emissionSubstance;
     private UnitDto unit;
     private boolean input;
 

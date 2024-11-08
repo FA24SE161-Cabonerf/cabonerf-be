@@ -27,4 +27,5 @@ public interface ExchangesRepository extends JpaRepository<Exchanges, UUID> {
     @Query("select e from Exchanges e where e.process.id = ?1 and e.name = ?2 and e.unit.unitGroup = ?3 and e.input = ?4")
     Optional<Exchanges> findByProcess_IdAndNameAndUnit_UnitGroupAndInput(UUID id, String name, UnitGroup unitGroup, boolean input);
 
+    Optional<Exchanges> findByIdAndStatus(UUID id, boolean status);
 }

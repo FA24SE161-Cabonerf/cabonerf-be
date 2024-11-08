@@ -20,6 +20,7 @@ public class API_PARAMS {
     public static final String CREATE_ELEMENTARY_EXCHANGE = "/elementary-exchange";
     public static final String CREATE_PRODUCT_EXCHANGE = "/product-exchange";
     public static final String CONNECTOR = "/connectors";
+    public static final String REMOVE_EXCHANGE = "/{exchangeId}";
 
 
     /************************

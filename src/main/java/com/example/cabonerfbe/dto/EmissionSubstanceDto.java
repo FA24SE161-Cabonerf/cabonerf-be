@@ -9,9 +9,9 @@ import java.util.UUID;
 @Data
 @Getter
 @Setter
-public class SubstancesCompartmentsDto {
+public class EmissionSubstanceDto {
     private UUID id;
-    private SubstanceDto emissionSubstance;
+    private SubstanceDto substance;
     private EmissionCompartmentDto emissionCompartment;
     private UnitProjectImpactDto unit;
 }

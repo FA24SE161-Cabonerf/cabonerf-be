@@ -1,7 +1,6 @@
 package com.example.cabonerfbe.response;
 
-import com.example.cabonerfbe.dto.SearchSubstancesCompartmentsDto;
-import com.example.cabonerfbe.dto.SubstancesCompartmentsDto;
+import com.example.cabonerfbe.dto.EmissionSubstanceDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,5 +16,5 @@ public class GetAllSubstanceCompartmentAdminResponse {
     private int pageCurrent;
     private int pageSize;
     private int totalPage;
-    List<SubstancesCompartmentsDto> list;
+    List<EmissionSubstanceDto> list;
 }
