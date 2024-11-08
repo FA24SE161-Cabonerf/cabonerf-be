@@ -281,7 +281,7 @@ public class ExcelServiceImpl implements ExcelService {
                         () -> {
                             // Create a new factor if it doesn't exist
                             MidpointImpactCharacterizationFactors factor = new MidpointImpactCharacterizationFactors();
-                            factor.setSubstancesCompartments(substanceCompartment);
+                            factor.setEmissionSubstance(substanceCompartment);
                             factor.setDecimalValue(value);
                             factor.setScientificValue(String.format("%.2e", value));
                             factor.setImpactMethodCategory(methodCategory);
