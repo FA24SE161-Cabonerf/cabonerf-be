@@ -1,6 +1,5 @@
 package com.example.cabonerfbe.request;
 
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,8 +18,8 @@ import java.util.UUID;
 public class CreateElementaryRequest {
     @NotNull(message = "Process id is required.")
     private UUID processId;
-    @NotNull(message = "Substance compartment id is required.")
-    private UUID substanceCompartmentId;
+    @NotNull(message = "Emission substance id is required.")
+    private UUID emissionSubstanceId;
     @NotNull(message = "Input is required.")
     private boolean input;
 }

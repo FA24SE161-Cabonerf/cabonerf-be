@@ -3,7 +3,6 @@ package com.example.cabonerfbe.converter;
 import com.example.cabonerfbe.dto.ExchangesDto;
 import com.example.cabonerfbe.models.Exchanges;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
@@ -21,7 +20,7 @@ public interface ExchangesConverter {
         newExchange.setExchangesType(exchange.getExchangesType());
         newExchange.setValue(exchange.getValue());
         newExchange.setUnit(exchange.getUnit());
-        newExchange.setSubstancesCompartments(exchange.getSubstancesCompartments());
+        newExchange.setEmissionSubstance(exchange.getEmissionSubstance());
         newExchange.setDescription(exchange.getDescription());
         return newExchange;
     };

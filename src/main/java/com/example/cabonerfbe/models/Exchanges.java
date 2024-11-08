@@ -32,8 +32,8 @@ public class Exchanges extends Base{
     private boolean input;
 
     @ManyToOne
-    @JoinColumn(name = "substances_compartments_id")
-    private EmissionSubstance substancesCompartments;
+    @JoinColumn(name = "emission_substance_id")
+    private EmissionSubstance emissionSubstance;
 
     public UUID getProcessId() {
         return process != null ? process.getId() : null;

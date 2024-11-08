@@ -51,7 +51,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
     @Override
     public ProcessDto createElementaryExchanges(CreateElementaryRequest request) {
-        EmissionSubstance substancesCompartments = findSubstancesCompartments(request.getSubstanceCompartmentId());
+        EmissionSubstance substancesCompartments = findSubstancesCompartments(request.getEmissionSubstanceId());
         Process process = findProcess(request.getProcessId());
 
         if (exchangesRepository.findElementary(process.getId(), substancesCompartments.getId()).isPresent()) {
@@ -148,7 +148,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         exchange.setValue(value);
         exchange.setInput(isInput);
         exchange.setProcess(process);
-        exchange.setSubstancesCompartments(substancesCompartments);
+        exchange.setEmissionSubstance(substancesCompartments);
         return exchange;
     }
 
