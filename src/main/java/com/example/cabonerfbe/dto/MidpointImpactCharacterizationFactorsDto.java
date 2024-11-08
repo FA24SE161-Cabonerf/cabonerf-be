@@ -12,7 +12,7 @@ import java.util.UUID;
 public class MidpointImpactCharacterizationFactorsDto {
     private UUID id;
     private ImpactMethodCategoryDto impactMethodCategory;
-    private SubstanceDto emissionSubstances;
+    private SubstanceDto substance;
     private String scientificValue;
     private double decimalValue;
     private UnitDto unit;

@@ -9,5 +9,4 @@ import org.mapstruct.factory.Mappers;
 public interface EmissionSubstanceConverter {
     EmissionSubstanceConverter INSTANCE = Mappers.getMapper(EmissionSubstanceConverter.class);
 
-    SubstanceDto fromEmissionSubstancesToEmissionSubstancesDto(Substance emissionSubstances);
 }

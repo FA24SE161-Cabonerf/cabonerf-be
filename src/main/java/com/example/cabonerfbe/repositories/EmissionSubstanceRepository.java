@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface SubstancesCompartmentsRepository extends JpaRepository<EmissionSubstance, UUID> {
+public interface EmissionSubstanceRepository extends JpaRepository<EmissionSubstance, UUID> {
 
     @Query("SELECT sc FROM EmissionSubstance sc WHERE sc.status = true")
     List<EmissionSubstance> findAll();
