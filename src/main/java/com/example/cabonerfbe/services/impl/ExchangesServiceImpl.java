@@ -41,7 +41,7 @@ public class ExchangesServiceImpl implements ExchangesService {
     @Autowired
     private EmissionSubstanceRepository scRepository;
     @Autowired
-    private SubstancesCompartmentsConverter scConverter;
+    private EmissionSubstanceConverter scConverter;
     @Autowired
     private LifeCycleImpactAssessmentMethodRepository methodRepository;
     @Autowired
@@ -51,7 +51,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
     @Override
     public ProcessDto createElementaryExchanges(CreateElementaryRequest request) {
-        EmissionSubstance emissionSubstance = findSubstancesCompartments(request.getEmissionSubstanceId());
+        EmissionSubstance emissionSubstance = findEmissionSubstance(request.getEmissionSubstanceId());
         Process process = findProcess(request.getProcessId());
 
         if (exchangesRepository.findElementary(process.getId(), emissionSubstance.getId()).isPresent()) {
@@ -85,9 +85,9 @@ public class ExchangesServiceImpl implements ExchangesService {
                                            UUID emissionCompartmentId, UUID impactCategoryId,boolean input) {
         validateMethod(methodId);
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
-        Page<EmissionSubstance> scPage = fetchSubstancesCompartments(keyWord, emissionCompartmentId, pageable, input);
+        Page<EmissionSubstance> scPage = fetchEmissionSubstance(keyWord, emissionCompartmentId, pageable, input);
 
-        List<SearchSubstancesCompartmentsDto> response = scPage.getContent().parallelStream()
+        List<SearchEmissionSubstanceDto> response = scPage.getContent().parallelStream()
                 .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
                 .collect(Collectors.toList());
 
@@ -112,7 +112,7 @@ public class ExchangesServiceImpl implements ExchangesService {
     }
 
     @Override
-    public List<SubstancesCompartmentsDto> getAllAdmin(String keyword) {
+    public List<EmissionSubstanceDto> getAllAdmin(String keyword) {
 
         List<EmissionSubstance> list = new ArrayList<>();
         if(keyword == null){
@@ -125,7 +125,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         return list.stream().map(scConverter::modelToDto).collect(Collectors.toList());
     }
 
-    private EmissionSubstance findSubstancesCompartments(UUID id) {
+    private EmissionSubstance findEmissionSubstance(UUID id) {
         return scRepository.findById(id)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ELEMENTARY_FLOW_FOUND));
     }
@@ -159,7 +159,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         return dto;
     }
 
-    private Page<EmissionSubstance> fetchSubstancesCompartments(String keyWord, UUID emissionCompartmentId, Pageable pageable, boolean input) {
+    private Page<EmissionSubstance> fetchEmissionSubstance(String keyWord, UUID emissionCompartmentId, Pageable pageable, boolean input) {
         int condition = (keyWord == null ? 0 : 1) + (emissionCompartmentId == null ? 0 : 2);
 
         return switch (condition) {
@@ -183,9 +183,9 @@ public class ExchangesServiceImpl implements ExchangesService {
     }
 
 
-    private SearchSubstancesCompartmentsDto buildSearchElementaryDto(EmissionSubstance sc, UUID impactCategoryId, UUID methodId) {
+    private SearchEmissionSubstanceDto buildSearchElementaryDto(EmissionSubstance sc, UUID impactCategoryId, UUID methodId) {
 
-        SearchSubstancesCompartmentsDto scDto = scConverter.ToDto(sc);
+        SearchEmissionSubstanceDto scDto = scConverter.ToDto(sc);
 
         List<MidpointImpactCharacterizationFactors> factors = impactCategoryId == null
                 ? factorRepository.findBySubstanceCompartmentAndMethodWithJoinFetch(sc.getId(), methodId)
