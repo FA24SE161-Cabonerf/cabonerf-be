@@ -1,6 +1,7 @@
 package com.example.cabonerfbe.response;
 
 import com.example.cabonerfbe.dto.ConnectorDto;
+import com.example.cabonerfbe.dto.ProcessDto;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,4 +16,5 @@ import lombok.experimental.SuperBuilder;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CreateConnectorResponse {
     private ConnectorDto connector;
+    private ProcessDto process;
 }
