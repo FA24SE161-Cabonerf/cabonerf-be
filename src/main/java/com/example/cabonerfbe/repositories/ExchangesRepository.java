@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Repository
 public interface ExchangesRepository extends JpaRepository<Exchanges, UUID> {
-    @Query("SELECT e FROM Exchanges e WHERE e.process.id = ?1")
+    @Query("SELECT e FROM Exchanges e WHERE e.process.id = ?1 AND e.status = true")
     List<Exchanges> findAllByProcess(UUID processId);
     @Query("SELECT e FROM Exchanges e WHERE e.process.id = ?1 AND e.input = false AND e.exchangesType.name like 'Product' AND e.status = true")
     Optional<Exchanges> findProductOut(UUID processId);

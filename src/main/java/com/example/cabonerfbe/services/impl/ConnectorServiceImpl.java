@@ -4,6 +4,7 @@ import com.example.cabonerfbe.converter.ConnectorConverter;
 import com.example.cabonerfbe.converter.ExchangesConverter;
 import com.example.cabonerfbe.converter.ProcessConverter;
 import com.example.cabonerfbe.dto.ConnectorDto;
+import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -44,6 +45,8 @@ public class ConnectorServiceImpl implements ConnectorService {
     public static final boolean OUTPUT = false;
     @Autowired
     private ProcessConverter processConverter;
+    @Autowired
+    private ProcessServiceImpl processServiceImpl;
 
     @Override
     public CreateConnectorResponse createConnector(CreateConnectorRequest request) {
@@ -97,11 +100,18 @@ public class ConnectorServiceImpl implements ConnectorService {
                 throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_AND_PROCESS_DIFFERENT);
             }
 
+
             String startExchangeUnitGroup = startExchange.getUnit().getUnitGroup().getName();
             String endExchangeUnitGroup = endExchange.getUnit().getUnitGroup().getName();
+            String startExchangeName = startExchange.getName();
+            String endExchangeName = endExchange.getName();
 
             if (!startExchangeUnitGroup.equals(endExchangeUnitGroup)) {
                 throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_UNIT_GROUP_DIFFERENT);
+            }
+
+            if (!startExchangeName.equals(endExchangeName)) {
+                throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_NAME_DIFFERENT);
             }
 
             connectorDto = convertConnector(startExchange, endExchange, startProcess, endProcess);
@@ -165,13 +175,17 @@ public class ConnectorServiceImpl implements ConnectorService {
             isEndProcessFlag = false;
         }
 
+        ProcessDto finalProcess = new ProcessDto();
+        if (isEndProcessFlag) {
+            finalProcess = processServiceImpl.getProcessById(endProcessId);
+        } else {
+            finalProcess = processServiceImpl.getProcessById(startProcessId);
+        }
+
         CreateConnectorResponse response = new CreateConnectorResponse();
         response.setConnector(connectorDto);
-        if (isEndProcessFlag) {
-            response.setProcess(processConverter.fromProcessToProcessDto(endProcess));
-        } else {
-            response.setProcess(processConverter.fromProcessToProcessDto(startProcess));
-        }
+        response.setProcess(finalProcess);
+
         return response;
     }
 

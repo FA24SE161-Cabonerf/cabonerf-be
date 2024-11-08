@@ -82,5 +82,6 @@ public class MessageConstants {
     public static final String INVALID_EXCHANGE = "Invalid exchange id or type";
     public static final String EXCHANGE_UNIT_GROUP_DIFFERENT = "Unit group of the 2 exchanges must be the same";
     public static final String EXCHANGE_AND_PROCESS_DIFFERENT = "Exchange does not belong to given process";
+    public static final String EXCHANGE_NAME_DIFFERENT = "Name of the 2 exchanges must be the same";
 
 }
