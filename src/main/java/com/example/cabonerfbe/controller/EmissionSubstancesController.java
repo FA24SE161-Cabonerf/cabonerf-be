@@ -28,12 +28,21 @@ public class EmissionSubstancesController {
             @RequestParam(defaultValue = "1") int pageCurrent,
             @RequestParam(defaultValue = "5") int pageSize,
             @RequestParam(required = true) UUID methodId,
-            @RequestParam(required = false) String keyWord,
+            @RequestParam(required = true) boolean input,
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) UUID emissionCompartmentId,
             @RequestParam(required = false) UUID impactCategoryId
             ) {
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get emission substance success",service.search(pageCurrent, pageSize, keyWord, methodId, emissionCompartmentId, impactCategoryId))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get emission substance success",service.search(pageCurrent, pageSize, keyword, methodId, emissionCompartmentId, impactCategoryId,input))
         );
     }
+
+    @GetMapping(API_PARAMS.ADMIN)
+    public ResponseEntity<ResponseObject> getAllEmissionSubstancesInAdmin( @RequestParam(required = false) String keyword){
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get emission substance success", service.getAllAdmin(keyword))
+        );
+    }
+
 }

@@ -22,6 +22,9 @@ public interface UnitRepository extends JpaRepository<Unit, UUID> {
     @Query("SELECT u FROM Unit u WHERE u.name like ?1 ")
     Unit findByNameUnit(String name);
 
+    @Query("SELECT u FROM Unit u WHERE u.name like ?1 AND u.unitGroup.unitGroupType like 'Normal'")
+    Unit findByUnitGroup(String name);
+
     List<Unit> findAllByStatus(boolean statusTrue);
 
     List<Unit> findAllByStatusAndUnitGroupId(boolean status, UUID unitGroupId);

@@ -1,39 +1,40 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.MidpointImpactCharacterizationFactorConverter;
-import com.example.cabonerfbe.dto.MidpointImpactCharacterizationFactorsDto;
-import com.example.cabonerfbe.dto.PageList;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.PaginationRequest;
-import com.example.cabonerfbe.response.ImportEmissionSubstanceResponse;
 import com.example.cabonerfbe.response.ImportFactorResponse;
 import com.example.cabonerfbe.response.MidpointSubstanceFactorsResponse;
 import com.example.cabonerfbe.services.ExcelService;
 import com.example.cabonerfbe.services.MidpointService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 @Service
 public class ExcelServiceImpl implements ExcelService {
 
@@ -63,118 +64,145 @@ public class ExcelServiceImpl implements ExcelService {
     @Override
     public ImportFactorResponse readExcel(MultipartFile file, String name) throws IOException {
         List<MidpointSubstanceFactorsResponse> responses = new ArrayList<>();
-        List<MidpointSubstanceFactorsResponse> newRecords = new ArrayList<>(); // Danh sách cho các bản ghi mới
+        List<MidpointSubstanceFactorsResponse> newRecords = new ArrayList<>();
         try {
             Workbook workbook = WorkbookFactory.create(file.getInputStream());
+            Sheet sheet = workbook.getSheetAt(0); // Lấy sheet đầu tiên
+            ImpactCategory category = impactCategoryRepository.findByName(workbook.getSheetName(0).toUpperCase());
+
             List<MidpointImpactCharacterizationFactors> list = new ArrayList<>();
-            for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-                Sheet sheet = workbook.getSheetAt(i);
-                ImpactCategory category = impactCategoryRepository.findByName(workbook.getSheetName(i).toUpperCase());
-                for (Row row : sheet) {
-                    if (row.getRowNum() < 5) {
-                        continue; // Skip header
+            for (Row row : sheet) {
+                if (row.getRowNum() < 5) {
+                    continue; // Bỏ qua header
+                }
+                if(shouldSkipRow(row)){
+                    continue;
+                }
+                try {
+                    String cas = checkCas(row.getCell(0));
+                    String substanceName = row.getCell(1).getStringCellValue();
+                    String chemicalName = row.getCell(2).getStringCellValue();
+                    String molecularFormula = row.getCell(3) != null ? row.getCell(3).getStringCellValue() : null;
+                    String alternativeFormula = row.getCell(4) != null ? row.getCell(4).getStringCellValue() : null;
+                    String compartmentName = row.getCell(5).getStringCellValue();
+                    Double individualist = getDoubleValueFromCell(row.getCell(6));
+                    Double hierarchist = getDoubleValueFromCell(row.getCell(7));
+                    Double egalitarian = getDoubleValueFromCell(row.getCell(8));
+
+                    if (individualist == null) {
+                        errorContent.add("0 - " + row.getRowNum() + " - 6 - Data invalid");
                     }
-                    try {
-                        String cas = row.getCell(0).getStringCellValue();
-                        String substanceName = row.getCell(1).getStringCellValue();
-                        String chemicalName = row.getCell(2).getStringCellValue();
-                        String molecularFormula = row.getCell(3) != null ? row.getCell(3).getStringCellValue() : null;
-                        String alternativeFormula = row.getCell(4) != null ? row.getCell(4).getStringCellValue() : null;
-                        String compartmentName = row.getCell(5).getStringCellValue();
-                        Double individualist = getDoubleValueFromCell(row.getCell(6));
-                        Double hierarchist = getDoubleValueFromCell(row.getCell(7));
-                        Double egalitarian = getDoubleValueFromCell(row.getCell(8));
+                    if (hierarchist == null) {
+                        errorContent.add("0 - " + row.getRowNum() + " - 7 - Data invalid");
+                    }
+                    if (egalitarian == null) {
+                        errorContent.add("0 - " + row.getRowNum() + " - 8 - Data invalid");
+                    }
 
-                        // Kiểm tra từng giá trị null và ghi log lỗi
-                        if (individualist == null) {
-                            errorContent.add(i + " - " + row.getRowNum() + " - 6 - Data invalid");
-                        }
-                        if (hierarchist == null) {
-                            errorContent.add(i + " - " + row.getRowNum() + " - 7 - Data invalid");
-                        }
-                        if (egalitarian == null) {
-                            errorContent.add(i + " - " + row.getRowNum() + " - 8 - Data invalid");
-                        }
+                    // Tạo hoặc tìm emission substance
+                    EmissionSubstances emissionSubstance = emissionSubstancesRepository.findByName(substanceName)
+                            .orElseGet(() -> {
+                                EmissionSubstances newSubstance = new EmissionSubstances();
+                                newSubstance.setName(substanceName);
+                                newSubstance.setChemicalName(chemicalName);
+                                newSubstance.setMolecularFormula(molecularFormula);
+                                newSubstance.setAlternativeFormula(alternativeFormula);
+                                newSubstance.setCas(!cas.equals("0.0") ? cas : "-");
+                                return emissionSubstancesRepository.save(newSubstance);
+                            });
 
-                        // Create or find emission substance
-                        EmissionSubstances emissionSubstance = emissionSubstancesRepository.findByName(substanceName)
-                                .orElseGet(() -> {
-                                    EmissionSubstances newSubstance = new EmissionSubstances();
-                                    newSubstance.setName(substanceName);
-                                    newSubstance.setChemicalName(chemicalName);
-                                    newSubstance.setMolecularFormula(molecularFormula);
-                                    newSubstance.setAlternativeFormula(alternativeFormula);
-                                    return emissionSubstancesRepository.save(newSubstance);
-                                });
-
-                        // Find emission compartment
-                        EmissionCompartment emissionCompartment = emissionCompartmentRepository.findByName(compartmentName)
+                    EmissionCompartment emissionCompartment = null;
+                    if (!compartmentName.isBlank() || !compartmentName.isEmpty()) {
+                        emissionCompartment = emissionCompartmentRepository.findByName(compartmentName)
                                 .orElseThrow(() -> new IllegalArgumentException("Emission compartment '" + compartmentName + "' not found"));
-
-                        // Create or find substance compartment
-                        SubstancesCompartments substanceCompartment = substancesCompartmentsRepository.checkExist(emissionSubstance.getId(), emissionCompartment.getId())
-                                .orElseGet(() -> {
-                                    SubstancesCompartments newSubstancesCompartments = new SubstancesCompartments();
-                                    newSubstancesCompartments.setEmissionSubstance(emissionSubstance);
-                                    newSubstancesCompartments.setEmissionCompartment(emissionCompartment);
-                                    newSubstancesCompartments.setUnit(findAppropriateUnit(category));
-                                    return substancesCompartmentsRepository.save(newSubstancesCompartments);
-                                });
-
-
-
-                        ImpactMethodCategory _individualist = getImpactMethodCategory("Individualist", category.getId(), name);
-                        ImpactMethodCategory _hierarchist = getImpactMethodCategory("Hierarchist", category.getId(), name);
-                        ImpactMethodCategory _egalitarian = getImpactMethodCategory("Egalitarian", category.getId(), name);
-
-
-                        MidpointSubstanceFactorsResponse response = new MidpointSubstanceFactorsResponse(
-                                substanceCompartment.getId(), cas, emissionSubstance.getName(),
-                                emissionSubstance.getChemicalName(), emissionCompartment.getName(),
-                                emissionSubstance.getMolecularFormula(), emissionSubstance.getAlternativeFormula(),
-                                null, null, null
-                        );
-
-                        // Tạo hoặc cập nhật giá trị cho từng phương pháp đánh giá
-                        if (isNumeric(row.getCell(6).toString())) {
-                            if (createOrUpdateFactor(list, substanceCompartment, _individualist, cas, individualist, i, row.getRowNum(), 6)) {
-                                response.setIndividualist(individualist);
-                                newRecords.add(response); // Chỉ thêm vào nếu là bản ghi mới
-                            }
-                        }
-                        if (isNumeric(row.getCell(7).toString())) {
-                            if (createOrUpdateFactor(list, substanceCompartment, _hierarchist, cas, hierarchist, i, row.getRowNum(), 7)) {
-                                response.setHierarchist(hierarchist);
-                                newRecords.add(response);
-                            }
-                        }
-                        if (isNumeric(row.getCell(8).toString())) {
-                            if (createOrUpdateFactor(list, substanceCompartment, _egalitarian, cas, egalitarian, i, row.getRowNum(), 8)) {
-                                response.setEgalitarian(egalitarian);
-                                newRecords.add(response);
-                            }
-                        }
-                    } catch (Exception rowException) {
-                        int columns = getColumnWithError(rowException, row);
-                        errorContent.add(i + " - " + row.getRowNum() + " - " + (columns - 1) + " - Data invalid");
                     }
+
+                    EmissionCompartment finalEmissionCompartment = emissionCompartment;
+                    SubstancesCompartments substanceCompartment = new SubstancesCompartments();
+
+                    if (!compartmentName.isBlank() || !compartmentName.isEmpty()) {
+                        substanceCompartment = substancesCompartmentsRepository.checkExistBySubstanceAndCompartment(
+                                emissionSubstance.getId(),
+                                emissionCompartment.getId()
+                        ).orElseGet(() -> {
+                            SubstancesCompartments newSubstancesCompartments = new SubstancesCompartments();
+                            newSubstancesCompartments.setEmissionSubstance(emissionSubstance);
+                            newSubstancesCompartments.setEmissionCompartment(finalEmissionCompartment);
+                            newSubstancesCompartments.setUnit(findAppropriateUnit(category));
+                            newSubstancesCompartments.setIsInput(compartmentName.equals("Natural Resource"));
+                            return substancesCompartmentsRepository.save(newSubstancesCompartments);
+                        });
+                    } else {
+                        errorContent.add("0 - " + row.getRowNum() + " - 5 - Compartment is null");
+                        continue;
+                    }
+
+                    ImpactMethodCategory _individualist = getImpactMethodCategory("Individualist", category.getId(), name);
+                    ImpactMethodCategory _hierarchist = getImpactMethodCategory("Hierarchist", category.getId(), name);
+                    ImpactMethodCategory _egalitarian = getImpactMethodCategory("Egalitarian", category.getId(), name);
+
+                    MidpointSubstanceFactorsResponse response = new MidpointSubstanceFactorsResponse(
+                            substanceCompartment.getId(),
+                            !cas.equals("0.0") ? cas : "-",
+                            emissionSubstance.getName(),
+                            emissionSubstance.getChemicalName(),
+                            emissionCompartment.getName(),
+                            emissionSubstance.getMolecularFormula(),
+                            emissionSubstance.getAlternativeFormula(),
+                            null,
+                            null,
+                            null
+                    );
+
+                    if (isNumeric(row.getCell(6).toString())) {
+                        if (createOrUpdateFactor(list, substanceCompartment, _individualist, cas, individualist, 0, row.getRowNum(), 6)) {
+                            response.setIndividualist(individualist);
+                        }
+                    }
+                    if (isNumeric(row.getCell(7).toString())) {
+                        if (createOrUpdateFactor(list, substanceCompartment, _hierarchist, cas, hierarchist, 0, row.getRowNum(), 7)) {
+                            response.setHierarchist(hierarchist);
+                        }
+                    }
+                    if (isNumeric(row.getCell(8).toString())) {
+                        if (createOrUpdateFactor(list, substanceCompartment, _egalitarian, cas, egalitarian, 0, row.getRowNum(), 8)) {
+                            response.setEgalitarian(egalitarian);
+                        }
+                    }
+                    if(response.getIndividualist() != null && response.getHierarchist() != null && response.getEgalitarian() != null){
+                        newRecords.add(response);
+                    }
+                } catch (Exception rowException) {
+                    int columns = getColumnWithError(rowException, row);
+                    errorContent.add("0 - " + row.getRowNum() + " - " + (columns - 1) + " - Data invalid");
                 }
             }
             repository.saveAll(list);
             workbook.close();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        } catch (Exception ignored) {
         }
 
         PaginationRequest request = new PaginationRequest();
         request.setCurrentPage(1);
         request.setPageSize(20);
-        String filePath = logError(file, errorContent);
-
+        String filePath = null;
+        if (!errorContent.isEmpty()) {
+            filePath = logError(file, errorContent);
+        }
         return ImportFactorResponse.builder()
                 .importData(newRecords)
                 .filePath(filePath)
                 .build();
+    }
+
+    private String checkCas(Cell cell){
+        if (cell.getCellType() == CellType.STRING) {
+            return cell.getStringCellValue(); // Lấy giá trị chuỗi
+        } else if (cell.getCellType() == CellType.NUMERIC) {
+            return String.valueOf(cell.getNumericCellValue()); // Chuyển số thành chuỗi
+        } else {
+            return  "-"; // Xử lý khi ô trống hoặc kiểu khác nếu cần
+        }
     }
 
     @Override
@@ -186,9 +214,7 @@ public class ExcelServiceImpl implements ExcelService {
             Path filePath = Paths.get(folderPath, fileName);
             Resource resource = new UrlResource(filePath.toUri());
 
-            // Kiểm tra xem file có tồn tại và có thể đọc được không
             if (resource.exists() && resource.isReadable()) {
-                // Đặt headers để tải xuống file
                 HttpHeaders headers = new HttpHeaders();
                 headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
 
@@ -260,7 +286,6 @@ public class ExcelServiceImpl implements ExcelService {
                             factor.setSubstancesCompartments(substanceCompartment);
                             factor.setDecimalValue(value);
                             factor.setScientificValue(String.format("%.2e", value));
-                            factor.setCas(cas);
                             factor.setImpactMethodCategory(methodCategory);
 
                             // Add to the list and update isNewRecord
@@ -272,12 +297,10 @@ public class ExcelServiceImpl implements ExcelService {
     }
 
 
-
-
     private Unit findAppropriateUnit(ImpactCategory category) {
         String unitName = category.getMidpointImpactCategory().getUnit().getName().split(" ")[0];
 
-        return unitRepository.findByNameUnit(unitName);
+        return unitRepository.findByUnitGroup(unitName);
     }
 
     private int getColumnWithError(Exception e, Row row) {
@@ -323,7 +346,14 @@ public class ExcelServiceImpl implements ExcelService {
                     ? originalFileName.substring(0, originalFileName.lastIndexOf('.'))
                     : originalFileName;
             // Đường dẫn file đầu ra
-            String outputFilePath = fileNameWithoutExtension + "_errorLog.xlsx";
+
+            LocalTime currentDate = LocalTime.now();
+
+            // Định dạng ngày theo định dạng dd_MM_yyyy
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH_mm_ss");
+            String formattedDate = currentDate.format(formatter);
+
+            String outputFilePath = fileNameWithoutExtension + "_error_log_" + formattedDate +".xlsx";
 
             // Ghi lại tệp Excel vào đường dẫn chỉ định
             try (FileOutputStream outputStream = new FileOutputStream(folderPath + "/" + outputFilePath)) {
@@ -334,5 +364,35 @@ public class ExcelServiceImpl implements ExcelService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private boolean shouldSkipRow(Row row) {
+        if (row == null || row.getRowNum() < 5) {
+            return true;
+        }
+
+        // Kiểm tra xem row có dữ liệu không
+        boolean hasData = false;
+        for (int i = 0; i <= 8; i++) {
+            Cell cell = row.getCell(i);
+            if (cell != null && !isCellEmpty(cell)) {
+                hasData = true;
+                break;
+            }
+        }
+        return !hasData;
+    }
+
+    private boolean isCellEmpty(Cell cell) {
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue().trim().isEmpty();
+            case NUMERIC:
+                return false;
+            case BLANK:
+                return true;
+            default:
+                return true;
+        }
     }
 }

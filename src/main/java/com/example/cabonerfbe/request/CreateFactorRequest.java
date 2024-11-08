@@ -20,9 +20,13 @@ import java.util.UUID;
 public class CreateFactorRequest {
     @NotEmpty(message = "Name is required.")
     private String name;
+    @NotNull(message = "Chemical Name is required")
     private String chemicalName;
+    @NotNull(message = "Molecular formula is required")
     private String molecularFormula;
+    @NotNull(message = "Alternative formula is required")
     private String alternativeFormula;
+    @NotNull(message = "Cas is required")
     private String cas;
     @NotNull(message = "Value is required.")
     @Min(value = 0,message = "Value must be greater than or equal to zero")
@@ -33,6 +37,7 @@ public class CreateFactorRequest {
     private UUID methodId;
     @NotNull(message = "Impact category is required.")
     private UUID categoryId;
-    @NotNull(message = "Unit group is required.")
-    private UUID unitGroupId;
+    @NotNull(message = "Unit is required.")
+    private UUID unitId;
+    private UUID substanceCompartmentId;
 }

@@ -18,10 +18,12 @@ public class SubstancesCompartments extends Base{
     private EmissionSubstances emissionSubstance;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "emission_compartment_id", nullable = false)
+    @JoinColumn(name = "emission_compartment_id", nullable = true)
     private EmissionCompartment emissionCompartment;
 
     @ManyToOne
     @JoinColumn(name = "unit_id")
     private Unit unit;
+
+    private Boolean isInput;
 }

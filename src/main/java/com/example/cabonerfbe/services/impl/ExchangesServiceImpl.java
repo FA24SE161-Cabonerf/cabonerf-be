@@ -1,25 +1,18 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.*;
-import com.example.cabonerfbe.dto.ProcessDto;
-import com.example.cabonerfbe.dto.SearchElementaryDto;
-import com.example.cabonerfbe.enums.Constants;
-import com.example.cabonerfbe.enums.MessageConstants;
+import com.example.cabonerfbe.dto.*;
+import com.example.cabonerfbe.enums.*;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.repositories.*;
-import com.example.cabonerfbe.request.CreateElementaryRequest;
-import com.example.cabonerfbe.request.CreateProductRequest;
-import com.example.cabonerfbe.response.CreateElementaryResponse;
-import com.example.cabonerfbe.response.SearchElementaryResponse;
-import com.example.cabonerfbe.services.ExchangesService;
+import com.example.cabonerfbe.request.*;
+import com.example.cabonerfbe.response.*;
+import com.example.cabonerfbe.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,158 +21,181 @@ import java.util.stream.Collectors;
 public class ExchangesServiceImpl implements ExchangesService {
 
     @Autowired
-    ProcessRepository processRepository;
+    private ProcessRepository processRepository;
     @Autowired
-    ExchangesRepository exchangesRepository;
+    private ExchangesRepository exchangesRepository;
     @Autowired
-    EmissionCompartmentRepository ecRepository;
+    private EmissionCompartmentRepository ecRepository;
     @Autowired
-    ExchangesTypeRepository exchangesTypeRepository;
+    private ExchangesTypeRepository exchangesTypeRepository;
     @Autowired
-    MidpointImpactCharacterizationFactorsRepository factorRepository;
+    private MidpointImpactCharacterizationFactorsRepository factorRepository;
     @Autowired
-    MidpointImpactCharacterizationFactorConverter factorConverter;
+    private MidpointImpactCharacterizationFactorConverter factorConverter;
     @Autowired
-    UnitRepository unitRepository;
+    private UnitRepository unitRepository;
     @Autowired
-    ProcessConverter processConverter;
+    private ProcessConverter processConverter;
     @Autowired
-    ExchangesConverter exchangesConverter;
+    private ExchangesConverter exchangesConverter;
     @Autowired
-    SubstancesCompartmentsRepository scRepository;
+    private SubstancesCompartmentsRepository scRepository;
     @Autowired
-    SubstancesCompartmentsConverter scConverter;
+    private SubstancesCompartmentsConverter scConverter;
     @Autowired
-    LifeCycleImpactAssessmentMethodRepository methodRepository;
+    private LifeCycleImpactAssessmentMethodRepository methodRepository;
     @Autowired
-    EmissionSubstancesRepository esRepository;
+    private ProcessImpactValueRepository pivRepository;
     @Autowired
-    ProcessImpactValueRepository pivRepository;
-    @Autowired
-    ProcessImpactValueConverter pivConverter;
+    private ProcessImpactValueConverter pivConverter;
 
     @Override
     public ProcessDto createElementaryExchanges(CreateElementaryRequest request) {
-        // check process, substanceCompartmentId
-        SubstancesCompartments substancesCompartments = scRepository.findById(request.getSubstanceCompartmentId()).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_ELEMENTARY_FLOW_FOUND)
-        );
-        Process process = processRepository.findByProcessId(request.getProcessId()).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
-        );
+        SubstancesCompartments substancesCompartments = findSubstancesCompartments(request.getSubstanceCompartmentId());
+        Process process = findProcess(request.getProcessId());
 
-        Optional<Exchanges> e = exchangesRepository.findElementary(process.getId(), substancesCompartments.getId());
-
-        if (e.isPresent()) {
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Elementary already exist");
+        if (exchangesRepository.findElementary(process.getId(), substancesCompartments.getId()).isPresent()) {
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Elementary already exists");
         }
 
-        Exchanges newExchange = new Exchanges();
-        newExchange.setName(substancesCompartments.getEmissionSubstance().getName());
-        newExchange.setExchangesType(exchangesTypeRepository.findByName("Elementary"));
-        newExchange.setValue(0);
-        newExchange.setUnit(substancesCompartments.getUnit());
-        newExchange.setInput(request.isInput());
-        newExchange.setProcess(process);
-        newExchange.setSubstancesCompartments(substancesCompartments);
+        Exchanges newExchange = createNewExchange(substancesCompartments, request.isInput(), process, "Elementary", 0);
         exchangesRepository.save(newExchange);
 
-        ProcessDto dto = processConverter.fromProcessToProcessDto(process);
-
-        dto.setExchanges(exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(process.getId())));
-        dto.setImpacts(pivConverter.fromProcessImpactValueToProcessImpactValueDto(pivRepository.findByProcessId(process.getId())));
-        return dto;
+        return buildProcessDtoWithExchangesAndImpacts(process);
     }
 
     @Override
     public ProcessDto createProductExchanges(CreateProductRequest request) {
-        Process p = processRepository.findById(request.getProcessId())
-                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Process not exist"));
+        Process process = findProcess(request.getProcessId());
 
-        if (!request.isInput()) {
-            Optional<Exchanges> exchanges = exchangesRepository.findProductOut(p.getId());
-            if (exchanges.isPresent()) {
-                throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Already output product in process");
-            }
+        if (!request.isInput() && exchangesRepository.findProductOut(process.getId()).isPresent()) {
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Output product already exists in process");
         }
 
-        Exchanges e = new Exchanges();
-        e.setValue(0);
-        e.setName(request.getName());
-        e.setInput(request.isInput());
-        e.setExchangesType(exchangesTypeRepository.findByName("Product"));
-        e.setUnit(unitRepository.findByNameUnit("kg"));
-        e.setProcess(p);
+        Exchanges productExchange = createNewExchange(null, request.isInput(), process, "Product", 0);
+        productExchange.setName(request.getName());
+        productExchange.setUnit(unitRepository.findByNameUnit("kg"));
+        exchangesRepository.save(productExchange);
 
-        exchangesRepository.save(e);
-        ProcessDto dto = processConverter.fromProcessToProcessDto(p);
-
-        dto.setExchanges(exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(p.getId())));
-        dto.setImpacts(pivConverter.fromProcessImpactValueToProcessImpactValueDto(pivRepository.findByProcessId(p.getId())));
-        return dto;
+        return buildProcessDtoWithExchangesAndImpacts(process);
     }
 
     @Override
-    @Transactional(readOnly = true) // Add this to optimize read operations
     public SearchElementaryResponse search(int pageCurrent, int pageSize, String keyWord, UUID methodId,
-                                           UUID emissionCompartmentId, UUID impactCategoryId) {
-        // Validate method existence first
-        LifeCycleImpactAssessmentMethod method = methodRepository.findByIdAndStatus(methodId, true)
-                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Method not exist"));
-
-        // Get total elements and create pageable
+                                           UUID emissionCompartmentId, UUID impactCategoryId,boolean input) {
+        validateMethod(methodId);
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
-        Page<SubstancesCompartments> scPage;
+        Page<SubstancesCompartments> scPage = fetchSubstancesCompartments(keyWord, emissionCompartmentId, pageable, input);
 
-        // Optimize queries using JOIN FETCH to reduce N+1 problems
-        if (keyWord == null && emissionCompartmentId == null) {
-            scPage = scRepository.findAllWithJoinFetch(pageable);
-        } else if (keyWord != null && emissionCompartmentId == null) {
-            scPage = scRepository.searchByKeywordWithJoinFetch(keyWord, pageable);
-        } else if (keyWord == null && emissionCompartmentId != null) {
-            EmissionCompartment ec = ecRepository.findByIdAndStatus(emissionCompartmentId, true)
-                    .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Compartment not exist"));
-            scPage = scRepository.searchByCompartmentWithJoinFetch(ec.getId(), pageable);
-        } else {
-            EmissionCompartment ec = ecRepository.findByIdAndStatus(emissionCompartmentId, true)
-                    .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Compartment not exist"));
-            scPage = scRepository.searchBySubstanceAndCompartmentWithJoinFetch(keyWord, ec.getId(), pageable);
-        }
+        List<SearchSubstancesCompartmentsDto> response = scPage.getContent().parallelStream()
+                .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
+                .collect(Collectors.toList());
 
         int totalPage = scPage.getTotalPages();
+               // Kiểm tra pageCurrent với totalPage và trả về danh sách rỗng nếu cần
         if (pageCurrent > totalPage) {
-            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,
-                    Map.of("currentPage", MessageConstants.CURRENT_PAGE_EXCEED_TOTAL_PAGES));
+            return SearchElementaryResponse.builder()
+                    .totalPage(0)
+                    .pageSize(pageSize)
+                    .pageCurrent(1)
+                    .list(Collections.emptyList())
+                    .build();
         }
 
-        // Process results in batch using streams
-        List<SearchElementaryDto> list = scPage.getContent()
-                .parallelStream() // Use parallel stream for better performance with large datasets
-                .map(sc -> {
-                    SearchElementaryDto dto = new SearchElementaryDto();
-                    dto.setSubstancesCompartments(scConverter.ToDto(sc));
-                    if (impactCategoryId == null) {
-                        List<MidpointImpactCharacterizationFactors> factors =
-                                factorRepository.findBySubstanceCompartmentAndMethodWithJoinFetch(sc.getId(), methodId);
-                        dto.setFactors(factors.stream()
-                                .map(factorConverter::fromMidpointToFactor)
-                                .collect(Collectors.toList()));
-                    } else {
-                        List<MidpointImpactCharacterizationFactors> factors =
-                                factorRepository.findBySubstanceCompartmentAndMethodAndCategoryWithJoinFetch(sc.getId(), methodId, impactCategoryId);
-                        dto.setFactors(factors.stream()
-                                .map(factorConverter::fromMidpointToFactor)
-                                .collect(Collectors.toList()));
-                    }
-                    return dto;
-                })
-                .collect(Collectors.toList());
 
         return SearchElementaryResponse.builder()
                 .totalPage(totalPage)
                 .pageSize(pageSize)
                 .pageCurrent(pageCurrent)
-                .list(list)
+                .list(response)
                 .build();
     }
+
+    @Override
+    public List<SubstancesCompartmentsDto> getAllAdmin(String keyword) {
+
+        List<SubstancesCompartments> list = new ArrayList<>();
+        if(keyword == null){
+            list = scRepository.findAll();
+        }
+        else{
+            list = scRepository.findByKeyword(keyword);
+        }
+
+        return list.stream().map(scConverter::modelToDto).collect(Collectors.toList());
+    }
+
+    private SubstancesCompartments findSubstancesCompartments(UUID id) {
+        return scRepository.findById(id)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ELEMENTARY_FLOW_FOUND));
+    }
+
+    private Process findProcess(UUID id) {
+        return processRepository.findByProcessId(id)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND));
+    }
+
+    private void validateMethod(UUID methodId) {
+        methodRepository.findByIdAndStatus(methodId, true)
+                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Method not exist"));
+    }
+
+    private Exchanges createNewExchange(SubstancesCompartments substancesCompartments, boolean isInput,
+                                        Process process, String exchangeTypeName, double value) {
+        Exchanges exchange = new Exchanges();
+        exchange.setName(substancesCompartments != null ? substancesCompartments.getEmissionSubstance().getName() : null);
+        exchange.setExchangesType(exchangesTypeRepository.findByName(exchangeTypeName));
+        exchange.setValue(value);
+        exchange.setInput(isInput);
+        exchange.setProcess(process);
+        exchange.setSubstancesCompartments(substancesCompartments);
+        return exchange;
+    }
+
+    private ProcessDto buildProcessDtoWithExchangesAndImpacts(Process process) {
+        ProcessDto dto = processConverter.fromProcessToProcessDto(process);
+        dto.setExchanges(exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(process.getId())));
+        dto.setImpacts(pivConverter.fromProcessImpactValueToProcessImpactValueDto(pivRepository.findByProcessId(process.getId())));
+        return dto;
+    }
+
+    private Page<SubstancesCompartments> fetchSubstancesCompartments(String keyWord, UUID emissionCompartmentId, Pageable pageable, boolean input) {
+        int condition = (keyWord == null ? 0 : 1) + (emissionCompartmentId == null ? 0 : 2);
+
+        return switch (condition) {
+            case 0 -> scRepository.findAllWithJoinFetch(input,pageable);
+            case 1 -> scRepository.searchByKeywordWithJoinFetch(input, keyWord, pageable);
+            case 2 -> {
+                EmissionCompartment ec = findEmissionCompartment(emissionCompartmentId);
+                yield scRepository.searchByCompartmentWithJoinFetch(input, ec.getId(), pageable);
+            }
+            case 3 -> {
+                EmissionCompartment ec = findEmissionCompartment(emissionCompartmentId);
+                yield scRepository.searchBySubstanceAndCompartmentWithJoinFetch(input, keyWord, ec.getId(), pageable);
+            }
+            default -> throw new IllegalStateException("Unexpected condition: " + condition);
+        };
+    }
+
+    private EmissionCompartment findEmissionCompartment(UUID emissionCompartmentId) {
+        return ecRepository.findByIdAndStatus(emissionCompartmentId, true)
+                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Compartment not exist"));
+    }
+
+
+    private SearchSubstancesCompartmentsDto buildSearchElementaryDto(SubstancesCompartments sc, UUID impactCategoryId, UUID methodId) {
+
+        SearchSubstancesCompartmentsDto scDto = scConverter.ToDto(sc);
+
+        List<MidpointImpactCharacterizationFactors> factors = impactCategoryId == null
+                ? factorRepository.findBySubstanceCompartmentAndMethodWithJoinFetch(sc.getId(), methodId)
+                : factorRepository.findBySubstanceCompartmentAndMethodAndCategoryWithJoinFetch(sc.getId(), methodId, impactCategoryId);
+
+        scDto.setFactors(factors.stream()
+                .map(factorConverter::fromMidpointToFactor)
+                .collect(Collectors.toList()));
+
+        return scDto;
+    }
+
 }
