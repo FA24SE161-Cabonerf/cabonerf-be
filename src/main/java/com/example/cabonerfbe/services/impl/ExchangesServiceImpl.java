@@ -67,9 +67,11 @@ public class ExchangesServiceImpl implements ExchangesService {
         Process process = processRepository.findByProcessId(request.getProcessId()).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
         );
-        Optional<Exchanges> e = exchangesRepository.findElementary(process.getId(),substancesCompartments.getId());
-        if(e.isPresent()){
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Elementary already exist");
+
+        Optional<Exchanges> e = exchangesRepository.findElementary(process.getId(), substancesCompartments.getId());
+
+        if (e.isPresent()) {
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Elementary already exist");
         }
 
         Exchanges newExchange = new Exchanges();
@@ -94,9 +96,9 @@ public class ExchangesServiceImpl implements ExchangesService {
         Process p = processRepository.findById(request.getProcessId())
                 .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Process not exist"));
 
-        if(!request.isInput()){
+        if (!request.isInput()) {
             Optional<Exchanges> exchanges = exchangesRepository.findProductOut(p.getId());
-            if(exchanges.isPresent()){
+            if (exchanges.isPresent()) {
                 throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Already output product in process");
             }
         }

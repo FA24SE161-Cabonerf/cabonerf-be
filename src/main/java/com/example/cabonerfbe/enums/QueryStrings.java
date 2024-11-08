@@ -242,5 +242,6 @@ public class QueryStrings {
         GROUP BY sc.id, f.cas, es.name, es.chemical_name, es.molecular_formula, es.alternative_formula, ec.name
     ) AS subquery;
     """;
+    public static final String CONNECTOR_EXIST_BY_START_END_PROCESS = "select (count(c) > 0) from Connector c where c.startProcess.id = ?1 and c.endProcess.id = ?2 and c.endProcess.status = true and c.startProcess.status = true and c.status = true";
 }
 

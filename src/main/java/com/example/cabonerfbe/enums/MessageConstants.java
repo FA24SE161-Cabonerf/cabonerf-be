@@ -72,4 +72,15 @@ public class MessageConstants {
     public static final String NO_PROJECT_FOUND = "Project not exist";
     public static final String NO_PROCESS_FOUND = "Process not exist";
     public static final String NO_ELEMENTARY_FLOW_FOUND = "Elementary flow not exist";
+
+    public static final String START_END_PROCESS_SAME_ERROR = "Start and end process IDs must be different";
+    public static final String CONNECTOR_ALREADY_EXIST = "Connector between the two processes exist";
+    public static final String NOT_VALID_PROCESS_CONNECTOR = "Either the start or end process does not exist";
+    public static final String PROCESS_IN_DIFFERENT_PROJECTS = "Start and end processes must belong to the same project";
+
+    public static final String NO_EXCHANGE_FOUND = "Exchange not exist";
+    public static final String INVALID_EXCHANGE = "Invalid exchange id or type";
+    public static final String EXCHANGE_UNIT_GROUP_DIFFERENT = "Unit group of the 2 exchanges must be the same";
+    public static final String EXCHANGE_AND_PROCESS_DIFFERENT = "Exchange does not belong to given process";
+
 }
