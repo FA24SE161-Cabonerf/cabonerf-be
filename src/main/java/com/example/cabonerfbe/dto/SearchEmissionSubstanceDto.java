@@ -2,6 +2,7 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -9,9 +10,9 @@ import java.util.UUID;
 @Data
 @Getter
 @Setter
-public class SubstancesCompartmentsDto {
+public class SearchEmissionSubstanceDto {
     private UUID id;
-    private SubstanceDto emissionSubstance;
+    private SubstanceDto substance;
     private EmissionCompartmentDto emissionCompartment;
-    private UnitProjectImpactDto unit;
+    List<FactorDto> factors;
 }

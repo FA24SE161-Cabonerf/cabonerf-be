@@ -16,5 +16,5 @@ public class SearchElementaryResponse {
     private int pageCurrent;
     private int pageSize;
     private int totalPage;
-    List<SearchSubstancesCompartmentsDto> list;
+    List<SearchEmissionSubstanceDto> list;
 }
