@@ -15,4 +15,5 @@ public class ProjectImpactCategoryDto {
     private String iconUrl;
 
     private ProjectMidpointDto midpointImpactCategory;
+    private EmissionCompartmentDto emissionCompartment;
 }
