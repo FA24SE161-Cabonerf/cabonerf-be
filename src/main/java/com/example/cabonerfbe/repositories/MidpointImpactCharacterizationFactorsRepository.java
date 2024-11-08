@@ -36,11 +36,11 @@ public interface MidpointImpactCharacterizationFactorsRepository extends JpaRepo
             @Param("scId") UUID scId,
             @Param("methodId") UUID methodId, @Param("categoryId") UUID categoryId);
 
-    @Query("SELECT DISTINCT f FROM MidpointImpactCharacterizationFactors f " +
+    @Query("SELECT f FROM MidpointImpactCharacterizationFactors f " +
             "LEFT JOIN FETCH f.impactMethodCategory " +
             "WHERE f.impactMethodCategory.lifeCycleImpactAssessmentMethod.id = :methodId " +
             "AND f.impactMethodCategory.impactCategory.id = :categoryId " +
-            "AND LOWER(f.cas) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+            "AND (LOWER(f.cas) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     List<MidpointImpactCharacterizationFactors> findByCategoryAndKeywordWithJoinFetch(@Param("methodId") UUID methodId,
                                                                                       @Param("keyword") String keyWord,
                                                                                       @Param("categoryId") UUID categoryId);
@@ -48,7 +48,7 @@ public interface MidpointImpactCharacterizationFactorsRepository extends JpaRepo
     @Query("SELECT DISTINCT f FROM MidpointImpactCharacterizationFactors f " +
             "LEFT JOIN FETCH f.impactMethodCategory " +
             "WHERE f.impactMethodCategory.lifeCycleImpactAssessmentMethod.id = :methodId " +
-            "AND LOWER(f.cas) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+            "AND (LOWER(f.cas) LIKE LOWER(CONCAT('%', :keyword, '%'))) ")
     List<MidpointImpactCharacterizationFactors> findByKeywordWithJoinFetch(@Param("methodId") UUID methodId,
                                                                            @Param("keyword") String keyWord);
 

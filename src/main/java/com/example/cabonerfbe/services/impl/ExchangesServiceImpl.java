@@ -87,8 +87,22 @@ public class ExchangesServiceImpl implements ExchangesService {
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
         Page<SubstancesCompartments> scPage = fetchSubstancesCompartments(keyWord, emissionCompartmentId, pageable, input);
 
+        List<SearchSubstancesCompartmentsDto> list = scPage.isEmpty()
+                ? searchByCas(impactCategoryId, methodId, keyWord,input)
+                : searchWithoutCas(scPage, impactCategoryId, methodId);
+        int totalPage;
+        if (scPage.isEmpty()) {
+            // Nếu scPage trống, lấy dữ liệu từ searchByCas và tính totalPage thủ công
+            list = searchByCas(impactCategoryId, methodId, keyWord, input);
+            int totalElements = list.size();
+            totalPage = (int) Math.ceil((double) totalElements / pageSize);
+        } else {
+            // Nếu scPage có dữ liệu, lấy từ searchWithoutCas và sử dụng totalPage từ scPage
+            list = searchWithoutCas(scPage, impactCategoryId, methodId);
+            totalPage = scPage.getTotalPages();
+        }
 
-        int totalPage = scPage.getTotalPages();
+        // Kiểm tra pageCurrent với totalPage và trả về danh sách rỗng nếu cần
         if (pageCurrent > totalPage) {
             return SearchElementaryResponse.builder()
                     .totalPage(0)
@@ -96,15 +110,11 @@ public class ExchangesServiceImpl implements ExchangesService {
                     .pageCurrent(1)
                     .list(Collections.emptyList())
                     .build();
-
         }
 
-        List<SearchSubstancesCompartmentsDto> list = scPage.isEmpty()
-                ? searchByCas(impactCategoryId, methodId, keyWord)
-                : searchWithoutCas(scPage, impactCategoryId, methodId);
 
         return SearchElementaryResponse.builder()
-                .totalPage(Math.max(totalPage, 1))
+                .totalPage(totalPage)
                 .pageSize(pageSize)
                 .pageCurrent(pageCurrent)
                 .list(list)
@@ -188,11 +198,14 @@ public class ExchangesServiceImpl implements ExchangesService {
                 .collect(Collectors.toList());
     }
 
-    private List<SearchSubstancesCompartmentsDto> searchByCas(UUID impactCategoryId, UUID methodId, String cas) {
+    private List<SearchSubstancesCompartmentsDto> searchByCas(UUID impactCategoryId, UUID methodId, String cas, boolean input) {
         List<MidpointImpactCharacterizationFactors> factors = findFactorsByCas(methodId, cas, impactCategoryId);
         Set<SubstancesCompartments> scList = factors.stream()
-                .map(factor -> scRepository.findById(factor.getSubstancesCompartments().getId()).get())
+                .map(factor -> scRepository.findByIdWithInput(factor.getSubstancesCompartments().getId(), input))
+                .filter(Optional::isPresent) // Lọc bỏ các Optional rỗng (tức là null)
+                .map(Optional::get) // Lấy giá trị từ Optional nếu có
                 .collect(Collectors.toSet());
+
 
         return scList.parallelStream()
                 .map(sc -> buildSearchElementaryDto(sc, factors))
