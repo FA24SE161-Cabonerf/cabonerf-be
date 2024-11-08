@@ -17,7 +17,7 @@ public interface ExchangesRepository extends JpaRepository<Exchanges, UUID> {
     List<Exchanges> findAllByProcess(UUID processId);
     @Query("SELECT e FROM Exchanges e WHERE e.process.id = ?1 AND e.input = false AND e.exchangesType.name like 'Product' AND e.status = true")
     Optional<Exchanges> findProductOut(UUID processId);
-    @Query("SELECT e FROM Exchanges e WHERE e.process.id = :processId AND e.substancesCompartments.id = :substanceCompartmentId AND e.status = true")
+    @Query("SELECT e FROM Exchanges e WHERE e.process.id = :processId AND e.emissionSubstance.id = :substanceCompartmentId AND e.status = true")
     Optional<Exchanges> findElementary(@Param("processId") UUID processId,@Param("substanceCompartmentId") UUID substanceCompartmentId);
 
 
