@@ -10,7 +10,7 @@ import java.util.UUID;
 @Data
 @Getter
 @Setter
-public class SearchSubstancesCompartmentsDto {
+public class SearchEmissionSubstanceDto {
     private UUID id;
     private SubstanceDto substance;
     private EmissionCompartmentDto emissionCompartment;

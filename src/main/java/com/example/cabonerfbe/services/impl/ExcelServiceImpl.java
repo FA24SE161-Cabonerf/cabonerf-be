@@ -123,12 +123,12 @@ public class ExcelServiceImpl implements ExcelService {
                                 substance.getId(),
                                 emissionCompartment.getId()
                         ).orElseGet(() -> {
-                            EmissionSubstance newSubstancesCompartments = new EmissionSubstance();
-                            newSubstancesCompartments.setSubstance(substance);
-                            newSubstancesCompartments.setEmissionCompartment(finalEmissionCompartment);
-                            newSubstancesCompartments.setUnit(findAppropriateUnit(category));
-                            newSubstancesCompartments.setIsInput(compartmentName.equals("Natural Resource"));
-                            return emissionSubstanceRepository.save(newSubstancesCompartments);
+                            EmissionSubstance newEmissionSubstance = new EmissionSubstance();
+                            newEmissionSubstance.setSubstance(substance);
+                            newEmissionSubstance.setEmissionCompartment(finalEmissionCompartment);
+                            newEmissionSubstance.setUnit(findAppropriateUnit(category));
+                            newEmissionSubstance.setIsInput(compartmentName.equals("Natural Resource"));
+                            return emissionSubstanceRepository.save(newEmissionSubstance);
                         });
                     } else {
                         errorContent.add("0 - " + row.getRowNum() + " - 5 - Compartment is null");

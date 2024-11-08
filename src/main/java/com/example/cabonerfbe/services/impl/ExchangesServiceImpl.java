@@ -41,7 +41,7 @@ public class ExchangesServiceImpl implements ExchangesService {
     @Autowired
     private EmissionSubstanceRepository scRepository;
     @Autowired
-    private SubstancesCompartmentsConverter scConverter;
+    private EmissionSubstanceConverter scConverter;
     @Autowired
     private LifeCycleImpactAssessmentMethodRepository methodRepository;
     @Autowired
@@ -87,9 +87,9 @@ public class ExchangesServiceImpl implements ExchangesService {
                                            UUID emissionCompartmentId, UUID impactCategoryId, boolean input) {
         validateMethod(methodId);
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
-        Page<EmissionSubstance> scPage = fetchSubstancesCompartments(keyWord, emissionCompartmentId, pageable, input);
+        Page<EmissionSubstance> scPage = fetchEmissionSubstance(keyWord, emissionCompartmentId, pageable, input);
 
-        List<SearchSubstancesCompartmentsDto> response = scPage.getContent().parallelStream()
+        List<SearchEmissionSubstanceDto> response = scPage.getContent().parallelStream()
                 .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
                 .collect(Collectors.toList());
 
@@ -175,7 +175,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         return dto;
     }
 
-    private Page<EmissionSubstance> fetchSubstancesCompartments(String keyWord, UUID emissionCompartmentId, Pageable pageable, boolean input) {
+    private Page<EmissionSubstance> fetchEmissionSubstance(String keyWord, UUID emissionCompartmentId, Pageable pageable, boolean input) {
         int condition = (keyWord == null ? 0 : 1) + (emissionCompartmentId == null ? 0 : 2);
 
         return switch (condition) {
@@ -199,9 +199,9 @@ public class ExchangesServiceImpl implements ExchangesService {
     }
 
 
-    private SearchSubstancesCompartmentsDto buildSearchElementaryDto(EmissionSubstance sc, UUID impactCategoryId, UUID methodId) {
+    private SearchEmissionSubstanceDto buildSearchElementaryDto(EmissionSubstance sc, UUID impactCategoryId, UUID methodId) {
 
-        SearchSubstancesCompartmentsDto scDto = scConverter.ToDto(sc);
+        SearchEmissionSubstanceDto scDto = scConverter.ToDto(sc);
 
         List<MidpointImpactCharacterizationFactors> factors = impactCategoryId == null
                 ? factorRepository.findBySubstanceCompartmentAndMethodWithJoinFetch(sc.getId(), methodId)
