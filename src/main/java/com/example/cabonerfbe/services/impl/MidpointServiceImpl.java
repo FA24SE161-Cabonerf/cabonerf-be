@@ -125,9 +125,8 @@ public class MidpointServiceImpl implements MidpointService {
             });
 
             EmissionCompartment ec = ecRepository.getReferenceById(request.getEmissionCompartmentId());
-            UnitGroup ug = ugRepository.findByIdAndStatus(request.getUnitGroupId(), true)
-                    .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Unit group not exist"));
-            Unit u = uRepository.findDefault(ug.getId());
+            Unit u = uRepository.findByIdAndStatus(request.getUnitId(), true)
+                    .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Unit not exist"));
 
             sc = scRepository.checkExistBySubstanceAndCompartment(es.getId(), ec.getId())
                     .orElseGet(() -> scRepository.save(new SubstancesCompartments(es, ec, u)));
@@ -136,7 +135,7 @@ public class MidpointServiceImpl implements MidpointService {
         } else {
             sc = scRepository.findById(request.getSubstanceCompartmentId())
                     .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Substance compartment not exist"));
-           if(!sc.getUnit().getUnitGroup().getId().equals(request.getUnitGroupId())){
+           if(!sc.getUnit().getId().equals(request.getUnitId())){
               throw  CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Unit not same");
            }
            if(!sc.getEmissionCompartment().getId().equals(request.getEmissionCompartmentId())){
