@@ -84,4 +84,9 @@ public class MessageConstants {
     public static final String EXCHANGE_AND_PROCESS_DIFFERENT = "Exchange does not belong to given process";
     public static final String EXCHANGE_NAME_DIFFERENT = "Name of the 2 exchanges must be the same";
 
+    public static final String ELEMENTARY_EXIST = "Elementary already exists";
+    public static final String PRODUCT_EXIST = "Output product already exists in process";
+    public static final String REMOVE_EXCHANGE_SUCCESS = "Remove exchange success";
+    public static final String CREATE_PRODUCT_EXCHANGE_SUCCESS = "Create product exchanges success";
+    public static final String CREATE_ELEMENTARY_EXCHANGE_SUCCESS = "Create elementary exchanges success";
 }

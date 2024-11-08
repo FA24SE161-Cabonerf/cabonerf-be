@@ -83,5 +83,6 @@ public interface EmissionSubstanceRepository extends JpaRepository<EmissionSubst
             "OR LOWER(es.alternativeFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
             "OR LOWER(es.cas) like LOWER(CONCAT('%', :keyword, '%')))")
     List<EmissionSubstance> findByKeyword(@Param("keyword") String keyword);
+
 }
 
