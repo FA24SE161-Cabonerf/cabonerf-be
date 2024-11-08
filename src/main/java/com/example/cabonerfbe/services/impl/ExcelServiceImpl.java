@@ -128,18 +128,12 @@ public class ExcelServiceImpl implements ExcelService {
                             newSubstancesCompartments.setEmissionSubstance(emissionSubstance);
                             newSubstancesCompartments.setEmissionCompartment(finalEmissionCompartment);
                             newSubstancesCompartments.setUnit(findAppropriateUnit(category));
+                            newSubstancesCompartments.setIsInput(compartmentName.equals("Natural Resource"));
                             return substancesCompartmentsRepository.save(newSubstancesCompartments);
                         });
                     } else {
-                        substanceCompartment = substancesCompartmentsRepository.checkExistBySubstance(
-                                emissionSubstance.getId()
-                        ).orElseGet(() -> {
-                            SubstancesCompartments newSubstancesCompartments = new SubstancesCompartments();
-                            newSubstancesCompartments.setEmissionSubstance(emissionSubstance);
-                            newSubstancesCompartments.setEmissionCompartment(finalEmissionCompartment);
-                            newSubstancesCompartments.setUnit(findAppropriateUnit(category));
-                            return substancesCompartmentsRepository.save(newSubstancesCompartments);
-                        });
+                        errorContent.add("0 - " + row.getRowNum() + " - 5 - Compartment is null");
+                        continue;
                     }
 
                     ImpactMethodCategory _individualist = getImpactMethodCategory("Individualist", category.getId(), name);
@@ -151,7 +145,7 @@ public class ExcelServiceImpl implements ExcelService {
                             !cas.equals("0.0") ? cas : "-",
                             emissionSubstance.getName(),
                             emissionSubstance.getChemicalName(),
-                            emissionCompartment != null ? emissionCompartment.getName() : null,
+                            emissionCompartment.getName(),
                             emissionSubstance.getMolecularFormula(),
                             emissionSubstance.getAlternativeFormula(),
                             null,

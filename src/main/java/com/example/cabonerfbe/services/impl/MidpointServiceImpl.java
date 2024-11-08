@@ -129,7 +129,7 @@ public class MidpointServiceImpl implements MidpointService {
                     .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Unit not exist"));
 
             sc = scRepository.checkExistBySubstanceAndCompartment(es.getId(), ec.getId())
-                    .orElseGet(() -> scRepository.save(new SubstancesCompartments(es, ec, u)));
+                    .orElseGet(() -> scRepository.save(new SubstancesCompartments(es, ec, u,true)));
 
             request.setSubstanceCompartmentId(sc.getId());
         } else {

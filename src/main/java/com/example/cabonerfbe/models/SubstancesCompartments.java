@@ -24,4 +24,6 @@ public class SubstancesCompartments extends Base{
     @ManyToOne
     @JoinColumn(name = "unit_id")
     private Unit unit;
+
+    private Boolean isInput;
 }

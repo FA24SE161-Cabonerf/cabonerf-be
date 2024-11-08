@@ -39,33 +39,34 @@ public interface SubstancesCompartmentsRepository extends JpaRepository<Substanc
     @Query("SELECT DISTINCT sc FROM SubstancesCompartments sc " +
             "LEFT JOIN FETCH sc.emissionSubstance " +
             "LEFT JOIN FETCH sc.emissionCompartment " +
-            "WHERE sc.status = true")
-    Page<SubstancesCompartments> findAllWithJoinFetch(Pageable pageable);
+            "WHERE sc.status = true AND sc.isInput = :isInput")
+    Page<SubstancesCompartments> findAllWithJoinFetch(@Param("isInput") boolean input, Pageable pageable);
 
     @Query("SELECT DISTINCT sc FROM SubstancesCompartments sc " +
             "LEFT JOIN FETCH sc.emissionSubstance es " +
             "LEFT JOIN FETCH sc.emissionCompartment " +
-            "WHERE sc.status = true AND LOWER(es.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "WHERE sc.status = true AND sc.isInput = :isInput AND LOWER(es.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(es.chemicalName) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
             "OR LOWER(es.molecularFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
             "OR LOWER(es.alternativeFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    Page<SubstancesCompartments> searchByKeywordWithJoinFetch(@Param("keyword") String keyword, Pageable pageable);
+    Page<SubstancesCompartments> searchByKeywordWithJoinFetch(@Param("isInput") boolean input, @Param("keyword") String keyword, Pageable pageable);
 
     @Query("SELECT DISTINCT sc FROM SubstancesCompartments sc " +
             "LEFT JOIN FETCH sc.emissionSubstance " +
             "LEFT JOIN FETCH sc.emissionCompartment ec " +
-            "WHERE ec.id = :compartmentId AND sc.status = true")
-    Page<SubstancesCompartments> searchByCompartmentWithJoinFetch(@Param("compartmentId") UUID compartmentId, Pageable pageable);
+            "WHERE ec.id = :compartmentId AND sc.status = true AND sc.isInput = :isInput")
+    Page<SubstancesCompartments> searchByCompartmentWithJoinFetch(@Param("isInput") boolean input, @Param("compartmentId") UUID compartmentId, Pageable pageable);
 
     @Query("SELECT DISTINCT sc FROM SubstancesCompartments sc " +
             "LEFT JOIN FETCH sc.emissionSubstance es " +
             "LEFT JOIN FETCH sc.emissionCompartment ec " +
-            "WHERE sc.status = true AND ec.id = :compartmentId " +
+            "WHERE sc.status = true AND sc.isInput = :isInput AND ec.id = :compartmentId " +
             "AND (LOWER(es.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(es.chemicalName) LIKE LOWER(CONCAT('%', :keyword, '%')))" +
             "OR LOWER(es.molecularFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
             "OR LOWER(es.alternativeFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<SubstancesCompartments> searchBySubstanceAndCompartmentWithJoinFetch(
+            @Param("isInput") boolean input,
             @Param("keyword") String keyword,
             @Param("compartmentId") UUID compartmentId,
             Pageable pageable);
