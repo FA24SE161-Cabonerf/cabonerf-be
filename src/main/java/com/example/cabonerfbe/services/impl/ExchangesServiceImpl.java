@@ -200,6 +200,9 @@ public class ExchangesServiceImpl implements ExchangesService {
 
     private List<SearchSubstancesCompartmentsDto> searchByCas(UUID impactCategoryId, UUID methodId, String cas, boolean input) {
         List<MidpointImpactCharacterizationFactors> factors = findFactorsByCas(methodId, cas, impactCategoryId);
+        if(factors.isEmpty()){
+            return Collections.emptyList();
+        }
         Set<SubstancesCompartments> scList = factors.stream()
                 .map(factor -> scRepository.findByIdWithInput(factor.getSubstancesCompartments().getId(), input))
                 .filter(Optional::isPresent) // Lọc bỏ các Optional rỗng (tức là null)
@@ -225,7 +228,6 @@ public class ExchangesServiceImpl implements ExchangesService {
         List<MidpointImpactCharacterizationFactors> factors = impactCategoryId == null
                 ? factorRepository.findBySubstanceCompartmentAndMethodWithJoinFetch(sc.getId(), methodId)
                 : factorRepository.findBySubstanceCompartmentAndMethodAndCategoryWithJoinFetch(sc.getId(), methodId, impactCategoryId);
-
 
         scDto.setFactors(factors.stream()
                 .map(factorConverter::fromMidpointToFactor)
