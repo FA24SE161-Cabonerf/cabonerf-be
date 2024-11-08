@@ -153,7 +153,7 @@ public class MidpointServiceImpl implements MidpointService {
         factors.setImpactMethodCategory(imc);
         factors.setDecimalValue(request.getValue());
         factors.setScientificValue(String.format("%.2e", request.getValue()));
-        factors.setSubstancesCompartments(sc);
+        factors.setEmissionSubstance(sc);
         factorsRepository.save(factors);
 
         return midpointRepository.getWhenCreate(request.getSubstanceCompartmentId()).stream()
