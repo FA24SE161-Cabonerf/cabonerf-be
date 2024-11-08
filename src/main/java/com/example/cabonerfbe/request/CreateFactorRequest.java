@@ -37,7 +37,7 @@ public class CreateFactorRequest {
     private UUID methodId;
     @NotNull(message = "Impact category is required.")
     private UUID categoryId;
-    @NotNull(message = "Unit group is required.")
-    private UUID unitGroupId;
+    @NotNull(message = "Unit is required.")
+    private UUID unitId;
     private UUID substanceCompartmentId;
 }
