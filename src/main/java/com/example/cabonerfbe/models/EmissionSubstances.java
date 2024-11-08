@@ -16,4 +16,5 @@ public class EmissionSubstances extends Base{
     private String chemicalName;
     private String molecularFormula;
     private String alternativeFormula;
+    private String cas;
 }

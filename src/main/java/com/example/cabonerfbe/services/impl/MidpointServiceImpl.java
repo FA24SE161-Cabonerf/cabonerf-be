@@ -151,7 +151,6 @@ public class MidpointServiceImpl implements MidpointService {
 
         MidpointImpactCharacterizationFactors factors = new MidpointImpactCharacterizationFactors();
         factors.setImpactMethodCategory(imc);
-        factors.setCas(Optional.ofNullable(request.getCas()).orElse("-"));
         factors.setDecimalValue(request.getValue());
         factors.setScientificValue(String.format("%.2e", request.getValue()));
         factors.setSubstancesCompartments(sc);

@@ -87,22 +87,12 @@ public class ExchangesServiceImpl implements ExchangesService {
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
         Page<SubstancesCompartments> scPage = fetchSubstancesCompartments(keyWord, emissionCompartmentId, pageable, input);
 
-        List<SearchSubstancesCompartmentsDto> list = scPage.isEmpty()
-                ? searchByCas(impactCategoryId, methodId, keyWord,input)
-                : searchWithoutCas(scPage, impactCategoryId, methodId);
-        int totalPage;
-        if (scPage.isEmpty()) {
-            // Nếu scPage trống, lấy dữ liệu từ searchByCas và tính totalPage thủ công
-            list = searchByCas(impactCategoryId, methodId, keyWord, input);
-            int totalElements = list.size();
-            totalPage = (int) Math.ceil((double) totalElements / pageSize);
-        } else {
-            // Nếu scPage có dữ liệu, lấy từ searchWithoutCas và sử dụng totalPage từ scPage
-            list = searchWithoutCas(scPage, impactCategoryId, methodId);
-            totalPage = scPage.getTotalPages();
-        }
+        List<SearchSubstancesCompartmentsDto> response = scPage.getContent().parallelStream()
+                .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
+                .collect(Collectors.toList());
 
-        // Kiểm tra pageCurrent với totalPage và trả về danh sách rỗng nếu cần
+        int totalPage = scPage.getTotalPages();
+               // Kiểm tra pageCurrent với totalPage và trả về danh sách rỗng nếu cần
         if (pageCurrent > totalPage) {
             return SearchElementaryResponse.builder()
                     .totalPage(0)
@@ -117,7 +107,7 @@ public class ExchangesServiceImpl implements ExchangesService {
                 .totalPage(totalPage)
                 .pageSize(pageSize)
                 .pageCurrent(pageCurrent)
-                .list(list)
+                .list(response)
                 .build();
     }
 
@@ -192,34 +182,6 @@ public class ExchangesServiceImpl implements ExchangesService {
                 .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Compartment not exist"));
     }
 
-    private List<SearchSubstancesCompartmentsDto> searchWithoutCas(Page<SubstancesCompartments> scPage, UUID impactCategoryId, UUID methodId) {
-        return scPage.getContent().parallelStream()
-                .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
-                .collect(Collectors.toList());
-    }
-
-    private List<SearchSubstancesCompartmentsDto> searchByCas(UUID impactCategoryId, UUID methodId, String cas, boolean input) {
-        List<MidpointImpactCharacterizationFactors> factors = findFactorsByCas(methodId, cas, impactCategoryId);
-        if(factors.isEmpty()){
-            return Collections.emptyList();
-        }
-        Set<SubstancesCompartments> scList = factors.stream()
-                .map(factor -> scRepository.findByIdWithInput(factor.getSubstancesCompartments().getId(), input))
-                .filter(Optional::isPresent) // Lọc bỏ các Optional rỗng (tức là null)
-                .map(Optional::get) // Lấy giá trị từ Optional nếu có
-                .collect(Collectors.toSet());
-
-
-        return scList.parallelStream()
-                .map(sc -> buildSearchElementaryDto(sc, factors))
-                .collect(Collectors.toList());
-    }
-
-    private List<MidpointImpactCharacterizationFactors> findFactorsByCas(UUID methodId, String cas, UUID impactCategoryId) {
-        return impactCategoryId == null
-                ? factorRepository.findByKeywordWithJoinFetch(methodId, cas)
-                : factorRepository.findByCategoryAndKeywordWithJoinFetch(methodId, cas, impactCategoryId);
-    }
 
     private SearchSubstancesCompartmentsDto buildSearchElementaryDto(SubstancesCompartments sc, UUID impactCategoryId, UUID methodId) {
 
@@ -236,11 +198,4 @@ public class ExchangesServiceImpl implements ExchangesService {
         return scDto;
     }
 
-    private SearchSubstancesCompartmentsDto buildSearchElementaryDto(SubstancesCompartments sc, List<MidpointImpactCharacterizationFactors> factors) {
-        SearchSubstancesCompartmentsDto scDto = scConverter.ToDto(sc);
-        scDto.setFactors(factors.stream()
-                .map(factorConverter::fromMidpointToFactor)
-                .collect(Collectors.toList()));
-        return scDto;
-    }
 }
