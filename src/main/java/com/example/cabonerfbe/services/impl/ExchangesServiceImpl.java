@@ -51,7 +51,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
     @Override
     public ProcessDto createElementaryExchanges(CreateElementaryRequest request) {
-        SubstancesCompartments substancesCompartments = findSubstancesCompartments(request.getSubstanceCompartmentId());
+        EmissionSubstance substancesCompartments = findSubstancesCompartments(request.getSubstanceCompartmentId());
         Process process = findProcess(request.getProcessId());
 
         if (exchangesRepository.findElementary(process.getId(), substancesCompartments.getId()).isPresent()) {
@@ -85,7 +85,7 @@ public class ExchangesServiceImpl implements ExchangesService {
                                            UUID emissionCompartmentId, UUID impactCategoryId,boolean input) {
         validateMethod(methodId);
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
-        Page<SubstancesCompartments> scPage = fetchSubstancesCompartments(keyWord, emissionCompartmentId, pageable, input);
+        Page<EmissionSubstance> scPage = fetchSubstancesCompartments(keyWord, emissionCompartmentId, pageable, input);
 
         List<SearchSubstancesCompartmentsDto> response = scPage.getContent().parallelStream()
                 .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
@@ -114,7 +114,7 @@ public class ExchangesServiceImpl implements ExchangesService {
     @Override
     public List<SubstancesCompartmentsDto> getAllAdmin(String keyword) {
 
-        List<SubstancesCompartments> list = new ArrayList<>();
+        List<EmissionSubstance> list = new ArrayList<>();
         if(keyword == null){
             list = scRepository.findAll();
         }
@@ -125,7 +125,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         return list.stream().map(scConverter::modelToDto).collect(Collectors.toList());
     }
 
-    private SubstancesCompartments findSubstancesCompartments(UUID id) {
+    private EmissionSubstance findSubstancesCompartments(UUID id) {
         return scRepository.findById(id)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ELEMENTARY_FLOW_FOUND));
     }
@@ -140,10 +140,10 @@ public class ExchangesServiceImpl implements ExchangesService {
                 .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Method not exist"));
     }
 
-    private Exchanges createNewExchange(SubstancesCompartments substancesCompartments, boolean isInput,
+    private Exchanges createNewExchange(EmissionSubstance substancesCompartments, boolean isInput,
                                         Process process, String exchangeTypeName, double value) {
         Exchanges exchange = new Exchanges();
-        exchange.setName(substancesCompartments != null ? substancesCompartments.getEmissionSubstance().getName() : null);
+        exchange.setName(substancesCompartments != null ? substancesCompartments.getSubstance().getName() : null);
         exchange.setExchangesType(exchangesTypeRepository.findByName(exchangeTypeName));
         exchange.setValue(value);
         exchange.setInput(isInput);
@@ -159,7 +159,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         return dto;
     }
 
-    private Page<SubstancesCompartments> fetchSubstancesCompartments(String keyWord, UUID emissionCompartmentId, Pageable pageable, boolean input) {
+    private Page<EmissionSubstance> fetchSubstancesCompartments(String keyWord, UUID emissionCompartmentId, Pageable pageable, boolean input) {
         int condition = (keyWord == null ? 0 : 1) + (emissionCompartmentId == null ? 0 : 2);
 
         return switch (condition) {
@@ -183,7 +183,7 @@ public class ExchangesServiceImpl implements ExchangesService {
     }
 
 
-    private SearchSubstancesCompartmentsDto buildSearchElementaryDto(SubstancesCompartments sc, UUID impactCategoryId, UUID methodId) {
+    private SearchSubstancesCompartmentsDto buildSearchElementaryDto(EmissionSubstance sc, UUID impactCategoryId, UUID methodId) {
 
         SearchSubstancesCompartmentsDto scDto = scConverter.ToDto(sc);
 

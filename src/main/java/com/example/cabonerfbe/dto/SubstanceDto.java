@@ -1,17 +1,16 @@
-package com.example.cabonerfbe.models;
+package com.example.cabonerfbe.dto;
 
-import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
+import java.util.UUID;
 
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table
-public class EmissionSubstances extends Base{
+@Data
+@Getter
+@Setter
+public class SubstanceDto {
+    private UUID id;
     private String name;
     private String chemicalName;
     private String molecularFormula;

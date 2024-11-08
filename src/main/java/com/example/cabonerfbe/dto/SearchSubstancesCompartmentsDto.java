@@ -12,7 +12,7 @@ import java.util.UUID;
 @Setter
 public class SearchSubstancesCompartmentsDto {
     private UUID id;
-    private EmissionSubstancesDto emissionSubstance;
+    private SubstanceDto substance;
     private EmissionCompartmentDto emissionCompartment;
     List<FactorDto> factors;
 }

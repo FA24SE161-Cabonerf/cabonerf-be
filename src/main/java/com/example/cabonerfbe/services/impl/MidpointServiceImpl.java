@@ -113,10 +113,10 @@ public class MidpointServiceImpl implements MidpointService {
         ImpactMethodCategory imc = imcRepository.findByMethodAndCategory(request.getCategoryId(), request.getMethodId())
                 .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Impact method category not exist"));
 
-        SubstancesCompartments sc;
+        EmissionSubstance sc;
         if (request.getSubstanceCompartmentId() == null) {
-            EmissionSubstances es = esRepository.findByName(request.getName()).orElseGet(() -> {
-                EmissionSubstances newSubstance = new EmissionSubstances();
+            Substance es = esRepository.findByName(request.getName()).orElseGet(() -> {
+                Substance newSubstance = new Substance();
                 newSubstance.setName(request.getName());
                 newSubstance.setChemicalName(Optional.ofNullable(request.getChemicalName()).orElse("-"));
                 newSubstance.setMolecularFormula(Optional.ofNullable(request.getMolecularFormula()).orElse("-"));
@@ -129,7 +129,7 @@ public class MidpointServiceImpl implements MidpointService {
                     .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Unit not exist"));
 
             sc = scRepository.checkExistBySubstanceAndCompartment(es.getId(), ec.getId())
-                    .orElseGet(() -> scRepository.save(new SubstancesCompartments(es, ec, u,true)));
+                    .orElseGet(() -> scRepository.save(new EmissionSubstance(es, ec, u,true)));
 
             request.setSubstanceCompartmentId(sc.getId());
         } else {
@@ -164,7 +164,7 @@ public class MidpointServiceImpl implements MidpointService {
 
     @Override
     public List<MidpointSubstanceFactorsDto> delete(UUID id) {
-        SubstancesCompartments sc = scRepository.findById(id)
+        EmissionSubstance sc = scRepository.findById(id)
                 .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Substance Emission not exist"));
         sc.setStatus(false);
         scRepository.save(sc);

@@ -16,7 +16,7 @@ public class MidpointImpactCharacterizationFactors extends Base{
 
     @ManyToOne
     @JoinColumn(name = "substances_compartments_id")
-    private SubstancesCompartments substancesCompartments;
+    private EmissionSubstance substancesCompartments;
 
     private String scientificValue;
     private double decimalValue;
