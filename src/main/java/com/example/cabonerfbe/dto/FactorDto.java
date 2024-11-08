@@ -11,7 +11,6 @@ import java.util.UUID;
 @Setter
 public class FactorDto {
     UUID id;
-    String cas;
     ImpactMethodCategoryDto impactMethodCategory;
     String scientificValue;
     double decimalValue;

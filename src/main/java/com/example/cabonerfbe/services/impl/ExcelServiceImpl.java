@@ -107,6 +107,7 @@ public class ExcelServiceImpl implements ExcelService {
                                 newSubstance.setChemicalName(chemicalName);
                                 newSubstance.setMolecularFormula(molecularFormula);
                                 newSubstance.setAlternativeFormula(alternativeFormula);
+                                newSubstance.setCas(!cas.equals("0.0") ? cas : "-");
                                 return emissionSubstancesRepository.save(newSubstance);
                             });
 
@@ -285,7 +286,6 @@ public class ExcelServiceImpl implements ExcelService {
                             factor.setSubstancesCompartments(substanceCompartment);
                             factor.setDecimalValue(value);
                             factor.setScientificValue(String.format("%.2e", value));
-                            factor.setCas(cas);
                             factor.setImpactMethodCategory(methodCategory);
 
                             // Add to the list and update isNewRecord

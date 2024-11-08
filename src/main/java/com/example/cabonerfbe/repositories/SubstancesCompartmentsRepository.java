@@ -49,7 +49,8 @@ public interface SubstancesCompartmentsRepository extends JpaRepository<Substanc
             "AND (LOWER(es.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(es.chemicalName) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
             "OR LOWER(es.molecularFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
-            "OR LOWER(es.alternativeFormula) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+            "OR LOWER(es.alternativeFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
+            "OR LOWER(es.cas) like LOWER(CONCAT('%', :keyword, '%')))")
     Page<SubstancesCompartments> searchByKeywordWithJoinFetch(@Param("isInput") boolean input, @Param("keyword") String keyword, Pageable pageable);
 
     @Query("SELECT DISTINCT sc FROM SubstancesCompartments sc " +
@@ -63,9 +64,10 @@ public interface SubstancesCompartmentsRepository extends JpaRepository<Substanc
             "LEFT JOIN FETCH sc.emissionCompartment ec " +
             "WHERE sc.status = true AND sc.isInput = :isInput AND ec.id = :compartmentId " +
             "AND (LOWER(es.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-            "OR LOWER(es.chemicalName) LIKE LOWER(CONCAT('%', :keyword, '%')))" +
+            "OR LOWER(es.chemicalName) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
             "OR LOWER(es.molecularFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
-            "OR LOWER(es.alternativeFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+            "OR LOWER(es.alternativeFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
+            "OR LOWER(es.cas) like LOWER(CONCAT('%', :keyword, '%')))")
     Page<SubstancesCompartments> searchBySubstanceAndCompartmentWithJoinFetch(
             @Param("isInput") boolean input,
             @Param("keyword") String keyword,
@@ -76,9 +78,10 @@ public interface SubstancesCompartmentsRepository extends JpaRepository<Substanc
             "LEFT JOIN FETCH sc.emissionSubstance es " +
             "WHERE sc.status = true " +
             "AND (LOWER(es.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-            "OR LOWER(es.chemicalName) LIKE LOWER(CONCAT('%', :keyword, '%')))" +
+            "OR LOWER(es.chemicalName) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
             "OR LOWER(es.molecularFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
-            "OR LOWER(es.alternativeFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+            "OR LOWER(es.alternativeFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
+            "OR LOWER(es.cas) like LOWER(CONCAT('%', :keyword, '%')))")
     List<SubstancesCompartments> findByKeyword(@Param("keyword") String keyword);
 }
 
