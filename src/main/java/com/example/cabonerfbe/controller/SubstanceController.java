@@ -19,7 +19,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin("*")
 @Slf4j
-public class EmissionSubstancesController {
+public class SubstanceController {
     @Autowired
     private ExchangesService service;
 
@@ -34,14 +34,14 @@ public class EmissionSubstancesController {
             @RequestParam(required = false) UUID impactCategoryId
             ) {
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get emission substance success",service.search(pageCurrent, pageSize, keyword, methodId, emissionCompartmentId, impactCategoryId,input))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get substance success",service.search(pageCurrent, pageSize, keyword, methodId, emissionCompartmentId, impactCategoryId,input))
         );
     }
 
     @GetMapping(API_PARAMS.ADMIN)
     public ResponseEntity<ResponseObject> getAllEmissionSubstancesInAdmin( @RequestParam(required = false) String keyword){
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get emission substance success", service.getAllAdmin(keyword))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get substance success", service.getAllAdmin(keyword))
         );
     }
 

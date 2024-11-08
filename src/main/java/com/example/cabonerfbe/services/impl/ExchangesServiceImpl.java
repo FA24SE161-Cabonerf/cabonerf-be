@@ -39,7 +39,7 @@ public class ExchangesServiceImpl implements ExchangesService {
     @Autowired
     private ExchangesConverter exchangesConverter;
     @Autowired
-    private SubstancesCompartmentsRepository scRepository;
+    private EmissionSubstanceRepository scRepository;
     @Autowired
     private SubstancesCompartmentsConverter scConverter;
     @Autowired
@@ -51,14 +51,14 @@ public class ExchangesServiceImpl implements ExchangesService {
 
     @Override
     public ProcessDto createElementaryExchanges(CreateElementaryRequest request) {
-        EmissionSubstance substancesCompartments = findSubstancesCompartments(request.getEmissionSubstanceId());
+        EmissionSubstance emissionSubstance = findSubstancesCompartments(request.getEmissionSubstanceId());
         Process process = findProcess(request.getProcessId());
 
-        if (exchangesRepository.findElementary(process.getId(), substancesCompartments.getId()).isPresent()) {
+        if (exchangesRepository.findElementary(process.getId(), emissionSubstance.getId()).isPresent()) {
             throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Elementary already exists");
         }
 
-        Exchanges newExchange = createNewExchange(substancesCompartments, request.isInput(), process, "Elementary", 0);
+        Exchanges newExchange = createNewExchange(emissionSubstance, request.isInput(), process, "Elementary", 0);
         exchangesRepository.save(newExchange);
 
         return buildProcessDtoWithExchangesAndImpacts(process);

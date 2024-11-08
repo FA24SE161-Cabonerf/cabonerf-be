@@ -39,7 +39,7 @@ public class ExcelServiceImpl implements ExcelService {
     @Autowired
     private EmissionCompartmentRepository emissionCompartmentRepository;
     @Autowired
-    private EmissionSubstancesRepository emissionSubstancesRepository;
+    private SubstanceRepository substanceRepository;
     @Autowired
     private MidpointImpactCharacterizationFactorsRepository repository;
     @Autowired
@@ -53,7 +53,7 @@ public class ExcelServiceImpl implements ExcelService {
     @Autowired
     private UnitRepository unitRepository;
     @Autowired
-    private SubstancesCompartmentsRepository substancesCompartmentsRepository;
+    private EmissionSubstanceRepository emissionSubstanceRepository;
     @Autowired
     private MidpointService midpointService;
 
@@ -98,7 +98,7 @@ public class ExcelServiceImpl implements ExcelService {
                     }
 
                     // Tạo hoặc tìm emission substance
-                    Substance emissionSubstance = emissionSubstancesRepository.findByName(substanceName)
+                    Substance substance = substanceRepository.findByName(substanceName)
                             .orElseGet(() -> {
                                 Substance newSubstance = new Substance();
                                 newSubstance.setName(substanceName);
@@ -106,7 +106,7 @@ public class ExcelServiceImpl implements ExcelService {
                                 newSubstance.setMolecularFormula(molecularFormula);
                                 newSubstance.setAlternativeFormula(alternativeFormula);
                                 newSubstance.setCas(!cas.equals("0.0") ? cas : "-");
-                                return emissionSubstancesRepository.save(newSubstance);
+                                return substanceRepository.save(newSubstance);
                             });
 
                     EmissionCompartment emissionCompartment = null;
@@ -116,19 +116,19 @@ public class ExcelServiceImpl implements ExcelService {
                     }
 
                     EmissionCompartment finalEmissionCompartment = emissionCompartment;
-                    EmissionSubstance substanceCompartment = new EmissionSubstance();
+                    EmissionSubstance emissionSubstance = new EmissionSubstance();
 
                     if (!compartmentName.isBlank() || !compartmentName.isEmpty()) {
-                        substanceCompartment = substancesCompartmentsRepository.checkExistBySubstanceAndCompartment(
-                                emissionSubstance.getId(),
+                        emissionSubstance = emissionSubstanceRepository.checkExistBySubstanceAndCompartment(
+                                substance.getId(),
                                 emissionCompartment.getId()
                         ).orElseGet(() -> {
                             EmissionSubstance newSubstancesCompartments = new EmissionSubstance();
-                            newSubstancesCompartments.setSubstance(emissionSubstance);
+                            newSubstancesCompartments.setSubstance(substance);
                             newSubstancesCompartments.setEmissionCompartment(finalEmissionCompartment);
                             newSubstancesCompartments.setUnit(findAppropriateUnit(category));
                             newSubstancesCompartments.setIsInput(compartmentName.equals("Natural Resource"));
-                            return substancesCompartmentsRepository.save(newSubstancesCompartments);
+                            return emissionSubstanceRepository.save(newSubstancesCompartments);
                         });
                     } else {
                         errorContent.add("0 - " + row.getRowNum() + " - 5 - Compartment is null");
@@ -140,30 +140,30 @@ public class ExcelServiceImpl implements ExcelService {
                     ImpactMethodCategory _egalitarian = getImpactMethodCategory("Egalitarian", category.getId(), name);
 
                     MidpointSubstanceFactorsResponse response = new MidpointSubstanceFactorsResponse(
-                            substanceCompartment.getId(),
+                            emissionSubstance.getId(),
                             !cas.equals("0.0") ? cas : "-",
-                            emissionSubstance.getName(),
-                            emissionSubstance.getChemicalName(),
+                            substance.getName(),
+                            substance.getChemicalName(),
                             emissionCompartment.getName(),
-                            emissionSubstance.getMolecularFormula(),
-                            emissionSubstance.getAlternativeFormula(),
+                            substance.getMolecularFormula(),
+                            substance.getAlternativeFormula(),
                             null,
                             null,
                             null
                     );
 
                     if (isNumeric(row.getCell(6).toString())) {
-                        if (createOrUpdateFactor(list, substanceCompartment, _individualist, cas, individualist, 0, row.getRowNum(), 6)) {
+                        if (createOrUpdateFactor(list, emissionSubstance, _individualist, cas, individualist, 0, row.getRowNum(), 6)) {
                             response.setIndividualist(individualist);
                         }
                     }
                     if (isNumeric(row.getCell(7).toString())) {
-                        if (createOrUpdateFactor(list, substanceCompartment, _hierarchist, cas, hierarchist, 0, row.getRowNum(), 7)) {
+                        if (createOrUpdateFactor(list, emissionSubstance, _hierarchist, cas, hierarchist, 0, row.getRowNum(), 7)) {
                             response.setHierarchist(hierarchist);
                         }
                     }
                     if (isNumeric(row.getCell(8).toString())) {
-                        if (createOrUpdateFactor(list, substanceCompartment, _egalitarian, cas, egalitarian, 0, row.getRowNum(), 8)) {
+                        if (createOrUpdateFactor(list, emissionSubstance, _egalitarian, cas, egalitarian, 0, row.getRowNum(), 8)) {
                             response.setEgalitarian(egalitarian);
                         }
                     }

@@ -31,13 +31,13 @@ public class MidpointServiceImpl implements MidpointService {
     @Autowired
     private MidpointImpactCharacterizationFactorConverter midpointConverter;
     @Autowired
-    private EmissionSubstancesRepository esRepository;
+    private SubstanceRepository esRepository;
     @Autowired
     private EmissionCompartmentRepository ecRepository;
     @Autowired
     private MidpointImpactCharacterizationFactorsRepository factorsRepository;
     @Autowired
-    private SubstancesCompartmentsRepository scRepository;
+    private EmissionSubstanceRepository scRepository;
     @Autowired
     private UnitGroupRepository ugRepository;
     @Autowired
