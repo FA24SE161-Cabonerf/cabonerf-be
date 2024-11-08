@@ -173,6 +173,8 @@ public class ConnectorServiceImpl implements ConnectorService {
                     );
             connectorDto = convertConnector(existStartExchange, endExchange, startProcess, endProcess);
             isEndProcessFlag = false;
+        } else {
+            throw CustomExceptions.badRequest(MessageConstants.INVALID_EXCHANGE);
         }
 
         ProcessDto finalProcess = new ProcessDto();
