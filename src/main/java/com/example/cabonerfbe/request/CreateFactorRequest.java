@@ -39,5 +39,5 @@ public class CreateFactorRequest {
     private UUID categoryId;
     @NotNull(message = "Unit is required.")
     private UUID unitId;
-    private UUID substanceCompartmentId;
+    private UUID emissionSubstanceId;
 }
