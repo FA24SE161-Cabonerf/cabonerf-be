@@ -58,10 +58,18 @@ public class ProcessServiceImpl implements ProcessService {
     private UnitConverter unitConverter;
     @Autowired
     private MessagePublisher messagePublisher;
+    @Autowired
+    private MidpointImpactCharacterizationFactorsRepository midpointFactorsRepository;
 
     public static final double NEW_OVERALL_FLOW = 0;
+    public static final double DEFAULT_SYSTEM_LEVEL = 0;
+    public static final double DEFAULT_PREVIOUS_PROCESS_VALUE = 0;
+    public static final double BASE_UNIT_LEVEL = 0;
+
+
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(50);
+
 
     @Override
     public ProcessDto createProcess(CreateProcessRequest request) {
@@ -168,10 +176,55 @@ public class ProcessServiceImpl implements ProcessService {
                 .collect(Collectors.toList());
     }
 
-//    @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
+    //    @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     public void createProcessListener(CreateProcessRequest request) {
         log.info("create process message from nodeBased server: {}", request);
         ProcessDto processDto = createProcess(request);
         messagePublisher.publishCreateProcess(RabbitMQConfig.CREATED_PROCESS_EXCHANGE, RabbitMQConfig.CREATED_PROCESS_ROUTING_KEY, processDto);
     }
+
+    public void computeProcessImpactValue(Process process) {
+        UUID methodId = process.getProject().getLifeCycleImpactAssessmentMethod().getId();
+        UUID processId = process.getId();
+
+        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
+
+        List<Exchanges> exchangeList = exchangesRepository.findAllByProcessIdAndExchangesType(processId, Constants.ELEMENTARY_EXCHANGE);
+        List<ImpactMethodCategory> impactMethodCategoryList = impactMethodCategoryRepository.findByMethod(methodId);
+
+        for (ImpactMethodCategory methodCategory : impactMethodCategoryList) {
+            UUID methodCategoryId = methodCategory.getId();
+
+            ProcessImpactValue processImpactValue = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(processId, methodCategoryId)
+                    .orElse(new ProcessImpactValue());
+            processImpactValue.setImpactMethodCategory(methodCategory);
+            processImpactValue.setProcess(process);
+            processImpactValue.setOverallImpactContribution(NEW_OVERALL_FLOW);
+            processImpactValue.setPreviousProcessValue(DEFAULT_PREVIOUS_PROCESS_VALUE);
+            processImpactValue.setSystemLevel(DEFAULT_SYSTEM_LEVEL);
+
+            double unitLevel = BASE_UNIT_LEVEL;
+
+            for (Exchanges exchange : exchangeList) {
+                UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
+                double exchangeValue = exchange.getValue();
+
+                Optional<MidpointImpactCharacterizationFactors> midpointFactorsOptional =
+                        midpointFactorsRepository.findByMethodCategoryAndEmissionSubstance(methodCategoryId, emissionSubstanceId);
+
+                // Calculate and add to unit level based on presence of midpoint factors
+                unitLevel += midpointFactorsOptional
+                        .map(midpointFactors -> exchangeValue * midpointFactors.getDecimalValue())
+                        .orElse(BASE_UNIT_LEVEL);
+            }
+
+            processImpactValue.setUnitLevel(unitLevel);
+            processImpactValueList.add(processImpactValue);
+        }
+
+        processImpactValueRepository.saveAll(processImpactValueList);
+    }
+
+
+
 }

@@ -14,4 +14,6 @@ public class Constants {
     public static final String UNIT_GROUP_TYPE_NORMAL = "normal";
     public static final Boolean IS_DEFAULT_TRUE = true;
     public static final String PRODUCT_EXCHANGE = "Product";
+    public static final String ELEMENTARY_EXCHANGE = "Elementary";
+
 }

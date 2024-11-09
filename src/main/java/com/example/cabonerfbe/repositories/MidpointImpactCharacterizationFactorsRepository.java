@@ -42,4 +42,9 @@ public interface MidpointImpactCharacterizationFactorsRepository extends JpaRepo
             "JOIN FETCH f.impactMethodCategory imc " +
             "WHERE sc.id = ?1 AND imc.lifeCycleImpactAssessmentMethod.id = ?2 AND imc.impactCategory.id = ?3 AND f.status = true")
     Optional<MidpointImpactCharacterizationFactors> checkExistCreate(UUID substanceCompartmentId, UUID methodId, UUID categoryId);
+
+    @Query("""
+            select m from MidpointImpactCharacterizationFactors m
+            where m.impactMethodCategory.id = ?1 and m.emissionSubstance.id = ?2 and m.status = true""")
+    Optional<MidpointImpactCharacterizationFactors> findByMethodCategoryAndEmissionSubstance(UUID methodCategoryId, UUID emissionSubstanceId);
 }
