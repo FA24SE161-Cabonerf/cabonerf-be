@@ -21,7 +21,7 @@ public interface ImpactMethodCategoryRepository extends JpaRepository<ImpactMeth
     ImpactMethodCategory findByImpactCategoryAndImpactMethod(UUID impactCategoryId, UUID impactMethodId);
 
 
-    @Query("SELECT a FROM ImpactMethodCategory a WHERE a.lifeCycleImpactAssessmentMethod.id = ?1")
+    @Query("SELECT a FROM ImpactMethodCategory a WHERE a.lifeCycleImpactAssessmentMethod.id = ?1 AND a.status = true")
     List<ImpactMethodCategory> findByMethod(UUID methodId);
 
     boolean existsByImpactCategoryAndLifeCycleImpactAssessmentMethodAndStatus(ImpactCategory impactCategory, LifeCycleImpactAssessmentMethod lifeCycleImpactAssessmentMethod, boolean status);

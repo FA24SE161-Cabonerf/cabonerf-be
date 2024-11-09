@@ -89,4 +89,6 @@ public class MessageConstants {
     public static final String REMOVE_EXCHANGE_SUCCESS = "Remove exchange success";
     public static final String CREATE_PRODUCT_EXCHANGE_SUCCESS = "Create product exchanges success";
     public static final String CREATE_ELEMENTARY_EXCHANGE_SUCCESS = "Create elementary exchanges success";
+
+    public static final String UPDATE_EXCHANGE_SUCCESS = "Update exchange success";
 }

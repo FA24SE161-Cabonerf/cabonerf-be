@@ -48,6 +48,8 @@ public class ExchangesServiceImpl implements ExchangesService {
     private ProcessImpactValueRepository pivRepository;
     @Autowired
     private ProcessImpactValueConverter pivConverter;
+    @Autowired
+    private ProcessServiceImpl processService;
 
     public static final String EXCHANGE_TYPE_ELEMENTARY = "Elementary";
     public static final String EXCHANGE_TYPE_PRODUCT = "Product";
@@ -55,22 +57,27 @@ public class ExchangesServiceImpl implements ExchangesService {
     public static final String DEFAULT_PRODUCT_UNIT = "kg";
 
     @Override
-    public ExchangesDto createElementaryExchanges(CreateElementaryRequest request) {
+    public ProcessDto createElementaryExchanges(CreateElementaryRequest request) {
+        UUID processId = request.getProcessId();
         EmissionSubstance emissionSubstance = findSubstancesCompartments(request.getEmissionSubstanceId(), request.isInput());
-        Process process = findProcess(request.getProcessId());
+        Process process = findProcess(processId);
 
         if (exchangesRepository.findElementary(process.getId(), emissionSubstance.getId()).isPresent()) {
             throw CustomExceptions.badRequest(MessageConstants.ELEMENTARY_EXIST);
         }
 
         Exchanges newExchange = createNewExchange(emissionSubstance, request.isInput(), process, EXCHANGE_TYPE_ELEMENTARY);
+        exchangesRepository.save(newExchange);
+        processService.computeProcessImpactValue(process);
 
-        return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.save(newExchange));
+        return processService.getProcessById(processId);
     }
 
     @Override
-    public ExchangesDto createProductExchanges(CreateProductRequest request) {
-        Process process = findProcess(request.getProcessId());
+    public ProcessDto createProductExchanges(CreateProductRequest request) {
+        UUID processId = request.getProcessId();
+
+        Process process = findProcess(processId);
 
         if (!request.isInput() && exchangesRepository.findProductOut(process.getId()).isPresent()) {
             throw CustomExceptions.badRequest(MessageConstants.PRODUCT_EXIST);
@@ -78,8 +85,9 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         Exchanges productExchange = createNewExchange(null, request.isInput(), process, EXCHANGE_TYPE_PRODUCT);
         productExchange.setName(request.getName());
+        exchangesRepository.save(productExchange);
 
-        return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.save(productExchange));
+        return processService.getProcessById(processId);
     }
 
     @Override
@@ -127,13 +135,102 @@ public class ExchangesServiceImpl implements ExchangesService {
     }
 
     @Override
-    public List<ExchangesDto> removeExchange(UUID exchangeId) {
+    public ProcessDto removeExchange(UUID exchangeId) {
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
         exchange.setStatus(Constants.STATUS_FALSE);
         exchangesRepository.save(exchange);
-        return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(exchange.getProcessId()));
+
+        processService.computeProcessImpactValue(exchange.getProcess());
+
+        return processService.getProcessById(exchange.getProcessId());
+    }
+
+    @Override
+    public ProcessDto updateElementaryExchange(UUID exchangeId, UpdateExchangeRequest request) {
+        UUID unitId = request.getUnitId();
+        UUID processId = request.getProcessId();
+        Double value = request.getValue();
+
+        Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
+        );
+
+        if (!exchange.getProcessId().equals(processId)) {
+            throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_AND_PROCESS_DIFFERENT);
+        }
+
+        Process process = processRepository.findByProcessId(processId).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
+        );
+
+        Unit unit = new Unit();
+        if (unitId != null) {
+            unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
+                    () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
+            );
+            exchange.setUnit(unit);
+        }
+
+        if (value != null) {
+            exchange.setValue(value);
+        }
+
+        exchangesRepository.save(exchange);
+
+        processService.computeProcessImpactValue(process);
+
+        return processService.getProcessById(processId);
+    }
+
+    @Override
+    public ProcessDto updateProductExchange(UUID exchangeId, UpdateExchangeRequest request) {
+        String name = request.getName();
+        UUID unitId = request.getUnitId();
+        UUID processId = request.getProcessId();
+        Double value = request.getValue();
+
+        Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
+        );
+
+        if (!exchange.getProcessId().equals(processId)) {
+            throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_AND_PROCESS_DIFFERENT);
+        }
+
+        Process process = processRepository.findByProcessId(processId).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
+        );
+
+        Unit unit = new Unit();
+        if (unitId != null) {
+            unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
+                    () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
+            );
+
+            // todo doi unit group 1 thang -> doi luon unit group cua nhung thang khac thong qua connector
+//            UnitGroup initialUnitGroup = exchange.getUnit().getUnitGroup();
+//
+//            if (!unit.getUnitGroup().equals(initialUnitGroup)) {
+//                connector
+//            }
+
+            exchange.setUnit(unit);
+        }
+
+        if (value != null) {
+            exchange.setValue(value);
+        }
+
+        if (name != null) {
+            exchange.setName(name);
+        }
+
+        exchangesRepository.save(exchange);
+
+
+        return processService.getProcessById(processId);
     }
 
     private EmissionSubstance findSubstancesCompartments(UUID id, boolean isInput) {

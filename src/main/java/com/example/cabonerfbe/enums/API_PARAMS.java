@@ -16,11 +16,6 @@ public class API_PARAMS {
     public static final String EMAIL_VERIFY = "/email-verify";
     public static final String MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR = "/midpoint-impact-characterization-factors";
     public static final String IMPORT_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR = "/import";
-    public static final String EXCHANGE = "/exchanges";
-    public static final String CREATE_ELEMENTARY_EXCHANGE = "/elementary-exchange";
-    public static final String CREATE_PRODUCT_EXCHANGE = "/product-exchange";
-    public static final String CONNECTOR = "/connectors";
-    public static final String REMOVE_EXCHANGE = "/{exchangeId}";
 
 
     /************************
@@ -127,4 +122,19 @@ public class API_PARAMS {
     public static final String GET_ALL_EMISSION_COMPARTMENTS = "/emission-compartments";
     public static final String GET_EMISSION_COMPARTMENTS_BY_ID = "/emission-compartments/{id}";
     public static final String EMISSION_SUBSTANCE = "/emission-substance";
+
+    /************************
+     *   EXCHANGE APIs   *
+     ************************/
+    public static final String EXCHANGE = "/exchanges";
+    public static final String ELEMENTARY_EXCHANGE = "/elementary-exchange";
+    public static final String PRODUCT_EXCHANGE = "/product-exchange";
+    public static final String REMOVE_EXCHANGE = "/{exchangeId}";
+    public static final String UPDATE_EXCHANGE = "/{exchangeId}";
+
+    /************************
+     *   CONNECTORS APIs   *
+     ************************/
+    public static final String CONNECTOR = "/connectors";
+
 }
