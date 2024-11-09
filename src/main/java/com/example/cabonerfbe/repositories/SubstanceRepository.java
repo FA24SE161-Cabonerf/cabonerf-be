@@ -17,5 +17,5 @@ public interface SubstanceRepository extends JpaRepository<Substance, UUID>, Jpa
     @Query("SELECT es FROM Substance es WHERE es.name like :name AND es.status = true")
     Optional<Substance> findByName(@Param("name") String name);
 
-    Optional<Substance> findByIdAndStatus(UUID emissionSubstanceId, boolean statusTrue);
+    Optional<Substance> findByIdAndStatus(UUID substanceId, boolean statusTrue);
 }

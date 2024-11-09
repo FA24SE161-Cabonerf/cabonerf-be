@@ -78,11 +78,11 @@ public class ExcelServiceImpl implements ExcelService {
                 }
                 try {
                     String cas = checkCas(row.getCell(0));
-                    String substanceName = row.getCell(1).getStringCellValue();
-                    String chemicalName = row.getCell(2).getStringCellValue();
-                    String molecularFormula = row.getCell(3) != null ? row.getCell(3).getStringCellValue() : null;
-                    String alternativeFormula = row.getCell(4) != null ? row.getCell(4).getStringCellValue() : null;
-                    String compartmentName = row.getCell(5).getStringCellValue();
+                    String substanceName = row.getCell(1).getStringCellValue().trim();
+                    String chemicalName = row.getCell(2).getStringCellValue().trim();
+                    String molecularFormula = row.getCell(3) != null ? row.getCell(3).getStringCellValue().trim() : null;
+                    String alternativeFormula = row.getCell(4) != null ? row.getCell(4).getStringCellValue().trim() : null;
+                    String compartmentName = row.getCell(5).getStringCellValue().trim();
                     Double individualist = getDoubleValueFromCell(row.getCell(6));
                     Double hierarchist = getDoubleValueFromCell(row.getCell(7));
                     Double egalitarian = getDoubleValueFromCell(row.getCell(8));

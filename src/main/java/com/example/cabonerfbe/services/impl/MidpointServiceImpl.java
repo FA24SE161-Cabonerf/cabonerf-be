@@ -114,7 +114,7 @@ public class MidpointServiceImpl implements MidpointService {
                 .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Impact method category not exist"));
 
         EmissionSubstance sc;
-        if (request.getSubstanceCompartmentId() == null) {
+        if (request.getEmissionSubstanceId() == null) {
             Substance es = esRepository.findByName(request.getName()).orElseGet(() -> {
                 Substance newSubstance = new Substance();
                 newSubstance.setName(request.getName());
@@ -131,10 +131,10 @@ public class MidpointServiceImpl implements MidpointService {
             sc = scRepository.checkExistBySubstanceAndCompartment(es.getId(), ec.getId())
                     .orElseGet(() -> scRepository.save(new EmissionSubstance(es, ec, u,true)));
 
-            request.setSubstanceCompartmentId(sc.getId());
+            request.setEmissionSubstanceId(sc.getId());
         } else {
-            sc = scRepository.findById(request.getSubstanceCompartmentId())
-                    .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Substance compartment not exist"));
+            sc = scRepository.findById(request.getEmissionSubstanceId())
+                    .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Emission substance not exist"));
            if(!sc.getUnit().getId().equals(request.getUnitId())){
               throw  CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Unit not same");
            }
@@ -156,7 +156,7 @@ public class MidpointServiceImpl implements MidpointService {
         factors.setEmissionSubstance(sc);
         factorsRepository.save(factors);
 
-        return midpointRepository.getWhenCreate(request.getSubstanceCompartmentId()).stream()
+        return midpointRepository.getWhenCreate(request.getEmissionSubstanceId()).stream()
                 .map(midpointConverter::fromQueryResultsToDto)
                 .collect(Collectors.toList());
     }
@@ -165,7 +165,7 @@ public class MidpointServiceImpl implements MidpointService {
     @Override
     public List<MidpointSubstanceFactorsDto> delete(UUID id) {
         EmissionSubstance sc = scRepository.findById(id)
-                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Substance Emission not exist"));
+                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Emission substance not exist"));
         sc.setStatus(false);
         scRepository.save(sc);
         List<Object[]> factor = midpointRepository.getWhenCreate(sc.getId());
