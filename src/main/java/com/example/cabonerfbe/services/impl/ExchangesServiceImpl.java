@@ -97,20 +97,12 @@ public class ExchangesServiceImpl implements ExchangesService {
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
         Page<EmissionSubstance> scPage = fetchEmissionSubstance(keyWord, emissionCompartmentId, pageable, input);
 
-        List<SearchEmissionSubstanceDto> response = new ArrayList<>();
-        if(impactCategoryId == null){
-            response = scPage.getContent().parallelStream()
-                    .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
-                    .collect(Collectors.toList());
-        }else{
-            response = scPage.getContent().parallelStream()
-                    .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
-                    .filter(dto -> dto.getFactors() != null && !dto.getFactors().isEmpty())// Lọc bỏ các phần tử có factors rỗng
-                    .collect(Collectors.toList());
-        }
+        List<SearchEmissionSubstanceDto> response =  scPage.getContent().parallelStream()
+                .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
+                .collect(Collectors.toList());
 
-        int totalElementsAfterFilter = response.size();
-        int totalPage = (int) Math.ceil((double) totalElementsAfterFilter / pageSize);
+
+        int totalPage = scPage.getTotalPages();
         if (pageCurrent > totalPage) {
             return SearchElementaryResponse.builder()
                     .totalPage(0)
