@@ -40,7 +40,8 @@
 --        ('423e4567-e89b-12d3-a456-426614174008', 'Industrial Fresh Water', true),
 --        ('423e4567-e89b-12d3-a456-426614174009', 'Annual Crop Land', true),
 --        ('423e4567-e89b-12d3-a456-426614174010', 'Water Consumed', true),
---        ('423e4567-e89b-12d3-a456-426614174011', 'Natural Resource', true);
+--        ('423e4567-e89b-12d3-a456-426614174011', 'Natural Resource', true),
+--        ('423e4567-e89b-12d3-a456-426614174012', 'Rural Air', true);
 --
 -- -- Table: perspective
 -- INSERT INTO perspective(id, name, description, abbr, status)
