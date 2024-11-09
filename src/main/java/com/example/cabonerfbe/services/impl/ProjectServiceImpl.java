@@ -69,7 +69,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     private static final int PAGE_INDEX_ADJUSTMENT = 1;
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(50);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
     @Override
     public List<Project> getProjectListByMethodId(UUID id) {
@@ -260,7 +260,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());
 
-
+        executorService.shutdown();
         return result;
     }
 

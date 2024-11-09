@@ -95,12 +95,11 @@ public class ExchangesServiceImpl implements ExchangesService {
                                            UUID emissionCompartmentId, UUID impactCategoryId, boolean input) {
         validateMethod(methodId);
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
-        Page<EmissionSubstance> scPage = fetchEmissionSubstance(keyWord, emissionCompartmentId, pageable, input);
+        Page<EmissionSubstance> scPage = fetchEmissionSubstance(keyWord, emissionCompartmentId, pageable, input,impactCategoryId);
 
         List<SearchEmissionSubstanceDto> response =  scPage.getContent().parallelStream()
                 .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
                 .collect(Collectors.toList());
-
 
         int totalPage = scPage.getTotalPages();
         if (pageCurrent > totalPage) {
@@ -272,8 +271,11 @@ public class ExchangesServiceImpl implements ExchangesService {
         return dto;
     }
 
-    private Page<EmissionSubstance> fetchEmissionSubstance(String keyWord, UUID emissionCompartmentId, Pageable pageable, boolean input) {
-        int condition = (keyWord == null ? 0 : 1) + (emissionCompartmentId == null ? 0 : 2);
+    private Page<EmissionSubstance> fetchEmissionSubstance(
+            String keyWord, UUID emissionCompartmentId, Pageable pageable, boolean input, UUID categoryId) {
+        int condition = (keyWord == null ? 0 : 1) +
+                (emissionCompartmentId == null ? 0 : 2) +
+                (categoryId == null ? 0 : 4);
 
         return switch (condition) {
             case 0 -> scRepository.findAllWithJoinFetch(input, pageable);
@@ -286,9 +288,20 @@ public class ExchangesServiceImpl implements ExchangesService {
                 EmissionCompartment ec = findEmissionCompartment(emissionCompartmentId);
                 yield scRepository.searchBySubstanceAndCompartmentWithJoinFetch(input, keyWord, ec.getId(), pageable);
             }
+            case 4 -> scRepository.findAllWithJoinFetchCategory(input, categoryId, pageable);
+            case 5 -> scRepository.searchByKeywordWithJoinFetchCategory(input, keyWord, categoryId, pageable);
+            case 6 -> {
+                EmissionCompartment ec = findEmissionCompartment(emissionCompartmentId);
+                yield scRepository.searchByCompartmentWithJoinFetchCategory(input, ec.getId(), categoryId, pageable);
+            }
+            case 7 -> {
+                EmissionCompartment ec = findEmissionCompartment(emissionCompartmentId);
+                yield scRepository.searchBySubstanceAndCompartmentWithJoinFetchCategory(input, keyWord, ec.getId(), categoryId, pageable);
+            }
             default -> throw new IllegalStateException("Unexpected condition: " + condition);
         };
     }
+
 
     private EmissionCompartment findEmissionCompartment(UUID emissionCompartmentId) {
         return ecRepository.findByIdAndStatus(emissionCompartmentId, true)
