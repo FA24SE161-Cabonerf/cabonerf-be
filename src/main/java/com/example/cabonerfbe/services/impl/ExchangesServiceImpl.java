@@ -99,10 +99,10 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         List<SearchEmissionSubstanceDto> response = scPage.getContent().parallelStream()
                 .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
+                .filter(Objects::nonNull)// Lọc bỏ các phần tử có factors rỗng
                 .collect(Collectors.toList());
 
         int totalPage = scPage.getTotalPages();
-        // Kiểm tra pageCurrent với totalPage và trả về danh sách rỗng nếu cần
         if (pageCurrent > totalPage) {
             return SearchElementaryResponse.builder()
                     .totalPage(0)
@@ -112,7 +112,6 @@ public class ExchangesServiceImpl implements ExchangesService {
                     .build();
         }
 
-
         return SearchElementaryResponse.builder()
                 .totalPage(totalPage)
                 .pageSize(pageSize)
@@ -120,6 +119,7 @@ public class ExchangesServiceImpl implements ExchangesService {
                 .list(response)
                 .build();
     }
+
 
     @Override
     public List<EmissionSubstanceDto> getAllAdmin(String keyword) {
@@ -297,12 +297,16 @@ public class ExchangesServiceImpl implements ExchangesService {
 
 
     private SearchEmissionSubstanceDto buildSearchElementaryDto(EmissionSubstance sc, UUID impactCategoryId, UUID methodId) {
-
         SearchEmissionSubstanceDto scDto = scConverter.ToDto(sc);
 
         List<MidpointImpactCharacterizationFactors> factors = impactCategoryId == null
                 ? factorRepository.findBySubstanceCompartmentAndMethodWithJoinFetch(sc.getId(), methodId)
                 : factorRepository.findBySubstanceCompartmentAndMethodAndCategoryWithJoinFetch(sc.getId(), methodId, impactCategoryId);
+
+        // Nếu factors rỗng và impactCategoryId không null, trả về null để loại bỏ phần tử này
+        if (impactCategoryId != null && factors.isEmpty()) {
+            return null;
+        }
 
         scDto.setFactors(factors.stream()
                 .map(factorConverter::fromMidpointToFactor)
