@@ -97,12 +97,20 @@ public class ExchangesServiceImpl implements ExchangesService {
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
         Page<EmissionSubstance> scPage = fetchEmissionSubstance(keyWord, emissionCompartmentId, pageable, input);
 
-        List<SearchEmissionSubstanceDto> response = scPage.getContent().parallelStream()
-                .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
-                .filter(Objects::nonNull)// Lọc bỏ các phần tử có factors rỗng
-                .collect(Collectors.toList());
+        List<SearchEmissionSubstanceDto> response = new ArrayList<>();
+        if(impactCategoryId == null){
+            response = scPage.getContent().parallelStream()
+                    .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
+                    .collect(Collectors.toList());
+        }else{
+            response = scPage.getContent().parallelStream()
+                    .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
+                    .filter(dto -> dto.getFactors() != null && !dto.getFactors().isEmpty())// Lọc bỏ các phần tử có factors rỗng
+                    .collect(Collectors.toList());
+        }
 
-        int totalPage = scPage.getTotalPages();
+        int totalElementsAfterFilter = response.size();
+        int totalPage = (int) Math.ceil((double) totalElementsAfterFilter / pageSize);
         if (pageCurrent > totalPage) {
             return SearchElementaryResponse.builder()
                     .totalPage(0)
@@ -297,16 +305,12 @@ public class ExchangesServiceImpl implements ExchangesService {
 
 
     private SearchEmissionSubstanceDto buildSearchElementaryDto(EmissionSubstance sc, UUID impactCategoryId, UUID methodId) {
+
         SearchEmissionSubstanceDto scDto = scConverter.ToDto(sc);
 
         List<MidpointImpactCharacterizationFactors> factors = impactCategoryId == null
                 ? factorRepository.findBySubstanceCompartmentAndMethodWithJoinFetch(sc.getId(), methodId)
                 : factorRepository.findBySubstanceCompartmentAndMethodAndCategoryWithJoinFetch(sc.getId(), methodId, impactCategoryId);
-
-        // Nếu factors rỗng và impactCategoryId không null, trả về null để loại bỏ phần tử này
-        if (impactCategoryId != null && factors.isEmpty()) {
-            return null;
-        }
 
         scDto.setFactors(factors.stream()
                 .map(factorConverter::fromMidpointToFactor)
