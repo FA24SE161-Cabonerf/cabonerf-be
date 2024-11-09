@@ -97,12 +97,20 @@ public class ExchangesServiceImpl implements ExchangesService {
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
         Page<EmissionSubstance> scPage = fetchEmissionSubstance(keyWord, emissionCompartmentId, pageable, input);
 
-        List<SearchEmissionSubstanceDto> response = scPage.getContent().parallelStream()
-                .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
-                .collect(Collectors.toList());
+        List<SearchEmissionSubstanceDto> response = new ArrayList<>();
+        if(impactCategoryId == null){
+            response = scPage.getContent().parallelStream()
+                    .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
+                    .collect(Collectors.toList());
+        }else{
+            response = scPage.getContent().parallelStream()
+                    .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
+                    .filter(dto -> dto.getFactors() != null && !dto.getFactors().isEmpty())// Lọc bỏ các phần tử có factors rỗng
+                    .collect(Collectors.toList());
+        }
 
-        int totalPage = scPage.getTotalPages();
-        // Kiểm tra pageCurrent với totalPage và trả về danh sách rỗng nếu cần
+        int totalElementsAfterFilter = response.size();
+        int totalPage = (int) Math.ceil((double) totalElementsAfterFilter / pageSize);
         if (pageCurrent > totalPage) {
             return SearchElementaryResponse.builder()
                     .totalPage(0)
@@ -112,7 +120,6 @@ public class ExchangesServiceImpl implements ExchangesService {
                     .build();
         }
 
-
         return SearchElementaryResponse.builder()
                 .totalPage(totalPage)
                 .pageSize(pageSize)
@@ -120,6 +127,7 @@ public class ExchangesServiceImpl implements ExchangesService {
                 .list(response)
                 .build();
     }
+
 
     @Override
     public List<EmissionSubstanceDto> getAllAdmin(String keyword) {
