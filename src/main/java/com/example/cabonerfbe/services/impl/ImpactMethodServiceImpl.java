@@ -11,11 +11,9 @@ import com.example.cabonerfbe.models.ImpactCategory;
 import com.example.cabonerfbe.models.ImpactMethodCategory;
 import com.example.cabonerfbe.models.LifeCycleImpactAssessmentMethod;
 import com.example.cabonerfbe.models.Perspective;
-import com.example.cabonerfbe.repositories.ImpactCategoryRepository;
-import com.example.cabonerfbe.repositories.ImpactMethodCategoryRepository;
-import com.example.cabonerfbe.repositories.ImpactMethodRepository;
-import com.example.cabonerfbe.repositories.PerspectiveRepository;
+import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.BaseImpactMethodRequest;
+import com.example.cabonerfbe.response.GetNameMethodResponse;
 import com.example.cabonerfbe.response.ImpactMethodCategoryResponse;
 import com.example.cabonerfbe.response.ImpactMethodResponse;
 import com.example.cabonerfbe.services.ImpactMethodService;
@@ -24,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ImpactMethodServiceImpl implements ImpactMethodService {
@@ -44,6 +43,9 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
 
     @Autowired
     private ImpactCategoryConverter impactCategoryConverter;
+
+    @Autowired
+    private LifeCycleImpactAssessmentMethodRepository methodRepository;
 
     @Override
     public List<LifeCycleImpactAssessmentMethodDto> getAllImpactMethods() {
@@ -106,6 +108,12 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
         response.setImpactMethod(impactMethodConverter.fromImpactMethodToImpactMethodResponse(impactMethod));
         response.setImpactCategory(impactCategoryConverter.fromImpactCategoryToImpactCategoryDto(impactCategory));
         return response;
+    }
+
+    @Override
+    public List<GetNameMethodResponse> getNameAllMethod() {
+        List<String> list = methodRepository.getAllWithName();
+        return list.stream().map(impactMethodConverter::fromModelToName).collect(Collectors.toList());
     }
 
     private LifeCycleImpactAssessmentMethod mapRequestToImpactMethod(LifeCycleImpactAssessmentMethod impactMethod, BaseImpactMethodRequest request) {
