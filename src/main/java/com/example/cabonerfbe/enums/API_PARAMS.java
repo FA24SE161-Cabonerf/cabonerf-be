@@ -50,6 +50,9 @@ public class API_PARAMS {
 
     public static final String GET_ALL_MIDPOINT_IMPACT_CATEGORY = "/midpoint-categories";
     public static final String GET_MIDPOINT_IMPACT_CATEGORY_BY_ID = "/midpoint-categories";
+    public static final String CREATE_MIDPOINT_IMPACT_CATEGORY = "/midpoint-categories";
+    public static final String UPDATE_MIDPOINT_IMPACT_CATEGORY = "/midpoint-categories/{id}";
+    public static final String DELETE_MIDPOINT_IMPACT_CATEGORY= "/midpoint-categories/{id}";
 
 
 
