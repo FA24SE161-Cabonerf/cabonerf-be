@@ -39,4 +39,7 @@ public interface MidpointRepository extends JpaRepository<MidpointImpactCharacte
     List<Object[]> getWhenCreate(@Param("id") UUID id);
 
     Optional<MidpointImpactCharacterizationFactors> findByIdAndStatus(UUID id, boolean status);
+
+    @Query(value = QueryStrings.FIND_MIDPOINT_SUBSTANCE_FACTORS_TO_EXPORT, nativeQuery = true)
+    List<Object[]> findAllToExport(@Param("methodCategoryId") UUID methodCategoryId);
 }
