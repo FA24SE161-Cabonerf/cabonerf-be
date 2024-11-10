@@ -67,7 +67,8 @@ public class ProcessServiceImpl implements ProcessService {
     public static final double BASE_UNIT_LEVEL = 0;
 
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(50);
+
+    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
 
     @Override
@@ -168,7 +169,7 @@ public class ProcessServiceImpl implements ProcessService {
 
         CompletableFuture<Void> allFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         allFuture.join();
-
+        executorService.shutdown();
         return futures.stream()
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());
