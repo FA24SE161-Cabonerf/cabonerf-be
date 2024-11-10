@@ -22,4 +22,9 @@ public interface LifeCycleImpactAssessmentMethodRepository extends JpaRepository
     List<LifeCycleImpactAssessmentMethod> findAllByName(String name);
 
     Optional<LifeCycleImpactAssessmentMethod> findByIdAndStatus(UUID id, boolean status);
+
+    @Query("SELECT m.name FROM LifeCycleImpactAssessmentMethod m GROUP BY m.name")
+    List<String> getAllWithName();
+
+
 }

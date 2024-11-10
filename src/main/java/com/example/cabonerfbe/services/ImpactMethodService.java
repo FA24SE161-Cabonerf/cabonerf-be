@@ -3,6 +3,7 @@ package com.example.cabonerfbe.services;
 import com.example.cabonerfbe.dto.ImpactCategoryDto;
 import com.example.cabonerfbe.dto.LifeCycleImpactAssessmentMethodDto;
 import com.example.cabonerfbe.request.BaseImpactMethodRequest;
+import com.example.cabonerfbe.response.GetNameMethodResponse;
 import com.example.cabonerfbe.response.ImpactMethodCategoryResponse;
 import com.example.cabonerfbe.response.ImpactMethodResponse;
 
@@ -22,4 +23,6 @@ public interface ImpactMethodService {
     ImpactMethodResponse deleteImpactMethodById(UUID methodId);
 
     ImpactMethodCategoryResponse addImpactCategoryToImpactMethod(UUID methodId, UUID categoryId);
+
+    List<GetNameMethodResponse> getNameAllMethod();
 }
