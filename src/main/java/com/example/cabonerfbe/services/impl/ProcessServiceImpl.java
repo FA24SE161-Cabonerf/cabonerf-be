@@ -60,15 +60,19 @@ public class ProcessServiceImpl implements ProcessService {
     private MessagePublisher messagePublisher;
     @Autowired
     private MidpointImpactCharacterizationFactorsRepository midpointFactorsRepository;
+    @Autowired
+    private UnitServiceImpl unitService;
 
     public static final double NEW_OVERALL_FLOW = 0;
     public static final double DEFAULT_SYSTEM_LEVEL = 0;
     public static final double DEFAULT_PREVIOUS_PROCESS_VALUE = 0;
     public static final double BASE_UNIT_LEVEL = 0;
 
-
-
     private final ExecutorService executorService = Executors.newFixedThreadPool(17);
+    @Autowired
+    private UnitRepository unitRepository;
+    @Autowired
+    private EmissionSubstanceRepository emissionSubstanceRepository;
 
 
     @Override
@@ -154,7 +158,6 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     private List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list) {
-
         List<CompletableFuture<ProcessImpactValueDto>> futures = list.stream()
                 .map(x -> CompletableFuture.supplyAsync(() -> {
                     ProcessImpactValueDto p = new ProcessImpactValueDto();
@@ -170,7 +173,6 @@ public class ProcessServiceImpl implements ProcessService {
 
         CompletableFuture<Void> allFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         allFuture.join();
-        executorService.shutdown();
         return futures.stream()
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());
@@ -183,7 +185,7 @@ public class ProcessServiceImpl implements ProcessService {
         messagePublisher.publishCreateProcess(RabbitMQConfig.CREATED_PROCESS_EXCHANGE, RabbitMQConfig.CREATED_PROCESS_ROUTING_KEY, processDto);
     }
 
-    public void computeProcessImpactValue(Process process) {
+    public void computeProcessImpactValueAllExchange(Process process) {
         UUID methodId = process.getProject().getLifeCycleImpactAssessmentMethod().getId();
         UUID processId = process.getId();
 
@@ -197,6 +199,7 @@ public class ProcessServiceImpl implements ProcessService {
 
             ProcessImpactValue processImpactValue = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(processId, methodCategoryId)
                     .orElse(new ProcessImpactValue());
+
             processImpactValue.setImpactMethodCategory(methodCategory);
             processImpactValue.setProcess(process);
             processImpactValue.setOverallImpactContribution(NEW_OVERALL_FLOW);
@@ -225,6 +228,60 @@ public class ProcessServiceImpl implements ProcessService {
         processImpactValueRepository.saveAll(processImpactValueList);
     }
 
+    public void computeProcessImpactValueSingleExchange(Process process, Exchanges exchange, double initialValue) {
 
+        UUID methodId = process.getProject().getLifeCycleImpactAssessmentMethod().getId();
+        UUID processId = process.getId();
+
+        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
+
+        List<UUID> methodCategoryIdList = impactMethodCategoryRepository.findIdByMethod(methodId);
+
+        // Pre-fetch common values to avoid redundant calls
+        UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
+        Unit baseUnit = exchange.getEmissionSubstance().getUnit();
+
+        // Use a map to avoid repeated searches
+        Map<UUID, ProcessImpactValue> processImpactValueMap = new HashMap<>();
+
+        for (UUID methodCategoryId : methodCategoryIdList) {
+
+            // Check if ProcessImpactValue exists in the map, else create it
+            ProcessImpactValue processImpactValue = processImpactValueMap.computeIfAbsent(methodCategoryId, key -> {
+                return processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(processId, key)
+                        .orElse(new ProcessImpactValue());
+            });
+
+            processImpactValue.setImpactMethodCategory(impactMethodCategoryRepository.findById(methodCategoryId).orElseThrow(
+                    () -> CustomExceptions.badRequest(MessageConstants.ERROR_CREATING_PROCESS_IMPACT_VALUE)
+            ));
+            processImpactValue.setProcess(process);
+            processImpactValue.setOverallImpactContribution(NEW_OVERALL_FLOW);
+            processImpactValue.setPreviousProcessValue(DEFAULT_PREVIOUS_PROCESS_VALUE);
+            processImpactValue.setSystemLevel(DEFAULT_SYSTEM_LEVEL);
+
+            double unitLevel = processImpactValue.getUnitLevel();
+
+            // Reuse emission substance id and baseUnit to avoid redundant calls
+            double exchangeValue = unitService.convertValue(exchange.getUnit(), exchange.getValue() - initialValue, baseUnit);
+
+            Optional<Double> decimalValueOptional =
+                    midpointFactorsRepository.findDecimalValueByMethodCategoryAndEmissionSubstance(methodCategoryId, emissionSubstanceId);
+
+            unitLevel += decimalValueOptional
+                    .map(decimalValue -> exchangeValue * decimalValue)
+                    .orElse(BASE_UNIT_LEVEL);
+
+            processImpactValue.setUnitLevel(unitLevel);
+            processImpactValueList.add(processImpactValue);
+        }
+
+        // Batch save processImpactValues in chunks
+        int batchSize = 100;
+        for (int i = 0; i < processImpactValueList.size(); i += batchSize) {
+            List<ProcessImpactValue> batch = processImpactValueList.subList(i, Math.min(i + batchSize, processImpactValueList.size()));
+            processImpactValueRepository.saveAll(batch);
+        }
+    }
 
 }

@@ -39,4 +39,6 @@ public interface UnitRepository extends JpaRepository<Unit, UUID> {
     boolean existsByIsDefaultAndStatusAndUnitGroup(Boolean isDefault, boolean status, UnitGroup unitGroup);
     @Query("SELECT u FROM Unit u JOIN FETCH u.unitGroup ug WHERE ug.id = :unitGroupId AND u.isDefault = true")
     Unit findDefault(@Param("unitGroupId") UUID unitGroupId);
+
+
 }

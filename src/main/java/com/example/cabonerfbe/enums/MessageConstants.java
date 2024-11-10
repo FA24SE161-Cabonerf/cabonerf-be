@@ -91,4 +91,6 @@ public class MessageConstants {
     public static final String CREATE_ELEMENTARY_EXCHANGE_SUCCESS = "Create elementary exchanges success";
 
     public static final String UPDATE_EXCHANGE_SUCCESS = "Update exchange success";
+
+    public static final String ERROR_CREATING_PROCESS_IMPACT_VALUE = "Error creating process impact value";
 }

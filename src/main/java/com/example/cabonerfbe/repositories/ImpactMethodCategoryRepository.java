@@ -20,9 +20,11 @@ public interface ImpactMethodCategoryRepository extends JpaRepository<ImpactMeth
             "WHERE ic.id = ?1 AND lcim.id = ?2")
     ImpactMethodCategory findByImpactCategoryAndImpactMethod(UUID impactCategoryId, UUID impactMethodId);
 
-
     @Query("SELECT a FROM ImpactMethodCategory a WHERE a.lifeCycleImpactAssessmentMethod.id = ?1 AND a.status = true")
     List<ImpactMethodCategory> findByMethod(UUID methodId);
+
+    @Query("SELECT a.id FROM ImpactMethodCategory a WHERE a.lifeCycleImpactAssessmentMethod.id = ?1 AND a.status = true")
+    List<UUID> findIdByMethod(UUID methodId);
 
     boolean existsByImpactCategoryAndLifeCycleImpactAssessmentMethodAndStatus(ImpactCategory impactCategory, LifeCycleImpactAssessmentMethod lifeCycleImpactAssessmentMethod, boolean status);
 

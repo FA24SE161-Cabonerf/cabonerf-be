@@ -47,4 +47,10 @@ public interface MidpointImpactCharacterizationFactorsRepository extends JpaRepo
             select m from MidpointImpactCharacterizationFactors m
             where m.impactMethodCategory.id = ?1 and m.emissionSubstance.id = ?2 and m.status = true""")
     Optional<MidpointImpactCharacterizationFactors> findByMethodCategoryAndEmissionSubstance(UUID methodCategoryId, UUID emissionSubstanceId);
+
+    @Query("""
+            select m.decimalValue from MidpointImpactCharacterizationFactors m
+            where m.impactMethodCategory.id = ?1 and m.emissionSubstance.id = ?2 and m.status = true""")
+    Optional<Double> findDecimalValueByMethodCategoryAndEmissionSubstance(UUID methodCategoryId, UUID emissionSubstanceId);
+
 }

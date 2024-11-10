@@ -50,6 +50,8 @@ public class ExchangesServiceImpl implements ExchangesService {
     private ProcessImpactValueConverter pivConverter;
     @Autowired
     private ProcessServiceImpl processService;
+    @Autowired
+    private UnitServiceImpl unitService;
 
     public static final String EXCHANGE_TYPE_ELEMENTARY = "Elementary";
     public static final String EXCHANGE_TYPE_PRODUCT = "Product";
@@ -68,8 +70,8 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         Exchanges newExchange = createNewExchange(emissionSubstance, request.isInput(), process, EXCHANGE_TYPE_ELEMENTARY);
         exchangesRepository.save(newExchange);
-        processService.computeProcessImpactValue(process);
 
+        processService.computeProcessImpactValueSingleExchange(process, newExchange, DEFAULT_VALUE);
         return processService.getProcessById(processId);
     }
 
@@ -95,9 +97,9 @@ public class ExchangesServiceImpl implements ExchangesService {
                                            UUID emissionCompartmentId, UUID impactCategoryId, boolean input) {
         validateMethod(methodId);
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
-        Page<EmissionSubstance> scPage = fetchEmissionSubstance(keyWord, emissionCompartmentId, pageable, input,impactCategoryId);
+        Page<EmissionSubstance> scPage = fetchEmissionSubstance(keyWord, emissionCompartmentId, pageable, input, impactCategoryId);
 
-        List<SearchEmissionSubstanceDto> response =  scPage.getContent().parallelStream()
+        List<SearchEmissionSubstanceDto> response = scPage.getContent().parallelStream()
                 .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
                 .collect(Collectors.toList());
 
@@ -139,9 +141,13 @@ public class ExchangesServiceImpl implements ExchangesService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
         exchange.setStatus(Constants.STATUS_FALSE);
+
+        double initialValue = exchange.getValue();
+
+        exchange.setValue(DEFAULT_VALUE);
         exchangesRepository.save(exchange);
 
-        processService.computeProcessImpactValue(exchange.getProcess());
+        processService.computeProcessImpactValueSingleExchange(exchange.getProcess(), exchange, initialValue);
 
         return processService.getProcessById(exchange.getProcessId());
     }
@@ -164,13 +170,17 @@ public class ExchangesServiceImpl implements ExchangesService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
         );
 
-        Unit unit = new Unit();
+        double initialValue = exchange.getValue();
+
         if (unitId != null) {
-            unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
+            Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
                     () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
             );
+
+            initialValue = unitService.convertValue(exchange.getUnit(), initialValue, unit);
             exchange.setUnit(unit);
         }
+
 
         if (value != null) {
             exchange.setValue(value);
@@ -178,7 +188,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         exchangesRepository.save(exchange);
 
-        processService.computeProcessImpactValue(process);
+        processService.computeProcessImpactValueSingleExchange(process, exchange, initialValue);
 
         return processService.getProcessById(processId);
     }
