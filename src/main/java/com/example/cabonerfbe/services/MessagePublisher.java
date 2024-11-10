@@ -2,6 +2,7 @@ package com.example.cabonerfbe.services;
 
 import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.dto.ProcessDto;
+import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
 import com.example.cabonerfbe.request.RabbitMqJsonRequest;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,8 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -38,5 +41,11 @@ public class MessagePublisher {
     public void publishCreateProcess(String exchangeName, String routingKey, ProcessDto response) {
         rabbitTemplate.convertAndSend(exchangeName, routingKey, response);
         log.info("Publish message: {}, exchange: {}, key: {}", response, exchangeName, routingKey);
+    }
+
+    public void publishCreateProcessImpactValue(String exchangeName, String routingKey, UUID processId, UUID methodId) {
+        CreateProcessImpactValueRequest createProcessImpactValueRequest = new CreateProcessImpactValueRequest(processId, methodId);
+        rabbitTemplate.convertAndSend(exchangeName, routingKey, createProcessImpactValueRequest);
+        log.info("Publish create impact value message: {}, exchange: {}, key: {}", createProcessImpactValueRequest, exchangeName, routingKey);
     }
 }

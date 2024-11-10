@@ -181,7 +181,6 @@ public class ExchangesServiceImpl implements ExchangesService {
             exchange.setUnit(unit);
         }
 
-
         if (value != null) {
             exchange.setValue(value);
         }
