@@ -120,4 +120,7 @@ public class UnitServiceImpl implements UnitService {
         return unitConverter.fromUnitToUnitResponse(unit);
     }
 
+    public double convertValue(Unit originalUnit, double originalValue, Unit targetUnit) {
+        return originalValue * originalUnit.getConversionFactor() / targetUnit.getConversionFactor();
+    }
 }

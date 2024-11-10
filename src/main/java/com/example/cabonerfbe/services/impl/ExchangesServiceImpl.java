@@ -50,6 +50,8 @@ public class ExchangesServiceImpl implements ExchangesService {
     private ProcessImpactValueConverter pivConverter;
     @Autowired
     private ProcessServiceImpl processService;
+    @Autowired
+    private UnitServiceImpl unitService;
 
     public static final String EXCHANGE_TYPE_ELEMENTARY = "Elementary";
     public static final String EXCHANGE_TYPE_PRODUCT = "Product";
@@ -95,9 +97,9 @@ public class ExchangesServiceImpl implements ExchangesService {
                                            UUID emissionCompartmentId, UUID impactCategoryId, boolean input) {
         validateMethod(methodId);
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
-        Page<EmissionSubstance> scPage = fetchEmissionSubstance(keyWord, emissionCompartmentId, pageable, input,impactCategoryId);
+        Page<EmissionSubstance> scPage = fetchEmissionSubstance(keyWord, emissionCompartmentId, pageable, input, impactCategoryId);
 
-        List<SearchEmissionSubstanceDto> response =  scPage.getContent().parallelStream()
+        List<SearchEmissionSubstanceDto> response = scPage.getContent().parallelStream()
                 .map(sc -> buildSearchElementaryDto(sc, impactCategoryId, methodId))
                 .collect(Collectors.toList());
 
@@ -168,15 +170,17 @@ public class ExchangesServiceImpl implements ExchangesService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
         );
 
-        Unit unit = new Unit();
+        double initialValue = exchange.getValue();
+
         if (unitId != null) {
-            unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
+            Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
                     () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
             );
+
+            initialValue = unitService.convertValue(exchange.getUnit(), initialValue, unit);
             exchange.setUnit(unit);
         }
 
-        double initialValue = exchange.getValue();
 
         if (value != null) {
             exchange.setValue(value);
