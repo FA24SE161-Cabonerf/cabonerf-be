@@ -121,15 +121,16 @@ public class MidpointServiceImpl implements MidpointService {
                 newSubstance.setChemicalName(Optional.ofNullable(request.getChemicalName()).orElse("-"));
                 newSubstance.setMolecularFormula(Optional.ofNullable(request.getMolecularFormula()).orElse("-"));
                 newSubstance.setAlternativeFormula(Optional.ofNullable(request.getAlternativeFormula()).orElse("-"));
+                newSubstance.setCas(Optional.ofNullable(request.getCas()).orElse("-"));
                 return esRepository.save(newSubstance);
             });
 
             EmissionCompartment ec = ecRepository.getReferenceById(request.getEmissionCompartmentId());
             Unit u = uRepository.findByIdAndStatus(request.getUnitId(), true)
                     .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Unit not exist"));
-
+            boolean isInput = Objects.equals(ec.getName(), "Natural Resource");
             sc = scRepository.checkExistBySubstanceAndCompartment(es.getId(), ec.getId())
-                    .orElseGet(() -> scRepository.save(new EmissionSubstance(es, ec, u,true)));
+                    .orElseGet(() -> scRepository.save(new EmissionSubstance(es, ec, u, isInput)));
 
             request.setEmissionSubstanceId(sc.getId());
         } else {

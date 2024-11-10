@@ -4,6 +4,7 @@ import com.example.cabonerfbe.enums.API_PARAMS;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.request.CreateFactorRequest;
+import com.example.cabonerfbe.request.ExportFactorRequest;
 import com.example.cabonerfbe.request.PaginationRequest;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.MidpointService;
@@ -83,8 +84,20 @@ public class MidpointController {
 
     @GetMapping(API_PARAMS.ADMIN + API_PARAMS.DOWNLOAD_ERROR_LOG_MIDPOINT_FACTOR_BY_ID)
     public ResponseEntity<Resource> downloadFileLog(@RequestParam String fileName) throws IOException {
-        log.info("Download File Log");
+        log.info("Start downloadFileLog . fileName: {}",fileName);
         return excelService.downloadErrorLog(fileName);
+    }
+
+    @GetMapping(API_PARAMS.ADMIN + API_PARAMS.DOWNLOAD_TEMPLATE_MIDPOINT_FACTOR)
+    public ResponseEntity<Resource> downloadFactorTemplate() throws IOException {
+        log.info("Start downloadFactorTemplate");
+        return excelService.downloadTemplate();
+    }
+
+    @GetMapping(API_PARAMS.ADMIN + API_PARAMS.EXPORT_MIDPOINT_FACTOR)
+    public ResponseEntity<Resource> exportFactor(ExportFactorRequest request){
+        log.info("Start exportFactor");
+        return excelService.exportFactor(request);
     }
 
 }
