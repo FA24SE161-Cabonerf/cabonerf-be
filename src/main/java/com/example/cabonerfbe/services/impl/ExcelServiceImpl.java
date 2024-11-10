@@ -85,7 +85,9 @@ public class ExcelServiceImpl implements ExcelService {
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
             ImpactCategory category = impactCategoryRepository.findByName(workbook.getSheetName(0).toUpperCase());
-
+            if(category == null){
+                throw CustomExceptions.notFound("Impact category not exist");
+            }
             for (Row row : sheet) {
                 if (row.getRowNum() < 5 || shouldSkipRow(row)) continue;
 
@@ -127,11 +129,14 @@ public class ExcelServiceImpl implements ExcelService {
             Double value = getDoubleValueFromCell(row.getCell(col));
             if (value != null) {
                 ImpactMethodCategory methodCategory = getImpactMethodCategory(methodName, category.getId(), name);
-                if (createOrUpdateFactor(factorsList, emissionSubstance, methodCategory, value)) {
+                if (createOrUpdateFactor(factorsList, emissionSubstance, methodCategory, value,0,row.getRowNum(),col)) {
                     response.setMethodValue(methodName, value);
                 }
             }
         });
+        if(response.getEgalitarian() == null && response.getEgalitarian() == null && response.getIndividualist() == null){
+            return null;
+        }
         return response;
     }
 
@@ -244,7 +249,7 @@ public class ExcelServiceImpl implements ExcelService {
         ByteArrayResource resource = new ByteArrayResource(excel);
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + method.getName() + " ("+ method.getPerspective().getAbbr() +").xlsx" )
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + method.getName() + " (" + method.getPerspective().getAbbr() + ").xlsx")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .contentLength(excel.length)
                 .body(resource);
@@ -292,13 +297,14 @@ public class ExcelServiceImpl implements ExcelService {
     }
 
     private boolean createOrUpdateFactor(List<MidpointImpactCharacterizationFactors> factorsList,
-                                         EmissionSubstance emissionSubstance, ImpactMethodCategory methodCategory, Double value) {
+                                         EmissionSubstance emissionSubstance, ImpactMethodCategory methodCategory, Double value,
+                                         int sheetNumber, int rowsNumber, int columnsNumber) {
         if (repository.checkExist(emissionSubstance.getId(), methodCategory.getId()).isEmpty()) {
             factorsList.add(new MidpointImpactCharacterizationFactors(methodCategory, emissionSubstance,
                     String.format("%.2e", value), value));
             return true;
         }
-        errorContent.add("Data already exists");
+        errorContent.add(sheetNumber + " - " + rowsNumber + " - " + columnsNumber + " - Data already exists");
         return false;
     }
 
