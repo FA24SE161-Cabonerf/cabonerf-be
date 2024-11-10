@@ -85,7 +85,9 @@ public class ExcelServiceImpl implements ExcelService {
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
             ImpactCategory category = impactCategoryRepository.findByName(workbook.getSheetName(0).toUpperCase());
-
+            if(category == null){
+                throw CustomExceptions.notFound("Impact category not exist");
+            }
             for (Row row : sheet) {
                 if (row.getRowNum() < 5 || shouldSkipRow(row)) continue;
 
