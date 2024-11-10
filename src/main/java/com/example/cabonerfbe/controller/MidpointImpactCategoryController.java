@@ -32,4 +32,6 @@ public class MidpointImpactCategoryController {
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_ALL_MIDPOINT_IMPACT_CATEGORY_SUCCESS, midpointImpactCategoryService.getAllMidpointImpactCategories())
         );
     }
+
+
 }

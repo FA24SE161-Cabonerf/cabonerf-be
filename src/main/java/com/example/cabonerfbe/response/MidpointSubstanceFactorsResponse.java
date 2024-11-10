@@ -21,4 +21,20 @@ public class MidpointSubstanceFactorsResponse {
     private Double individualist;
     private Double hierarchist;
     private Double egalitarian;
+
+    public void setMethodValue(String methodName, Double value) {
+        switch (methodName) {
+            case "Individualist":
+                this.individualist = value;
+                break;
+            case "Hierarchist":
+                this.hierarchist = value;
+                break;
+            case "Egalitarian":
+                this.egalitarian = value;
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid method name: " + methodName);
+        }
+    }
 }
