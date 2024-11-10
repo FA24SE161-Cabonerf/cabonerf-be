@@ -16,4 +16,8 @@ public class Constants {
     public static final String PRODUCT_EXCHANGE = "Product";
     public static final String ELEMENTARY_EXCHANGE = "Elementary";
 
+    public static final String COMPUTE_EXCHANGE_TYPE_CREATE = "Create";
+    public static final String COMPUTE_EXCHANGE_TYPE_UPDATE = "Update";
+    public static final String COMPUTE_EXCHANGE_TYPE_DELETE = "Delete";
+
 }

@@ -68,8 +68,8 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         Exchanges newExchange = createNewExchange(emissionSubstance, request.isInput(), process, EXCHANGE_TYPE_ELEMENTARY);
         exchangesRepository.save(newExchange);
-        processService.computeProcessImpactValue(process);
 
+        processService.computeProcessImpactValueSingleExchange(process, newExchange, DEFAULT_VALUE);
         return processService.getProcessById(processId);
     }
 
@@ -140,9 +140,13 @@ public class ExchangesServiceImpl implements ExchangesService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
         exchange.setStatus(Constants.STATUS_FALSE);
+
+        double initialValue = exchange.getValue();
+
+        exchange.setValue(DEFAULT_VALUE);
         exchangesRepository.save(exchange);
 
-        processService.computeProcessImpactValue(exchange.getProcess());
+        processService.computeProcessImpactValueSingleExchange(exchange.getProcess(), exchange, initialValue);
 
         return processService.getProcessById(exchange.getProcessId());
     }
@@ -173,13 +177,15 @@ public class ExchangesServiceImpl implements ExchangesService {
             exchange.setUnit(unit);
         }
 
+        double initialValue = exchange.getValue();
+
         if (value != null) {
             exchange.setValue(value);
         }
 
         exchangesRepository.save(exchange);
 
-        processService.computeProcessImpactValue(process);
+        processService.computeProcessImpactValueSingleExchange(process, exchange, initialValue);
 
         return processService.getProcessById(processId);
     }
