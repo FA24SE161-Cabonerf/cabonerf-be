@@ -26,7 +26,7 @@ public class Base {
     @Column
     @CreatedDate
     @JsonIgnore
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
     @Column
     @LastModifiedDate
     @JsonIgnore
