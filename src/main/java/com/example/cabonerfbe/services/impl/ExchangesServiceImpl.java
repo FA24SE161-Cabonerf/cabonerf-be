@@ -142,11 +142,12 @@ public class ExchangesServiceImpl implements ExchangesService {
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
-        exchange.setStatus(Constants.STATUS_FALSE);
 
         double initialValue = exchange.getValue();
 
         exchange.setValue(DEFAULT_VALUE);
+        exchange.setStatus(Constants.STATUS_FALSE);
+
         exchangesRepository.save(exchange);
 
         processImpactValueService.computeProcessImpactValueSingleExchange(exchange.getProcess(), exchange, initialValue);

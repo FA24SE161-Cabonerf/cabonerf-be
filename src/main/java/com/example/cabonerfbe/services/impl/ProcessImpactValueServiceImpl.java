@@ -33,6 +33,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private MidpointImpactCharacterizationFactorsRepository midpointFactorsRepository;
     @Autowired
     private UnitServiceImpl unitService;
+    @Autowired
+    private ProjectRepository projectRepository;
 
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     private void processImpactValueGenerate(CreateProcessImpactValueRequest request) {
@@ -132,6 +134,18 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         for (int i = 0; i < processImpactValueList.size(); i += batchSize) {
             List<ProcessImpactValue> batch = processImpactValueList.subList(i, Math.min(i + batchSize, processImpactValueList.size()));
             processImpactValueRepository.saveAll(batch);
+        }
+    }
+
+    public void computeSystemLevelOfProject(UUID projectId) {
+        Project project = projectRepository.findById(projectId).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
+        );
+
+        // from projectId, gets all process within
+        List<Process> processList = processRepository.findAll(projectId);
+        if (processList.isEmpty()) {
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT);
         }
     }
 }

@@ -93,4 +93,5 @@ public class MessageConstants {
     public static final String UPDATE_EXCHANGE_SUCCESS = "Update exchange success";
 
     public static final String ERROR_CREATING_PROCESS_IMPACT_VALUE = "Error creating process impact value";
+    public static final String NO_PROCESS_IN_PROJECT = "There must be at least one process to calculate";
 }
