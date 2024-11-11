@@ -6,11 +6,10 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @MappedSuperclass
@@ -27,13 +26,11 @@ public class Base {
     @Column
     @CreatedDate
     @JsonIgnore
-    @Field(type = FieldType.Date, format = {}, pattern = "uuuu-MM-dd")
-    private LocalDate createAt;
+    private LocalDateTime createAt;
     @Column
     @LastModifiedDate
     @JsonIgnore
-    @Field(type = FieldType.Date, format = {}, pattern = "uuuu-MM-dd")
-    private LocalDate modifiedAt;
+    private LocalDateTime modifiedAt;
     @Column
     @JsonIgnore
     private boolean status = true;
