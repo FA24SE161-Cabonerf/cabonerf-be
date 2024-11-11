@@ -73,7 +73,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         Exchanges newExchange = createNewExchange(emissionSubstance, request.isInput(), process, EXCHANGE_TYPE_ELEMENTARY);
         exchangesRepository.save(newExchange);
 
-        processImpactValueService.computeProcessImpactValueSingleExchange(process, newExchange, DEFAULT_VALUE);
+//        processImpactValueService.computeProcessImpactValueSingleExchange(process, newExchange, DEFAULT_VALUE);
         return processService.getProcessById(processId);
     }
 

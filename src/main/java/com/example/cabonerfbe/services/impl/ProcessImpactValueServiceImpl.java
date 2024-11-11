@@ -123,12 +123,14 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         for (MidpointImpactCharacterizationFactors factors : list) {
             Optional<ProcessImpactValue> processImpactValue = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(processId, factors.getImpactMethodCategory().getId());
             if (processImpactValue.isPresent()) {
-                log.info("unit: {}", exchange.getUnit());
+                log.info("unit: {}, rate: {}", exchange.getUnit().getName(), exchange.getUnit().getConversionFactor());
                 double unitLevel = processImpactValue.get().getUnitLevel();
-                log.info("pre unitLevel: {}", unitLevel );
+                log.info("pre unitLevel: {} of factors impact category: {}", unitLevel, factors.getImpactMethodCategory().getImpactCategory().getName() );
+                // converting to the base unit value
                 double exchangeValue = unitService.convertValue(exchange.getUnit(), exchange.getValue() - initialValue, baseUnit);
-                log.info("pre exchangeValue: {}, exchangeValue: {}, initValue: {}", exchange.getValue(), exchangeValue, initialValue );
+                log.info("pre exchangeValue: {}, converted exchangeValue: {}, initValue (trước khi thay đổi unit/update): {}", exchange.getValue(), exchangeValue, initialValue );
                 unitLevel += exchangeValue * factors.getDecimalValue();
+                log.info("factor value: {}", factors.getDecimalValue());
                 log.info("post unitLevel: {}", unitLevel );
                 processImpactValue.get().setUnitLevel(unitLevel);
                 processImpactValueList.add(processImpactValue.get());
