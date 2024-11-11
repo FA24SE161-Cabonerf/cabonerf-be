@@ -20,4 +20,10 @@ public class Constants {
     public static final String COMPUTE_EXCHANGE_TYPE_UPDATE = "Update";
     public static final String COMPUTE_EXCHANGE_TYPE_DELETE = "Delete";
 
+    public static final double NEW_OVERALL_FLOW = 0;
+    public static final double DEFAULT_OVERALL_IMPACT_CONTRIBUTION = 0;
+    public static final double DEFAULT_SYSTEM_LEVEL = 0;
+    public static final double DEFAULT_PREVIOUS_PROCESS_VALUE = 0;
+    public static final double BASE_UNIT_LEVEL = 0;
+
 }

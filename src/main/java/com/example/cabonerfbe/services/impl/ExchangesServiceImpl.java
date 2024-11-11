@@ -52,6 +52,8 @@ public class ExchangesServiceImpl implements ExchangesService {
     private ProcessServiceImpl processService;
     @Autowired
     private UnitServiceImpl unitService;
+    @Autowired
+    private ProcessImpactValueServiceImpl processImpactValueService;
 
     public static final String EXCHANGE_TYPE_ELEMENTARY = "Elementary";
     public static final String EXCHANGE_TYPE_PRODUCT = "Product";
@@ -71,7 +73,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         Exchanges newExchange = createNewExchange(emissionSubstance, request.isInput(), process, EXCHANGE_TYPE_ELEMENTARY);
         exchangesRepository.save(newExchange);
 
-        processService.computeProcessImpactValueSingleExchange(process, newExchange, DEFAULT_VALUE);
+        processImpactValueService.computeProcessImpactValueSingleExchange(process, newExchange, DEFAULT_VALUE);
         return processService.getProcessById(processId);
     }
 
@@ -147,7 +149,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         exchange.setValue(DEFAULT_VALUE);
         exchangesRepository.save(exchange);
 
-        processService.computeProcessImpactValueSingleExchange(exchange.getProcess(), exchange, initialValue);
+        processImpactValueService.computeProcessImpactValueSingleExchange(exchange.getProcess(), exchange, initialValue);
 
         return processService.getProcessById(exchange.getProcessId());
     }
@@ -172,7 +174,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         double initialValue = exchange.getValue();
 
-        if (unitId != null) {
+        if (unitId != null && !unitId.equals(exchange.getUnit().getId())) {
             Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
                     () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
             );
@@ -187,7 +189,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         exchangesRepository.save(exchange);
 
-        processService.computeProcessImpactValueSingleExchange(process, exchange, initialValue);
+        processImpactValueService.computeProcessImpactValueSingleExchange(process, exchange, initialValue);
 
         return processService.getProcessById(processId);
     }

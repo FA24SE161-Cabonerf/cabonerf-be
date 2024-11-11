@@ -2,7 +2,6 @@ package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.ConnectorConverter;
 import com.example.cabonerfbe.converter.ExchangesConverter;
-import com.example.cabonerfbe.converter.ProcessConverter;
 import com.example.cabonerfbe.dto.ConnectorDto;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.enums.Constants;
@@ -11,7 +10,9 @@ import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.Connector;
 import com.example.cabonerfbe.models.Exchanges;
 import com.example.cabonerfbe.models.Process;
-import com.example.cabonerfbe.repositories.*;
+import com.example.cabonerfbe.repositories.ConnectorRepository;
+import com.example.cabonerfbe.repositories.ExchangesRepository;
+import com.example.cabonerfbe.repositories.ProcessRepository;
 import com.example.cabonerfbe.request.CreateConnectorRequest;
 import com.example.cabonerfbe.response.CreateConnectorResponse;
 import com.example.cabonerfbe.services.ConnectorService;
@@ -23,6 +24,15 @@ import java.util.UUID;
 
 @Service
 public class ConnectorServiceImpl implements ConnectorService {
+
+    private static final long VALID_PROCESS_COUNT = 2;
+    private static final String START_PROCESS = "startProcessId";
+    private static final String END_PROCESS = "endProcessId";
+    private static final String START_EXCHANGE = "startExchangeId";
+    private static final String END_EXCHANGE = "endExchangeId";
+    private static final boolean INPUT = true;
+    private static final boolean OUTPUT = false;
+
     @Autowired
     private ConnectorRepository connectorRepository;
     @Autowired
@@ -30,168 +40,123 @@ public class ConnectorServiceImpl implements ConnectorService {
     @Autowired
     private ExchangesRepository exchangesRepository;
     @Autowired
-    private ExchangesTypeRepository exchangesTypeRepository;
-    @Autowired
     private ExchangesConverter exchangesConverter;
     @Autowired
     private ConnectorConverter connectorConverter;
-
-    public static final long VALID_PROCESS_COUNT = 2;
-    public static final String START_PROCESS = "startProcessId";
-    public static final String END_PROCESS = "endProcessId";
-    public static final String START_EXCHANGE = "startExchangeId";
-    public static final String END_EXCHANGE = "endExchangeId";
-    public static final boolean INPUT = true;
-    public static final boolean OUTPUT = false;
-    @Autowired
-    private ProcessConverter processConverter;
     @Autowired
     private ProcessServiceImpl processServiceImpl;
 
     @Override
     public CreateConnectorResponse createConnector(CreateConnectorRequest request) {
-        UUID startProcessId = request.getStartProcessId();
-        UUID endProcessId = request.getEndProcessId();
-        UUID startExchangeId = request.getStartExchangesId();
-        UUID endExchangeId = request.getEndExchangesId();
+        Process startProcess = validateAndFetchProcess(request.getStartProcessId(), START_PROCESS);
+        Process endProcess = validateAndFetchProcess(request.getEndProcessId(), END_PROCESS);
 
-        if (startProcessId.equals(endProcessId)) {
+        if (startProcess.equals(endProcess)) {
             throw CustomExceptions.badRequest(MessageConstants.START_END_PROCESS_SAME_ERROR);
         }
 
-        Process startProcess = processRepository.findByProcessId(startProcessId).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND, Map.of(START_PROCESS, startProcessId))
-        );
+        validateProcessesBelongToSameProject(startProcess, endProcess);
+        validateNoExistingConnector(startProcess.getId(), endProcess.getId());
 
-        Process endProcess = processRepository.findByProcessId(endProcessId).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND, Map.of(END_PROCESS, endProcessId))
-        );
-
-        // check if 2 processes belong to the same project
-        if (!startProcess.getProject().getId().equals(endProcess.getProject().getId())) {
-            throw CustomExceptions.badRequest(MessageConstants.PROCESS_IN_DIFFERENT_PROJECTS);
-        }
-
-        // check connector between start-end
-        if (connectorRepository.existsByStartProcess_IdAndEndProcess_Id(startProcessId, endProcessId)) {
-            throw CustomExceptions.badRequest(MessageConstants.CONNECTOR_ALREADY_EXIST);
-        }
-
+        ConnectorDto connectorDto;
         boolean isEndProcessFlag = true;
 
-        ConnectorDto connectorDto = new ConnectorDto();
-
-        // start != null
-        // 1. check exist
-        // 2. check exchange có thuộc process ko
-        // 3. check type product & start input = false? (gop chung voi 1)
-        if (startExchangeId != null && endExchangeId != null) {
-            // return exchange if found && type = product && status = true && input = false
-            Exchanges startExchange = exchangesRepository.findByIdAndTypeAndInput(startExchangeId, Constants.PRODUCT_EXCHANGE, OUTPUT).orElseThrow(
-                    () -> CustomExceptions.notFound(MessageConstants.INVALID_EXCHANGE, Map.of(START_EXCHANGE, startExchangeId))
-            );
-
-            // return exchange if found && type = product && status = true && input = true
-            Exchanges endExchange = exchangesRepository.findByIdAndTypeAndInput(endExchangeId, Constants.PRODUCT_EXCHANGE, INPUT).orElseThrow(
-                    () -> CustomExceptions.notFound(MessageConstants.INVALID_EXCHANGE, Map.of(END_EXCHANGE, endExchangeId))
-            );
-
-            if (!startExchange.getProcessId().equals(startProcessId) || !endExchange.getProcessId().equals(endProcessId)) {
-                throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_AND_PROCESS_DIFFERENT);
-            }
-
-
-            String startExchangeUnitGroup = startExchange.getUnit().getUnitGroup().getName();
-            String endExchangeUnitGroup = endExchange.getUnit().getUnitGroup().getName();
-            String startExchangeName = startExchange.getName();
-            String endExchangeName = endExchange.getName();
-
-            if (!startExchangeUnitGroup.equals(endExchangeUnitGroup)) {
-                throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_UNIT_GROUP_DIFFERENT);
-            }
-
-            if (!startExchangeName.equals(endExchangeName)) {
-                throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_NAME_DIFFERENT);
-            }
-
-            connectorDto = convertConnector(startExchange, endExchange, startProcess, endProcess);
-        } else if (startExchangeId != null) {
-            // return exchange if found && type = product && status = true && input = false
-            Exchanges startExchange = exchangesRepository.findByIdAndTypeAndInput(startExchangeId, Constants.PRODUCT_EXCHANGE, OUTPUT).orElseThrow(
-                    () -> CustomExceptions.notFound(MessageConstants.INVALID_EXCHANGE, Map.of(START_EXCHANGE, startExchangeId))
-            );
-
-            if (!startExchange.getProcessId().equals(startProcessId)) {
-                throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_AND_PROCESS_DIFFERENT);
-            }
-
-            // check if the end process already had exchange with the same name and unit group and input = true
-            // yes: => add that one to connector
-            // no: => create new
-
-            Exchanges existEndExchange = exchangesRepository.findByProcess_IdAndNameAndUnit_UnitGroupAndInput(
-                            endProcessId,
-                            startExchange.getName(),
-                            startExchange.getUnit().getUnitGroup(),
-                            INPUT)
-                    .orElseGet(() -> {
-                                Exchanges newEndExchange = new Exchanges();
-                                newEndExchange = exchangesConverter.fromExchangeToAnotherExchange(startExchange);
-                                newEndExchange.setProcess(endProcess);
-                                newEndExchange.setInput(INPUT);
-                                return exchangesRepository.save(newEndExchange);
-                            }
-                    );
-
-            connectorDto = convertConnector(startExchange, existEndExchange, startProcess, endProcess);
-        } else if (endExchangeId != null) {
-            // return exchange if found && type = product && status = true && input = true
-            Exchanges endExchange = exchangesRepository.findByIdAndTypeAndInput(endExchangeId, Constants.PRODUCT_EXCHANGE, INPUT).orElseThrow(
-                    () -> CustomExceptions.notFound(MessageConstants.INVALID_EXCHANGE, Map.of(END_EXCHANGE, endExchangeId))
-            );
-
-            if (!endExchange.getProcessId().equals(endProcessId)) {
-                throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_AND_PROCESS_DIFFERENT);
-            }
-
-            // check if the start process already had exchange with the same name and unit group and input = false
-            // yes: => add that one to connector
-            // no: => create new
-
-            Exchanges existStartExchange = exchangesRepository.findByProcess_IdAndNameAndUnit_UnitGroupAndInput(
-                            endProcessId,
-                            endExchange.getName(),
-                            endExchange.getUnit().getUnitGroup(),
-                            OUTPUT)
-                    .orElseGet(() -> {
-                                Exchanges newStartExchange = new Exchanges();
-                                newStartExchange = exchangesConverter.fromExchangeToAnotherExchange(endExchange);
-                                newStartExchange.setProcess(startProcess);
-                                newStartExchange.setInput(OUTPUT);
-                                return exchangesRepository.save(newStartExchange);
-                            }
-                    );
-            connectorDto = convertConnector(existStartExchange, endExchange, startProcess, endProcess);
+        if (request.getStartExchangesId() != null && request.getEndExchangesId() != null) {
+            connectorDto = createConnectorWithBothExchanges(request, startProcess, endProcess);
+        } else if (request.getStartExchangesId() != null) {
+            connectorDto = createConnectorWithStartExchangeOnly(request, startProcess, endProcess);
+        } else if (request.getEndExchangesId() != null) {
+            connectorDto = createConnectorWithEndExchangeOnly(request, startProcess, endProcess);
             isEndProcessFlag = false;
         } else {
             throw CustomExceptions.badRequest(MessageConstants.INVALID_EXCHANGE);
         }
 
-        ProcessDto finalProcess = new ProcessDto();
-        if (isEndProcessFlag) {
-            finalProcess = processServiceImpl.getProcessById(endProcessId);
-        } else {
-            finalProcess = processServiceImpl.getProcessById(startProcessId);
-        }
+        ProcessDto finalProcess = isEndProcessFlag
+                ? processServiceImpl.getProcessById(request.getEndProcessId())
+                : processServiceImpl.getProcessById(request.getStartProcessId());
 
-        CreateConnectorResponse response = new CreateConnectorResponse();
-        response.setConnector(connectorDto);
-        response.setProcess(finalProcess);
-
-        return response;
+        return new CreateConnectorResponse(connectorDto, finalProcess);
     }
 
-    private ConnectorDto convertConnector(Exchanges startExchange, Exchanges endExchange, Process startProcess, Process endProcess) {
+    private Process validateAndFetchProcess(UUID processId, String processType) {
+        return processRepository.findByProcessId(processId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND, Map.of(processType, processId)));
+    }
+
+    private void validateProcessesBelongToSameProject(Process startProcess, Process endProcess) {
+        if (!startProcess.getProject().getId().equals(endProcess.getProject().getId())) {
+            throw CustomExceptions.badRequest(MessageConstants.PROCESS_IN_DIFFERENT_PROJECTS);
+        }
+    }
+
+    private void validateNoExistingConnector(UUID startProcessId, UUID endProcessId) {
+        if (connectorRepository.existsByStartProcess_IdAndEndProcess_Id(startProcessId, endProcessId)) {
+            throw CustomExceptions.badRequest(MessageConstants.CONNECTOR_ALREADY_EXIST);
+        }
+    }
+
+    private ConnectorDto createConnectorWithBothExchanges(CreateConnectorRequest request, Process startProcess, Process endProcess) {
+        Exchanges startExchange = validateAndFetchExchange(request.getStartExchangesId(), OUTPUT, START_EXCHANGE);
+        Exchanges endExchange = validateAndFetchExchange(request.getEndExchangesId(), INPUT, END_EXCHANGE);
+
+        validateExchangeBelongsToProcess(startExchange, startProcess, START_EXCHANGE);
+        validateExchangeBelongsToProcess(endExchange, endProcess, END_EXCHANGE);
+        validateExchangeCompatibility(startExchange, endExchange);
+
+        return convertAndSaveConnector(startExchange, endExchange, startProcess, endProcess);
+    }
+
+    private ConnectorDto createConnectorWithStartExchangeOnly(CreateConnectorRequest request, Process startProcess, Process endProcess) {
+        Exchanges startExchange = validateAndFetchExchange(request.getStartExchangesId(), OUTPUT, START_EXCHANGE);
+        validateExchangeBelongsToProcess(startExchange, startProcess, START_EXCHANGE);
+
+        Exchanges endExchange = exchangesRepository.findByProcess_IdAndNameAndUnit_UnitGroupAndInput(
+                        endProcess.getId(), startExchange.getName(), startExchange.getUnit().getUnitGroup(), INPUT)
+                .orElseGet(() -> createNewExchange(startExchange, endProcess, INPUT));
+
+        return convertAndSaveConnector(startExchange, endExchange, startProcess, endProcess);
+    }
+
+    private ConnectorDto createConnectorWithEndExchangeOnly(CreateConnectorRequest request, Process startProcess, Process endProcess) {
+        Exchanges endExchange = validateAndFetchExchange(request.getEndExchangesId(), INPUT, END_EXCHANGE);
+        validateExchangeBelongsToProcess(endExchange, endProcess, END_EXCHANGE);
+
+        Exchanges startExchange = exchangesRepository.findByProcess_IdAndNameAndUnit_UnitGroupAndInput(
+                        startProcess.getId(), endExchange.getName(), endExchange.getUnit().getUnitGroup(), OUTPUT)
+                .orElseGet(() -> createNewExchange(endExchange, startProcess, OUTPUT));
+
+        return convertAndSaveConnector(startExchange, endExchange, startProcess, endProcess);
+    }
+
+    private Exchanges validateAndFetchExchange(UUID exchangeId, boolean inputStatus, String exchangeType) {
+        return exchangesRepository.findByIdAndTypeAndInput(exchangeId, Constants.PRODUCT_EXCHANGE, inputStatus)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.INVALID_EXCHANGE, Map.of(exchangeType, exchangeId)));
+    }
+
+    private void validateExchangeBelongsToProcess(Exchanges exchange, Process process, String exchangeType) {
+        if (!exchange.getProcessId().equals(process.getId())) {
+            throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_AND_PROCESS_DIFFERENT);
+        }
+    }
+
+    private void validateExchangeCompatibility(Exchanges startExchange, Exchanges endExchange) {
+        if (!startExchange.getUnit().getUnitGroup().equals(endExchange.getUnit().getUnitGroup())) {
+            throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_UNIT_GROUP_DIFFERENT);
+        }
+        if (!startExchange.getName().equals(endExchange.getName())) {
+            throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_NAME_DIFFERENT);
+        }
+    }
+
+    private Exchanges createNewExchange(Exchanges originalExchange, Process process, boolean inputStatus) {
+        Exchanges newExchange = exchangesConverter.fromExchangeToAnotherExchange(originalExchange);
+        newExchange.setProcess(process);
+        newExchange.setInput(inputStatus);
+        return exchangesRepository.save(newExchange);
+    }
+
+    private ConnectorDto convertAndSaveConnector(Exchanges startExchange, Exchanges endExchange, Process startProcess, Process endProcess) {
         Connector connector = new Connector();
         connector.setStartProcess(startProcess);
         connector.setEndProcess(endProcess);
@@ -200,5 +165,4 @@ public class ConnectorServiceImpl implements ConnectorService {
 
         return connectorConverter.fromConnectorToConnectorDto(connectorRepository.save(connector));
     }
-
 }
