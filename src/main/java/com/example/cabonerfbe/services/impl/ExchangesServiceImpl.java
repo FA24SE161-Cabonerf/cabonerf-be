@@ -172,7 +172,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         double initialValue = exchange.getValue();
 
-        if (unitId != null) {
+        if (unitId != null && !unitId.equals(exchange.getUnit().getId())) {
             Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
                     () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
             );
