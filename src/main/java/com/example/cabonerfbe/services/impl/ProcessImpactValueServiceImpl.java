@@ -9,6 +9,7 @@ import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class ProcessImpactValueServiceImpl implements ProcessImpactValueService {
     @Autowired
@@ -121,9 +123,13 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         for (MidpointImpactCharacterizationFactors factors : list) {
             Optional<ProcessImpactValue> processImpactValue = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(processId, factors.getImpactMethodCategory().getId());
             if (processImpactValue.isPresent()) {
+                log.info("unit: {}", exchange.getUnit());
                 double unitLevel = processImpactValue.get().getUnitLevel();
+                log.info("pre unitLevel: {}", unitLevel );
                 double exchangeValue = unitService.convertValue(exchange.getUnit(), exchange.getValue() - initialValue, baseUnit);
+                log.info("pre exchangeValue: {}, exchangeValue: {}, initValue: {}", exchange.getValue(), exchangeValue, initialValue );
                 unitLevel += exchangeValue * factors.getDecimalValue();
+                log.info("post unitLevel: {}", unitLevel );
                 processImpactValue.get().setUnitLevel(unitLevel);
                 processImpactValueList.add(processImpactValue.get());
             }
