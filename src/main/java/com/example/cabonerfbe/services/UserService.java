@@ -8,6 +8,6 @@ import java.util.UUID;
 
 public interface UserService {
     GetProfileResponse getMe(UUID userId);
-    GetAllUserResponse getAll(int pageCurrent, int pageSize);
+    GetAllUserResponse getAll(int pageCurrent, int pageSize, String keyword);
     UserAdminDto updateUserStatus(UUID userId);
 }
