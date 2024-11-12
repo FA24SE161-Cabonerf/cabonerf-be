@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -143,7 +144,7 @@ public class ExchangesServiceImpl implements ExchangesService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
 
-        double initialValue = exchange.getValue();
+        BigDecimal initialValue = BigDecimal.valueOf(exchange.getValue());
 
         exchange.setValue(DEFAULT_VALUE);
         exchange.setStatus(Constants.STATUS_FALSE);
@@ -173,7 +174,7 @@ public class ExchangesServiceImpl implements ExchangesService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
         );
 
-        double initialValue = exchange.getValue();
+        BigDecimal initialValue = BigDecimal.valueOf(exchange.getValue());
 
         if (unitId != null && !unitId.equals(exchange.getUnit().getId())) {
             Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(

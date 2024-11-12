@@ -112,7 +112,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValueRepository.saveAll(processImpactValueList);
     }
 
-    public void computeProcessImpactValueSingleExchange(Process process, Exchanges exchange, double initialValue) {
+    public void computeProcessImpactValueSingleExchange(Process process, Exchanges exchange, BigDecimal initialValue) {
         UUID processId = process.getId();
         List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
 
@@ -132,7 +132,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 // converting to the base unit value
 //                double exchangeValue = unitService.convertValue(exchange.getUnit(), exchange.getValue() - initialValue, baseUnit);
                 BigDecimal exchangeValue = unitService.convertValue(exchange.getUnit(),
-                        BigDecimal.valueOf(exchange.getValue()).subtract(BigDecimal.valueOf(initialValue)),
+                        BigDecimal.valueOf(exchange.getValue()).subtract(initialValue),
                         baseUnit);
                 log.info("pre exchangeValue: {}, converted exchangeValue: {}, initValue (trước khi thay đổi unit/update): {}", exchange.getValue(), exchangeValue, initialValue );
 
