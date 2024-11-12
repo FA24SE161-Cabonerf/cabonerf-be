@@ -17,8 +17,7 @@
 -- -- Table: user_status
 -- INSERT INTO user_status(id, status_name, description, status)
 -- VALUES ('223e4567-e89b-12d3-a456-426614174000', 'Active', 'Người dùng đang hoạt động bình thường', true),
---        ('223e4567-e89b-12d3-a456-426614174001', 'Inactive', 'Người dùng không hoạt động', true),
---        ('223e4567-e89b-12d3-a456-426614174002', 'Banned', 'Người dùng đã bị cấm truy cập hệ thống', true);
+--        ('223e4567-e89b-12d3-a456-426614174001', 'Banned', 'Người dùng đã bị cấm truy cập hệ thống', true);
 --
 -- -- Table: role
 -- INSERT INTO role(id, name, status)
@@ -121,7 +120,7 @@
 --
 --
 -- -- Insert into unit
--- INSERT INTO unit (id, create_at, modified_at, status, conversion_factor, is_default, name, unit_group_id)
+-- INSERT INTO unit (id, created_at, modified_at, status, conversion_factor, is_default, name, unit_group_id)
 -- VALUES ('723e4567-e89b-12d3-a456-426614174009', null, null, true, 1, true, 'm3',
 --         '623e4567-e89b-12d3-a456-426614174000'),
 --        ('723e4567-e89b-12d3-a456-426614174012', null, null, true, 1, true, 'kg',

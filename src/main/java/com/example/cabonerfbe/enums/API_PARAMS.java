@@ -16,6 +16,7 @@ public class API_PARAMS {
     public static final String EMAIL_VERIFY = "/email-verify";
     public static final String MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR = "/midpoint-impact-characterization-factors";
     public static final String IMPORT_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR = "/import";
+    public static final String BAN_UNBAN_USER = "/ban-unban-user/{userId}";
 
 
     /************************
@@ -143,4 +144,12 @@ public class API_PARAMS {
      ************************/
     public static final String CONNECTOR = "/connectors";
 
+    /************************
+     *   ORGANIZATIONS APIs   *
+     ************************/
+    public static final String ORGANIZATION = "/organizations";
+    public static final String UPDATE_ORGANIZATION = "/{organizationId}";
+    public static final String DELETE_ORGANIZATION = "/{organizationId}";
+
+    public static final String MANAGER = "/manager";
 }

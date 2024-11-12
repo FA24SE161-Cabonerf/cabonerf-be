@@ -413,8 +413,7 @@ public class ExcelServiceImpl implements ExcelService {
 
             // Tạo tiêu đề cột
             String[] headers = {"CAS", "Name", "Chemical Name", "Compartment Name",
-                    "Molecular Formula", "Alternative Formula", "Individualist",
-                    "Hierarchist", "Egalitarian"};
+                    "Molecular Formula", "Alternative Formula", "Factor"};
             Row headerRow = sheet.createRow(4);
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
@@ -431,9 +430,13 @@ public class ExcelServiceImpl implements ExcelService {
                 row.createCell(3).setCellValue(x.getCompartmentName());
                 row.createCell(4).setCellValue(x.getMolecularFormula());
                 row.createCell(5).setCellValue(x.getAlternativeFormula());
-                row.createCell(6).setCellValue(x.getIndividualist() != null ? x.getIndividualist() : '-');
-                row.createCell(7).setCellValue(x.getHierarchist() != null ? x.getHierarchist() : '-');
-                row.createCell(8).setCellValue(x.getEgalitarian() != null ? x.getEgalitarian() : '-');
+                row.createCell(6).setCellValue(
+                        Optional.ofNullable(x.getIndividualist())
+                                .orElse(Optional.ofNullable(x.getHierarchist())
+                                        .orElse(Optional.ofNullable(x.getEgalitarian())
+                                                .orElse(null)))
+                );
+
             }
 
             // Ghi dữ liệu vào file
