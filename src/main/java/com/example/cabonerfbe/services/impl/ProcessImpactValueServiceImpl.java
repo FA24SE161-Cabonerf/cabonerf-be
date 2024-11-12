@@ -15,6 +15,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -124,15 +125,24 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             Optional<ProcessImpactValue> processImpactValue = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(processId, factors.getImpactMethodCategory().getId());
             if (processImpactValue.isPresent()) {
                 log.info("unit: {}, rate: {}", exchange.getUnit().getName(), exchange.getUnit().getConversionFactor());
-                double unitLevel = processImpactValue.get().getUnitLevel();
+//                double unitLevel = processImpactValue.get().getUnitLevel();
+                BigDecimal unitLevel = BigDecimal.valueOf(processImpactValue.get().getUnitLevel());
+
                 log.info("pre unitLevel: {} of factors impact category: {}", unitLevel, factors.getImpactMethodCategory().getImpactCategory().getName() );
                 // converting to the base unit value
-                double exchangeValue = unitService.convertValue(exchange.getUnit(), exchange.getValue() - initialValue, baseUnit);
+//                double exchangeValue = unitService.convertValue(exchange.getUnit(), exchange.getValue() - initialValue, baseUnit);
+                BigDecimal exchangeValue = unitService.convertValue(exchange.getUnit(),
+                        BigDecimal.valueOf(exchange.getValue()).subtract(BigDecimal.valueOf(initialValue)),
+                        baseUnit);
                 log.info("pre exchangeValue: {}, converted exchangeValue: {}, initValue (trước khi thay đổi unit/update): {}", exchange.getValue(), exchangeValue, initialValue );
-                unitLevel += exchangeValue * factors.getDecimalValue();
+
+//                unitLevel += exchangeValue * factors.getDecimalValue();
+                unitLevel = unitLevel.add(exchangeValue.multiply(BigDecimal.valueOf(factors.getDecimalValue())));
+
                 log.info("factor value: {}", factors.getDecimalValue());
                 log.info("post unitLevel: {}", unitLevel );
-                processImpactValue.get().setUnitLevel(unitLevel);
+//                processImpactValue.get().setUnitLevel(unitLevel);
+                processImpactValue.get().setUnitLevel(unitLevel.doubleValue());
                 processImpactValueList.add(processImpactValue.get());
             }
         }
