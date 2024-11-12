@@ -21,6 +21,9 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,7 +55,7 @@ public class UnitServiceImpl implements UnitService {
     @Override
     public UnitResponse getUnitById(UUID unitId) {
         Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
-                () ->CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
+                () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
         );
 
         return unitConverter.fromUnitToUnitResponse(unit);
@@ -120,7 +123,12 @@ public class UnitServiceImpl implements UnitService {
         return unitConverter.fromUnitToUnitResponse(unit);
     }
 
-    public double convertValue(Unit originalUnit, double originalValue, Unit targetUnit) {
-        return originalValue * originalUnit.getConversionFactor() / targetUnit.getConversionFactor();
+    //    public double convertValue(Unit originalUnit, double originalValue, Unit targetUnit) {
+//        return originalValue * originalUnit.getConversionFactor() / targetUnit.getConversionFactor();
+//    }
+    public BigDecimal convertValue(Unit originalUnit, BigDecimal originalValue, Unit targetUnit) {
+        return originalValue.multiply(BigDecimal.valueOf(originalUnit.getConversionFactor()))
+                .divide(BigDecimal.valueOf(targetUnit.getConversionFactor()), MathContext.DECIMAL128).setScale(Constants.BIG_DECIMAL_DEFAULT_SCALE, RoundingMode.HALF_UP);
     }
+
 }

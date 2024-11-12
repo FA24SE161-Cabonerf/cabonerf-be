@@ -1,20 +1,32 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.*;
-import com.example.cabonerfbe.dto.*;
-import com.example.cabonerfbe.enums.*;
+import com.example.cabonerfbe.dto.EmissionSubstanceDto;
+import com.example.cabonerfbe.dto.ProcessDto;
+import com.example.cabonerfbe.dto.SearchEmissionSubstanceDto;
+import com.example.cabonerfbe.enums.Constants;
+import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.models.Process;
+import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
-import com.example.cabonerfbe.request.*;
-import com.example.cabonerfbe.response.*;
-import com.example.cabonerfbe.services.*;
+import com.example.cabonerfbe.request.CreateElementaryRequest;
+import com.example.cabonerfbe.request.CreateProductRequest;
+import com.example.cabonerfbe.request.UpdateExchangeRequest;
+import com.example.cabonerfbe.response.SearchElementaryResponse;
+import com.example.cabonerfbe.services.ExchangesService;
+import com.example.cabonerfbe.util.ValueConverter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -73,7 +85,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         Exchanges newExchange = createNewExchange(emissionSubstance, request.isInput(), process, EXCHANGE_TYPE_ELEMENTARY);
         exchangesRepository.save(newExchange);
 
-        processImpactValueService.computeProcessImpactValueSingleExchange(process, newExchange, DEFAULT_VALUE);
+//        processImpactValueService.computeProcessImpactValueSingleExchange(process, newExchange, DEFAULT_VALUE);
         return processService.getProcessById(processId);
     }
 
@@ -142,11 +154,12 @@ public class ExchangesServiceImpl implements ExchangesService {
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
-        exchange.setStatus(Constants.STATUS_FALSE);
 
-        double initialValue = exchange.getValue();
+        BigDecimal initialValue = ValueConverter.bigDecimalConverter(exchange.getValue());
 
         exchange.setValue(DEFAULT_VALUE);
+        exchange.setStatus(Constants.STATUS_FALSE);
+
         exchangesRepository.save(exchange);
 
         processImpactValueService.computeProcessImpactValueSingleExchange(exchange.getProcess(), exchange, initialValue);
@@ -172,7 +185,7 @@ public class ExchangesServiceImpl implements ExchangesService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
         );
 
-        double initialValue = exchange.getValue();
+        BigDecimal initialValue = ValueConverter.bigDecimalConverter(exchange.getValue());
 
         if (unitId != null && !unitId.equals(exchange.getUnit().getId())) {
             Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
