@@ -26,5 +26,5 @@ public class Constants {
     public static final double DEFAULT_PREVIOUS_PROCESS_VALUE = 0;
     public static final double BASE_UNIT_LEVEL = 0;
 
-    public static final int BIG_DECIMAL_DEFAULT_SCALE = 15;
+    public static final int BIG_DECIMAL_DEFAULT_SCALE = 60;
 }
