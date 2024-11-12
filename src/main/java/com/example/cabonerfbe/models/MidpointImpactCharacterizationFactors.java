@@ -3,6 +3,8 @@ package com.example.cabonerfbe.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,6 +21,6 @@ public class MidpointImpactCharacterizationFactors extends Base{
     private EmissionSubstance emissionSubstance;
 
     private String scientificValue;
-    private double decimalValue;
+    private BigDecimal decimalValue;
 
 }

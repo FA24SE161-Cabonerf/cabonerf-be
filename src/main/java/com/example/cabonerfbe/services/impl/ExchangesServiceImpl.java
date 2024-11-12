@@ -15,7 +15,6 @@ import com.example.cabonerfbe.request.CreateProductRequest;
 import com.example.cabonerfbe.request.UpdateExchangeRequest;
 import com.example.cabonerfbe.response.SearchElementaryResponse;
 import com.example.cabonerfbe.services.ExchangesService;
-import com.example.cabonerfbe.util.ValueConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -69,7 +68,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
     public static final String EXCHANGE_TYPE_ELEMENTARY = "Elementary";
     public static final String EXCHANGE_TYPE_PRODUCT = "Product";
-    public static final double DEFAULT_VALUE = 0;
+    public static final BigDecimal DEFAULT_VALUE = BigDecimal.valueOf(0);
     public static final String DEFAULT_PRODUCT_UNIT = "kg";
 
     @Override
@@ -155,7 +154,7 @@ public class ExchangesServiceImpl implements ExchangesService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
 
-        BigDecimal initialValue = ValueConverter.bigDecimalConverter(exchange.getValue());
+        BigDecimal initialValue = exchange.getValue();
 
         exchange.setValue(DEFAULT_VALUE);
         exchange.setStatus(Constants.STATUS_FALSE);
@@ -171,7 +170,7 @@ public class ExchangesServiceImpl implements ExchangesService {
     public ProcessDto updateElementaryExchange(UUID exchangeId, UpdateExchangeRequest request) {
         UUID unitId = request.getUnitId();
         UUID processId = request.getProcessId();
-        Double value = request.getValue();
+        BigDecimal value = request.getValue();
 
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
@@ -185,7 +184,7 @@ public class ExchangesServiceImpl implements ExchangesService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
         );
 
-        BigDecimal initialValue = ValueConverter.bigDecimalConverter(exchange.getValue());
+        BigDecimal initialValue = exchange.getValue();
 
         if (unitId != null && !unitId.equals(exchange.getUnit().getId())) {
             Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
@@ -212,7 +211,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         String name = request.getName();
         UUID unitId = request.getUnitId();
         UUID processId = request.getProcessId();
-        Double value = request.getValue();
+        BigDecimal value = request.getValue();
 
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)

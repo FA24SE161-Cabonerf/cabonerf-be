@@ -127,8 +127,8 @@ public class UnitServiceImpl implements UnitService {
 //        return originalValue * originalUnit.getConversionFactor() / targetUnit.getConversionFactor();
 //    }
     public BigDecimal convertValue(Unit originalUnit, BigDecimal originalValue, Unit targetUnit) {
-        return originalValue.multiply(BigDecimal.valueOf(originalUnit.getConversionFactor()))
-                .divide(BigDecimal.valueOf(targetUnit.getConversionFactor()), MathContext.DECIMAL128).setScale(Constants.BIG_DECIMAL_DEFAULT_SCALE, RoundingMode.HALF_UP);
+        return originalValue.multiply(originalUnit.getConversionFactor())
+                .divide(targetUnit.getConversionFactor(), MathContext.DECIMAL128).setScale(Constants.BIG_DECIMAL_DEFAULT_SCALE, RoundingMode.HALF_UP);
     }
 
 }

@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -23,7 +24,7 @@ public class MidpointImpactCharacterizationFactorsResponse {
     private ImpactMethodCategoryDto impactMethodCategory;
     private SubstanceDto emissionSubstances;
     private String scientificValue;
-    private double decimalValue;
+    private BigDecimal decimalValue;
     private UnitDto unit;
     private EmissionCompartmentDto emissionCompartment;
 }

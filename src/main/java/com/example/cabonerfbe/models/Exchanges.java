@@ -3,6 +3,7 @@ package com.example.cabonerfbe.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter
@@ -15,7 +16,7 @@ public class Exchanges extends Base{
 
     private String name;
     private String description;
-    private double value;
+    private BigDecimal value;
 
     @ManyToOne
     @JoinColumn(name = "exchanges_type_id")

@@ -3,6 +3,7 @@ package com.example.cabonerfbe.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter
@@ -20,10 +21,10 @@ public class ProcessImpactValue extends Base{
     @JoinColumn(name = "process_id")
     private Process process;
 
-    private double unitLevel;
-    private double systemLevel;
-    private double overallImpactContribution;
-    private double previousProcessValue;
+    private BigDecimal unitLevel;
+    private BigDecimal systemLevel;
+    private BigDecimal overallImpactContribution;
+    private BigDecimal previousProcessValue;
 
     public UUID getProcessId() {
         return process != null ? process.getId() : null;

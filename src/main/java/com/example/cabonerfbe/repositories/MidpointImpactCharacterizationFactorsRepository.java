@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,7 +52,7 @@ public interface MidpointImpactCharacterizationFactorsRepository extends JpaRepo
     @Query("""
             select m.decimalValue from MidpointImpactCharacterizationFactors m
             where m.impactMethodCategory.id = ?1 and m.emissionSubstance.id = ?2 and m.status = true""")
-    Optional<Double> findDecimalValueByMethodCategoryAndEmissionSubstance(UUID methodCategoryId, UUID emissionSubstanceId);
+    Optional<BigDecimal> findDecimalValueByMethodCategoryAndEmissionSubstance(UUID methodCategoryId, UUID emissionSubstanceId);
 
     @Query("""
             select m from MidpointImpactCharacterizationFactors m

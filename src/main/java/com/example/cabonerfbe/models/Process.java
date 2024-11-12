@@ -3,6 +3,8 @@ package com.example.cabonerfbe.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,7 +20,7 @@ public class Process extends Base{
     @JoinColumn(name = "lifecycle_stage_id")
     private LifeCycleStage lifeCycleStage;
 
-    private double overAllProductFlowRequired;
+    private BigDecimal overAllProductFlowRequired;
 
     @ManyToOne
     @JoinColumn(name = "project_id")

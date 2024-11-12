@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -16,7 +18,7 @@ public class CreateUnitRequest {
     @NotBlank(message = "Unit name cannot be empty")
     private String unitName;
     @Positive(message = "Conversion factor must be a positive number")
-    private Double conversionFactor;
+    private BigDecimal conversionFactor;
     @NotNull(message = "isDefault must be specified")
     private Boolean isDefault;
 }

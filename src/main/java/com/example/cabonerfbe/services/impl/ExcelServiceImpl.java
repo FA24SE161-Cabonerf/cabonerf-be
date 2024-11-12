@@ -7,7 +7,6 @@ import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.ExportFactorRequest;
-import com.example.cabonerfbe.request.PaginationRequest;
 import com.example.cabonerfbe.response.ImportFactorResponse;
 import com.example.cabonerfbe.response.MidpointSubstanceFactorsResponse;
 import com.example.cabonerfbe.services.ExcelService;
@@ -31,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,7 +41,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -126,7 +125,7 @@ public class ExcelServiceImpl implements ExcelService {
                 substance.getAlternativeFormula(), null, null, null);
 
         methodColumns.forEach((methodName, col) -> {
-            Double value = getDoubleValueFromCell(row.getCell(col));
+            BigDecimal value = getBigDecimalValueFromCell(row.getCell(col));
             if (value != null) {
                 ImpactMethodCategory methodCategory = getImpactMethodCategory(methodName, category.getId(), name);
                 if (createOrUpdateFactor(factorsList, emissionSubstance, methodCategory, value,0,row.getRowNum(),col)) {
@@ -262,18 +261,18 @@ public class ExcelServiceImpl implements ExcelService {
         return impactMethodCategoryRepository.findByImpactCategoryAndImpactMethod(categoryId, method.getId());
     }
 
-    private Double getDoubleValueFromCell(Cell cell) {
+    private BigDecimal getBigDecimalValueFromCell(Cell cell) {
         if (cell == null) {
             return null;
         }
         switch (cell.getCellType()) {
             case NUMERIC:
-                return cell.getNumericCellValue();
+                return BigDecimal.valueOf(cell.getNumericCellValue());
             case STRING:
                 String stringValue = cell.getStringCellValue();
                 try {
-                    // Cố gắng chuyển chuỗi về double
-                    return Double.parseDouble(stringValue);
+                    // Cố gắng chuyển chuỗi về BigDecimal
+                    return new BigDecimal(stringValue);
                 } catch (NumberFormatException e) {
                     return null;
                 }
@@ -284,20 +283,20 @@ public class ExcelServiceImpl implements ExcelService {
         }
     }
 
-    private boolean isNumeric(String str) {
-        if (str == null || str.isEmpty()) {
-            return false;
-        }
-        try {
-            Double.parseDouble(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
+//    private boolean isNumeric(String str) {
+//        if (str == null || str.isEmpty()) {
+//            return false;
+//        }
+//        try {
+//            Double.parseDouble(str);
+//            return true;
+//        } catch (NumberFormatException e) {
+//            return false;
+//        }
+//    }
 
     private boolean createOrUpdateFactor(List<MidpointImpactCharacterizationFactors> factorsList,
-                                         EmissionSubstance emissionSubstance, ImpactMethodCategory methodCategory, Double value,
+                                         EmissionSubstance emissionSubstance, ImpactMethodCategory methodCategory, BigDecimal value,
                                          int sheetNumber, int rowsNumber, int columnsNumber) {
         if (repository.checkExist(emissionSubstance.getId(), methodCategory.getId()).isEmpty()) {
             factorsList.add(new MidpointImpactCharacterizationFactors(methodCategory, emissionSubstance,
@@ -431,9 +430,12 @@ public class ExcelServiceImpl implements ExcelService {
                 row.createCell(3).setCellValue(x.getCompartmentName());
                 row.createCell(4).setCellValue(x.getMolecularFormula());
                 row.createCell(5).setCellValue(x.getAlternativeFormula());
-                row.createCell(6).setCellValue(x.getIndividualist() != null ? x.getIndividualist() : '-');
-                row.createCell(7).setCellValue(x.getHierarchist() != null ? x.getHierarchist() : '-');
-                row.createCell(8).setCellValue(x.getEgalitarian() != null ? x.getEgalitarian() : '-');
+                row.createCell(6).setCellValue(
+                        (RichTextString) Optional.ofNullable(x.getIndividualist())
+                                .orElse(Optional.ofNullable(x.getHierarchist())
+                                        .orElse(Optional.ofNullable(x.getEgalitarian())
+                                                .orElse(null)))
+                );
             }
 
             // Ghi dữ liệu vào file

@@ -2,6 +2,7 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,7 +17,7 @@ public class ProcessDto {
     private String description;
     private LifeCycleStageDto lifeCycleStage;
     private UUID projectId;
-    private double overallProductFlowRequired;
+    private BigDecimal overallProductFlowRequired;
     private List<ProcessImpactValueDto> impacts;
     private List<ExchangesDto> exchanges;
 }

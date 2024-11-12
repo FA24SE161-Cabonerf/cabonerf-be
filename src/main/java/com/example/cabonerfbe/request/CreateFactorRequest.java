@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @SuperBuilder
@@ -30,7 +31,7 @@ public class CreateFactorRequest {
     private String cas;
     @NotNull(message = "Value is required.")
     @Min(value = 0,message = "Value must be greater than or equal to zero")
-    private double value;
+    private BigDecimal value;
     @NotNull(message = "Emission compartment is required.")
     private UUID emissionCompartmentId;
     @NotNull(message = "Method is required.")
