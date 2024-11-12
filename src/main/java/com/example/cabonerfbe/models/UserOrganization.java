@@ -24,4 +24,8 @@ public class UserOrganization extends Base{
     @ManyToOne
     @JoinColumn(name = "organizaiton_id")
     private Organization organization;
+
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
 }

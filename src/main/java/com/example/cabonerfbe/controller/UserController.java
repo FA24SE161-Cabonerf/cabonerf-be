@@ -33,4 +33,21 @@ public class UserController {
         );
     }
 
+    @GetMapping(API_PARAMS.ADMIN)
+    public ResponseEntity<ResponseObject> getAll(@RequestParam(required = true,defaultValue = "1") int pageCurrent,
+                                                 @RequestParam(required = true, defaultValue = "5") int pageSize){
+        log.info("Start getAllUser");
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get all user success",userService.getAll(pageCurrent, pageSize))
+        );
+    }
+
+    @PostMapping(API_PARAMS.ADMIN + API_PARAMS.BAN_UNBAN_USER)
+    public ResponseEntity<ResponseObject> updateUserStatus(@PathVariable("userId") UUID userId){
+        log.info("Start ban/unban User. Id: {}", userId);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Ban/UnBan user success", userService.updateUserStatus(userId))
+        );
+    }
+
 }
