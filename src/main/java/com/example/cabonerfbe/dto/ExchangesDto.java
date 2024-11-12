@@ -2,6 +2,7 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -12,7 +13,7 @@ import java.util.UUID;
 public class ExchangesDto {
     private UUID id;
     private String name;
-    private double value;
+    private BigDecimal value;
     private ExchangesTypeDto exchangesType;
     private EmissionSubstanceDto emissionSubstance;
     private UnitDto unit;

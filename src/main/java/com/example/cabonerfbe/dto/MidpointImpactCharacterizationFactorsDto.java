@@ -2,6 +2,7 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -14,7 +15,7 @@ public class MidpointImpactCharacterizationFactorsDto {
     private ImpactMethodCategoryDto impactMethodCategory;
     private SubstanceDto substance;
     private String scientificValue;
-    private double decimalValue;
+    private BigDecimal decimalValue;
     private UnitDto unit;
     private EmissionCompartmentDto emissionCompartment;
 }

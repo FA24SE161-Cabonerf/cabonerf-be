@@ -9,7 +9,6 @@ import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
-import com.example.cabonerfbe.util.ValueConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -92,19 +91,19 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             processImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
             processImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
 
-            double unitLevel = Constants.BASE_UNIT_LEVEL;
+            BigDecimal unitLevel = Constants.BASE_UNIT_LEVEL;
 
             for (Exchanges exchange : exchangeList) {
                 UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
-                double exchangeValue = exchange.getValue();
+                BigDecimal exchangeValue = exchange.getValue();
 
                 Optional<MidpointImpactCharacterizationFactors> midpointFactorsOptional =
                         midpointFactorsRepository.findByMethodCategoryAndEmissionSubstance(methodCategoryId, emissionSubstanceId);
 
                 // Calculate and add to unit level based on presence of midpoint factors
-                unitLevel += midpointFactorsOptional
-                        .map(midpointFactors -> exchangeValue * midpointFactors.getDecimalValue())
-                        .orElse(Constants.BASE_UNIT_LEVEL);
+                unitLevel = unitLevel.add(midpointFactorsOptional
+                        .map(midpointFactors -> exchangeValue.multiply(midpointFactors.getDecimalValue()))
+                        .orElse(Constants.BASE_UNIT_LEVEL));
             }
 
             processImpactValue.setUnitLevel(unitLevel);
@@ -119,6 +118,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
 
         UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
+        log.info("emission substance id: {}", emissionSubstanceId);
         Unit baseUnit = exchange.getEmissionSubstance().getUnit();
 
         List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository.findByEmissionSubstanceId(emissionSubstanceId);
@@ -126,18 +126,22 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         for (MidpointImpactCharacterizationFactors factors : list) {
             Optional<ProcessImpactValue> processImpactValue = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(processId, factors.getImpactMethodCategory().getId());
             if (processImpactValue.isPresent()) {
-                BigDecimal unitLevel = BigDecimal.valueOf(processImpactValue.get().getUnitLevel());
+                BigDecimal unitLevel = processImpactValue.get().getUnitLevel();
+                log.info("pre unit level: {}", unitLevel);
                 // Convert the exchange value to the base unit and adjust based on initial value
+                log.info("pre exchangeValue: {}, initValue: {}", exchange.getValue(), initialValue);
                 BigDecimal exchangeValue = unitService.convertValue(
                         exchange.getUnit(),
-                        BigDecimal.valueOf(exchange.getValue()).subtract(initialValue),
+                        exchange.getValue().subtract(initialValue),
                         baseUnit
                 );
+                log.info("post exchangeValue: {}", exchangeValue);
                 // Adjust unit level by adding the product of exchange value and factor
-                BigDecimal factorValue = ValueConverter.bigDecimalConverter(factors.getDecimalValue());
+                BigDecimal factorValue = factors.getDecimalValue();
                 unitLevel = unitLevel.add(exchangeValue.multiply(factorValue).setScale(Constants.BIG_DECIMAL_DEFAULT_SCALE, RoundingMode.HALF_UP));
+                log.info("factorValue: {}, post unitLevel: {}", factorValue, unitLevel);
 
-                processImpactValue.get().setUnitLevel(unitLevel.doubleValue());
+                processImpactValue.get().setUnitLevel(unitLevel);
                 processImpactValueList.add(processImpactValue.get());
             }
         }

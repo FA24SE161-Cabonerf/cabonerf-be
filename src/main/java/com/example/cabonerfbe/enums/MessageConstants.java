@@ -98,7 +98,8 @@ public class MessageConstants {
     public static final String GET_ALL_ORGANIZATION_SUCCESS = "Get all organization success";
     public static final String UPDATE_ORGANIZATION_SUCCESS = "Update organization success";
     public static final String DELETE_ORGANIZATION_SUCCESS = "Delete organization success";
-  
+
     public static final String NO_PROCESS_IN_PROJECT = "There must be at least one process to calculate";
 
+    public static final String CHANGE_PROJECT_METHOD_SUCCESS = "Change impact method of the project success";
 }

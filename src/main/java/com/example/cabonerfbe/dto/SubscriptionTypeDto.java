@@ -2,6 +2,7 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -15,7 +16,7 @@ public class SubscriptionTypeDto {
     String description;
     int projectLimit;
     int usageLimit;
-    double annualCost;
-    double monthlyCost;
+    BigDecimal annualCost;
+    BigDecimal monthlyCost;
     boolean canCreateOrganization;
 }

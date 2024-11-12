@@ -66,6 +66,7 @@ public class API_PARAMS {
     public static final String GET_PROJECT_BY_ID = "/{projectId}/{workspaceId}";
     public static final String UPDATE_DETAIL_PROJECT_BY_ID = "/{projectId}";
     public static final String DELETE_PROJECT = "/{projectId}";
+    public static final String CHANGE_PROJECT_METHOD = "{projectId}/impact-methods/{methodId}";
 
     /************************
      *      PROCESS APIs     *

@@ -3,6 +3,8 @@ package com.example.cabonerfbe.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,7 +17,7 @@ public class ProjectImpactValue extends Base{
     @JoinColumn(name = "impact_method_category_id")
     private ImpactMethodCategory impactMethodCategory;
 
-    private double value;
+    private BigDecimal value;
 
     @ManyToOne
     @JoinColumn(name = "project_id")

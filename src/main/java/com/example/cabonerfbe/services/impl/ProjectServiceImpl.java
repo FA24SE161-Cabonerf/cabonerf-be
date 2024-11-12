@@ -5,6 +5,7 @@ import com.example.cabonerfbe.dto.*;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
+import com.example.cabonerfbe.models.LifeCycleImpactAssessmentMethod;
 import com.example.cabonerfbe.models.Project;
 import com.example.cabonerfbe.models.ProjectImpactValue;
 import com.example.cabonerfbe.repositories.*;
@@ -14,6 +15,7 @@ import com.example.cabonerfbe.response.CreateProjectResponse;
 import com.example.cabonerfbe.response.GetAllProjectResponse;
 import com.example.cabonerfbe.services.ProcessService;
 import com.example.cabonerfbe.services.ProjectService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -171,31 +173,29 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public GetProjectByIdDto getById(UUID id, UUID workspaceId) {
-        if(projectRepository.findById(id).isEmpty()){
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Project not exist");
-        }
-
-        Project project = projectRepository.findById(id).get();
-
-//        if(!project.getUser().getId().equals(userId)){
-//            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR,"Project not owned by user with id: " + userId);
-//        }
+        Project project = projectRepository.findById(id).orElseThrow(
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND)
+        );
 
         if (workspaceId == null) {
             throw CustomExceptions.unauthorized("workspace not exist");
         }
 
+        return getProject(project);
+    }
+
+    @NotNull
+    private GetProjectByIdDto getProject(Project project) {
         GetProjectByIdDto dto = new GetProjectByIdDto();
 
-        dto.setId(id);
+        dto.setId(project.getId());
         dto.setName(project.getName());
         dto.setDescription(project.getDescription());
         dto.setLocation(project.getLocation());
         dto.setMethod(methodConverter.fromMethodToMethodDto(project.getLifeCycleImpactAssessmentMethod()));
         dto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
-        dto.setProcesses(processService.getAllProcessesByProjectId(id));
+        dto.setProcesses(processService.getAllProcessesByProjectId(project.getId()));
         dto.setConnectors(connectorConverter.fromListConnectorToConnectorDto(connectorRepository.findAllByProject(project.getId())));
-
         return dto;
     }
 
@@ -236,6 +236,22 @@ public class ProjectServiceImpl implements ProjectService {
         project.get().setStatus(false);
         projectRepository.save(project.get());
         return new ArrayList<>();
+    }
+
+    @Override
+    public GetProjectByIdDto changeProjectMethod(UUID projectId, UUID methodId) {
+        Project project = projectRepository.findById(projectId).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
+        );
+        if (!methodId.equals(project.getLifeCycleImpactAssessmentMethod().getId())) {
+            LifeCycleImpactAssessmentMethod method = methodRepository.findByIdAndStatus(methodId, Constants.STATUS_TRUE).orElseThrow(
+                    () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND)
+            );
+            project.setLifeCycleImpactAssessmentMethod(method);
+            projectRepository.save(project);
+        }
+
+        return getProject(project);
     }
 
     public List<ProjectImpactDto> converterProject(List<ProjectImpactValue> list) {

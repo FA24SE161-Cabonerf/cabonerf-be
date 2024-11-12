@@ -7,7 +7,6 @@ import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.CreateProjectResponse;
 import com.example.cabonerfbe.response.GetAllProjectResponse;
-import com.example.cabonerfbe.response.GetProjectByIdResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,4 +20,6 @@ public interface ProjectService {
     GetProjectByIdDto getById(UUID id, UUID userId);
     UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request);
     List<Project> deleteProject(UUID id);
+
+    GetProjectByIdDto changeProjectMethod(UUID projectId, UUID methodId);
 }

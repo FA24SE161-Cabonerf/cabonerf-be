@@ -2,6 +2,8 @@ package com.example.cabonerfbe.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -10,7 +12,7 @@ import lombok.*;
 @Table
 public class Unit extends Base{
     private String name;
-    private double conversionFactor;
+    private BigDecimal conversionFactor;
     private Boolean isDefault;
 
     @ManyToOne
