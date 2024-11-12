@@ -9,6 +9,7 @@ import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
+import com.example.cabonerfbe.util.ValueConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -125,27 +126,16 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         for (MidpointImpactCharacterizationFactors factors : list) {
             Optional<ProcessImpactValue> processImpactValue = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(processId, factors.getImpactMethodCategory().getId());
             if (processImpactValue.isPresent()) {
-                log.info("Unit: {}, Rate: {}", exchange.getUnit().getName(), exchange.getUnit().getConversionFactor());
-
                 BigDecimal unitLevel = BigDecimal.valueOf(processImpactValue.get().getUnitLevel());
-
-                log.info("Pre unitLevel: {} of factors impact category: {}", unitLevel, factors.getImpactMethodCategory().getImpactCategory().getName());
-
                 // Convert the exchange value to the base unit and adjust based on initial value
                 BigDecimal exchangeValue = unitService.convertValue(
                         exchange.getUnit(),
                         BigDecimal.valueOf(exchange.getValue()).subtract(initialValue),
                         baseUnit
-                ).setScale(10, RoundingMode.HALF_UP);
-
-                log.info("Pre exchangeValue: {}, Converted exchangeValue: {}, InitValue (before change): {}", exchange.getValue(), exchangeValue, initialValue);
-
+                );
                 // Adjust unit level by adding the product of exchange value and factor
-                BigDecimal factorValue = BigDecimal.valueOf(factors.getDecimalValue()).setScale(10, RoundingMode.HALF_UP);
-                unitLevel = unitLevel.add(exchangeValue.multiply(factorValue).setScale(10, RoundingMode.HALF_UP));
-
-                log.info("Factor value: {}", factorValue);
-                log.info("Post unitLevel: {}", unitLevel);
+                BigDecimal factorValue = ValueConverter.bigDecimalConverter(factors.getDecimalValue());
+                unitLevel = unitLevel.add(exchangeValue.multiply(factorValue).setScale(Constants.BIG_DECIMAL_DEFAULT_SCALE, RoundingMode.HALF_UP));
 
                 processImpactValue.get().setUnitLevel(unitLevel.doubleValue());
                 processImpactValueList.add(processImpactValue.get());
