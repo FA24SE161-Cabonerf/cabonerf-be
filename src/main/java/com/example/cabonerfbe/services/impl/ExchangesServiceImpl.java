@@ -161,8 +161,9 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         exchangesRepository.save(exchange);
 
-        processImpactValueService.computeProcessImpactValueSingleExchange(exchange.getProcess(), exchange, initialValue);
-
+        if (exchange.getExchangesType().getName().equals(EXCHANGE_TYPE_ELEMENTARY)) {
+            processImpactValueService.computeProcessImpactValueSingleExchange(exchange.getProcess(), exchange, initialValue);
+        }
         return processService.getProcessById(exchange.getProcessId());
     }
 

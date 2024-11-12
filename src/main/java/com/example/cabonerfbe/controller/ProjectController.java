@@ -71,4 +71,12 @@ public class ProjectController {
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Delete project success", projectService.deleteProject(projectId)
                 ));
     }
+
+    @PatchMapping(API_PARAMS.CHANGE_PROJECT_METHOD)
+    public ResponseEntity<ResponseObject> changeProjectMethod(@PathVariable UUID projectId, @PathVariable UUID methodId){
+        log.info("Start changeProjectMethod. projectId: {}, method id: {}", projectId, methodId);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CHANGE_PROJECT_METHOD_SUCCESS, projectService.changeProjectMethod(projectId, methodId))
+        );
+    }
 }
