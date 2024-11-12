@@ -126,15 +126,19 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             Optional<ProcessImpactValue> processImpactValue = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(processId, factors.getImpactMethodCategory().getId());
             if (processImpactValue.isPresent()) {
                 BigDecimal unitLevel = processImpactValue.get().getUnitLevel();
+                log.info("pre unit level: {}", unitLevel);
                 // Convert the exchange value to the base unit and adjust based on initial value
+                log.info("pre exchangeValue: {}, initValue: {}", exchange.getValue(), initialValue);
                 BigDecimal exchangeValue = unitService.convertValue(
                         exchange.getUnit(),
                         exchange.getValue().subtract(initialValue),
                         baseUnit
                 );
+                log.info("post exchangeValue: {}", exchangeValue);
                 // Adjust unit level by adding the product of exchange value and factor
                 BigDecimal factorValue = factors.getDecimalValue();
                 unitLevel = unitLevel.add(exchangeValue.multiply(factorValue).setScale(Constants.BIG_DECIMAL_DEFAULT_SCALE, RoundingMode.HALF_UP));
+                log.info("factorValue: {}, post unitLevel: {}", factorValue, unitLevel);
 
                 processImpactValue.get().setUnitLevel(unitLevel);
                 processImpactValueList.add(processImpactValue.get());
