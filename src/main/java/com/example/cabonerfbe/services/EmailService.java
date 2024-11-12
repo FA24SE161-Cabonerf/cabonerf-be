@@ -1,6 +1,9 @@
 package com.example.cabonerfbe.services;
 
+import com.example.cabonerfbe.request.MailRequest;
+
+import java.util.Map;
+
 public interface EmailService {
-//    void sendVerifyRegisterEmail(String toAddress, String emailVerifyToken);
-//    void sendForgotPasswordEmail(String toAddress, String forgotPasswordToken);
+    String sendMailCreateOrganization(MailRequest request, Map<String, Object> model);
 }
