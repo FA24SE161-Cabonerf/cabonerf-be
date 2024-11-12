@@ -118,6 +118,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
 
         UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
+        log.info("emission substance id: {}", emissionSubstanceId);
         Unit baseUnit = exchange.getEmissionSubstance().getUnit();
 
         List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository.findByEmissionSubstanceId(emissionSubstanceId);
