@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -135,14 +136,15 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                         exchange.getUnit(),
                         BigDecimal.valueOf(exchange.getValue()).subtract(initialValue),
                         baseUnit
-                );
+                ).setScale(10, RoundingMode.HALF_UP);
 
                 log.info("Pre exchangeValue: {}, Converted exchangeValue: {}, InitValue (before change): {}", exchange.getValue(), exchangeValue, initialValue);
 
                 // Adjust unit level by adding the product of exchange value and factor
-                unitLevel = unitLevel.add(exchangeValue.multiply(BigDecimal.valueOf(factors.getDecimalValue())));
+                BigDecimal factorValue = BigDecimal.valueOf(factors.getDecimalValue()).setScale(10, RoundingMode.HALF_UP);
+                unitLevel = unitLevel.add(exchangeValue.multiply(factorValue).setScale(10, RoundingMode.HALF_UP));
 
-                log.info("Factor value: {}", factors.getDecimalValue());
+                log.info("Factor value: {}", factorValue);
                 log.info("Post unitLevel: {}", unitLevel);
 
                 processImpactValue.get().setUnitLevel(unitLevel.doubleValue());
