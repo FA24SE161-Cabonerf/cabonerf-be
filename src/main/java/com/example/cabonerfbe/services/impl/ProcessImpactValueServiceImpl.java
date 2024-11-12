@@ -9,16 +9,21 @@ import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
+import com.example.cabonerfbe.util.ValueConverter;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class ProcessImpactValueServiceImpl implements ProcessImpactValueService {
     @Autowired
@@ -33,6 +38,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private MidpointImpactCharacterizationFactorsRepository midpointFactorsRepository;
     @Autowired
     private UnitServiceImpl unitService;
+    @Autowired
+    private ProjectRepository projectRepository;
 
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     private void processImpactValueGenerate(CreateProcessImpactValueRequest request) {
@@ -107,7 +114,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValueRepository.saveAll(processImpactValueList);
     }
 
-    public void computeProcessImpactValueSingleExchange(Process process, Exchanges exchange, double initialValue) {
+    public void computeProcessImpactValueSingleExchange(Process process, Exchanges exchange, BigDecimal initialValue) {
         UUID processId = process.getId();
         List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
 
@@ -119,10 +126,18 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         for (MidpointImpactCharacterizationFactors factors : list) {
             Optional<ProcessImpactValue> processImpactValue = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(processId, factors.getImpactMethodCategory().getId());
             if (processImpactValue.isPresent()) {
-                double unitLevel = processImpactValue.get().getUnitLevel();
-                double exchangeValue = unitService.convertValue(exchange.getUnit(), exchange.getValue() - initialValue, baseUnit);
-                unitLevel += exchangeValue * factors.getDecimalValue();
-                processImpactValue.get().setUnitLevel(unitLevel);
+                BigDecimal unitLevel = BigDecimal.valueOf(processImpactValue.get().getUnitLevel());
+                // Convert the exchange value to the base unit and adjust based on initial value
+                BigDecimal exchangeValue = unitService.convertValue(
+                        exchange.getUnit(),
+                        BigDecimal.valueOf(exchange.getValue()).subtract(initialValue),
+                        baseUnit
+                );
+                // Adjust unit level by adding the product of exchange value and factor
+                BigDecimal factorValue = ValueConverter.bigDecimalConverter(factors.getDecimalValue());
+                unitLevel = unitLevel.add(exchangeValue.multiply(factorValue).setScale(Constants.BIG_DECIMAL_DEFAULT_SCALE, RoundingMode.HALF_UP));
+
+                processImpactValue.get().setUnitLevel(unitLevel.doubleValue());
                 processImpactValueList.add(processImpactValue.get());
             }
         }
@@ -132,6 +147,19 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         for (int i = 0; i < processImpactValueList.size(); i += batchSize) {
             List<ProcessImpactValue> batch = processImpactValueList.subList(i, Math.min(i + batchSize, processImpactValueList.size()));
             processImpactValueRepository.saveAll(batch);
+        }
+    }
+
+
+    public void computeSystemLevelOfProject(UUID projectId) {
+        Project project = projectRepository.findById(projectId).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
+        );
+
+        // from projectId, gets all process within
+        List<Process> processList = processRepository.findAll(projectId);
+        if (processList.isEmpty()) {
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT);
         }
     }
 }
