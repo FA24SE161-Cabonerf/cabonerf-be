@@ -4,7 +4,6 @@ import com.example.cabonerfbe.converter.UserConverter;
 import com.example.cabonerfbe.dto.UserAdminDto;
 import com.example.cabonerfbe.dto.UserProfileDto;
 import com.example.cabonerfbe.enums.Constants;
-import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.Users;
 import com.example.cabonerfbe.repositories.UserRepository;
@@ -26,7 +25,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -61,9 +59,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public GetAllUserResponse getAll(int pageCurrent, int pageSize) {
+    public GetAllUserResponse getAll(int pageCurrent, int pageSize, String keyword) {
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
-        Page<Users> users = userRepository.findAll(pageable);
+
+        Page<Users> users = keyword != null
+                ? userRepository.findByEmailAndFullName(keyword, pageable)
+                : userRepository.findAll(pageable);
 
         int totalPage = users.getTotalPages();
         if(pageCurrent > totalPage){

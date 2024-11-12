@@ -2,7 +2,6 @@ package com.example.cabonerfbe.controller;
 
 import com.example.cabonerfbe.enums.API_PARAMS;
 import com.example.cabonerfbe.enums.Constants;
-import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.UserService;
 import lombok.AllArgsConstructor;
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 import java.util.UUID;
 
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.USERS)
@@ -34,19 +32,20 @@ public class UserController {
     }
 
     @GetMapping(API_PARAMS.ADMIN)
-    public ResponseEntity<ResponseObject> getAll(@RequestParam(required = true,defaultValue = "1") int pageCurrent,
-                                                 @RequestParam(required = true, defaultValue = "5") int pageSize){
+    public ResponseEntity<ResponseObject> getAll(@RequestParam(required = true, defaultValue = "1") int pageCurrent,
+                                                 @RequestParam(required = true, defaultValue = "5") int pageSize,
+                                                 @RequestParam(required = false) String keyword) {
         log.info("Start getAllUser");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get all user success",userService.getAll(pageCurrent, pageSize))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get all user success", userService.getAll(pageCurrent, pageSize, keyword))
         );
     }
 
     @PostMapping(API_PARAMS.ADMIN + API_PARAMS.BAN_UNBAN_USER)
-    public ResponseEntity<ResponseObject> updateUserStatus(@PathVariable("userId") UUID userId){
+    public ResponseEntity<ResponseObject> updateUserStatus(@PathVariable("userId") UUID userId) {
         log.info("Start ban/unban User. Id: {}", userId);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Ban/UnBan user success", userService.updateUserStatus(userId))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Ban/UnBan user success", userService.updateUserStatus(userId))
         );
     }
 
