@@ -121,29 +121,46 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
     public void computeProcessImpactValueSingleExchange(Process process, Exchanges exchange, BigDecimal initialValue) {
         UUID processId = process.getId();
-        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
+        log.info("Starting impact value computation for process ID: " + processId);
 
+        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
         UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
         Unit baseUnit = exchange.getEmissionSubstance().getUnit();
 
         List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository.findByEmissionSubstanceId(emissionSubstanceId);
+        log.info("Retrieved " + list.size() + " midpoint factors for emission substance ID: " + emissionSubstanceId);
 
         for (MidpointImpactCharacterizationFactors factors : list) {
-            Optional<ProcessImpactValue> processImpactValue = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(processId, factors.getImpactMethodCategory().getId());
-            if (processImpactValue.isPresent()) {
-                BigDecimal unitLevel = processImpactValue.get().getUnitLevel();
+            Optional<ProcessImpactValue> processImpactValueOpt = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(
+                    processId, factors.getImpactMethodCategory().getId()
+            );
+
+            if (processImpactValueOpt.isPresent()) {
+                ProcessImpactValue processImpactValue = processImpactValueOpt.get();
+                BigDecimal unitLevel = processImpactValue.getUnitLevel();
+
+                log.info("Processing impact method category ID: " + factors.getImpactMethodCategory().getId());
+                log.info("Initial unit level: " + unitLevel);
+
                 // Convert the exchange value to the base unit and adjust based on initial value
                 BigDecimal exchangeValue = unitService.convertValue(
                         exchange.getUnit(),
                         exchange.getValue().subtract(initialValue),
                         baseUnit
                 );
+                log.info("Converted exchange value: " + exchangeValue);
+
                 // Adjust unit level by adding the product of exchange value and factor
                 BigDecimal factorValue = factors.getDecimalValue();
                 unitLevel = unitLevel.add(exchangeValue.multiply(factorValue));
 
-                processImpactValue.get().setUnitLevel(unitLevel);
-                processImpactValueList.add(processImpactValue.get());
+                log.info("Factor value: " + factorValue);
+                log.info("Updated unit level: " + unitLevel);
+
+                processImpactValue.setUnitLevel(unitLevel);
+                processImpactValueList.add(processImpactValue);
+            } else {
+                log.warn("No process impact value found for impact method category ID: " + factors.getImpactMethodCategory().getId());
             }
         }
 
