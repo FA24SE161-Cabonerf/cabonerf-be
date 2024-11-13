@@ -16,6 +16,7 @@ public class Exchanges extends Base{
 
     private String name;
     private String description;
+    @Column(precision = 100, scale = 60)
     private BigDecimal value;
 
     @ManyToOne

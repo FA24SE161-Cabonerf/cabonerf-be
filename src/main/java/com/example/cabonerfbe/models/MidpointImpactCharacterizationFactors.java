@@ -21,6 +21,7 @@ public class MidpointImpactCharacterizationFactors extends Base{
     private EmissionSubstance emissionSubstance;
 
     private String scientificValue;
+    @Column(precision = 100, scale = 60)
     private BigDecimal decimalValue;
 
 }

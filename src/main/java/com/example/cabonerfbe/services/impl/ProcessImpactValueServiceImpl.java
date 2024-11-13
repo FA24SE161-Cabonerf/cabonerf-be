@@ -1,6 +1,7 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.config.RabbitMQConfig;
+import com.example.cabonerfbe.dto.ProcessImpactValueDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -16,11 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -39,6 +39,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private UnitServiceImpl unitService;
     @Autowired
     private ProjectRepository projectRepository;
+    @Autowired
+    private ConnectorRepository connectorRepository;
 
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     private void processImpactValueGenerate(CreateProcessImpactValueRequest request) {
@@ -160,10 +162,113 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
         );
 
-        // from projectId, gets all process within
-        List<Process> processList = processRepository.findAll(projectId);
+        // Lấy tất cả các process trong dự án
+        List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
         if (processList.isEmpty()) {
             throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT);
         }
+
+        // Lấy danh sách UUID của tất cả các process
+        List<UUID> processIds = processList.stream()
+                .map(Process::getId)
+                .collect(Collectors.toList());
+
+        // Lấy tất cả các connector liên quan đến các process
+        List<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
+        if (connectors.isEmpty()) {
+            throw CustomExceptions.notFound("There must be at least one connector to calculate");
+        }
+
+        List<Process> checkProcess = processRepository.findProcessesWithoutOutgoingConnectors();
+        if(checkProcess.size() >1){
+            throw CustomExceptions.badRequest("Multiple deepest process found");
+        }
+
+        // Khởi tạo map để lưu trữ các giá trị exchange cho từng process
+        for (Process currentProcess : processList) {
+            UUID currentProcessId = currentProcess.getId();
+            BigDecimal totalFlow = traversePath(currentProcessId, null, true); // Đặt flag isFirstProcess là true
+            totalFlow = totalFlow.setScale(2, RoundingMode.CEILING);
+
+            currentProcess.setOverAllProductFlowRequired(totalFlow);
+
+            List<ProcessImpactValue> data = processImpactValueRepository.findByProcessId(currentProcessId);
+            if(!data.isEmpty()){
+                updateProcess(data,totalFlow);
+            }
+
+            processRepository.save(currentProcess);
+        }
+
     }
+
+    // Phương thức đệ quy để duyệt đường đi từ một process và tính toán kết quả cho mỗi nhánh
+    private BigDecimal traversePath(UUID processId, String previousExchangeName, boolean isFirstProcess) {
+        BigDecimal multiplyNumerator = BigDecimal.ONE;
+        BigDecimal multiplyDenominator = BigDecimal.ONE;
+
+        // Nếu đây không phải là process đầu tiên thì mới tính giá trị exchange
+        if (isFirstProcess) {
+            String finalPreviousExchangeName = previousExchangeName;
+            List<Exchanges> exchanges = exchangesRepository.findProductByProcessId(processId).stream()
+                    .filter(exchange -> !exchange.isInput() || exchange.getName().equals(finalPreviousExchangeName))
+                    .collect(Collectors.toList());
+
+            for (Exchanges exchange : exchanges) {
+                if (!exchange.isInput()) {
+                    previousExchangeName = exchange.getName();
+                    multiplyDenominator = multiplyDenominator.multiply(BigDecimal.ONE);
+                } else {
+                    multiplyNumerator = multiplyNumerator.multiply(BigDecimal.ONE);
+                }
+            }
+        }else{
+            String finalPreviousExchangeName = previousExchangeName;
+            List<Exchanges> exchanges = exchangesRepository.findProductByProcessId(processId).stream()
+                    .filter(exchange -> !exchange.isInput() || exchange.getName().equals(finalPreviousExchangeName))
+                    .collect(Collectors.toList());
+
+            for (Exchanges exchange : exchanges) {
+                BigDecimal conversionFactor = exchange.getUnit().getConversionFactor();
+                BigDecimal convertUnit = conversionFactor.compareTo(BigDecimal.ONE) == 0
+                        ? exchange.getValue()
+                        : exchange.getValue().divide(conversionFactor, MathContext.DECIMAL128);
+                if (!exchange.isInput()) {
+                    previousExchangeName = exchange.getName();
+                    multiplyDenominator = multiplyDenominator.multiply(convertUnit);
+                } else {
+                    multiplyNumerator = multiplyNumerator.multiply(convertUnit);
+                }
+            }
+        }
+
+        // Lấy tất cả các connector tiếp theo và thực hiện đệ quy cho từng nhánh
+        List<Connector> nextConnectors = connectorRepository.findNextByStartProcessId(processId);
+
+        // Nếu không có connector tiếp theo, trả về kết quả của đường đi hiện tại
+        if (nextConnectors.isEmpty()) {
+            return multiplyNumerator.divide(multiplyDenominator, MathContext.DECIMAL128);
+        }
+
+        // Nếu có connector tiếp theo, tiếp tục duyệt các đường đi khác và cộng dồn kết quả
+        BigDecimal pathTotal = BigDecimal.ZERO;
+        for (Connector nextConnector : nextConnectors) {
+            UUID nextProcessId = nextConnector.getEndProcess().getId();
+            pathTotal = pathTotal.add(traversePath(nextProcessId, previousExchangeName, false));
+        }
+
+        // Kết hợp kết quả hiện tại với kết quả của các đường đi con
+        return pathTotal.multiply(multiplyNumerator.divide(multiplyDenominator, MathContext.DECIMAL128));
+    }
+
+    private List<ProcessImpactValue> updateProcess(List<ProcessImpactValue> list, BigDecimal totalRequiredFlow) {
+        List<ProcessImpactValue> data = list.stream()
+                .peek(x -> {
+                    x.setSystemLevel(totalRequiredFlow.multiply(x.getUnitLevel()));
+                    x.setOverallImpactContribution(totalRequiredFlow.multiply(x.getUnitLevel()));
+                })
+                .collect(Collectors.toList());
+        return processImpactValueRepository.saveAll(data);
+    }
+
 }
