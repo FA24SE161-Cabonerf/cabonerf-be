@@ -2,7 +2,6 @@ package com.example.cabonerfbe.repositories;
 
 import com.example.cabonerfbe.enums.QueryStrings;
 import com.example.cabonerfbe.models.Connector;
-import com.example.cabonerfbe.models.Process;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,4 +27,6 @@ public interface ConnectorRepository extends JpaRepository<Connector, UUID> {
     @Query("SELECT c FROM Connector c WHERE c.startProcess.id = ?1 AND c.status = true")
     List<Connector> findNextByStartProcessId(UUID currentProcessId);
 
+    @Query("SELECT c FROM Connector c WHERE c.endExchanges.id = ?1 OR c.startExchanges.id = ?1 and c.status = true")
+    List<Connector> findConnectorToExchange(UUID exchangeId);
 }

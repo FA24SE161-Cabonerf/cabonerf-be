@@ -28,9 +28,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
@@ -145,7 +142,7 @@ public class ProcessServiceImpl implements ProcessService {
         return new DeleteProcessResponse(process.getId());
     }
 
-    private List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list) {
+    public List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list) {
         return list.stream()
                 .map(x -> {
                     ProcessImpactValueDto p = new ProcessImpactValueDto();
