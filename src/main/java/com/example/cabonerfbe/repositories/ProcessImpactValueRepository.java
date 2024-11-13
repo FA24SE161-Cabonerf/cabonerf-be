@@ -1,10 +1,13 @@
 package com.example.cabonerfbe.repositories;
 
+import com.example.cabonerfbe.models.Connector;
 import com.example.cabonerfbe.models.ProcessImpactValue;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,4 +22,10 @@ public interface ProcessImpactValueRepository extends JpaRepository<ProcessImpac
 
     @Query("SELECT p FROM ProcessImpactValue p WHERE p.process.id = ?1 AND p.impactMethodCategory.id = ?2 AND p.status = true")
     Optional<ProcessImpactValue> findByProcessIdAndImpactMethodCategoryId(UUID processId, UUID methodCategoryId);
+
+    @Query("SELECT piv FROM ProcessImpactValue piv WHERE piv.process.project.id = ?1 AND piv.impactMethodCategory.id = ?2 AND piv.status = true")
+    List<ProcessImpactValue> findByProjectIdAndImpactMethodCategoryId(UUID projectId, UUID impactMethodCategoryId);
+
+    @Query("SELECT p FROM ProcessImpactValue p WHERE p.process.id IN :processIds OR p.process.id IN :processIds AND p.status = true AND p.impactMethodCategory.id = :imcId")
+    List<ProcessImpactValue> findAllByProcessIdsAAndImpactMethodCategory(@Param("processIds") List<UUID> processIds, @Param("imcId") UUID imcId);
 }
