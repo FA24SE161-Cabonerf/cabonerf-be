@@ -14,5 +14,5 @@ import java.util.List;
 @Builder
 public class ImpactExchangeResponse {
     private List<ProcessImpactValueDto> impacts;
-    private List<ExchangesDto> exchanges;
+    private ExchangesDto exchange;
 }

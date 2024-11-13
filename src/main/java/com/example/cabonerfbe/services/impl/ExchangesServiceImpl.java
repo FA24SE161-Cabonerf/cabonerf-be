@@ -167,7 +167,7 @@ public class ExchangesServiceImpl implements ExchangesService {
             processImpactValueService.computeProcessImpactValueSingleExchange(exchange.getProcess(), exchange, initialValue);
         }
 
-        return impactExchangeResponseBuilder(exchange.getProcessId());
+        return impactExchangeResponseBuilder(exchange);
     }
 
     @Override
@@ -222,7 +222,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         processImpactValueService.computeProcessImpactValueSingleExchange(process, exchange, initialValue);
 
-        return impactExchangeResponseBuilder(processId);
+        return impactExchangeResponseBuilder(exchange);
     }
 
     @Override
@@ -376,10 +376,10 @@ public class ExchangesServiceImpl implements ExchangesService {
         return scDto;
     }
 
-    private ImpactExchangeResponse impactExchangeResponseBuilder(UUID processId) {
+    private ImpactExchangeResponse impactExchangeResponseBuilder(Exchanges exchange) {
         return ImpactExchangeResponse.builder()
-                .exchanges(exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(processId)))
-                .impacts(processService.converterProcess(pivRepository.findByProcessId(processId)))
+                .exchange(exchangesConverter.fromExchangesToExchangesDto(exchange))
+                .impacts(processService.converterProcess(pivRepository.findByProcessId(exchange.getProcessId())))
                 .build();
     }
 
