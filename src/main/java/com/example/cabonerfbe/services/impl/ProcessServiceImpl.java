@@ -58,7 +58,7 @@ public class ProcessServiceImpl implements ProcessService {
     @Autowired
     private MessagePublisher messagePublisher;
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(50);
+//    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
     @Override
     public ProcessDto createProcess(CreateProcessRequest request) {
@@ -146,8 +146,8 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     private List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list) {
-        List<CompletableFuture<ProcessImpactValueDto>> futures = list.stream()
-                .map(x -> CompletableFuture.supplyAsync(() -> {
+        return list.stream()
+                .map(x -> {
                     ProcessImpactValueDto p = new ProcessImpactValueDto();
                     p.setId(x.getId());
                     p.setSystemLevel(x.getSystemLevel());
@@ -156,15 +156,10 @@ public class ProcessServiceImpl implements ProcessService {
                     p.setMethod(methodConverter.fromMethodToMethodDto(x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod()));
                     p.setImpactCategory(categoryConverter.fromProjectToImpactCategoryDto(x.getImpactMethodCategory().getImpactCategory()));
                     return p;
-                }, executorService))
-                .toList();
-
-        CompletableFuture<Void> allFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-        allFuture.join();
-        return futures.stream()
-                .map(CompletableFuture::join)
+                })
                 .collect(Collectors.toList());
     }
+
 
     //    @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     public void createProcessListener(CreateProcessRequest request) {

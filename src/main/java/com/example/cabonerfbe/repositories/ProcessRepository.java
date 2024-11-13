@@ -23,8 +23,9 @@ public interface ProcessRepository extends JpaRepository<Process, UUID> {
     @Query("SELECT p FROM Process p WHERE p.id = ?1 AND p.status = true")
     Optional<Process> findByProcessId(UUID id);
 
-//    @Query("SELECT new com.example.cabonerfbe.dto.ConnectorProcessCheckDto(COUNT(p), MIN(p.project.id), MAX(p.project.id)) " +
-//            "FROM Process p " +
-//            "WHERE p.id IN (:startProcessId, :endProcessId)")
-//    ConnectorProcessCheckDto connectorProcessCheck(UUID startId, UUID endId);
+    @Query("SELECT DISTINCT p FROM Process p JOIN FETCH p.project pj WHERE p.project.id = ?1 AND p.status = true ORDER BY p.createdAt asc")
+    List<Process> findAllWithCreatedAsc(UUID projectId);
+
+    @Query("SELECT p FROM Process p LEFT JOIN Connector c ON p.id = c.startProcess.id WHERE c.startProcess.id IS NULL")
+    List<Process> findProcessesWithoutOutgoingConnectors();
 }

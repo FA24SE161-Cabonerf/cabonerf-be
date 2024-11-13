@@ -5,6 +5,7 @@ import com.example.cabonerfbe.models.Connector;
 import com.example.cabonerfbe.models.Process;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,4 +21,11 @@ public interface ConnectorRepository extends JpaRepository<Connector, UUID> {
 
     @Query(QueryStrings.CONNECTOR_EXIST_BY_START_END_PROCESS)
     boolean existsByStartProcess_IdAndEndProcess_Id(UUID id, UUID id1);
+
+    @Query("SELECT c FROM Connector c WHERE c.startProcess.id IN :processIds OR c.endProcess.id IN :processIds AND c.status = true")
+    List<Connector> findAllByProcessIds(@Param("processIds") List<UUID> processIds);
+
+    @Query("SELECT c FROM Connector c WHERE c.startProcess.id = ?1 AND c.status = true")
+    List<Connector> findNextByStartProcessId(UUID currentProcessId);
+
 }

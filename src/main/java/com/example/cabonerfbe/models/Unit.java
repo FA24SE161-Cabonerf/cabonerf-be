@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 @Table
 public class Unit extends Base{
     private String name;
+    @Column(precision = 100, scale = 60)
     private BigDecimal conversionFactor;
     private Boolean isDefault;
 

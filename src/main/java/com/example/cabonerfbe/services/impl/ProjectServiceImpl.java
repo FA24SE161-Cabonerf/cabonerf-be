@@ -71,7 +71,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     private static final int PAGE_INDEX_ADJUSTMENT = 1;
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
+//    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
     @Override
     public List<Project> getProjectListByMethodId(UUID id) {
@@ -255,9 +255,8 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     public List<ProjectImpactDto> converterProject(List<ProjectImpactValue> list) {
-
-        List<CompletableFuture<ProjectImpactDto>> futures = list.stream()
-                .map(x -> CompletableFuture.supplyAsync(() -> {
+        return list.stream()
+                .map(x -> {
                     ProjectImpactDto p = new ProjectImpactDto();
                     p.setId(x.getId());
                     p.setValue(x.getValue());
@@ -266,19 +265,10 @@ public class ProjectServiceImpl implements ProjectService {
                     p.setImpactCategory(categoryConverter.fromProjectToImpactCategoryDto(
                             x.getImpactMethodCategory().getImpactCategory()));
                     return p;
-                }, executorService))
+                })
                 .collect(Collectors.toList());
-
-        CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-        allFutures.join();
-
-        List<ProjectImpactDto> result = futures.stream()
-                .map(CompletableFuture::join)
-                .collect(Collectors.toList());
-
-        executorService.shutdown();
-        return result;
     }
+
 
 
 }

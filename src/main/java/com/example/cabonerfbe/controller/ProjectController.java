@@ -6,6 +6,7 @@ import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.ResponseObject;
+import com.example.cabonerfbe.services.ProcessImpactValueService;
 import com.example.cabonerfbe.services.ProjectService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -27,6 +28,8 @@ import java.util.UUID;
 public class ProjectController {
     @Autowired
     private ProjectService projectService;
+    @Autowired
+    private ProcessImpactValueService service;
 
     @GetMapping()
     public ResponseEntity<ResponseObject> getProjectListByMethodId(
@@ -78,5 +81,10 @@ public class ProjectController {
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CHANGE_PROJECT_METHOD_SUCCESS, projectService.changeProjectMethod(projectId, methodId))
         );
+    }
+
+    @GetMapping("/calculation/{projectId}")
+    public void calculation(@PathVariable("projectId") UUID projectId){
+        service.computeSystemLevelOfProject(projectId);
     }
 }

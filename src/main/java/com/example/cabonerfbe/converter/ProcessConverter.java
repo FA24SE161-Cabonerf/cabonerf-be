@@ -14,6 +14,7 @@ public interface ProcessConverter {
     ProcessConverter INSTANCE = Mappers.getMapper(ProcessConverter.class);
 
     @Mapping(source = "project.id", target = "projectId")
+    @Mapping(source = "overAllProductFlowRequired", target = "overallProductFlowRequired")
     ProcessDto fromProcessToProcessDto(Process process);
 
     ProcessDetailDto fromProcessDetailToProcessDto(Process process);

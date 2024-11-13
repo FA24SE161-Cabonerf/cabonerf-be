@@ -19,7 +19,7 @@ public class Process extends Base{
     @ManyToOne
     @JoinColumn(name = "lifecycle_stage_id")
     private LifeCycleStage lifeCycleStage;
-
+    @Column(precision = 100, scale = 60)
     private BigDecimal overAllProductFlowRequired;
 
     @ManyToOne

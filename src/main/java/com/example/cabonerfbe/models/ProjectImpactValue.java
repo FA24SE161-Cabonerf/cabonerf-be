@@ -16,7 +16,7 @@ public class ProjectImpactValue extends Base{
     @ManyToOne
     @JoinColumn(name = "impact_method_category_id")
     private ImpactMethodCategory impactMethodCategory;
-
+    @Column(precision = 100, scale = 60)
     private BigDecimal value;
 
     @ManyToOne
