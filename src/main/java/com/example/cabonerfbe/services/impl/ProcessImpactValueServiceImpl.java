@@ -195,7 +195,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
                 List<ProcessImpactValue> data = processImpactValueRepository.findByProcessId(currentProcessId);
                 if(!data.isEmpty()){
-                    updateProcess(data,totalFlow);
+                    updateProcess(data,totalFlow,currentProcessId);
                 }
 
 
@@ -264,13 +264,17 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         return pathTotal.multiply(multiplyNumerator.divide(multiplyDenominator, MathContext.DECIMAL128));
     }
 
-    private void updateProcess(List<ProcessImpactValue> list, BigDecimal totalRequiredFlow) {
-        List<ProcessImpactValue> data = list.stream()
+    private void updateProcess(List<ProcessImpactValue> list, BigDecimal totalRequiredFlow, UUID currentProcessId) {
+        Optional<Exchanges> e = exchangesRepository.findProductOut(currentProcessId);
+
+        List<ProcessImpactValue> data = e.isPresent() ? list.stream()
                 .peek(x -> {
-                    x.setSystemLevel(totalRequiredFlow.multiply(x.getUnitLevel()));
-                    x.setOverallImpactContribution(totalRequiredFlow.multiply(x.getUnitLevel()));
+                    x.setSystemLevel(totalRequiredFlow.multiply(x.getUnitLevel()).divide(e.get().getValue()));
+                    x.setOverallImpactContribution(totalRequiredFlow.multiply(x.getUnitLevel()).divide(e.get().getValue()));
                 })
-                .collect(Collectors.toList());
+                .collect(Collectors.toList())
+                : null;
+        assert data != null;
         processImpactValueRepository.saveAll(data);
     }
 
