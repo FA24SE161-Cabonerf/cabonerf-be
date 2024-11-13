@@ -1,7 +1,6 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.config.RabbitMQConfig;
-import com.example.cabonerfbe.dto.ProcessImpactValueDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -19,7 +18,10 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -180,7 +182,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
 
         List<Process> checkProcess = processRepository.findProcessesWithoutOutgoingConnectors();
-        if(checkProcess.size() >1){
+        if (checkProcess.size() > 1) {
             throw CustomExceptions.badRequest("Multiple deepest process found");
         }
 
@@ -193,8 +195,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             currentProcess.setOverAllProductFlowRequired(totalFlow);
 
             List<ProcessImpactValue> data = processImpactValueRepository.findByProcessId(currentProcessId);
-            if(!data.isEmpty()){
-                updateProcess(data,totalFlow);
+            if (!data.isEmpty()) {
+                updateProcess(data, totalFlow);
             }
 
             processRepository.save(currentProcess);
@@ -222,7 +224,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                     multiplyNumerator = multiplyNumerator.multiply(BigDecimal.ONE);
                 }
             }
-        }else{
+        } else {
             String finalPreviousExchangeName = previousExchangeName;
             List<Exchanges> exchanges = exchangesRepository.findProductByProcessId(processId).stream()
                     .filter(exchange -> !exchange.isInput() || exchange.getName().equals(finalPreviousExchangeName))
