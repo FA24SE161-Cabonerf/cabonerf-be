@@ -20,5 +20,6 @@ public interface ProjectImpactValueRepository extends JpaRepository<ProjectImpac
             "ORDER BY imc.id ASC")
     List<ProjectImpactValue> findAllByProjectId(@Param("projectId") UUID projectId);
 
-
+    @Query("SELECT piv FROM ProjectImpactValue piv WHERE piv.project.id = ?1 AND piv.status = true")
+    List<ProjectImpactValue> findByProjectId(UUID projectId);
 }

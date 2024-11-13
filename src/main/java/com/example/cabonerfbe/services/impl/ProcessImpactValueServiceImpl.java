@@ -43,6 +43,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private ProjectRepository projectRepository;
     @Autowired
     private ConnectorRepository connectorRepository;
+    @Autowired
+    private ProjectImpactValueRepository projectImpactValueRepository;
 
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     private void processImpactValueGenerate(CreateProcessImpactValueRequest request) {
@@ -170,33 +172,37 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 .map(Process::getId)
                 .collect(Collectors.toList());
 
-        // Lấy tất cả các connector liên quan đến các process
-        List<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
-        if (connectors.isEmpty()) {
-            throw CustomExceptions.notFound("There must be at least one connector to calculate");
-        }
+        if(processIds.size() > 1){
+            List<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
+            if (connectors.isEmpty()) {
+                throw CustomExceptions.notFound("There must be at least one connector to calculate");
+            }
+
 
         List<Process> checkProcess = processRepository.findProcessesWithoutOutgoingConnectors();
         if (checkProcess.size() > 1) {
             throw CustomExceptions.badRequest("Multiple deepest process found");
         }
 
-        // Khởi tạo map để lưu trữ các giá trị exchange cho từng process
-        for (Process currentProcess : processList) {
-            UUID currentProcessId = currentProcess.getId();
-            BigDecimal totalFlow = traversePath(currentProcessId, null, true); // Đặt flag isFirstProcess là true
-            totalFlow = totalFlow.setScale(2, RoundingMode.CEILING);
+            // Khởi tạo map để lưu trữ các giá trị exchange cho từng process
+            for (Process currentProcess : processList) {
+                UUID currentProcessId = currentProcess.getId();
+                BigDecimal totalFlow = traversePath(currentProcessId, null, true); // Đặt flag isFirstProcess là true
+                totalFlow = totalFlow.setScale(2, RoundingMode.CEILING);
 
-            currentProcess.setOverAllProductFlowRequired(totalFlow);
+                currentProcess.setOverAllProductFlowRequired(totalFlow);
 
-            List<ProcessImpactValue> data = processImpactValueRepository.findByProcessId(currentProcessId);
-            if (!data.isEmpty()) {
-                updateProcess(data, totalFlow);
+
+                List<ProcessImpactValue> data = processImpactValueRepository.findByProcessId(currentProcessId);
+                if(!data.isEmpty()){
+                    updateProcess(data,totalFlow);
+                }
+
+
+                processRepository.save(currentProcess);
             }
-
-            processRepository.save(currentProcess);
         }
-
+        updateProject(processIds,projectId);
     }
 
     // Phương thức đệ quy để duyệt đường đi từ một process và tính toán kết quả cho mỗi nhánh
@@ -258,14 +264,26 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         return pathTotal.multiply(multiplyNumerator.divide(multiplyDenominator, MathContext.DECIMAL128));
     }
 
-    private List<ProcessImpactValue> updateProcess(List<ProcessImpactValue> list, BigDecimal totalRequiredFlow) {
+    private void updateProcess(List<ProcessImpactValue> list, BigDecimal totalRequiredFlow) {
         List<ProcessImpactValue> data = list.stream()
                 .peek(x -> {
                     x.setSystemLevel(totalRequiredFlow.multiply(x.getUnitLevel()));
                     x.setOverallImpactContribution(totalRequiredFlow.multiply(x.getUnitLevel()));
                 })
                 .collect(Collectors.toList());
-        return processImpactValueRepository.saveAll(data);
+        processImpactValueRepository.saveAll(data);
     }
 
+    private void updateProject(List<UUID> processIds, UUID projectId) {
+        List<ProjectImpactValue> projectData = projectImpactValueRepository.findByProjectId(projectId);
+        for(ProjectImpactValue x : projectData){
+            List<ProcessImpactValue> processData = processImpactValueRepository.findAllByProcessIdsAAndImpactMethodCategory(processIds,x.getImpactMethodCategory().getId());
+            BigDecimal sum = BigDecimal.ZERO;
+            for (ProcessImpactValue y : processData){
+                sum = sum.add(y.getSystemLevel());
+            }
+            x.setValue(sum);
+        }
+        projectImpactValueRepository.saveAll(projectData);
+    }
 }
