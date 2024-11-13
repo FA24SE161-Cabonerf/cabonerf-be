@@ -45,11 +45,19 @@ public class ExchangeController {
         ));
     }
 
-    @DeleteMapping(API_PARAMS.REMOVE_EXCHANGE)
-    public ResponseEntity<ResponseObject> removeExchange(@PathVariable UUID exchangeId) {
-        log.info("Start removeExchange. id: {}", exchangeId);
+    @DeleteMapping(API_PARAMS.ELEMENTARY_EXCHANGE + API_PARAMS.REMOVE_EXCHANGE)
+    public ResponseEntity<ResponseObject> removeElementaryExchange(@PathVariable UUID exchangeId) {
+        log.info("Start removeElementaryExchange. id: {}", exchangeId);
         return ResponseEntity.ok().body(new ResponseObject(
-                Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.REMOVE_EXCHANGE_SUCCESS, exchangesService.removeExchange(exchangeId)
+                Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.REMOVE_EXCHANGE_SUCCESS, exchangesService.removeElementaryExchange(exchangeId)
+        ));
+    }
+
+    @DeleteMapping(API_PARAMS.PRODUCT_EXCHANGE + API_PARAMS.REMOVE_EXCHANGE)
+    public ResponseEntity<ResponseObject> removeProductExchange(@PathVariable UUID exchangeId) {
+        log.info("Start removeProductExchange. id: {}", exchangeId);
+        return ResponseEntity.ok().body(new ResponseObject(
+                Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.REMOVE_EXCHANGE_SUCCESS, exchangesService.removeProductExchange(exchangeId)
         ));
     }
 

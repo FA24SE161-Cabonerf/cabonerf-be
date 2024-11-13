@@ -29,4 +29,7 @@ public interface ExchangesRepository extends JpaRepository<Exchanges, UUID> {
 
     @Query("SELECT e FROM Exchanges e WHERE e.process.id = ?1 AND e.exchangesType.name like 'Product'")
     List<Exchanges> findProductByProcessId(UUID currentProcessId);
+
+    @Query("SELECT e FROM Exchanges e WHERE e.id IN :exchangeIdList AND e.status = true")
+    List<Exchanges> findAllByIdMatches(@Param("exchangeIdList") List<UUID> exchangeIdList);
 }

@@ -1,7 +1,6 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.config.RabbitMQConfig;
-import com.example.cabonerfbe.dto.ProcessImpactValueDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -19,7 +18,10 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -122,7 +124,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
 
         UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
-        log.info("emission substance id: {}", emissionSubstanceId);
         Unit baseUnit = exchange.getEmissionSubstance().getUnit();
 
         List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository.findByEmissionSubstanceId(emissionSubstanceId);
@@ -131,19 +132,15 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             Optional<ProcessImpactValue> processImpactValue = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(processId, factors.getImpactMethodCategory().getId());
             if (processImpactValue.isPresent()) {
                 BigDecimal unitLevel = processImpactValue.get().getUnitLevel();
-                log.info("pre unit level: {}", unitLevel);
                 // Convert the exchange value to the base unit and adjust based on initial value
-                log.info("pre exchangeValue: {}, initValue: {}", exchange.getValue(), initialValue);
                 BigDecimal exchangeValue = unitService.convertValue(
                         exchange.getUnit(),
                         exchange.getValue().subtract(initialValue),
                         baseUnit
                 );
-                log.info("post exchangeValue: {}", exchangeValue);
                 // Adjust unit level by adding the product of exchange value and factor
                 BigDecimal factorValue = factors.getDecimalValue();
                 unitLevel = unitLevel.add(exchangeValue.multiply(factorValue).setScale(Constants.BIG_DECIMAL_DEFAULT_SCALE, RoundingMode.HALF_UP));
-                log.info("factorValue: {}, post unitLevel: {}", factorValue, unitLevel);
 
                 processImpactValue.get().setUnitLevel(unitLevel);
                 processImpactValueList.add(processImpactValue.get());
@@ -181,10 +178,11 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 throw CustomExceptions.notFound("There must be at least one connector to calculate");
             }
 
-            List<Process> checkProcess = processRepository.findProcessesWithoutOutgoingConnectors();
-            if(checkProcess.size() >1){
-                throw CustomExceptions.badRequest("Multiple deepest process found");
-            }
+
+        List<Process> checkProcess = processRepository.findProcessesWithoutOutgoingConnectors();
+        if (checkProcess.size() > 1) {
+            throw CustomExceptions.badRequest("Multiple deepest process found");
+        }
 
             // Khởi tạo map để lưu trữ các giá trị exchange cho từng process
             for (Process currentProcess : processList) {
@@ -194,10 +192,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
                 currentProcess.setOverAllProductFlowRequired(totalFlow);
 
+
                 List<ProcessImpactValue> data = processImpactValueRepository.findByProcessId(currentProcessId);
                 if(!data.isEmpty()){
                     updateProcess(data,totalFlow);
                 }
+
 
                 processRepository.save(currentProcess);
             }
@@ -225,7 +225,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                     multiplyNumerator = multiplyNumerator.multiply(BigDecimal.ONE);
                 }
             }
-        }else{
+        } else {
             String finalPreviousExchangeName = previousExchangeName;
             List<Exchanges> exchanges = exchangesRepository.findProductByProcessId(processId).stream()
                     .filter(exchange -> !exchange.isInput() || exchange.getName().equals(finalPreviousExchangeName))
