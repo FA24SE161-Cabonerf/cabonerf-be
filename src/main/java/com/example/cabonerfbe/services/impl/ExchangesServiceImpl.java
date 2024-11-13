@@ -262,6 +262,8 @@ public class ExchangesServiceImpl implements ExchangesService {
                         connectedExchange.setUnit(unit);
                         exchangesRepository.save(connectedExchange);
                     }
+                } else {
+                    exchange.setUnit(unit);
                 }
             }
             if (name != null && !name.equals(exchange.getName())) {
