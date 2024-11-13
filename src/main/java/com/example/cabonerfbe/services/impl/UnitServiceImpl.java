@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
@@ -128,7 +127,7 @@ public class UnitServiceImpl implements UnitService {
 //    }
     public BigDecimal convertValue(Unit originalUnit, BigDecimal originalValue, Unit targetUnit) {
         return originalValue.multiply(originalUnit.getConversionFactor())
-                .divide(targetUnit.getConversionFactor(), MathContext.DECIMAL128).setScale(Constants.BIG_DECIMAL_DEFAULT_SCALE, RoundingMode.HALF_UP);
+                .divide(targetUnit.getConversionFactor(), MathContext.DECIMAL128);
     }
 
 }

@@ -155,6 +155,10 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
     }
 
+    public void computeProcessImpactValueOfProject(Project project) {
+
+    }
+
 
     public void computeSystemLevelOfProject(UUID projectId) {
         Project project = projectRepository.findById(projectId).orElseThrow(
