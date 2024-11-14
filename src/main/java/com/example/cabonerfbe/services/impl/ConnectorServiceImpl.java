@@ -16,6 +16,7 @@ import com.example.cabonerfbe.repositories.ProcessRepository;
 import com.example.cabonerfbe.request.CreateConnectorRequest;
 import com.example.cabonerfbe.response.CreateConnectorResponse;
 import com.example.cabonerfbe.services.ConnectorService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class ConnectorServiceImpl implements ConnectorService {
 
     private static final long VALID_PROCESS_COUNT = 2;
@@ -52,6 +54,7 @@ public class ConnectorServiceImpl implements ConnectorService {
         Process endProcess = validateAndFetchProcess(request.getEndProcessId(), END_PROCESS);
 
         if (startProcess.equals(endProcess)) {
+            System.out.println("loi start = end process");
             throw CustomExceptions.badRequest(MessageConstants.START_END_PROCESS_SAME_ERROR);
         }
 
@@ -70,25 +73,32 @@ public class ConnectorServiceImpl implements ConnectorService {
         } else if (request.getEndExchangesId() != null) {
             response = createConnectorWithEndExchangeOnly(request, startProcess, endProcess);
         } else {
+            System.out.println("loi: " + MessageConstants.INVALID_EXCHANGE);
             throw CustomExceptions.badRequest(MessageConstants.INVALID_EXCHANGE);
         }
+        System.out.println("den duoc day la chuan bi tra response ve");
 
         return response;
     }
 
     private Process validateAndFetchProcess(UUID processId, String processType) {
         return processRepository.findByProcessId(processId)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND, Map.of(processType, processId)));
+                .orElseThrow(() -> {
+                    System.out.println("loi validate (khong tim thay process): " + processId + " type: " + processType);
+                    return CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND, Map.of(processType, processId));
+                } );
     }
 
     private void validateProcessesBelongToSameProject(Process startProcess, Process endProcess) {
         if (!startProcess.getProject().getId().equals(endProcess.getProject().getId())) {
+            System.out.println("loi 2 process khong cung project");
             throw CustomExceptions.badRequest(MessageConstants.PROCESS_IN_DIFFERENT_PROJECTS);
         }
     }
 
     private void validateNoExistingConnector(UUID startProcessId, UUID endProcessId) {
         if (connectorRepository.existsByStartProcess_IdAndEndProcess_Id(startProcessId, endProcessId)) {
+            System.out.println("loi da co connection roi");
             throw CustomExceptions.badRequest(MessageConstants.CONNECTOR_ALREADY_EXIST);
         }
     }
@@ -96,9 +106,11 @@ public class ConnectorServiceImpl implements ConnectorService {
     private CreateConnectorResponse createConnectorWithBothExchanges(CreateConnectorRequest request, Process startProcess, Process endProcess) {
         Exchanges startExchange = validateAndFetchExchange(request.getStartExchangesId(), OUTPUT, START_EXCHANGE);
         Exchanges endExchange = validateAndFetchExchange(request.getEndExchangesId(), INPUT, END_EXCHANGE);
-
+        System.out.println("den duoc day la khong co loi validate exchange");
         validateExchangeBelongsToProcess(startExchange, startProcess, START_EXCHANGE);
+        System.out.println("den duoc day la khong co loi start exchange - process ko giong nhau");
         validateExchangeBelongsToProcess(endExchange, endProcess, END_EXCHANGE);
+        System.out.println("den duoc day la khong co loi end exchange - process ko giong nhau");
         validateExchangeCompatibility(startExchange, endExchange);
 
         return CreateConnectorResponse.builder()
@@ -142,15 +154,18 @@ public class ConnectorServiceImpl implements ConnectorService {
 
     private void validateExchangeBelongsToProcess(Exchanges exchange, Process process, String exchangeType) {
         if (!exchange.getProcessId().equals(process.getId())) {
+            System.out.println("loi exchange khong thuoc ve process");
             throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_AND_PROCESS_DIFFERENT);
         }
     }
 
     private void validateExchangeCompatibility(Exchanges startExchange, Exchanges endExchange) {
         if (!startExchange.getUnit().getUnitGroup().equals(endExchange.getUnit().getUnitGroup())) {
+            System.out.println("loi unit group ko giong nhau");
             throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_UNIT_GROUP_DIFFERENT);
         }
         if (!startExchange.getName().equals(endExchange.getName())) {
+            System.out.println("loi ten ko giong nhau");
             throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_NAME_DIFFERENT);
         }
     }
@@ -163,12 +178,12 @@ public class ConnectorServiceImpl implements ConnectorService {
     }
 
     private ConnectorDto convertAndSaveConnector(Exchanges startExchange, Exchanges endExchange, Process startProcess, Process endProcess) {
+        System.out.println("den duoc day la dang chuan bi save connector");
         Connector connector = new Connector();
         connector.setStartProcess(startProcess);
         connector.setEndProcess(endProcess);
         connector.setStartExchanges(startExchange);
         connector.setEndExchanges(endExchange);
-
         return connectorConverter.fromConnectorToConnectorDto(connectorRepository.save(connector));
     }
 }

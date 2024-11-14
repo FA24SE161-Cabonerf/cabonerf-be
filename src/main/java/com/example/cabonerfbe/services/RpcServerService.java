@@ -96,9 +96,9 @@ public class RpcServerService {
     private void handleCreateConnector(String requestMessage, String correlationId, String replyTo) {
         try {
             CreateConnectorRequest request = extractRequest(requestMessage, CreateConnectorRequest.class);
-            log.error("request after extract: {}", request.toString());
+            log.error("request after extract: {}, raw: {}", request.toString(), request);
             CreateConnectorResponse response = connectorService.createConnector(request);
-            log.error("response: {}", response.toString());
+            log.error("response: {}, raw: {}", response.toString(), response);
             sendResponse(replyTo, correlationId, objectMapper.writeValueAsString(response), true);
         } catch (Exception e) {
             logAndSendError(replyTo, correlationId, "Error processing create connector request", e);
@@ -172,7 +172,7 @@ public class RpcServerService {
     }
 
     private void logAndSendError(String replyTo, String correlationId, String errorMessage, Exception e) {
-        log.error("{}: {}", errorMessage, e.toString());
+        log.error("{}: {}", errorMessage, e.getCause().getMessage());
         sendResponse(replyTo, correlationId, errorMessage, false);
     }
 }
