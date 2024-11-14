@@ -96,10 +96,12 @@ public class RpcServerService {
     private void handleCreateConnector(String requestMessage, String correlationId, String replyTo) {
         try {
             CreateConnectorRequest request = extractRequest(requestMessage, CreateConnectorRequest.class);
+            log.error("request after extract: {}", request.toString());
             CreateConnectorResponse response = connectorService.createConnector(request);
+            log.error("response: {}", response.toString());
             sendResponse(replyTo, correlationId, objectMapper.writeValueAsString(response), true);
         } catch (Exception e) {
-            logAndSendError(replyTo, correlationId, "Error processing create request", e);
+            logAndSendError(replyTo, correlationId, "Error processing create connector request", e);
         }
     }
 
@@ -114,7 +116,7 @@ public class RpcServerService {
             ProcessDto processDto = processService.createProcess(request);
             sendResponse(replyTo, correlationId, objectMapper.writeValueAsString(processDto), true);
         } catch (Exception e) {
-            logAndSendError(replyTo, correlationId, "Error processing create request", e);
+            logAndSendError(replyTo, correlationId, "Error processing create process request", e);
         }
     }
 
@@ -140,6 +142,7 @@ public class RpcServerService {
 
     private <T> T extractRequest(String requestMessage, Class<T> requestType) throws Exception {
         JsonNode dataNode = objectMapper.readTree(requestMessage).path("data");
+        System.out.println("data node:" + dataNode);
         return objectMapper.treeToValue(dataNode, requestType);
     }
 
@@ -169,7 +172,7 @@ public class RpcServerService {
     }
 
     private void logAndSendError(String replyTo, String correlationId, String errorMessage, Exception e) {
-        log.error("{}: {}", errorMessage, e.getMessage());
+        log.error("{}: {}", errorMessage, e.toString());
         sendResponse(replyTo, correlationId, errorMessage, false);
     }
 }
