@@ -160,7 +160,10 @@ public class ConnectorServiceImpl implements ConnectorService {
     }
 
     private void validateExchangeCompatibility(Exchanges startExchange, Exchanges endExchange) {
-        if (!startExchange.getUnit().getUnitGroup().equals(endExchange.getUnit().getUnitGroup())) {
+        if (!startExchange.getUnit().getUnitGroup().getId().equals(endExchange.getUnit().getUnitGroup().getId())) {
+            System.out.println("start: " + startExchange.getUnit().getUnitGroup().getId());
+            System.out.println("end: " + endExchange.getUnit().getUnitGroup().getId());
+
             System.out.println("loi unit group ko giong nhau");
             throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_UNIT_GROUP_DIFFERENT);
         }
