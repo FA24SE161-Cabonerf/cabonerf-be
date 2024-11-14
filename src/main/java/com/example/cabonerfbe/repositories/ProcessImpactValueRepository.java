@@ -28,4 +28,7 @@ public interface ProcessImpactValueRepository extends JpaRepository<ProcessImpac
 
     @Query("SELECT p FROM ProcessImpactValue p WHERE p.process.id IN :processIds OR p.process.id IN :processIds AND p.status = true AND p.impactMethodCategory.id = :imcId")
     List<ProcessImpactValue> findAllByProcessIdsAAndImpactMethodCategory(@Param("processIds") List<UUID> processIds, @Param("imcId") UUID imcId);
+
+    @Query("SELECT p FROM ProcessImpactValue p WHERE p.process.id = :processId AND p.status = true ")
+    List<ProcessImpactValue> findAllByProcessId(@Param("processId") UUID processId);
 }
