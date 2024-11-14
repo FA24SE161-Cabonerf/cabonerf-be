@@ -127,6 +127,7 @@ public class UnitServiceImpl implements UnitService {
 //    }
     public BigDecimal convertValue(Unit originalUnit, BigDecimal originalValue, Unit targetUnit) {
         System.out.println("inside convert value function! original value= " + originalValue);
+        System.out.println(originalValue + " * " + originalUnit.getConversionFactor() + " / " + targetUnit.getConversionFactor());
         return originalValue.multiply(originalUnit.getConversionFactor())
                 .divide(targetUnit.getConversionFactor(), MathContext.DECIMAL128);
     }
