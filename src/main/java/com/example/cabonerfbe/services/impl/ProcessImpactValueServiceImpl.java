@@ -169,7 +169,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 .map(Process::getId)
                 .collect(Collectors.toList());
 
-        if (processList.size() > 2) {
+        if (processList.size() > 1) {
             List<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
             if (connectors.isEmpty()) {
                 throw CustomExceptions.notFound("There must be at least one connector to calculate");
