@@ -3,7 +3,7 @@ package com.example.cabonerfbe.services.impl;
 import com.example.cabonerfbe.converter.ConnectorConverter;
 import com.example.cabonerfbe.converter.ExchangesConverter;
 import com.example.cabonerfbe.dto.ConnectorDto;
-import com.example.cabonerfbe.dto.ProcessDto;
+import com.example.cabonerfbe.dto.ConnectorUpdatedProcessDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -58,25 +58,22 @@ public class ConnectorServiceImpl implements ConnectorService {
         validateProcessesBelongToSameProject(startProcess, endProcess);
         validateNoExistingConnector(startProcess.getId(), endProcess.getId());
 
-        ConnectorDto connectorDto;
-        boolean isEndProcessFlag = true;
+        CreateConnectorResponse response;
 
+        // Case 1: Both exchange
+        // Case 2: Start exchange only
+        // Case 3: End exchange only
         if (request.getStartExchangesId() != null && request.getEndExchangesId() != null) {
-            connectorDto = createConnectorWithBothExchanges(request, startProcess, endProcess);
+            response = createConnectorWithBothExchanges(request, startProcess, endProcess);
         } else if (request.getStartExchangesId() != null) {
-            connectorDto = createConnectorWithStartExchangeOnly(request, startProcess, endProcess);
+            response = createConnectorWithStartExchangeOnly(request, startProcess, endProcess);
         } else if (request.getEndExchangesId() != null) {
-            connectorDto = createConnectorWithEndExchangeOnly(request, startProcess, endProcess);
-            isEndProcessFlag = false;
+            response = createConnectorWithEndExchangeOnly(request, startProcess, endProcess);
         } else {
             throw CustomExceptions.badRequest(MessageConstants.INVALID_EXCHANGE);
         }
 
-        ProcessDto finalProcess = isEndProcessFlag
-                ? processServiceImpl.getProcessById(request.getEndProcessId())
-                : processServiceImpl.getProcessById(request.getStartProcessId());
-
-        return new CreateConnectorResponse(connectorDto, finalProcess);
+        return response;
     }
 
     private Process validateAndFetchProcess(UUID processId, String processType) {
@@ -96,7 +93,7 @@ public class ConnectorServiceImpl implements ConnectorService {
         }
     }
 
-    private ConnectorDto createConnectorWithBothExchanges(CreateConnectorRequest request, Process startProcess, Process endProcess) {
+    private CreateConnectorResponse createConnectorWithBothExchanges(CreateConnectorRequest request, Process startProcess, Process endProcess) {
         Exchanges startExchange = validateAndFetchExchange(request.getStartExchangesId(), OUTPUT, START_EXCHANGE);
         Exchanges endExchange = validateAndFetchExchange(request.getEndExchangesId(), INPUT, END_EXCHANGE);
 
@@ -104,10 +101,13 @@ public class ConnectorServiceImpl implements ConnectorService {
         validateExchangeBelongsToProcess(endExchange, endProcess, END_EXCHANGE);
         validateExchangeCompatibility(startExchange, endExchange);
 
-        return convertAndSaveConnector(startExchange, endExchange, startProcess, endProcess);
+        return CreateConnectorResponse.builder()
+                .connector(convertAndSaveConnector(startExchange, endExchange, startProcess, endProcess))
+                .updatedProcess(null)
+                .build();
     }
 
-    private ConnectorDto createConnectorWithStartExchangeOnly(CreateConnectorRequest request, Process startProcess, Process endProcess) {
+    private CreateConnectorResponse createConnectorWithStartExchangeOnly(CreateConnectorRequest request, Process startProcess, Process endProcess) {
         Exchanges startExchange = validateAndFetchExchange(request.getStartExchangesId(), OUTPUT, START_EXCHANGE);
         validateExchangeBelongsToProcess(startExchange, startProcess, START_EXCHANGE);
 
@@ -115,10 +115,13 @@ public class ConnectorServiceImpl implements ConnectorService {
                         endProcess.getId(), startExchange.getName(), startExchange.getUnit().getUnitGroup(), INPUT)
                 .orElseGet(() -> createNewExchange(startExchange, endProcess, INPUT));
 
-        return convertAndSaveConnector(startExchange, endExchange, startProcess, endProcess);
+        return CreateConnectorResponse.builder()
+                .connector(convertAndSaveConnector(startExchange, endExchange, startProcess, endProcess))
+                .updatedProcess(new ConnectorUpdatedProcessDto(endProcess.getId(), exchangesConverter.fromExchangesToExchangesDto(endExchange)))
+                .build();
     }
 
-    private ConnectorDto createConnectorWithEndExchangeOnly(CreateConnectorRequest request, Process startProcess, Process endProcess) {
+    private CreateConnectorResponse createConnectorWithEndExchangeOnly(CreateConnectorRequest request, Process startProcess, Process endProcess) {
         Exchanges endExchange = validateAndFetchExchange(request.getEndExchangesId(), INPUT, END_EXCHANGE);
         validateExchangeBelongsToProcess(endExchange, endProcess, END_EXCHANGE);
 
@@ -126,7 +129,10 @@ public class ConnectorServiceImpl implements ConnectorService {
                         startProcess.getId(), endExchange.getName(), endExchange.getUnit().getUnitGroup(), OUTPUT)
                 .orElseGet(() -> createNewExchange(endExchange, startProcess, OUTPUT));
 
-        return convertAndSaveConnector(startExchange, endExchange, startProcess, endProcess);
+        return CreateConnectorResponse.builder()
+                .connector(convertAndSaveConnector(startExchange, endExchange, startProcess, endProcess))
+                .updatedProcess(new ConnectorUpdatedProcessDto(startProcess.getId(), exchangesConverter.fromExchangesToExchangesDto(startExchange)))
+                .build();
     }
 
     private Exchanges validateAndFetchExchange(UUID exchangeId, boolean inputStatus, String exchangeType) {

@@ -128,7 +128,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         Unit baseUnit = exchange.getEmissionSubstance().getUnit();
 
         List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository.findByEmissionSubstanceId(emissionSubstanceId);
-        log.info("Retrieved " + list.size() + " midpoint factors for emission substance ID: " + emissionSubstanceId);
+        System.out.println("Retrieved " + list.size() + " midpoint factors for emission substance ID: " + emissionSubstanceId);
 
         for (MidpointImpactCharacterizationFactors factors : list) {
             Optional<ProcessImpactValue> processImpactValueOpt = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(
@@ -139,23 +139,23 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 ProcessImpactValue processImpactValue = processImpactValueOpt.get();
                 BigDecimal unitLevel = processImpactValue.getUnitLevel();
 
-                log.info("Processing impact method category ID: " + factors.getImpactMethodCategory().getId());
-                log.info("Initial unit level: " + unitLevel);
-
+                System.out.println("Processing impact method category ID: " + factors.getImpactMethodCategory().getId());
+                System.out.println("Initial unit level: " + unitLevel);
+                System.out.println("base exchange value: " + exchange.getValue());
                 // Convert the exchange value to the base unit and adjust based on initial value
                 BigDecimal exchangeValue = unitService.convertValue(
                         exchange.getUnit(),
                         exchange.getValue().subtract(initialValue),
                         baseUnit
                 );
-                log.info("Converted exchange value: " + exchangeValue);
+                System.out.println("Converted exchange value: " + exchangeValue);
 
                 // Adjust unit level by adding the product of exchange value and factor
                 BigDecimal factorValue = factors.getDecimalValue();
                 unitLevel = unitLevel.add(exchangeValue.multiply(factorValue));
 
-                log.info("Factor value: " + factorValue);
-                log.info("Updated unit level: " + unitLevel);
+                System.out.println("Factor value: " + factorValue);
+                System.out.println("Updated unit level: " + unitLevel);
 
                 processImpactValue.setUnitLevel(unitLevel);
                 processImpactValueList.add(processImpactValue);
