@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -31,10 +32,11 @@ public class OrganizationController {
     private OrganizationService organizationService;
 
     @PostMapping(API_PARAMS.MANAGER)
-    public ResponseEntity<ResponseObject> createOrganization(@RequestBody CreateOrganizationRequest request) {
+    public ResponseEntity<ResponseObject> createOrganization(@RequestParam String name,@RequestParam String email, @RequestParam MultipartFile contractFile) {
+        CreateOrganizationRequest request = new CreateOrganizationRequest(name, email);
         log.info("Start createOrganization. Request: {}", request);
         return ResponseEntity.ok().body(new ResponseObject(
-                Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CREATE_ORGANIZATION_SUCCESS,organizationService.createOrganization(request)
+                Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CREATE_ORGANIZATION_SUCCESS,organizationService.createOrganization(request,contractFile)
         ));
     }
 

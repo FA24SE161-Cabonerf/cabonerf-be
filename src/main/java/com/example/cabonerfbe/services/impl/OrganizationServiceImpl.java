@@ -3,6 +3,7 @@ package com.example.cabonerfbe.services.impl;
 import com.example.cabonerfbe.converter.OrganizationConverter;
 import com.example.cabonerfbe.dto.OrganizationDto;
 import com.example.cabonerfbe.exception.CustomExceptions;
+import com.example.cabonerfbe.models.Contract;
 import com.example.cabonerfbe.models.Organization;
 import com.example.cabonerfbe.models.UserOrganization;
 import com.example.cabonerfbe.models.Users;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,6 +45,8 @@ public class OrganizationServiceImpl implements OrganizationService {
     private UserOrganizationRepository userOrganizationRepository;
     @Autowired
     PasswordEncoder passwordEncoder;
+    @Autowired
+    private ContractRepository contractRepository;
 
     @Override
     public GetAllOrganizationResponse getAll(int pageCurrent, int pageSize, String keyword) {
@@ -71,7 +75,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public OrganizationDto createOrganization(CreateOrganizationRequest request) {
+    public OrganizationDto createOrganization(CreateOrganizationRequest request, MultipartFile contractFile) {
 
         Optional<Users> user = userRepository.findByEmail(request.getEmail());
         if(user.isPresent()){
@@ -92,7 +96,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         }
 
         Organization o = new Organization();
-        o.setName(request.getName());
+
         o = organizationRepository.save(o);
 
         UserOrganization uo = new UserOrganization();
@@ -101,6 +105,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         uo.setRole(roleRepository.findByName("Organization Manager").get());
         userOrganizationRepository.save(uo);
 
+        //send-mail
 //        try {
 //
 //            MailRequest mailRequest = new MailRequest();
@@ -116,6 +121,17 @@ public class OrganizationServiceImpl implements OrganizationService {
 //            return organizationConverter.modelToDto(o);
 //        } catch (Exception ignored) {
 //        }
+
+
+        //storage contract
+        Contract c = new Contract();
+        c.setOrganization(o);
+        c.setUrl("url");
+        c = contractRepository.save(c);
+
+        o.setName(request.getName());
+        o.setContract(c);
+        o = organizationRepository.save(o);
         return organizationConverter.modelToDto(o);
     }
 

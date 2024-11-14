@@ -63,7 +63,8 @@
 --        ('589948db-20b3-418f-ab0f-fa63dd4c7482', true, 'Unit Of Time', 'Normal'),
 --        ('865bb487-2789-4392-91bf-9ca485bb684a', true, 'Unit Of Volume', 'Normal'),
 --        ('7a699a2e-00d4-411f-87ea-9bcbb710d878', true, 'Unit Of Mass*Time', 'Normal'),
---        ('1d536dc6-0c54-4bcb-adc9-19d4721292e0', true, 'Unit Of Area', 'Normal');
+--        ('1d536dc6-0c54-4bcb-adc9-19d4721292e0', true, 'Unit Of Area', 'Normal'),
+--        ('2f46a2c1-cec4-4044-88f2-5ec7c74475e1', true, 'Unit Of Land Use', 'Normal');
 --
 -- -- Table: exchanges_type
 -- INSERT INTO exchanges_type(id, name, status)
@@ -196,8 +197,6 @@
 --        ('723e4567-e89b-12d3-a456-426614174011', null, null, true, 1, true, 'kg oil-Eq',
 --         '623e4567-e89b-12d3-a456-426614174000'),
 --        ('723e4567-e89b-12d3-a456-426614174008', null, null, true, 1, true, 'm2×yr crop-eq',
---         '623e4567-e89b-12d3-a456-426614174000'),
---        ('d0584e3d-a8a4-4861-a599-cf97ef562179', '2024-10-31', '2024-10-31', false, 1, true, 'string',
 --         '623e4567-e89b-12d3-a456-426614174000'),
 --        ('97307200-2124-43eb-9cca-e2729a3eeac8', '2024-11-04', '2024-11-04', true, 4046.85, false, 'ac',
 --         '1d536dc6-0c54-4bcb-adc9-19d4721292e0'),
@@ -448,7 +447,9 @@
 --        ('8eea101b-bcf7-4145-96f1-059de6efee38', '2024-11-04', '2024-11-04', true, 0.1, false, 'hl',
 --         '865bb487-2789-4392-91bf-9ca485bb684a'),
 --        ('1661eacb-63b8-4f69-b9b9-7471895ee926', '2024-11-04', '2024-11-04', true, 0.000946353, false, 'qt (US liq)',
---         '865bb487-2789-4392-91bf-9ca485bb684a');
+--         '865bb487-2789-4392-91bf-9ca485bb684a'),
+--        ('e23e4567-e89b-12d3-a456-426614174030', '2024-11-04', '2024-11-04', true, 1, true, 'm2*year',
+--         '2f46a2c1-cec4-4044-88f2-5ec7c74475e1');
 --
 --
 --
