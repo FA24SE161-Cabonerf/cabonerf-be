@@ -1,6 +1,5 @@
 package com.example.cabonerfbe.config;
 
-import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -82,12 +81,17 @@ public class RabbitMQConfig {
     }
 
     // RPC queue
-
     public static final String RPC_QUEUE = "rpc_queue";
+    public static final String RPC_QUEUE_CONNECTOR = "rpc_queue_connector";
 
     @Bean
     public Queue rpcQueue() {
         return new Queue(RPC_QUEUE);
+    }
+
+    @Bean
+    public Queue rpcQueueConnector() {
+        return new Queue(RPC_QUEUE_CONNECTOR);
     }
 
 

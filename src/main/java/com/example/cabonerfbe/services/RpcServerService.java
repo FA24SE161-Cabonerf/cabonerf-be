@@ -2,8 +2,11 @@ package com.example.cabonerfbe.services;
 
 import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.dto.ProcessDto;
+import com.example.cabonerfbe.request.CreateConnectorRequest;
 import com.example.cabonerfbe.request.CreateProcessRequest;
+import com.example.cabonerfbe.response.CreateConnectorResponse;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
+import com.example.cabonerfbe.services.impl.ConnectorServiceImpl;
 import com.example.cabonerfbe.services.impl.ProcessServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,17 +26,30 @@ public class RpcServerService {
 
     private final RabbitTemplate rabbitTemplate;
     private final ProcessServiceImpl processService;
+    private final ConnectorServiceImpl connectorService;
     private final ObjectMapper objectMapper;
+    public static final String PROCESS_QUEUE_TYPE = "process";
+    public static final String CONNECTOR_QUEUE_TYPE = "connector";
 
     @Autowired
-    public RpcServerService(RabbitTemplate rabbitTemplate, ProcessServiceImpl processService, ObjectMapper objectMapper) {
+    public RpcServerService(RabbitTemplate rabbitTemplate, ProcessServiceImpl processService, ConnectorServiceImpl connectorService, ObjectMapper objectMapper) {
         this.rabbitTemplate = rabbitTemplate;
         this.processService = processService;
+        this.connectorService = connectorService;
         this.objectMapper = objectMapper;
     }
 
     @RabbitListener(queues = RabbitMQConfig.RPC_QUEUE)
-    public void receiveRpcRequest(Message message) {
+    public void receiveProcessTasks(Message message) {
+        processTask(message, PROCESS_QUEUE_TYPE);
+    }
+
+    @RabbitListener(queues = RabbitMQConfig.RPC_QUEUE_CONNECTOR)
+    public void receiveConnectorTasks(Message message) {
+        processTask(message, CONNECTOR_QUEUE_TYPE);
+    }
+
+    private void processTask(Message message, String queueType) {
         String correlationId = message.getMessageProperties().getCorrelationId();
         String replyTo = message.getMessageProperties().getReplyTo();
         String requestMessage = new String(message.getBody());
@@ -41,15 +57,60 @@ public class RpcServerService {
         String taskType = extractJsonField(requestMessage, "taskType");
 
         switch (taskType) {
-            case "createProcess" -> handleCreateProcess(requestMessage, correlationId, replyTo);
-            case "deleteProcess" -> handleDeleteProcess(requestMessage, correlationId, replyTo);
-            default -> sendResponse(replyTo, correlationId, "Unknown task type: " + taskType, false);
+            case "createProcess" -> {
+                if (PROCESS_QUEUE_TYPE.equals(queueType)) {
+                    handleCreateProcess(requestMessage, correlationId, replyTo);
+                } else {
+                    sendUnknownTaskResponse(replyTo, correlationId, taskType, queueType);
+                }
+            }
+            case "deleteProcess" -> {
+                if (PROCESS_QUEUE_TYPE.equals(queueType)) {
+                    handleDeleteProcess(requestMessage, correlationId, replyTo);
+                } else {
+                    sendUnknownTaskResponse(replyTo, correlationId, taskType, queueType);
+                }
+            }
+            case "createConnector" -> {
+                if (CONNECTOR_QUEUE_TYPE.equals(queueType)) {
+                    handleCreateConnector(requestMessage, correlationId, replyTo);
+                } else {
+                    sendUnknownTaskResponse(replyTo, correlationId, taskType, queueType);
+                }
+            }
+            case "deleteConnector" -> {
+                if (CONNECTOR_QUEUE_TYPE.equals(queueType)) {
+                    handleDeleteConnector(requestMessage, correlationId, replyTo);
+                } else {
+                    sendUnknownTaskResponse(replyTo, correlationId, taskType, queueType);
+                }
+            }
+            default -> sendUnknownTaskResponse(replyTo, correlationId, taskType, queueType);
         }
+    }
+
+    private void sendUnknownTaskResponse(String replyTo, String correlationId, String taskType, String queueType) {
+        sendResponse(replyTo, correlationId, "Unknown task type for " + queueType + " queue: " + taskType, false);
+    }
+
+    private void handleCreateConnector(String requestMessage, String correlationId, String replyTo) {
+        try {
+            CreateConnectorRequest request = extractRequest(requestMessage, CreateConnectorRequest.class);
+            CreateConnectorResponse response = connectorService.createConnector(request);
+            sendResponse(replyTo, correlationId, objectMapper.writeValueAsString(response), true);
+        } catch (Exception e) {
+            logAndSendError(replyTo, correlationId, "Error processing create request", e);
+        }
+    }
+
+
+    private void handleDeleteConnector(String requestMessage, String correlationId, String replyTo) {
+
     }
 
     private void handleCreateProcess(String requestMessage, String correlationId, String replyTo) {
         try {
-            CreateProcessRequest request = extractCreateProcessRequest(requestMessage);
+            CreateProcessRequest request = extractRequest(requestMessage, CreateProcessRequest.class);
             ProcessDto processDto = processService.createProcess(request);
             sendResponse(replyTo, correlationId, objectMapper.writeValueAsString(processDto), true);
         } catch (Exception e) {
@@ -67,9 +128,19 @@ public class RpcServerService {
         }
     }
 
-    private CreateProcessRequest extractCreateProcessRequest(String requestMessage) throws Exception {
+//    private CreateProcessRequest extractCreateProcessRequest(String requestMessage) throws Exception {
+//        JsonNode dataNode = objectMapper.readTree(requestMessage).path("data");
+//        return objectMapper.treeToValue(dataNode, CreateProcessRequest.class);
+//    }
+//
+//    private CreateConnectorRequest extractCreateConnectorRequest(String requestMessage) throws Exception {
+//        JsonNode dataNode = objectMapper.readTree(requestMessage).path("data");
+//        return objectMapper.treeToValue(dataNode, CreateConnectorRequest.class);
+//    }
+
+    private <T> T extractRequest(String requestMessage, Class<T> requestType) throws Exception {
         JsonNode dataNode = objectMapper.readTree(requestMessage).path("data");
-        return objectMapper.treeToValue(dataNode, CreateProcessRequest.class);
+        return objectMapper.treeToValue(dataNode, requestType);
     }
 
     private String extractJsonField(String jsonMessage, String fieldPath) {
