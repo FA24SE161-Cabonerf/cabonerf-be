@@ -5,6 +5,7 @@ import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.request.CreateConnectorRequest;
 import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.response.CreateConnectorResponse;
+import com.example.cabonerfbe.response.DeleteConnectorResponse;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.impl.ConnectorServiceImpl;
 import com.example.cabonerfbe.services.impl.ProcessServiceImpl;
@@ -104,10 +105,15 @@ public class RpcServerService {
             logAndSendError(replyTo, correlationId, "Error processing create connector request", e);
         }
     }
-
-
+    
     private void handleDeleteConnector(String requestMessage, String correlationId, String replyTo) {
-
+        try {
+            String id = extractJsonField(requestMessage, "data.id");
+            DeleteConnectorResponse response = connectorService.deleteConnector(UUID.fromString(id));
+            sendResponse(replyTo, correlationId, objectMapper.writeValueAsString(response), true);
+        } catch (Exception e) {
+            logAndSendError(replyTo, correlationId, "Error processing delete connector request", e);
+        }
     }
 
     private void handleCreateProcess(String requestMessage, String correlationId, String replyTo) {
@@ -126,7 +132,7 @@ public class RpcServerService {
             DeleteProcessResponse deleteProcessResponse = processService.deleteProcess(UUID.fromString(id));
             sendResponse(replyTo, correlationId, objectMapper.writeValueAsString(deleteProcessResponse), true);
         } catch (Exception e) {
-            logAndSendError(replyTo, correlationId, "Error processing delete request", e);
+            logAndSendError(replyTo, correlationId, "Error processing delete process request", e);
         }
     }
 

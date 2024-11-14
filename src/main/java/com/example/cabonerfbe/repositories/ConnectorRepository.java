@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -29,4 +30,10 @@ public interface ConnectorRepository extends JpaRepository<Connector, UUID> {
 
     @Query("SELECT c FROM Connector c WHERE c.endExchanges.id = ?1 OR c.startExchanges.id = ?1 and c.status = true")
     List<Connector> findConnectorToExchange(UUID exchangeId);
+
+    @Query("SELECT (count(c) > 0) FROM Connector c WHERE c.endExchanges.id = ?1 AND c.status = true")
+    boolean existsByEndExchanges_Id(UUID endExchangeId);
+
+    @Query("SELECT c FROM Connector c WHERE c.id = ?1 and c.status = ?2")
+    Optional<Connector> findByIdAndStatus(UUID id, boolean status);
 }
