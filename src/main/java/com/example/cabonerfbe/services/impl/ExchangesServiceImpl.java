@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -213,6 +214,9 @@ public class ExchangesServiceImpl implements ExchangesService {
 
             initialValue = unitService.convertValue(exchange.getUnit(), initialValue, unit);
             System.out.println("initial value after converted to " + unit.getName() + " unit: " + initialValue);
+            if (value != null) {
+                initialValue = initialValue.setScale(value.scale(), RoundingMode.HALF_UP);
+            }
             exchange.setUnit(unit);
         }
 
