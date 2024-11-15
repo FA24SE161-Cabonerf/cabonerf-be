@@ -204,6 +204,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         );
 
         BigDecimal initialValue = exchange.getValue();
+        System.out.println("initial value before converted to " + exchange.getUnit().getName() + " unit: " + initialValue);
 
         if (unitId != null && !unitId.equals(exchange.getUnit().getId())) {
             Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
@@ -211,10 +212,12 @@ public class ExchangesServiceImpl implements ExchangesService {
             );
 
             initialValue = unitService.convertValue(exchange.getUnit(), initialValue, unit);
+            System.out.println("initial value after converted to " + unit.getName() + " unit: " + initialValue);
             exchange.setUnit(unit);
         }
 
         if (value != null) {
+            System.out.println("old exchange value: " + exchange.getValue() + " | new exchange value: " + value);
             exchange.setValue(value);
         }
 

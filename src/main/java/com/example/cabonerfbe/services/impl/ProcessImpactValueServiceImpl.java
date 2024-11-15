@@ -128,7 +128,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         Unit baseUnit = exchange.getEmissionSubstance().getUnit();
 
         List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository.findByEmissionSubstanceId(emissionSubstanceId);
-        System.out.println("Retrieved " + list.size() + " midpoint factors for emission substance ID: " + emissionSubstanceId);
 
         for (MidpointImpactCharacterizationFactors factors : list) {
             Optional<ProcessImpactValue> processImpactValueOpt = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(
@@ -141,7 +140,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
                 System.out.println("Processing impact method category ID: " + factors.getImpactMethodCategory().getId());
                 System.out.println("Initial unit level: " + unitLevel);
-                System.out.println("base exchange value: " + exchange.getValue());
+                System.out.println("base exchange value (before converted): " + exchange.getValue());
+                System.out.println("initial value: "+ initialValue);
                 // Convert the exchange value to the base unit and adjust based on initial value
                 BigDecimal exchangeValue = unitService.convertValue(
                         exchange.getUnit(),
@@ -159,8 +159,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
                 processImpactValue.setUnitLevel(unitLevel);
                 processImpactValueList.add(processImpactValue);
-            } else {
-                log.warn("No process impact value found for impact method category ID: " + factors.getImpactMethodCategory().getId());
             }
         }
 
