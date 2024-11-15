@@ -2,6 +2,7 @@ package com.example.cabonerfbe.repositories;
 
 import com.example.cabonerfbe.dto.*;
 import com.example.cabonerfbe.models.ProjectImpactValue;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,4 +23,8 @@ public interface ProjectImpactValueRepository extends JpaRepository<ProjectImpac
 
     @Query("SELECT piv FROM ProjectImpactValue piv WHERE piv.project.id = ?1 AND piv.status = true")
     List<ProjectImpactValue> findByProjectId(UUID projectId);
+
+    @Query("SELECT piv FROM ProjectImpactValue piv WHERE piv.project.id = ?1 AND piv.value > 0")
+    List<ProjectImpactValue> getValue(UUID projectId);
+
 }
