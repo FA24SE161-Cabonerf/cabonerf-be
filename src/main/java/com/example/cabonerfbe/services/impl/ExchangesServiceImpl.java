@@ -16,6 +16,7 @@ import com.example.cabonerfbe.request.CreateProductRequest;
 import com.example.cabonerfbe.request.UpdateExchangeRequest;
 import com.example.cabonerfbe.response.ImpactExchangeResponse;
 import com.example.cabonerfbe.response.SearchElementaryResponse;
+import com.example.cabonerfbe.response.UpdateProductExchangeResponse;
 import com.example.cabonerfbe.services.ExchangesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -233,7 +234,7 @@ public class ExchangesServiceImpl implements ExchangesService {
     }
 
     @Override
-    public List<ExchangesDto> updateProductExchange(UUID exchangeId, UpdateExchangeRequest request) {
+    public List<UpdateProductExchangeResponse> updateProductExchange(UUID exchangeId, UpdateExchangeRequest request) {
         String name = request.getName();
         UUID unitId = request.getUnitId();
         UUID processId = request.getProcessId();
@@ -290,7 +291,10 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         exchangesRepository.save(exchange);
 
-        return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByIdMatches(connectedExchangeIdList));
+        return exchangesRepository.findAllByIdMatches(connectedExchangeIdList)
+                .stream()
+                .map(e -> new UpdateProductExchangeResponse(e.getProcessId(), exchangesConverter.fromExchangesToExchangesDto(e)))
+                .collect(Collectors.toList());
     }
 
     private EmissionSubstance findSubstancesCompartments(UUID id, boolean isInput) {
