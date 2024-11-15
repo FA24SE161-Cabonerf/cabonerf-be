@@ -18,10 +18,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -47,7 +44,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private ProjectImpactValueRepository projectImpactValueRepository;
 
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
-    private void processImpactValueGenerate(CreateProcessImpactValueRequest request) {
+    private void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
         UUID processId = request.getProcessId();
         UUID methodId = request.getMethodId();
         Process process = processRepository.findByProcessId(processId).orElseThrow(
@@ -76,44 +73,37 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
     // this one will be used once the client is too tired to update one by one.
     // however this still needs to be optimized
-    public void computeProcessImpactValueAllExchange(Process process) {
-        UUID methodId = process.getProject().getLifeCycleImpactAssessmentMethod().getId();
+    public void computeProcessImpactValueAllExchangeOfProcess(Process process) {
         UUID processId = process.getId();
-
+        // the idea here is:
+        // -> loop through the exchange list ->
+        // -> get the list of factors that exchange has.
+        // -> if present => unit level +=
+        // todo: use map then update all at once.
         List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
-
         List<Exchanges> exchangeList = exchangesRepository.findAllByProcessIdAndExchangesType(processId, Constants.ELEMENTARY_EXCHANGE);
-        List<ImpactMethodCategory> impactMethodCategoryList = impactMethodCategoryRepository.findByMethod(methodId);
 
-        for (ImpactMethodCategory methodCategory : impactMethodCategoryList) {
-            UUID methodCategoryId = methodCategory.getId();
+        for (Exchanges exchange : exchangeList) {
+            UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
+            List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository.findByEmissionSubstanceId(emissionSubstanceId);
+            BigDecimal exchangeValue = exchange.getValue();
+            Unit exchangeUnit = exchange.getUnit();
+            Unit baseUnit = exchange.getEmissionSubstance().getUnit();
+            for (MidpointImpactCharacterizationFactors factors : list) {
+                Optional<ProcessImpactValue> processImpactValueOpt = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(
+                        processId, factors.getImpactMethodCategory().getId()
+                );
+                if (processImpactValueOpt.isPresent()) {
+                    ProcessImpactValue processImpactValue = processImpactValueOpt.get();
+                    BigDecimal unitLevel = processImpactValue.getUnitLevel();
+                    BigDecimal factorValue = factors.getDecimalValue();
+                    exchangeValue = unitService.convertValue(exchangeUnit, exchangeValue, baseUnit);
+                    unitLevel = unitLevel.add(exchangeValue.multiply(factorValue));
 
-            ProcessImpactValue processImpactValue = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(processId, methodCategoryId)
-                    .orElse(new ProcessImpactValue());
-
-            processImpactValue.setImpactMethodCategory(methodCategory);
-            processImpactValue.setProcess(process);
-            processImpactValue.setOverallImpactContribution(Constants.NEW_OVERALL_FLOW);
-            processImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
-            processImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
-
-            BigDecimal unitLevel = Constants.BASE_UNIT_LEVEL;
-
-            for (Exchanges exchange : exchangeList) {
-                UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
-                BigDecimal exchangeValue = exchange.getValue();
-
-                Optional<MidpointImpactCharacterizationFactors> midpointFactorsOptional =
-                        midpointFactorsRepository.findByMethodCategoryAndEmissionSubstance(methodCategoryId, emissionSubstanceId);
-
-                // Calculate and add to unit level based on presence of midpoint factors
-                unitLevel = unitLevel.add(midpointFactorsOptional
-                        .map(midpointFactors -> exchangeValue.multiply(midpointFactors.getDecimalValue()))
-                        .orElse(Constants.BASE_UNIT_LEVEL));
+                    processImpactValue.setUnitLevel(unitLevel);
+                    processImpactValueList.add(processImpactValue);
+                }
             }
-
-            processImpactValue.setUnitLevel(unitLevel);
-            processImpactValueList.add(processImpactValue);
         }
 
         processImpactValueRepository.saveAll(processImpactValueList);
@@ -141,7 +131,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 System.out.println("Processing impact method category ID: " + factors.getImpactMethodCategory().getId());
                 System.out.println("Initial unit level: " + unitLevel);
                 System.out.println("base exchange value (before converted): " + exchange.getValue());
-                System.out.println("initial value: "+ initialValue);
+                System.out.println("initial value: " + initialValue);
                 // Convert the exchange value to the base unit and adjust based on initial value
                 BigDecimal exchangeValue = unitService.convertValue(
                         exchange.getUnit(),
@@ -171,7 +161,39 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
     public void computeProcessImpactValueOfProject(Project project) {
+        // the idea here is getting all the process impact value based on the project id input,
+        // then update each manually, this might take like forever since each exchange inside each process is calculated again
+        // the issue here is performance -> 1 project may have many processes, and each process can also have several exchanges
+        // so we have to use nested loops,
+        // forE: {
+        //      forE: {
+        //          (and even)
+        //          forE: {}
+        //      }
+        // }
+        // assume that the project is not null
+        UUID projectId = project.getId();
+        UUID methodId = project.getLifeCycleImpactAssessmentMethod().getId();
+        List<Process> processList = processRepository.findAll(projectId);
+        for (Process process : processList) {
+            // alter the old ones.
+            alterPrevImpactValueList(process, methodId);
+//            processImpactValueGenerateUponCreateProcess(new CreateProcessImpactValueRequest(process.getId(), methodId));
+            computeProcessImpactValueAllExchangeOfProcess(process);
+        }
+    }
 
+    private void alterPrevImpactValueList(Process process, UUID methodId) {
+        List<ImpactMethodCategory> methodCategoryList = impactMethodCategoryRepository.findByMethod(methodId);
+        List<ProcessImpactValue> existProcessImpactValueList = processImpactValueRepository.findByProcessId(process.getId());
+        int methodCategoryListSize = methodCategoryList.size();
+        int processImpactValueListSize = existProcessImpactValueList.size();
+
+        for (ImpactMethodCategory methodCategory : methodCategoryList) {
+            ProcessImpactValue processImpactValue = getNewProcessImpactValue(methodCategory, process);
+            existProcessImpactValueList.add(processImpactValue);
+        }
+        processImpactValueRepository.saveAll(existProcessImpactValueList);
     }
 
 
@@ -191,17 +213,17 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 .map(Process::getId)
                 .collect(Collectors.toList());
 
-        if(processIds.size() > 1){
+        if (processIds.size() > 1) {
             List<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
             if (connectors.isEmpty()) {
                 throw CustomExceptions.notFound("There must be at least one connector to calculate");
             }
 
 
-        List<Process> checkProcess = processRepository.findProcessesWithoutOutgoingConnectors();
-        if (checkProcess.size() > 1) {
-            throw CustomExceptions.badRequest("Multiple deepest process found");
-        }
+            List<Process> checkProcess = processRepository.findProcessesWithoutOutgoingConnectors();
+            if (checkProcess.size() > 1) {
+                throw CustomExceptions.badRequest("Multiple deepest process found");
+            }
 
             // Khởi tạo map để lưu trữ các giá trị exchange cho từng process
             for (Process currentProcess : processList) {
@@ -213,15 +235,15 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
 
                 List<ProcessImpactValue> data = processImpactValueRepository.findByProcessId(currentProcessId);
-                if(!data.isEmpty()){
-                    updateProcess(data,totalFlow,currentProcessId);
+                if (!data.isEmpty()) {
+                    updateProcess(data, totalFlow, currentProcessId);
                 }
 
 
                 processRepository.save(currentProcess);
             }
         }
-        updateProject(processIds,projectId);
+        updateProject(processIds, projectId);
     }
 
     // Phương thức đệ quy để duyệt đường đi từ một process và tính toán kết quả cho mỗi nhánh
@@ -299,10 +321,10 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
     private void updateProject(List<UUID> processIds, UUID projectId) {
         List<ProjectImpactValue> projectData = projectImpactValueRepository.findByProjectId(projectId);
-        for(ProjectImpactValue x : projectData){
-            List<ProcessImpactValue> processData = processImpactValueRepository.findAllByProcessIdsAAndImpactMethodCategory(processIds,x.getImpactMethodCategory().getId());
+        for (ProjectImpactValue x : projectData) {
+            List<ProcessImpactValue> processData = processImpactValueRepository.findAllByProcessIdsAAndImpactMethodCategory(processIds, x.getImpactMethodCategory().getId());
             BigDecimal sum = BigDecimal.ZERO;
-            for (ProcessImpactValue y : processData){
+            for (ProcessImpactValue y : processData) {
                 sum = sum.add(y.getSystemLevel());
             }
             x.setValue(sum);

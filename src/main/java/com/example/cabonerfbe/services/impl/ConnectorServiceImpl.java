@@ -136,9 +136,8 @@ public class ConnectorServiceImpl implements ConnectorService {
         Exchanges startExchange = validateAndFetchExchange(request.getStartExchangesId(), OUTPUT, START_EXCHANGE);
         validateExchangeBelongsToProcess(startExchange, startProcess, START_EXCHANGE);
 
-        Exchanges endExchange = exchangesRepository.findByProcess_IdAndNameAndUnit_UnitGroupAndInput(
-                        endProcess.getId(), startExchange.getName(), startExchange.getUnit().getUnitGroup(), INPUT)
-                .orElseGet(() -> createNewExchange(startExchange, endProcess, INPUT));
+        // if the end exchange is not specified -> create new end
+        Exchanges endExchange = createNewExchange(startExchange, endProcess, INPUT);
 
         return CreateConnectorResponse.builder()
                 .connector(convertAndSaveConnector(startExchange, endExchange, startProcess, endProcess))
