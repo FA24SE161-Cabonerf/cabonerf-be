@@ -84,7 +84,10 @@ public class ProjectController {
     }
 
     @GetMapping("/calculation/{projectId}")
-    public void calculation(@PathVariable("projectId") UUID projectId){
-        service.computeSystemLevelOfProject(projectId);
+    public ResponseEntity<ResponseObject> calculation(@PathVariable("projectId") UUID projectId){
+
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Calculation project success",  service.computeSystemLevelOfProject(projectId))
+        );
     }
 }

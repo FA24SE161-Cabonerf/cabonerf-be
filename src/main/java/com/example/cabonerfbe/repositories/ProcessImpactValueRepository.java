@@ -1,11 +1,15 @@
 package com.example.cabonerfbe.repositories;
 
 import com.example.cabonerfbe.models.Connector;
+import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.models.ProcessImpactValue;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
@@ -28,4 +32,19 @@ public interface ProcessImpactValueRepository extends JpaRepository<ProcessImpac
 
     @Query("SELECT p FROM ProcessImpactValue p WHERE p.process.id IN :processIds OR p.process.id IN :processIds AND p.status = true AND p.impactMethodCategory.id = :imcId")
     List<ProcessImpactValue> findAllByProcessIdsAAndImpactMethodCategory(@Param("processIds") List<UUID> processIds, @Param("imcId") UUID imcId);
+
+    @Query("SELECT p FROM ProcessImpactValue p WHERE p.process.id IN :processIds OR p.process.id IN :processIds AND p.status = true")
+    List<ProcessImpactValue> findAllByProcessIds(@Param("processIds") List<UUID> processIds);
+
+
+    @Query("SELECT p FROM ProcessImpactValue p WHERE p.process.id = :processId AND p.status = true ")
+    List<ProcessImpactValue> findAllByProcessId(@Param("processId") UUID processId);
+
+    @Query("SELECT piv FROM ProcessImpactValue piv WHERE piv.process = :process")
+    List<ProcessImpactValue> findAllByProcess(@Param("process") Process process);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE ProcessImpactValue p SET p.previousProcessValue = 0 WHERE p.process.id IN :processIds OR p.process.id IN :processIds AND p.status = true ")
+    void setDefaultPrevious(@Param("processIds") List<UUID> processIds);
 }

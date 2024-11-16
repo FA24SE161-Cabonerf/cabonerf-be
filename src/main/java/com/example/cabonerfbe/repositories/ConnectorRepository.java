@@ -36,4 +36,7 @@ public interface ConnectorRepository extends JpaRepository<Connector, UUID> {
 
     @Query("SELECT c FROM Connector c WHERE c.id = ?1 and c.status = ?2")
     Optional<Connector> findByIdAndStatus(UUID id, boolean status);
+
+    @Query("SELECT c FROM Connector c WHERE c.startProcess.id = ?1 AND c.status = true")
+    Connector findNextByStartProcessIdOne(UUID currentProcessId);
 }
