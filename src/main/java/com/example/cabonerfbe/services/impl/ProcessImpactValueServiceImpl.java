@@ -192,17 +192,31 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
     private void alterPrevImpactValueList(Process process, UUID methodId) {
-        List<ImpactMethodCategory> methodCategoryList = impactMethodCategoryRepository.findByMethod(methodId);
-        List<ProcessImpactValue> existProcessImpactValueList = processImpactValueRepository.findByProcessId(process.getId());
-        int methodCategoryListSize = methodCategoryList.size();
-        int processImpactValueListSize = existProcessImpactValueList.size();
+        List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
+        List<ProcessImpactValue> existingValues = processImpactValueRepository.findByProcessId(process.getId());
 
-        for (ImpactMethodCategory methodCategory : methodCategoryList) {
-            ProcessImpactValue processImpactValue = getNewProcessImpactValue(methodCategory, process);
-            existProcessImpactValueList.add(processImpactValue);
+        for (int i = 0; i < methodCategories.size(); i++) {
+            if (i < existingValues.size()) {
+                existingValues.get(i).setImpactMethodCategory(methodCategories.get(i));
+                existingValues.get(i).setUnitLevel(BigDecimal.ZERO);
+            } else {
+                existingValues.add(getNewProcessImpactValue(methodCategories.get(i), process));
+            }
         }
-        processImpactValueRepository.saveAll(existProcessImpactValueList);
+
+
+        if (existingValues.size() > methodCategories.size()) {
+            List<ProcessImpactValue> removeList = existingValues.subList(
+                    methodCategories.size(),
+                    existingValues.size()
+            );
+            processImpactValueRepository.deleteAll(removeList);
+            existingValues = existingValues.subList(0, methodCategories.size());
+        }
+
+        processImpactValueRepository.saveAll(existingValues);
     }
+
 
 
     public List<ConnectorPercentDto> computeSystemLevelOfProject(UUID projectId) {
