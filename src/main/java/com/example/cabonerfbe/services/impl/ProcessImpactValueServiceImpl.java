@@ -50,7 +50,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private final List<ConnectorPercentDto> connectorsResponse = new ArrayList<>();
     private final ProjectImpactValue totalProject = new ProjectImpactValue();
     private final List<Connector> _connectors = new ArrayList<>();
-    private Process lastProcess = new Process();
 
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     private void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
@@ -230,11 +229,9 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
         _connectors.addAll(connectors);
 
-        List<Process> processesWithoutOutgoingConnectors = processRepository.findProcessesWithoutOutgoingConnectors();
+        List<Process> processesWithoutOutgoingConnectors = processRepository.findProcessesWithoutOutgoingConnectors(projectId);
         if (processesWithoutOutgoingConnectors.size() > 1) {
             throw CustomExceptions.badRequest("Multiple deepest process found");
-        }else{
-            lastProcess = processesWithoutOutgoingConnectors.get(0);
         }
 
         processImpactValueRepository.setDefaultPrevious(processIds);
