@@ -14,9 +14,6 @@ import java.util.List;
 
 public interface ExcelService {
     ImportFactorResponse readExcel(MultipartFile file, String name) throws IOException;
-
     ResponseEntity<Resource> downloadErrorLog(String fileName);
-
-    ResponseEntity<Resource> downloadTemplate();
     ResponseEntity<Resource> exportFactor(ExportFactorRequest request);
 }

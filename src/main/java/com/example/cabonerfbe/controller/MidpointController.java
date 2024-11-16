@@ -91,7 +91,7 @@ public class MidpointController {
     @GetMapping(API_PARAMS.ADMIN + API_PARAMS.DOWNLOAD_TEMPLATE_MIDPOINT_FACTOR)
     public ResponseEntity<Resource> downloadFactorTemplate() throws IOException {
         log.info("Start downloadFactorTemplate");
-        return excelService.downloadTemplate();
+        return excelService.downloadErrorLog("template/factor-template.xlsx");
     }
 
     @GetMapping(API_PARAMS.ADMIN + API_PARAMS.EXPORT_MIDPOINT_FACTOR)

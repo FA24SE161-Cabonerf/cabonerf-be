@@ -3,17 +3,15 @@ package com.example.cabonerfbe.services.impl;
 import com.example.cabonerfbe.converter.OrganizationConverter;
 import com.example.cabonerfbe.dto.OrganizationDto;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.Contract;
-import com.example.cabonerfbe.models.Organization;
-import com.example.cabonerfbe.models.UserOrganization;
-import com.example.cabonerfbe.models.Users;
+import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateOrganizationRequest;
-import com.example.cabonerfbe.request.MailRequest;
 import com.example.cabonerfbe.request.UpdateOrganizationRequest;
 import com.example.cabonerfbe.response.GetAllOrganizationResponse;
+import com.example.cabonerfbe.response.LoginResponse;
 import com.example.cabonerfbe.services.EmailService;
 import com.example.cabonerfbe.services.OrganizationService;
+import com.example.cabonerfbe.services.S3Service;
 import com.example.cabonerfbe.util.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -47,6 +45,8 @@ public class OrganizationServiceImpl implements OrganizationService {
     PasswordEncoder passwordEncoder;
     @Autowired
     private ContractRepository contractRepository;
+    @Autowired
+    S3Service s3Service;
 
     @Override
     public GetAllOrganizationResponse getAll(int pageCurrent, int pageSize, String keyword) {
@@ -106,27 +106,20 @@ public class OrganizationServiceImpl implements OrganizationService {
         userOrganizationRepository.save(uo);
 
         //send-mail
-//        try {
-//
-//            MailRequest mailRequest = new MailRequest();
-//            mailRequest.setSubject("Verification Email");
-//            mailRequest.setName("Cabonerf");
-//            mailRequest.setTo(request.getEmail());
-//            mailRequest.setFrom("cabonerf@gmail.com");
-//
-//            Map<String, Object> map = new HashMap<>();
-//            map.put("action_url", "https://www.google.com/");
-//            emailService.sendMailCreateOrganization(mailRequest, map);
-//
-//            return organizationConverter.modelToDto(o);
-//        } catch (Exception ignored) {
-//        }
 
+        String urlContract="";
+        try{
+            String key = "contract/" + contractFile.getOriginalFilename();
+            byte[] file = contractFile.getBytes();
+            urlContract = s3Service.updateFile(key,file);
+        }catch (Exception ignored){
+
+        }
 
         //storage contract
         Contract c = new Contract();
         c.setOrganization(o);
-        c.setUrl("url");
+        c.setUrl(urlContract);
         c = contractRepository.save(c);
 
         o.setName(request.getName());
@@ -150,5 +143,18 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .orElseThrow(() -> CustomExceptions.notFound("Organization not exist"));
         o.setStatus(false);
         return organizationConverter.modelToDto(organizationRepository.save(o));
+    }
+
+    @Override
+    public LoginResponse confirmOrganization(UUID organizationId) {
+        Organization o = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> CustomExceptions.notFound("Organization not exist"));
+
+        Users owner = userRepository.getOwnerOrganization(organizationId);
+
+        Workspace w = new Workspace();
+        w.setName(o.getName());
+
+        return null;
     }
 }

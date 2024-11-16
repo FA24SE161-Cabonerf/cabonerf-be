@@ -19,4 +19,9 @@ public interface UserRepository extends JpaRepository<Users, UUID> {
     @Query("select u from Users u where LOWER(u.email) like LOWER(CONCAT('%', :keyword, '%')) or LOWER(u.fullName) like LOWER(CONCAT('%', :keyword, '%'))")
     Page<Users> findByEmailAndFullName(@Param("keyword") String keyword, Pageable pageable);
 
+    @Query("SELECT u " +
+            "FROM Users u " +
+            "JOIN UserOrganization uo ON u.id = uo.user.id " +
+            "WHERE uo.organization.id = :organizationId AND uo.role.name like 'Organization Manager'")
+    Users getOwnerOrganization(@Param("organizationId") UUID organizationId);
 }

@@ -11,6 +11,7 @@ import com.example.cabonerfbe.response.ImportFactorResponse;
 import com.example.cabonerfbe.response.MidpointSubstanceFactorsResponse;
 import com.example.cabonerfbe.services.ExcelService;
 import com.example.cabonerfbe.services.MidpointService;
+import com.example.cabonerfbe.services.S3Service;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
@@ -71,6 +72,8 @@ public class ExcelServiceImpl implements ExcelService {
     private MidpointRepository midpointRepository;
     @Autowired
     private MidpointImpactCharacterizationFactorConverter midpointConverter;
+    @Autowired
+    private S3Service s3Service;
 
     private ArrayList<String> errorContent = new ArrayList<>();
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);
@@ -182,49 +185,27 @@ public class ExcelServiceImpl implements ExcelService {
     @Override
     public ResponseEntity<Resource> downloadErrorLog(String fileName) {
         try {
-            String projectRootPath = System.getProperty("user.dir");
-            String folderPath = projectRootPath + "/src/main/resources/error";
+            byte[] fileData = s3Service.downloadFile(fileName);
 
-            Path filePath = Paths.get(folderPath, fileName);
-            Resource resource = new UrlResource(filePath.toUri());
-
-            if (resource.exists() && resource.isReadable()) {
+            if (fileData != null && fileData.length > 0) {
+                ByteArrayResource resource = new ByteArrayResource(fileData);
+                String name = fileName.contains("error") ? "error.xlsx" : "factor-template.xlsx";
                 HttpHeaders headers = new HttpHeaders();
-                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\""+ name +"\"");
+
+
 
                 return ResponseEntity.ok()
                         .headers(headers)
+                        .contentLength(fileData.length)
                         .body(resource);
             } else {
-                throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "File not exist");
+                throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "File not found in S3");
             }
-        } catch (MalformedURLException e) {
+        } catch (RuntimeException e) {
+            log.error("Error downloading template from S3: {}", e.getMessage());
+            throw e; // rethrow after logging
         }
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Resource> downloadTemplate() {
-        try {
-            String projectRootPath = System.getProperty("user.dir");
-            String folderPath = projectRootPath + "/src/main/resources/admin-templates/";
-            String filename = "factor-template.xlsx";
-            Path filePath = Paths.get(folderPath, filename);
-            Resource resource = new UrlResource(filePath.toUri());
-
-            if (resource.exists() && resource.isReadable()) {
-                HttpHeaders headers = new HttpHeaders();
-                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
-
-                return ResponseEntity.ok()
-                        .headers(headers)
-                        .body(resource);
-            } else {
-                throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "File not exist");
-            }
-        } catch (MalformedURLException e) {
-        }
-        return null;
     }
 
     @Override
@@ -326,10 +307,9 @@ public class ExcelServiceImpl implements ExcelService {
     }
 
     private String logError(MultipartFile file, ArrayList<String> errors) {
-        String projectRootPath = System.getProperty("user.dir");
-        String folderPath = projectRootPath + "/src/main/resources/error";
         try (InputStream inputStream = file.getInputStream();
-             Workbook workbook = new XSSFWorkbook(inputStream)) {
+             Workbook workbook = new XSSFWorkbook(inputStream);
+             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 
             // Tạo CellStyle và Font để định dạng màu chữ đỏ
             CellStyle style = workbook.createCellStyle();
@@ -340,36 +320,31 @@ public class ExcelServiceImpl implements ExcelService {
             for (String e : errors) {
                 String[] error = e.split(" - ");
                 Sheet sheet = workbook.getSheetAt(Integer.parseInt(error[0]));
-
                 Row row = sheet.getRow(Integer.parseInt(error[1]));
                 if (row == null) {
                     row = sheet.createRow(Integer.parseInt(error[1]));
                 }
-
                 // Chèn dữ liệu vào ô tương ứng và áp dụng định dạng màu đỏ
                 Cell cell = row.createCell(Integer.parseInt(error[2]));
                 cell.setCellValue(error[3]);
                 cell.setCellStyle(style);
             }
+
+            // Ghi workbook vào ByteArrayOutputStream
+            workbook.write(byteArrayOutputStream);
+
+            // Tạo tên file dựa trên tên file gốc và thời gian hiện tại
             String originalFileName = file.getOriginalFilename();
             String fileNameWithoutExtension = originalFileName != null && originalFileName.contains(".")
                     ? originalFileName.substring(0, originalFileName.lastIndexOf('.'))
                     : originalFileName;
-            // Đường dẫn file đầu ra
-
-            LocalTime currentDate = LocalTime.now();
-
-            // Định dạng ngày theo định dạng dd_MM_yyyy
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH_mm_ss");
-            String formattedDate = currentDate.format(formatter);
+            String formattedTime = LocalTime.now().format(formatter);
+            String s3FileName = "error/" + fileNameWithoutExtension + "_error_log_" + formattedTime + ".xlsx";
 
-            String outputFilePath = fileNameWithoutExtension + "_error_log_" + formattedDate + ".xlsx";
+            // Gọi hàm updateFile và truyền byte array để lưu file lên S3
+            return s3Service.updateFile(s3FileName, byteArrayOutputStream.toByteArray());
 
-            // Ghi lại tệp Excel vào đường dẫn chỉ định
-            try (FileOutputStream outputStream = new FileOutputStream(folderPath + "/" + outputFilePath)) {
-                workbook.write(outputStream);
-            }
-            return outputFilePath;
         } catch (IOException e) {
             e.printStackTrace();
         }
