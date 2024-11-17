@@ -16,4 +16,7 @@ public class Workspace extends Base{
     @JoinColumn(name = "owner_id")
     private Users owner;
 
+    @ManyToOne
+    @JoinColumn(name = "organization_id")
+    private Organization organization;
 }

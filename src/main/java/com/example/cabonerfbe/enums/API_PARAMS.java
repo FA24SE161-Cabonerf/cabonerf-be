@@ -151,6 +151,12 @@ public class API_PARAMS {
     public static final String ORGANIZATION = "/organizations";
     public static final String UPDATE_ORGANIZATION = "/{organizationId}";
     public static final String DELETE_ORGANIZATION = "/{organizationId}";
+    public static final String CONFIRM_CREATE_ORGANIZATION = "/confirm";
 
     public static final String MANAGER = "/manager";
+
+    /************************
+     *   WORKSPACE APIs   *
+     ************************/
+    public static final String WORKSPACE = "/workspace";
 }

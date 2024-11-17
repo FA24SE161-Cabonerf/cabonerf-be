@@ -8,8 +8,11 @@ import com.example.cabonerfbe.models.Organization;
 import com.example.cabonerfbe.request.CreateOrganizationRequest;
 import com.example.cabonerfbe.request.RequestObject;
 import com.example.cabonerfbe.request.UpdateOrganizationRequest;
+import com.example.cabonerfbe.request.VerifyCreateOrganizationRequest;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.OrganizationService;
+import io.swagger.v3.oas.annotations.headers.Header;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +66,14 @@ public class OrganizationController {
         log.info("Start deleteOrganization.Id: {}",organizationId);
         return ResponseEntity.ok().body(new ResponseObject(
                 Constants.RESPONSE_STATUS_SUCCESS,MessageConstants.DELETE_ORGANIZATION_SUCCESS,organizationService.deleteOrganization(organizationId)
+        ));
+    }
+
+    @DeleteMapping(API_PARAMS.MANAGER + API_PARAMS.CONFIRM_CREATE_ORGANIZATION)
+    public ResponseEntity<ResponseObject> confirmCreateOrganization(@RequestHeader("x-user-id") UUID userId, @Valid @RequestBody VerifyCreateOrganizationRequest request) {
+        log.info("Start confirmCreateOrganization. UserId: {}, request: {}", userId,request);
+        return ResponseEntity.ok().body(new ResponseObject(
+                Constants.RESPONSE_STATUS_SUCCESS,MessageConstants.CONFIRM_CREATE_ORGANIZATION_SUCCESS,organizationService.confirm(userId,request)
         ));
     }
 

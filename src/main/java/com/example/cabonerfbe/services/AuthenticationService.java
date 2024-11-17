@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.services;
 
+import com.example.cabonerfbe.models.Users;
 import com.example.cabonerfbe.request.*;
 import com.example.cabonerfbe.response.*;
 
@@ -11,4 +12,5 @@ public interface AuthenticationService {
     AuthenticationResponse refreshToken(RefreshTokenRequest request);
     ResponseObject logout(LogoutRequest request, UUID userId);
     LoginResponse verifyEmail(VerifyEmailRequest request);
+    void saveRefreshToken(String refreshTokenString, Users user);
 }

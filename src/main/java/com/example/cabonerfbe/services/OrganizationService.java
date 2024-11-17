@@ -3,6 +3,7 @@ package com.example.cabonerfbe.services;
 import com.example.cabonerfbe.dto.OrganizationDto;
 import com.example.cabonerfbe.request.CreateOrganizationRequest;
 import com.example.cabonerfbe.request.UpdateOrganizationRequest;
+import com.example.cabonerfbe.request.VerifyCreateOrganizationRequest;
 import com.example.cabonerfbe.response.GetAllOrganizationResponse;
 import com.example.cabonerfbe.response.LoginResponse;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,5 +15,5 @@ public interface OrganizationService {
     OrganizationDto createOrganization(CreateOrganizationRequest request, MultipartFile contractFile);
     OrganizationDto updateOrganization(UUID organizationId, UpdateOrganizationRequest request);
     OrganizationDto deleteOrganization(UUID organizationId);
-    LoginResponse confirmOrganization(UUID organizationId);
+    LoginResponse confirm(UUID userId, VerifyCreateOrganizationRequest request);
 }
