@@ -103,4 +103,8 @@ public class MessageConstants {
     public static final String NO_PROCESS_IN_PROJECT = "There must be at least one process to calculate";
 
     public static final String CHANGE_PROJECT_METHOD_SUCCESS = "Change impact method of the project success";
+
+    public static final String EXCHANGE_ALREADY_HAD_CONNECTION = "End exchange already had connection";
+    public static final String DELETE_CONNECTOR_SUCCESS = "Delete connector success";
+    public static final String CONNECTOR_NOT_FOUND = "Connector not exist";
 }

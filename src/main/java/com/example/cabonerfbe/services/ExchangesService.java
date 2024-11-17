@@ -7,6 +7,7 @@ import com.example.cabonerfbe.request.CreateProductRequest;
 import com.example.cabonerfbe.request.UpdateExchangeRequest;
 import com.example.cabonerfbe.response.ImpactExchangeResponse;
 import com.example.cabonerfbe.response.SearchElementaryResponse;
+import com.example.cabonerfbe.response.UpdateProductExchangeResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +25,6 @@ public interface ExchangesService {
     List<ExchangesDto> removeProductExchange(UUID exchangeId);
 
     ImpactExchangeResponse updateElementaryExchange(UUID exchangeId, UpdateExchangeRequest request);
-    List<ExchangesDto> updateProductExchange(UUID exchangeId, UpdateExchangeRequest request);
+    List<UpdateProductExchangeResponse> updateProductExchange(UUID exchangeId, UpdateExchangeRequest request);
 
 }

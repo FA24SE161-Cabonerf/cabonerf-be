@@ -1,7 +1,10 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.*;
-import com.example.cabonerfbe.dto.*;
+import com.example.cabonerfbe.dto.GetProjectByIdDto;
+import com.example.cabonerfbe.dto.ProjectDto;
+import com.example.cabonerfbe.dto.ProjectImpactDto;
+import com.example.cabonerfbe.dto.UpdateProjectDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -21,11 +24,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
@@ -70,6 +71,8 @@ public class ProjectServiceImpl implements ProjectService {
     private ProcessService processService;
 
     private static final int PAGE_INDEX_ADJUSTMENT = 1;
+    @Autowired
+    private ProcessImpactValueServiceImpl processImpactValueService;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
@@ -87,15 +90,15 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public CreateProjectResponse createProject(UUID userId, CreateProjectRequest request) {
 
-        if(userRepository.findById(userId).isEmpty()){
+        if (userRepository.findById(userId).isEmpty()) {
             throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "User not exist");
         }
 
-        if(workspaceRepository.findById(request.getWorkspaceId()).isEmpty()){
+        if (workspaceRepository.findById(request.getWorkspaceId()).isEmpty()) {
             throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Workspace not exist");
         }
 
-        if(methodRepository.findById(request.getMethodId()).isEmpty()){
+        if (methodRepository.findById(request.getMethodId()).isEmpty()) {
             throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Method not exist");
         }
 
@@ -229,8 +232,8 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public List<Project> deleteProject(UUID id) {
         Optional<Project> project = projectRepository.findById(id);
-        if(project.isEmpty()){
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Project not exist");
+        if (project.isEmpty()) {
+            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Project not exist");
         }
 
         project.get().setStatus(false);
@@ -238,6 +241,7 @@ public class ProjectServiceImpl implements ProjectService {
         return new ArrayList<>();
     }
 
+    @Transactional
     @Override
     public GetProjectByIdDto changeProjectMethod(UUID projectId, UUID methodId) {
         Project project = projectRepository.findById(projectId).orElseThrow(
@@ -248,7 +252,7 @@ public class ProjectServiceImpl implements ProjectService {
                     () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND)
             );
             project.setLifeCycleImpactAssessmentMethod(method);
-            projectRepository.save(project);
+            processImpactValueService.computeProcessImpactValueOfProject(projectRepository.save(project));
         }
 
         return getProject(project);
@@ -268,7 +272,6 @@ public class ProjectServiceImpl implements ProjectService {
                 })
                 .collect(Collectors.toList());
     }
-
 
 
 }

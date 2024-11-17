@@ -144,6 +144,8 @@ public class API_PARAMS {
      *   CONNECTORS APIs   *
      ************************/
     public static final String CONNECTOR = "/connectors";
+    public static final String DELETE_CONNECTOR = "/{id}";
+
 
     /************************
      *   ORGANIZATIONS APIs   *
