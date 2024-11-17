@@ -154,8 +154,13 @@ public class API_PARAMS {
     public static final String UPDATE_ORGANIZATION = "/{organizationId}";
     public static final String DELETE_ORGANIZATION = "/{organizationId}";
     public static final String CONFIRM_CREATE_ORGANIZATION = "/confirm";
+    public static final String INVITE_MEMBER_ORGANIZATION = "/invite";
+    public static final String ACCEPT_INVITE_ORGANIZATION = "/accept";
+    public static final String DENY_INVITE_ORGANIZATION = "/deny";
+    public static final String GET_LIST_INVITE_ORGANIZATION = "/list-invite";
 
     public static final String MANAGER = "/manager";
+    public static final String ORGANIZATION_MANAGER = "/organization-manager";
 
     /************************
      *   WORKSPACE APIs   *

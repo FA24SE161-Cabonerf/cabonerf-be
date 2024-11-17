@@ -2,14 +2,16 @@ package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.OrganizationConverter;
 import com.example.cabonerfbe.converter.UserConverter;
+import com.example.cabonerfbe.converter.UserOrganizationConverter;
+import com.example.cabonerfbe.dto.InviteUserOrganizationDto;
 import com.example.cabonerfbe.dto.OrganizationDto;
+import com.example.cabonerfbe.dto.UserOrganizationDto;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
-import com.example.cabonerfbe.request.CreateOrganizationRequest;
-import com.example.cabonerfbe.request.UpdateOrganizationRequest;
-import com.example.cabonerfbe.request.VerifyCreateOrganizationRequest;
+import com.example.cabonerfbe.request.*;
 import com.example.cabonerfbe.response.GetAllOrganizationResponse;
+import com.example.cabonerfbe.response.GetInviteListResponse;
 import com.example.cabonerfbe.response.LoginResponse;
 import com.example.cabonerfbe.services.*;
 import com.example.cabonerfbe.util.PasswordGenerator;
@@ -55,6 +57,8 @@ public class OrganizationServiceImpl implements OrganizationService {
     private WorkspaceRepository workspaceRepository;
     @Autowired
     private S3Service s3Service;
+    @Autowired
+    private UserOrganizationConverter uoConverter;
 
     @Override
     public GetAllOrganizationResponse getAll(int pageCurrent, int pageSize, String keyword) {
@@ -65,7 +69,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         int totalPage = data.getTotalPages();
 
-        if(pageCurrent > totalPage){
+        if (pageCurrent > totalPage) {
             return GetAllOrganizationResponse.builder()
                     .totalPage(0)
                     .pageCurrent(1)
@@ -87,14 +91,14 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         Optional<Users> user = userRepository.findByEmail(request.getEmail());
         String password = PasswordGenerator.generateRandomPassword(8);
-        if(user.isPresent()){
-            if(Objects.equals(user.get().getRole().getName(), "Organization Manager")){
+        if (user.isPresent()) {
+            if (Objects.equals(user.get().getRole().getName(), "Organization Manager")) {
                 throw CustomExceptions.badRequest("Email already use with other organization");
             }
 
             user.get().setRole(roleRepository.findByName("Organization Manager").get());
             userRepository.save(user.get());
-        }else{
+        } else {
             Users newUser = new Users();
             newUser.setEmail(request.getEmail());
             newUser.setFullName(request.getName());
@@ -118,12 +122,12 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         //storage contract
         String url = "";
-        try{
+        try {
             String key = "contract/" + contractFile.getOriginalFilename();
             byte[] file = contractFile.getBytes();
 
-            url = s3Service.updateFile(key,file);
-        }catch (Exception ignored){
+            url = s3Service.updateFile(key, file);
+        } catch (Exception ignored) {
         }
 
         Contract c = new Contract();
@@ -168,7 +172,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         var access_token = jwtService.generateToken(u);
         var refresh_token = jwtService.generateRefreshToken(u);
 
-        authenticationService.saveRefreshToken(refresh_token,u);
+        authenticationService.saveRefreshToken(refresh_token, u);
 
         UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(o.getId(), u.getId())
                 .orElseThrow(() -> CustomExceptions.notFound("User not belonging to organization"));
@@ -186,4 +190,112 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .user(userConverter.fromUserToUserDto(u))
                 .build();
     }
+
+    @Override
+    public List<InviteUserOrganizationDto> invite(InviteUserToOrganizationRequest request) {
+
+        Organization organization = organizationRepository.findById(request.getOrganizationId())
+                .orElseThrow(() -> CustomExceptions.notFound("Organization not exists"));
+
+        List<Users> existingUsers = userRepository.findAllByEmail(request.getUserEmail());
+        Set<String> existingEmails = existingUsers.stream()
+                .map(Users::getEmail)
+                .collect(Collectors.toSet());
+
+        // Find new emails not in database
+        List<String> newEmails = request.getUserEmail().stream()
+                .filter(email -> !existingEmails.contains(email))
+                .collect(Collectors.toList());
+
+        // Create and save new users
+        List<Users> newUsers = newEmails.stream()
+                .map(email -> {
+                    Users user = new Users();
+                    user.setEmail(email);
+                    user.setFullName(email.split("@")[0]);
+                    user.setUserVerifyStatus(userVerifyStatusRepository.findByName("Pending").orElseThrow());
+                    user.setRole(roleRepository.findByName("LCA Staff").orElseThrow());
+                    user.setPassword(passwordEncoder.encode(PasswordGenerator.generateRandomPassword(8)));
+                    return user;
+                }).collect(Collectors.toList());
+
+        newUsers = userRepository.saveAll(newUsers);
+
+        // Combine existing and new users
+        List<Users> allUsers = new ArrayList<>(existingUsers);
+        allUsers.addAll(newUsers);
+
+        // Create UserOrganization entities
+        List<UserOrganization> userOrganizations = allUsers.stream()
+                .map(user -> {
+                    UserOrganization uo = new UserOrganization();
+                    uo.setOrganization(organization);
+                    uo.setUser(user);
+                    uo.setRole(roleRepository.findByName("LCA Staff").orElseThrow());
+                    uo.setHasJoined(false);
+                    return uo;
+                }).collect(Collectors.toList());
+
+        userOrganizationRepository.saveAll(userOrganizations);
+
+        // TODO: Send emails to users to accept join
+        return userOrganizations.stream()
+                .map(uoConverter::modelToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserOrganizationDto acceptDenyInvite(UUID userId, AcceptInviteRequest request,String action) {
+        Organization o = organizationRepository.findById(request.getOrganizationId())
+                .orElseThrow(() -> CustomExceptions.notFound("Organization not exist"));
+        Users u = userRepository.findById(userId)
+                .orElseThrow(() -> CustomExceptions.notFound("User not exist"));
+
+        if (!u.isStatus()){
+            throw CustomExceptions.unauthorized("User is ban");
+        }
+
+        UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(request.getOrganizationId(), userId)
+                .orElseThrow(() -> CustomExceptions.notFound("User not have invite to organization"));
+
+        if(uo.isHasJoined()){
+            throw CustomExceptions.badRequest("User already join organization");
+        }
+        switch (action){
+            case "Accept":
+                uo.setHasJoined(true);
+                break;
+            case "Deny":
+                uo.setStatus(false);
+                break;
+            default: break;
+        }
+        userOrganizationRepository.save(uo);
+
+        return uoConverter.enityToDto(uo);
+    }
+
+    @Override
+    public GetInviteListResponse listInvite(int pageCurrent, int pageSize, UUID userId) {
+        Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
+        Page<UserOrganization> inviteList = userOrganizationRepository.findByUserWithPage(userId,pageable);
+
+        int totalPage = inviteList.getTotalPages();
+        if(pageSize > totalPage){
+            return GetInviteListResponse.builder()
+                    .pageCurrent(1)
+                    .pageSize(0)
+                    .totalPage(0)
+                    .list(Collections.emptyList())
+                    .build();
+        }
+
+        return GetInviteListResponse.builder()
+                .pageCurrent(pageCurrent)
+                .pageSize(pageSize)
+                .totalPage(totalPage)
+                .list(inviteList.getContent().stream().map(uoConverter::enityToDto).collect(Collectors.toList()))
+                .build();
+    }
+
 }

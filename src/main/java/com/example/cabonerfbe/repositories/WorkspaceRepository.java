@@ -14,4 +14,7 @@ public interface WorkspaceRepository extends JpaRepository<Workspace, UUID> {
 
     @Query("SELECT w FROM Workspace w JOIN FETCH w.owner o WHERE o.id = :userId")
     List<Workspace> findByUser(@Param("userId") UUID userId);
+
+    @Query("SELECT w FROM Workspace w WHERE w.organization.id IN :organizationIds AND w.status = true")
+    List<Workspace> findByOrganization(@Param("organizationIds") List<UUID> organizationIds);
 }

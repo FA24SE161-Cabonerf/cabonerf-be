@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,4 +26,7 @@ public interface UserRepository extends JpaRepository<Users, UUID> {
             "JOIN UserOrganization uo ON u.id = uo.user.id " +
             "WHERE uo.organization.id = :organizationId AND uo.role.name like 'Organization Manager'")
     Users getOwnerOrganization(@Param("organizationId") UUID organizationId);
+
+    @Query("SELECT u FROM Users u WHERE u.email in :userEmail AND u.status = true")
+    List<Users> findAllByEmail(@Param("userEmail") List<String> userEmail);
 }

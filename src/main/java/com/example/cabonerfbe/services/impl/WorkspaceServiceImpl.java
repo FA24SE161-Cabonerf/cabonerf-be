@@ -3,9 +3,8 @@ package com.example.cabonerfbe.services.impl;
 import com.example.cabonerfbe.converter.WorkspaceConverter;
 import com.example.cabonerfbe.dto.WorkspaceDto;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.UserOrganization;
-import com.example.cabonerfbe.models.Users;
-import com.example.cabonerfbe.models.Workspace;
+import com.example.cabonerfbe.models.*;
+import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.repositories.UserOrganizationRepository;
 import com.example.cabonerfbe.repositories.UserRepository;
 import com.example.cabonerfbe.repositories.WorkspaceRepository;
@@ -32,12 +31,23 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         Users u = userRepository.findById(userId)
                 .orElseThrow(() -> CustomExceptions.notFound("User not exist"));
 
-        Set<Workspace> workspaces = new HashSet<>();
         List<UserOrganization> uo = uoRepository.findByUser(userId);
 
+        List<UUID> organizationIds = uo.stream()
+                .map(UserOrganization::getOrganization)
+                .map(Organization::getId)
+                .collect(Collectors.toList());
+
+        List<Workspace> workspaceOrganization = workspaceRepository.findByOrganization(organizationIds);
+
+        Set<Workspace> workspaces = new HashSet<>(!workspaceOrganization.isEmpty() ? workspaceOrganization : Collections.emptySet());
 
         List<Workspace> w = workspaceRepository.findByUser(userId);
 
-        return null;
+        workspaces.addAll( !w.isEmpty() ? w : Collections.emptyList());
+
+        return !workspaces.isEmpty()
+                ? workspaces.stream().map(workspaceConverter::fromWorkspaceToWorkspaceDto).collect(Collectors.toSet())
+                : Collections.emptySet();
     }
 }
