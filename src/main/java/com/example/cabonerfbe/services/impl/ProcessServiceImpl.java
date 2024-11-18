@@ -54,6 +54,8 @@ public class ProcessServiceImpl implements ProcessService {
     private ImpactCategoryConverter categoryConverter;
     @Autowired
     private MessagePublisher messagePublisher;
+    @Autowired
+    private ConnectorServiceImpl connectorService;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
@@ -139,6 +141,10 @@ public class ProcessServiceImpl implements ProcessService {
         );
         process.setStatus(false);
         processRepository.save(process);
+
+        Thread deleteConnectorThread = new Thread(() -> connectorService.deleteAssociatedConnectors(id, Constants.DELETE_CONNECTOR_TYPE_PROCESS));
+        deleteConnectorThread.start();
+
         return new DeleteProcessResponse(process.getId());
     }
 

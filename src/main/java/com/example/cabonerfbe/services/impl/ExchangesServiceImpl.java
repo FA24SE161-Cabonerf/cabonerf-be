@@ -190,7 +190,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         exchangesRepository.save(exchange);
 
-        Thread deleteConnectorThread = new Thread(() -> connectorService.deleteAssociatedConnectors(exchangeId));
+        Thread deleteConnectorThread = new Thread(() -> connectorService.deleteAssociatedConnectors(exchangeId, Constants.DELETE_CONNECTOR_TYPE_EXCHANGE));
         deleteConnectorThread.start();
 
         return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(exchange.getProcessId()));

@@ -105,16 +105,27 @@ public class ConnectorServiceImpl implements ConnectorService {
                 });
     }
 
-    public void deleteAssociatedConnectors(UUID exchangeId) {
+    public void deleteAssociatedConnectors(UUID id, String actionType) {
         List<UUID> idList = new ArrayList<>();
-        List<Connector> associatedConnectorList = connectorRepository.findConnectorToExchange(exchangeId).stream().peek(
-                connector -> {
-                    connector.setStatus(Constants.STATUS_FALSE);
-                    idList.add(connector.getId());
-                }
-        ).toList();
-        connectorRepository.saveAll(associatedConnectorList);
-        // publish message to rabbit to find and delete connectors
+        if (Constants.DELETE_CONNECTOR_TYPE_EXCHANGE.equals(actionType)) {
+            List<Connector> associatedConnectorList = connectorRepository.findConnectorToExchange(id).stream().peek(
+                    connector -> {
+                        connector.setStatus(Constants.STATUS_FALSE);
+                        idList.add(connector.getId());
+                    }
+            ).toList();
+            connectorRepository.saveAll(associatedConnectorList);
+        }
+        if (Constants.DELETE_CONNECTOR_TYPE_PROCESS.equals(actionType)) {
+            List<Connector> associatedConnectorList = connectorRepository.findConnectorToProcess(id).stream().peek(
+                    connector -> {
+                        connector.setStatus(Constants.STATUS_FALSE);
+                        idList.add(connector.getId());
+                    }
+            ).toList();
+            connectorRepository.saveAll(associatedConnectorList);
+        }
+        // publish message to rabbit to find and delete connectors on node based server
         messagePublisher.publishConnectorMessage(RabbitMQConfig.CONNECTOR_EXCHANGE, RabbitMQConfig.CONNECTOR_ROUTING_KEY, idList);
     }
 
