@@ -157,4 +157,12 @@ public class API_PARAMS {
     public static final String DELETE_ORGANIZATION = "/{organizationId}";
 
     public static final String MANAGER = "/manager";
+
+    /************************
+     *   EMISSIONS COMPARTMENT APIs   *
+     ************************/
+    public static final String UPDATE_EMISSION_COMPARTMENT = "/{emissionCompartmentId}";
+    public static final String DELETE_EMISSION_COMPARTMENT = "/{emissionCompartmentId}";
+
+
 }
