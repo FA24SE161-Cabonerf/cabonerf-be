@@ -165,7 +165,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean isPublicPath(String uri) {
-        return uri.contains("/") || uri.contains("/login");
+        return uri.contains("/register") || uri.contains("/login");
     }
 
     private void sendErrorResponse(HttpServletResponse response, Map<String, String> errorData) throws IOException {
