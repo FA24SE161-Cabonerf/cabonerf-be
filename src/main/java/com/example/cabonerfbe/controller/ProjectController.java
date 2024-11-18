@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -83,11 +84,17 @@ public class ProjectController {
         );
     }
 
-    @GetMapping("/calculation/{projectId}")
+    @PutMapping(API_PARAMS.CALCULATION_PROJECT)
     public ResponseEntity<ResponseObject> calculation(@PathVariable("projectId") UUID projectId){
-
+        log.info("Start calculationProject. Id: {}", projectId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Calculation project success",  service.computeSystemLevelOfProject(projectId))
         );
+    }
+
+    @GetMapping(API_PARAMS.EXPORT_PROJECT)
+    public ResponseEntity<Resource> export(@PathVariable("projectId") UUID projectId){
+        log.info("Start exportProject. Id: {}", projectId);
+        return projectService.exportProject(projectId);
     }
 }
