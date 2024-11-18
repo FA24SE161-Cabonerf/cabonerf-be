@@ -50,8 +50,6 @@ public class ConnectorServiceImpl implements ConnectorService {
     @Autowired
     private ConnectorConverter connectorConverter;
     @Autowired
-    private ProcessServiceImpl processServiceImpl;
-    @Autowired
     private MessagePublisher messagePublisher;
 
     @Override
