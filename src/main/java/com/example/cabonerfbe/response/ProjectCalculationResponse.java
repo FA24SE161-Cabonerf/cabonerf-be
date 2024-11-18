@@ -1,7 +1,7 @@
 package com.example.cabonerfbe.response;
 
 import com.example.cabonerfbe.dto.ConnectorPercentDto;
-import com.example.cabonerfbe.dto.SankeyBreakdownDto;
+import com.example.cabonerfbe.dto.ContributionBreakdown;
 import lombok.*;
 
 import java.util.List;
@@ -13,5 +13,5 @@ import java.util.List;
 @Data
 public class ProjectCalculationResponse {
     List<ConnectorPercentDto> connectorPercent;
-    SankeyBreakdownDto sankeyBreakdown;
+    ContributionBreakdown contributionBreakdown;
 }
