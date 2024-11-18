@@ -3,6 +3,9 @@ package com.example.cabonerfbe.services.impl;
 import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.converter.ConnectorConverter;
 import com.example.cabonerfbe.dto.ConnectorPercentDto;
+import com.example.cabonerfbe.dto.SankeyBreakdownDto;
+import com.example.cabonerfbe.dto.SankeyLink;
+import com.example.cabonerfbe.dto.SankeyNode;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -186,7 +189,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         for (Process process : processList) {
             // alter the old ones.
             alterPrevImpactValueList(process, methodId);
-//            processImpactValueGenerateUponCreateProcess(new CreateProcessImpactValueRequest(process.getId(), methodId));
             computeProcessImpactValueAllExchangeOfProcess(process);
         }
     }
@@ -204,7 +206,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             }
         }
 
-
         if (existingValues.size() > methodCategories.size()) {
             List<ProcessImpactValue> removeList = existingValues.subList(
                     methodCategories.size(),
@@ -216,8 +217,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
         processImpactValueRepository.saveAll(existingValues);
     }
-
-
 
     public List<ConnectorPercentDto> computeSystemLevelOfProject(UUID projectId) {
         connectorsResponse.clear();
@@ -274,10 +273,62 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
         updatePreviousProcess();
         updateProjectValue(processIds, projectId);
-        calculationConnector(projectId);
-
+        connectorCalculation(projectId);
+        SankeyBreakdownDto sankeyBreakdownDto = sankeyCalculation(projectId);
+        System.out.println(sankeyBreakdownDto.toString());
         return connectorsResponse;
     }
+
+    private SankeyBreakdownDto sankeyCalculation(UUID projectId) {
+        SankeyBreakdownDto sankeyBreakdownDto = new SankeyBreakdownDto();
+        List<SankeyNode> nodes = new ArrayList<>();
+        List<SankeyLink> links = new ArrayList<>();
+
+        // Retrieve all processes in the project
+        List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
+        if (processList.isEmpty()) {
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT);
+        }
+
+        // Map for quick lookup of nodes by processId
+        Map<UUID, SankeyNode> nodeMap = new HashMap<>();
+
+        // Create nodes
+        processList.forEach(process -> {
+            SankeyNode node = new SankeyNode();
+            node.setId(process.getId());
+            node.setName(process.getName()); // Assuming the Process entity has a name field
+            nodes.add(node);
+            nodeMap.put(process.getId(), node);
+        });
+
+        // Retrieve connectors
+        List<Connector> connectors = connectorRepository.findAllByProcessIds(
+                processList.stream().map(Process::getId).collect(Collectors.toList())
+        );
+
+        // Create links
+        connectors.forEach(connector -> {
+            SankeyLink link = new SankeyLink();
+            link.setSource(connector.getStartProcess().getId());
+            link.setTarget(connector.getEndProcess().getId());
+
+            // Calculate the link value (flow)
+            BigDecimal startValue = connector.getStartExchanges().getValue();
+            BigDecimal endValue = connector.getEndExchanges().getValue();
+            BigDecimal value = endValue.divide(startValue, MathContext.DECIMAL128);
+
+            link.setValue(value);
+            links.add(link);
+        });
+
+        // Set nodes and links to the DTO
+        sankeyBreakdownDto.setNodes(nodes);
+        sankeyBreakdownDto.setLinks(links);
+
+        return sankeyBreakdownDto;
+    }
+
 
     // Phương thức đệ quy để duyệt đường đi từ một process và tính toán kết quả cho mỗi nhánh
     private BigDecimal traversePath(UUID processId, String previousExchangeName, boolean isFirstProcess) {
@@ -408,7 +459,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValueRepository.saveAll(updatedValues);
     }
 
-    private void calculationConnector(UUID projectId) {
+    private void connectorCalculation(UUID projectId) {
         List<ProjectImpactValue> projectValues = projectImpactValueRepository.findAllByProjectId(projectId);
 
         _connectors.forEach(connector -> {

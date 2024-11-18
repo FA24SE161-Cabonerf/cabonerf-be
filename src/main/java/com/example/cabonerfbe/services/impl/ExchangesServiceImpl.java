@@ -178,8 +178,6 @@ public class ExchangesServiceImpl implements ExchangesService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
 
-        BigDecimal initialValue = exchange.getValue();
-
         exchange.setValue(DEFAULT_VALUE);
         exchange.setStatus(Constants.STATUS_FALSE);
 
