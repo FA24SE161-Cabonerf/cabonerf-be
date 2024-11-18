@@ -7,6 +7,8 @@ import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.CreateProjectResponse;
 import com.example.cabonerfbe.response.GetAllProjectResponse;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,4 +24,5 @@ public interface ProjectService {
     List<Project> deleteProject(UUID id);
 
     GetProjectByIdDto changeProjectMethod(UUID projectId, UUID methodId);
+    ResponseEntity<Resource> exportProject(UUID projectId);
 }
