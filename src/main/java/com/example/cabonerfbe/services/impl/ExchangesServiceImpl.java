@@ -18,11 +18,13 @@ import com.example.cabonerfbe.response.ImpactExchangeResponse;
 import com.example.cabonerfbe.response.SearchElementaryResponse;
 import com.example.cabonerfbe.response.UpdateProductExchangeResponse;
 import com.example.cabonerfbe.services.ExchangesService;
+import com.example.cabonerfbe.services.MessagePublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -69,6 +71,8 @@ public class ExchangesServiceImpl implements ExchangesService {
     private UnitServiceImpl unitService;
     @Autowired
     private ProcessImpactValueServiceImpl processImpactValueService;
+    @Autowired
+    private ConnectorServiceImpl connectorService;
 
     public static final String EXCHANGE_TYPE_ELEMENTARY = "Elementary";
     public static final String EXCHANGE_TYPE_PRODUCT = "Product";
@@ -76,6 +80,8 @@ public class ExchangesServiceImpl implements ExchangesService {
     public static final String DEFAULT_PRODUCT_UNIT = "kg";
     @Autowired
     private ConnectorRepository connectorRepository;
+    @Autowired
+    private MessagePublisher messagePublisher;
 
     @Override
     public List<ExchangesDto> createElementaryExchanges(CreateElementaryRequest request) {
@@ -172,6 +178,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         return impactExchangeResponseBuilder(exchange);
     }
 
+    @Transactional
     @Override
     public List<ExchangesDto> removeProductExchange(UUID exchangeId) {
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
@@ -182,6 +189,10 @@ public class ExchangesServiceImpl implements ExchangesService {
         exchange.setStatus(Constants.STATUS_FALSE);
 
         exchangesRepository.save(exchange);
+
+        Thread deleteConnectorThread = new Thread(() -> connectorService.deleteAssociatedConnectors(exchangeId));
+        deleteConnectorThread.start();
+
         return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(exchange.getProcessId()));
     }
 

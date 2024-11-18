@@ -2,10 +2,7 @@ package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.converter.ConnectorConverter;
-import com.example.cabonerfbe.dto.ConnectorPercentDto;
-import com.example.cabonerfbe.dto.SankeyBreakdownDto;
-import com.example.cabonerfbe.dto.SankeyLink;
-import com.example.cabonerfbe.dto.SankeyNode;
+import com.example.cabonerfbe.dto.*;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -13,6 +10,7 @@ import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
+import com.example.cabonerfbe.response.ProjectCalculationResponse;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -218,7 +216,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValueRepository.saveAll(existingValues);
     }
 
-    public List<ConnectorPercentDto> computeSystemLevelOfProject(UUID projectId) {
+    public ProjectCalculationResponse computeSystemLevelOfProject(UUID projectId) {
         connectorsResponse.clear();
         _connectors.clear();
         Project project = projectRepository.findById(projectId).orElseThrow(
@@ -275,8 +273,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         updateProjectValue(processIds, projectId);
         connectorCalculation(projectId);
         SankeyBreakdownDto sankeyBreakdownDto = sankeyCalculation(projectId);
-        System.out.println(sankeyBreakdownDto.toString());
-        return connectorsResponse;
+        return new ProjectCalculationResponse(connectorsResponse, sankeyBreakdownDto);
     }
 
     private SankeyBreakdownDto sankeyCalculation(UUID projectId) {
@@ -328,6 +325,40 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
         return sankeyBreakdownDto;
     }
+
+//    public List<ContributionBreakdown> calculateContributionBreakdown(SankeyBreakdownDto sankeyBreakdownDto) {
+//        Map<UUID, SankeyProcessBreakdownDto> processMap = sankeyBreakdownDto.getProcesses().stream()
+//                .collect(Collectors.toMap(SankeyProcessBreakdownDto::getId, process -> process));
+//
+//        double totalCO2 = sankeyBreakdownDto.getProcesses().stream()
+//                .mapToDouble(SankeyProcessBreakdownDto::getTotalFlow).sum();
+//
+//        // Recursive method to populate hierarchy
+//        return sankeyBreakdownDto.getProcesses().stream()
+//                .filter(process -> process.getParentId() == null) // Top-level processes
+//                .map(process -> buildHierarchy(process, processMap, totalCO2))
+//                .collect(Collectors.toList());
+//    }
+//
+//    private ContributionBreakdown buildHierarchy(SankeyProcessBreakdownDto process,
+//                                                 Map<UUID, SankeyProcessBreakdownDto> processMap,
+//                                                 double totalCO2) {
+//        double co2Equivalent = process.getTotalFlow();
+//        double percentageOfTotal = (co2Equivalent / totalCO2) * 100;
+//
+//        List<ContributionBreakdown> subProcesses = processMap.values().stream()
+//                .filter(p -> p.getParentId() != null && p.getParentId().equals(process.getId()))
+//                .map(subProcess -> buildHierarchy(subProcess, processMap, totalCO2))
+//                .collect(Collectors.toList());
+//
+//        return new ContributionBreakdown(
+//                process.getName(),
+//                co2Equivalent,
+//                percentageOfTotal,
+//                subProcesses
+//        );
+//    }
+
 
 
     // Phương thức đệ quy để duyệt đường đi từ một process và tính toán kết quả cho mỗi nhánh

@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.services.impl;
 
+import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.converter.ConnectorConverter;
 import com.example.cabonerfbe.converter.ExchangesConverter;
 import com.example.cabonerfbe.dto.ConnectorDto;
@@ -17,10 +18,13 @@ import com.example.cabonerfbe.request.CreateConnectorRequest;
 import com.example.cabonerfbe.response.CreateConnectorResponse;
 import com.example.cabonerfbe.response.DeleteConnectorResponse;
 import com.example.cabonerfbe.services.ConnectorService;
+import com.example.cabonerfbe.services.MessagePublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -47,6 +51,8 @@ public class ConnectorServiceImpl implements ConnectorService {
     private ConnectorConverter connectorConverter;
     @Autowired
     private ProcessServiceImpl processServiceImpl;
+    @Autowired
+    private MessagePublisher messagePublisher;
 
     @Override
     public CreateConnectorResponse createConnector(CreateConnectorRequest request) {
@@ -97,6 +103,23 @@ public class ConnectorServiceImpl implements ConnectorService {
                     System.out.println("loi validate (khong tim thay process): " + processId + " type: " + processType);
                     return CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND, Map.of(processType, processId));
                 });
+    }
+
+    public void deleteAssociatedConnectors(UUID exchangeId) {
+        Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_EXCHANGE_FOUND)
+        );
+        List<UUID> idList = new ArrayList<>();
+        List<Connector> associatedConnectorList = connectorRepository.findConnectorToExchange(exchangeId).stream().map(
+                connector -> {
+                    connector.setStatus(Constants.STATUS_FALSE);
+                    idList.add(connector.getId());
+                    return connector;
+                }
+        ).toList();
+        connectorRepository.saveAll(associatedConnectorList);
+        // publish message to rabbit to find and delete connectors
+        messagePublisher.publishConnectorMessage(RabbitMQConfig.CONNECTOR_EXCHANGE, RabbitMQConfig.CONNECTOR_ROUTING_KEY, idList);
     }
 
     private void validateProcessesBelongToSameProject(Process startProcess, Process endProcess) {
