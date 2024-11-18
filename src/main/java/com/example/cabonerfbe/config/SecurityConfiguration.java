@@ -27,7 +27,8 @@ public class SecurityConfiguration {
             "/swagger-resources/**",
             "/swagger-resources",
             "/ws/**",
-            "/**"
+            "/**",
+            "localhost:9092"
     };
     @Autowired
     private JwtAuthenticationFilter jwtAuthFilter;

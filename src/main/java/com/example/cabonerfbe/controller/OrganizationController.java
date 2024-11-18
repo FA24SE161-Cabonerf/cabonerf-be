@@ -98,14 +98,4 @@ public class OrganizationController {
         );
     }
 
-    @GetMapping(API_PARAMS.GET_LIST_INVITE_ORGANIZATION)
-    public ResponseEntity<ResponseObject> listInvite(@RequestHeader("x-user-id") UUID userId,
-                                                     @RequestParam(defaultValue = "1") int pageCurrent,
-                                                     @RequestParam(defaultValue = "5") int pageSize){
-        log.info("Start getListInvite. userId: {}", userId);
-        return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get list invite organization success",organizationService.listInvite(pageCurrent,pageSize,userId))
-        );
-    }
-
 }

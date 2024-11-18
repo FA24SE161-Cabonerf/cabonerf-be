@@ -21,5 +21,4 @@ public interface OrganizationService {
     LoginResponse confirm(UUID userId, VerifyCreateOrganizationRequest request);
     List<InviteUserOrganizationDto> invite(InviteUserToOrganizationRequest request);
     UserOrganizationDto acceptDenyInvite(UUID userId, AcceptInviteRequest request,String action);
-    GetInviteListResponse listInvite(int pageCurrent, int pageSize, UUID userId);
 }

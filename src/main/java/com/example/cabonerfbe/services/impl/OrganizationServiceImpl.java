@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.services.impl;
 
+import com.corundumstudio.socketio.SocketIOServer;
 import com.example.cabonerfbe.converter.OrganizationConverter;
 import com.example.cabonerfbe.converter.UserConverter;
 import com.example.cabonerfbe.converter.UserOrganizationConverter;
@@ -59,6 +60,8 @@ public class OrganizationServiceImpl implements OrganizationService {
     private S3Service s3Service;
     @Autowired
     private UserOrganizationConverter uoConverter;
+    @Autowired
+    private SocketIOServer server;
 
     @Override
     public GetAllOrganizationResponse getAll(int pageCurrent, int pageSize, String keyword) {
@@ -198,6 +201,8 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .orElseThrow(() -> CustomExceptions.notFound("Organization not exists"));
 
         List<Users> existingUsers = userRepository.findAllByEmail(request.getUserEmail());
+
+
         Set<String> existingEmails = existingUsers.stream()
                 .map(Users::getEmail)
                 .collect(Collectors.toSet());
@@ -207,6 +212,18 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .filter(email -> !existingEmails.contains(email))
                 .collect(Collectors.toList());
 
+        List<UUID> userIds = existingUsers.stream().map(Users::getId).collect(Collectors.toList());
+
+        List<UserOrganization> checkInvite = userOrganizationRepository.findInvite(userIds, organization.getId());
+        if(!checkInvite.isEmpty()){
+            Set<UUID> userHaveInvite = checkInvite.stream()
+                    .map(UserOrganization :: getUser)
+                    .map(Users::getId)
+                    .collect(Collectors.toSet());
+            existingUsers = existingUsers.stream()
+                    .filter(user -> !userHaveInvite.contains(user.getId())) // Lọc các user không có trong userHaveInvite
+                    .collect(Collectors.toList());
+        }
         // Create and save new users
         List<Users> newUsers = newEmails.stream()
                 .map(email -> {
@@ -236,12 +253,16 @@ public class OrganizationServiceImpl implements OrganizationService {
                     return uo;
                 }).collect(Collectors.toList());
 
-        userOrganizationRepository.saveAll(userOrganizations);
+        userOrganizations = userOrganizationRepository.saveAll(userOrganizations);
 
+        for(UserOrganization x : userOrganizations){
+            server.getRoomOperations(x.getUser().getId().toString()).sendEvent("invite",uoConverter.enityToDto(x));
+        }
         // TODO: Send emails to users to accept join
         return userOrganizations.stream()
                 .map(uoConverter::modelToDto)
                 .collect(Collectors.toList());
+
     }
 
     @Override
@@ -273,29 +294,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         userOrganizationRepository.save(uo);
 
         return uoConverter.enityToDto(uo);
-    }
-
-    @Override
-    public GetInviteListResponse listInvite(int pageCurrent, int pageSize, UUID userId) {
-        Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
-        Page<UserOrganization> inviteList = userOrganizationRepository.findByUserWithPage(userId,pageable);
-
-        int totalPage = inviteList.getTotalPages();
-        if(pageSize > totalPage){
-            return GetInviteListResponse.builder()
-                    .pageCurrent(1)
-                    .pageSize(0)
-                    .totalPage(0)
-                    .list(Collections.emptyList())
-                    .build();
-        }
-
-        return GetInviteListResponse.builder()
-                .pageCurrent(pageCurrent)
-                .pageSize(pageSize)
-                .totalPage(totalPage)
-                .list(inviteList.getContent().stream().map(uoConverter::enityToDto).collect(Collectors.toList()))
-                .build();
     }
 
 }

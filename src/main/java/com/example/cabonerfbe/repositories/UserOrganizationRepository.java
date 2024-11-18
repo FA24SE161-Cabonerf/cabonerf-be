@@ -21,4 +21,6 @@ public interface UserOrganizationRepository extends JpaRepository<UserOrganizati
 
     @Query("SELECT uo FROM UserOrganization uo WHERE uo.user.id = :userId AND uo.hasJoined = true AND uo.status = true")
     Page<UserOrganization> findByUserWithPage(@Param("userId") UUID userId, Pageable pageable);
+    @Query("SELECT uo FROM UserOrganization uo WHERE uo.user.id IN :userIds AND uo.organization.id = :organizationId AND uo.status = true")
+    List<UserOrganization> findInvite(@Param("userIds") List<UUID> userIds,@Param("organizationId") UUID id);
 }

@@ -10,4 +10,5 @@ public interface UserService {
     GetProfileResponse getMe(UUID userId);
     GetAllUserResponse getAll(int pageCurrent, int pageSize, String keyword);
     UserAdminDto updateUserStatus(UUID userId);
+
 }
