@@ -106,11 +106,8 @@ public class ConnectorServiceImpl implements ConnectorService {
     }
 
     public void deleteAssociatedConnectors(UUID exchangeId) {
-        Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
-                () -> CustomExceptions.badRequest(MessageConstants.NO_EXCHANGE_FOUND)
-        );
         List<UUID> idList = new ArrayList<>();
-        List<Connector> associatedConnectorList = connectorRepository.findConnectorToExchange(exchange.getId()).stream().peek(
+        List<Connector> associatedConnectorList = connectorRepository.findConnectorToExchange(exchangeId).stream().peek(
                 connector -> {
                     connector.setStatus(Constants.STATUS_FALSE);
                     idList.add(connector.getId());
