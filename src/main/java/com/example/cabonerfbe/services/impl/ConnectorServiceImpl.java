@@ -110,11 +110,10 @@ public class ConnectorServiceImpl implements ConnectorService {
                 () -> CustomExceptions.badRequest(MessageConstants.NO_EXCHANGE_FOUND)
         );
         List<UUID> idList = new ArrayList<>();
-        List<Connector> associatedConnectorList = connectorRepository.findConnectorToExchange(exchangeId).stream().map(
+        List<Connector> associatedConnectorList = connectorRepository.findConnectorToExchange(exchange.getId()).stream().peek(
                 connector -> {
                     connector.setStatus(Constants.STATUS_FALSE);
                     idList.add(connector.getId());
-                    return connector;
                 }
         ).toList();
         connectorRepository.saveAll(associatedConnectorList);
