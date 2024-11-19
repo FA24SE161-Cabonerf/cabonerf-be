@@ -5,16 +5,12 @@ import com.example.cabonerfbe.converter.ExchangesConverter;
 import com.example.cabonerfbe.converter.ImpactCategoryConverter;
 import com.example.cabonerfbe.converter.LifeCycleImpactAssessmentMethodConverter;
 import com.example.cabonerfbe.converter.ProcessConverter;
-import com.example.cabonerfbe.dto.ProcessDetailDto;
-import com.example.cabonerfbe.dto.ProcessDto;
-import com.example.cabonerfbe.dto.ProcessImpactValueDto;
+import com.example.cabonerfbe.dto.*;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.LifeCycleStage;
 import com.example.cabonerfbe.models.Process;
-import com.example.cabonerfbe.models.ProcessImpactValue;
-import com.example.cabonerfbe.models.Project;
+import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
@@ -25,9 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,6 +52,8 @@ public class ProcessServiceImpl implements ProcessService {
     private MessagePublisher messagePublisher;
     @Autowired
     private ConnectorServiceImpl connectorService;
+    @Autowired
+    private ConnectorRepository connectorRepository;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
@@ -170,5 +168,60 @@ public class ProcessServiceImpl implements ProcessService {
         ProcessDto processDto = createProcess(request);
         messagePublisher.publishCreateProcess(RabbitMQConfig.CREATED_PROCESS_EXCHANGE, RabbitMQConfig.CREATED_PROCESS_ROUTING_KEY, processDto);
     }
+
+    public ProcessNodeDto constructListProcessNodeDto(UUID projectId) {
+        // Step 1: Retrieve connectors and root nodes
+        List<Connector> connectorList = connectorRepository.findAllByProject(projectId);
+        List<Process> rootNode = processRepository.findProcessesWithoutOutgoingConnectors(projectId);
+        UUID rootNodeId = rootNode.get(0).getId();  // Assuming only one root node is present
+
+        // Step 2: Construct linked list from the root node
+        // Find the connectors that lead to the root node
+        List<Connector> connectors = connectorRepository.findConnectorToProcess(rootNodeId);
+
+        // Step 3: Iterate through connectors and create PathDto for each
+        Map<String, List<PathDto>> contributions = new HashMap<>();
+
+        for (Connector connector : connectors) {
+            Process startProcess = connector.getStartProcess();
+            Process endProcess = connector.getEndProcess();
+
+            // Create or update the list of paths for the start process
+            if (!contributions.containsKey(startProcess.getId().toString())) {
+                contributions.put(startProcess.getId().toString(), new ArrayList<>());
+            }
+
+            // Step 4: Construct PathDto
+            PathDto pathDto = new PathDto();
+            pathDto.setDestinationNodeId(endProcess.getId().toString());
+            pathDto.setNet(calculateNet(connector)); // Assuming calculateNet is a method you define to get the net contribution
+            pathDto.setPath(buildPath(connector)); // Assuming buildPath is a method to build the path from start to destination
+
+            // Add pathDto to the contributions map for the start process
+            contributions.get(startProcess.getId().toString()).add(pathDto);
+        }
+
+        // Step 5: Create ProcessNodeDto objects for each root process and add to result
+        ProcessNodeDto processNodeDto = new ProcessNodeDto();
+        processNodeDto.setContributions(contributions);
+
+        return processNodeDto;
+    }
+
+    private BigDecimal calculateNet(Connector connector) {
+        // Example calculation based on the connector's start and end process or exchanges
+        BigDecimal baseNet = BigDecimal.ONE;
+        baseNet = baseNet.multiply(connector.getEndExchanges().getValue().divide(connector.getStartExchanges().getValue(), MathContext.DECIMAL128));
+        return baseNet;
+    }
+
+    private List<String> buildPath(Connector connector) {
+        List<String> path = new ArrayList<>();
+        path.add(connector.getStartProcess().getId().toString());
+        path.add(connector.getEndProcess().getId().toString());
+        // You could expand this logic to handle more complex paths, e.g., handling multiple intermediary processes
+        return path;
+    }
+
 
 }
