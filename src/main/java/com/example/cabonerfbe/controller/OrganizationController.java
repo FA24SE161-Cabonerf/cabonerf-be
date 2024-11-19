@@ -67,18 +67,18 @@ public class OrganizationController {
     }
 
     @PutMapping(API_PARAMS.ORGANIZATION_MANAGER + API_PARAMS.CONFIRM_CREATE_ORGANIZATION)
-    public ResponseEntity<ResponseObject> confirmCreateOrganization(@RequestHeader("x-user-id") UUID userId, @Valid @RequestBody VerifyCreateOrganizationRequest request) {
-        log.info("Start confirmCreateOrganization. UserId: {}, request: {}", userId,request);
+    public ResponseEntity<ResponseObject> confirmCreateOrganization(@Valid @RequestBody VerifyCreateOrganizationRequest request) {
+        log.info("Start confirmCreateOrganization. request: {}",request);
         return ResponseEntity.ok().body(new ResponseObject(
-                Constants.RESPONSE_STATUS_SUCCESS,MessageConstants.CONFIRM_CREATE_ORGANIZATION_SUCCESS,organizationService.confirm(userId,request)
+                Constants.RESPONSE_STATUS_SUCCESS,MessageConstants.CONFIRM_CREATE_ORGANIZATION_SUCCESS,organizationService.confirm(request)
         ));
     }
 
     @PostMapping(API_PARAMS.ORGANIZATION_MANAGER + API_PARAMS.INVITE_MEMBER_ORGANIZATION)
-    public ResponseEntity<ResponseObject> inviteMemberOrganization(@Valid @RequestBody InviteUserToOrganizationRequest request){
+    public ResponseEntity<ResponseObject> inviteMemberOrganization(@RequestHeader("x-user-id") UUID userId, @Valid @RequestBody InviteUserToOrganizationRequest request){
         log.info("Start inviteMemberOrganization. Request: {}", request);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Invite member organization success",organizationService.invite(request))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Invite member organization success",organizationService.invite(userId,request))
         );
     }
 
@@ -98,4 +98,27 @@ public class OrganizationController {
         );
     }
 
+    @GetMapping(API_PARAMS.GET_MEMBER_IN_ORGANIZATION)
+    public ResponseEntity<ResponseObject> getMemberInOrganization(@RequestHeader("x-user-id") UUID userId){
+        log.info("Start getMemberInOrganization");
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get organization success",organizationService.getMemberInOrganization(userId))
+        );
+    }
+
+    @DeleteMapping(API_PARAMS.ORGANIZATION_MANAGER + API_PARAMS.REMOVE_MEMBER_IN_ORGANIZATION)
+    public ResponseEntity<ResponseObject> removeMember(@RequestHeader("x-user-id") UUID userId,@PathVariable("userOrganizationId") UUID userOrganizationId){
+        log.info("Start removeMember");
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Remove member success",organizationService.removeMember(userId,userOrganizationId))
+        );
+    }
+
+    @GetMapping(API_PARAMS.GET_LIST_INVITE_BY_USER)
+    public ResponseEntity<ResponseObject> getListInvite(@RequestHeader("x-user-id") UUID userId){
+        log.info("Start getListInvite");
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get list invite success",organizationService.getListInviteByUser(userId))
+        );
+    }
 }

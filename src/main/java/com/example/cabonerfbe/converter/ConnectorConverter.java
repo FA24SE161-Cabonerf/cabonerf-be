@@ -27,7 +27,5 @@ public interface ConnectorConverter {
 
     @Mapping(source = "startProcess.id",target = "startProcessId")
     @Mapping(source = "endProcess.id",target = "endProcessId")
-    @Mapping(source = "startExchanges.id",target = "startExchangesId")
-    @Mapping(source = "endExchanges.id",target = "endExchangesId")
     ConnectorPercentDto fromConnectorToConnectorPercentDto(Connector connector);
 }

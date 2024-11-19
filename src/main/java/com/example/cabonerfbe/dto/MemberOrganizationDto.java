@@ -2,14 +2,15 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Getter
 @Setter
-public class UserOrganizationDto {
+public class MemberOrganizationDto {
     private UUID id;
-    private OrganizationInviteDto organization;
+    private List<InviteUserOrganizationDto> members;
+    private ContractDto contract;
 }

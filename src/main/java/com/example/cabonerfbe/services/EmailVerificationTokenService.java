@@ -4,6 +4,7 @@ import com.example.cabonerfbe.models.EmailVerificationToken;
 import com.example.cabonerfbe.models.Users;
 
 import java.sql.Timestamp;
+import java.util.UUID;
 
 public interface EmailVerificationTokenService {
 
@@ -11,4 +12,5 @@ public interface EmailVerificationTokenService {
     EmailVerificationToken findByUser(Users users);
     void save(Users users, String token);
     Timestamp calculateExpiryDate(int expiryTimeInMinutes);
+    String generateToken(UUID userId);
 }

@@ -14,4 +14,6 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
     @Query("select t from RefreshToken t where t.isValid = true and t.users.id = ?1 order by t.createdAt desc LIMIT  1")
     Optional<RefreshToken> findTopByTokenOrderByCreatedAtDesc(UUID userId);
 
+    @Query("SELECT t FROM RefreshToken t WHERE t.isValid = true and t.users.id = ?1")
+    Optional<RefreshToken> findTokenByUser(UUID id);
 }

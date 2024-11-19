@@ -29,4 +29,14 @@ public interface UserRepository extends JpaRepository<Users, UUID> {
 
     @Query("SELECT u FROM Users u WHERE u.email in :userEmail AND u.status = true")
     List<Users> findAllByEmail(@Param("userEmail") List<String> userEmail);
+    @Query("SELECT u FROM Users u WHERE u.id = :userId AND u.status = true")
+    Optional<Users> findByIdWithStatus(@Param("userId") UUID userId);
+
+    @Query("SELECT u FROM Users u WHERE u.role.name like 'Organization Manager' OR u.role.name like 'LCA Staff'")
+    Page<Users> findToInvite(Pageable pageable);
+
+    @Query("SELECT u FROM Users u WHERE (LOWER(u.email) like LOWER(CONCAT('%', :keyword, '%')) or LOWER(u.fullName) like LOWER(CONCAT('%', :keyword, '%')) ) " +
+            "AND  u.role.name like 'Organization Manager' " +
+            "OR u.role.name like 'LCA Staff'")
+    Page<Users> findToInviteByKeyword(@Param("keyword") String keyword, Pageable pageable);
 }

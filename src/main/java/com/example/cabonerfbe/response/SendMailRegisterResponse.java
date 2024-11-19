@@ -1,6 +1,5 @@
-package com.example.cabonerfbe.request;
+package com.example.cabonerfbe.response;
 
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,12 +7,11 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
-@SuperBuilder
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class VerifyEmailRequest {
-    @NotEmpty(message = "Token is required")
-    String token;
+@SuperBuilder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class SendMailRegisterResponse {
+    private String token;
 }

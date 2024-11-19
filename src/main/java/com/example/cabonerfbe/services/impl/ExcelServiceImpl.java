@@ -24,13 +24,12 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
@@ -319,14 +318,19 @@ public class ExcelServiceImpl implements ExcelService {
 
             for (String e : errors) {
                 String[] error = e.split(" - ");
-                Sheet sheet = workbook.getSheetAt(Integer.parseInt(error[0]));
-                Row row = sheet.getRow(Integer.parseInt(error[1]));
+                int sheetIndex = Integer.parseInt(error[0]);
+                int rowIndex = Integer.parseInt(error[1]);
+                int cellIndex = Integer.parseInt(error[2]);
+                String errorMessage = error[3];
+
+                Sheet sheet = workbook.getSheetAt(sheetIndex);
+                Row row = sheet.getRow(rowIndex);
                 if (row == null) {
-                    row = sheet.createRow(Integer.parseInt(error[1]));
+                    row = sheet.createRow(rowIndex);
                 }
                 // Chèn dữ liệu vào ô tương ứng và áp dụng định dạng màu đỏ
-                Cell cell = row.createCell(Integer.parseInt(error[2]));
-                cell.setCellValue(error[3]);
+                Cell cell = row.createCell(cellIndex);
+                cell.setCellValue(errorMessage);
                 cell.setCellStyle(style);
             }
 
@@ -340,15 +344,17 @@ public class ExcelServiceImpl implements ExcelService {
                     : originalFileName;
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH_mm_ss");
             String formattedTime = LocalTime.now().format(formatter);
-            String s3FileName = "error/" + fileNameWithoutExtension + "_error_log_" + formattedTime + ".xlsx";
+            String s3FileName = fileNameWithoutExtension + "_error_log_" + formattedTime + ".xlsx";
 
-            // Gọi hàm updateFile và truyền byte array để lưu file lên S3
-            return s3Service.updateFile(s3FileName, byteArrayOutputStream.toByteArray());
+            MultipartFile multipartFile = convertToMultipartFile(byteArrayOutputStream, s3FileName);
+            // Gọi hàm updateFile để lưu file lên S3
+            return s3Service.uploadError(multipartFile);
 
         } catch (IOException e) {
             e.printStackTrace();
+            return null; // Trả về null nếu có lỗi xảy ra
         }
-        return null;
+
     }
 
     private boolean shouldSkipRow(Row row) {
@@ -425,14 +431,22 @@ public class ExcelServiceImpl implements ExcelService {
         return null;
     }
 
-
-    @PreDestroy
-    public void shutdownExecutor() {
-        executorService.shutdown();
+    private MultipartFile convertToMultipartFile(ByteArrayOutputStream byteArrayOutputStream, String fileName) {
         try {
-            if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) executorService.shutdownNow();
-        } catch (InterruptedException e) {
-            executorService.shutdownNow();
+            // Chuyển ByteArrayOutputStream thành InputStream
+            InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+
+            // Tạo MultipartFile từ InputStream
+            MultipartFile multipartFile = new MockMultipartFile(
+                    fileName, // Tên file
+                    fileName, // Tên file gốc
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // Content-Type
+                    inputStream // Dữ liệu file
+            );
+
+            return multipartFile;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to convert ByteArrayOutputStream to MultipartFile", e);
         }
     }
 }

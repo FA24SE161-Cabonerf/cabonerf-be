@@ -9,7 +9,10 @@ import com.example.cabonerfbe.models.Users;
 import com.example.cabonerfbe.repositories.UserRepository;
 import com.example.cabonerfbe.response.GetAllUserResponse;
 import com.example.cabonerfbe.response.GetProfileResponse;
+import com.example.cabonerfbe.response.GetUserToInviteResponse;
+import com.example.cabonerfbe.response.UpdateAvatarUserResponse;
 import com.example.cabonerfbe.services.JwtService;
+import com.example.cabonerfbe.services.S3Service;
 import com.example.cabonerfbe.services.UserService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -23,7 +26,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.UUID;
@@ -45,6 +52,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     UserConverter userConverter = UserConverter.INSTANCE;
+
+    @Autowired
+    S3Service s3Service;
 
     @Override
     public GetProfileResponse getMe(UUID userId) {
@@ -91,5 +101,85 @@ public class UserServiceImpl implements UserService {
 
         u.setStatus(!u.isStatus());
         return userConverter.forAdmin(userRepository.save(u));
+    }
+
+    @Override
+    public UpdateAvatarUserResponse updateAvatarUser(UUID userId, MultipartFile file) {
+        Users u = userRepository.findByIdWithStatus(userId)
+                .orElseThrow(() -> CustomExceptions.notFound("User not exist"));
+        if(!isImageFile(file)){
+            throw CustomExceptions.badRequest("Image invalid");
+        }
+
+        if(u.getProfilePictureUrl() != null){
+            s3Service.deleteFile(u.getProfilePictureUrl());
+        }
+        try {
+            u.setProfilePictureUrl(s3Service.uploadImage(file));
+        }catch (Exception ignored){
+        }
+
+
+        return userConverter.forUpdateAvatar(userRepository.save(u));
+    }
+
+    @Override
+    public GetUserToInviteResponse getToInvite(int pageCurrent, int pageSize, String keyword) {
+        Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
+
+        Page<Users> data = keyword == null
+                ? userRepository.findToInvite(pageable)
+                : userRepository.findToInviteByKeyword(keyword ,pageable);
+
+        int totalPage = data.getTotalPages();
+        if(pageCurrent > totalPage){
+            return GetUserToInviteResponse.builder()
+                    .totalPage(0)
+                    .pageSize(0)
+                    .pageCurrent(1)
+                    .users(Collections.emptyList())
+                    .build();
+        }
+
+        return GetUserToInviteResponse.builder()
+                .totalPage(totalPage)
+                .pageSize(pageSize)
+                .pageCurrent(pageCurrent)
+                .users(data.stream().map(userConverter::forInvite).collect(Collectors.toList()))
+                .build();
+    }
+
+    private boolean isImageFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return false;
+        }
+
+        boolean isMimeTypeImage = isImageFileMine(file);
+        boolean isExtensionImage = isImageFileExtension(file);
+        boolean isContentValidImage = isValidImageFile(file);
+
+        return isMimeTypeImage && isExtensionImage && isContentValidImage;
+    }
+
+    private boolean isImageFileMine(MultipartFile file) {
+        String contentType = file.getContentType();
+        return contentType != null && contentType.startsWith("image/");
+    }
+
+    private boolean isImageFileExtension(MultipartFile file) {
+        String fileName = file.getOriginalFilename();
+        if (fileName != null) {
+            return fileName.toLowerCase().matches(".*\\.(png|jpg|jpeg|gif|bmp|webp)$");
+        }
+        return false;
+    }
+
+    private boolean isValidImageFile(MultipartFile file) {
+        try {
+            BufferedImage image = ImageIO.read(file.getInputStream());
+            return image != null;
+        } catch (IOException e) {
+            return false;
+        }
     }
 }

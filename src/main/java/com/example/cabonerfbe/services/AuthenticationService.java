@@ -13,4 +13,5 @@ public interface AuthenticationService {
     ResponseObject logout(LogoutRequest request, UUID userId);
     LoginResponse verifyEmail(VerifyEmailRequest request);
     void saveRefreshToken(String refreshTokenString, Users user);
+    void changePassword(UUID userId, ChangePasswordRequest request);
 }

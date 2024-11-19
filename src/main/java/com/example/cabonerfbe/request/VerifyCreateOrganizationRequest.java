@@ -17,4 +17,6 @@ import java.util.UUID;
 public class VerifyCreateOrganizationRequest {
     @NotNull(message = "Organization is required")
     private UUID organizationId;
+    @NotNull(message = "Token is required")
+    private String token;
 }

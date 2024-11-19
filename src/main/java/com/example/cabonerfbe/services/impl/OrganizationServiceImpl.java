@@ -1,21 +1,19 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.corundumstudio.socketio.SocketIOServer;
-import com.example.cabonerfbe.converter.OrganizationConverter;
-import com.example.cabonerfbe.converter.UserConverter;
-import com.example.cabonerfbe.converter.UserOrganizationConverter;
-import com.example.cabonerfbe.dto.InviteUserOrganizationDto;
-import com.example.cabonerfbe.dto.OrganizationDto;
-import com.example.cabonerfbe.dto.UserOrganizationDto;
+import com.example.cabonerfbe.converter.*;
+import com.example.cabonerfbe.dto.*;
+import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.*;
 import com.example.cabonerfbe.response.GetAllOrganizationResponse;
-import com.example.cabonerfbe.response.GetInviteListResponse;
+import com.example.cabonerfbe.response.InviteMemberResponse;
 import com.example.cabonerfbe.response.LoginResponse;
 import com.example.cabonerfbe.services.*;
 import com.example.cabonerfbe.util.PasswordGenerator;
+import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -62,6 +61,14 @@ public class OrganizationServiceImpl implements OrganizationService {
     private UserOrganizationConverter uoConverter;
     @Autowired
     private SocketIOServer server;
+    @Autowired
+    private ContractConverter contractConverter;
+    @Autowired
+    private ContractService contractService;
+    @Autowired
+    private EmailVerificationTokenRepository evtRepository;
+    @Autowired
+    private RoleConverter roleConverter;
 
     @Override
     public GetAllOrganizationResponse getAll(int pageCurrent, int pageSize, String keyword) {
@@ -91,6 +98,10 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public OrganizationDto createOrganization(CreateOrganizationRequest request, MultipartFile contractFile) {
+
+        if(!isPdfFile(contractFile)){
+            throw CustomExceptions.badRequest("Contract file is not .pdf");
+        }
 
         Optional<Users> user = userRepository.findByEmail(request.getEmail());
         String password = PasswordGenerator.generateRandomPassword(8);
@@ -126,10 +137,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         //storage contract
         String url = "";
         try {
-            String key = "contract/" + contractFile.getOriginalFilename();
-            byte[] file = contractFile.getBytes();
-
-            url = s3Service.updateFile(key, file);
+            url = s3Service.uploadContract(contractFile);
         } catch (Exception ignored) {
         }
 
@@ -157,20 +165,31 @@ public class OrganizationServiceImpl implements OrganizationService {
     public OrganizationDto deleteOrganization(UUID organizationId) {
         Organization o = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> CustomExceptions.notFound("Organization not exist"));
+
+        contractService.deleteContract(o.getContract().getId());
         o.setStatus(false);
         return organizationConverter.modelToDto(organizationRepository.save(o));
     }
 
     @Override
-    public LoginResponse confirm(UUID userId, VerifyCreateOrganizationRequest request) {
+    public LoginResponse confirm(VerifyCreateOrganizationRequest request) {
         Organization o = organizationRepository.findById(request.getOrganizationId())
                 .orElseThrow(() -> CustomExceptions.notFound("Organization not exist"));
 
-        Users u = userRepository.findById(userId)
+        EmailVerificationToken _token = jwtService.checkToken(request.getToken());
+
+        Users u = userRepository.findById(_token.getUsers().getId())
                 .orElseThrow(() -> CustomExceptions.notFound("User not exist"));
+
+        if(!u.getRole().getName().equals("Verified")){
+            throw CustomExceptions.badRequest("Account already verified");
+        }
 
         u.setUserVerifyStatus(userVerifyStatusRepository.findByName("Verified").get());
         userRepository.save(u);
+
+        _token.setValid(false);
+        evtRepository.save(_token);
 
         var access_token = jwtService.generateToken(u);
         var refresh_token = jwtService.generateRefreshToken(u);
@@ -195,10 +214,17 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public List<InviteUserOrganizationDto> invite(InviteUserToOrganizationRequest request) {
+    public InviteMemberResponse invite(UUID userId, InviteUserToOrganizationRequest request) {
 
         Organization organization = organizationRepository.findById(request.getOrganizationId())
                 .orElseThrow(() -> CustomExceptions.notFound("Organization not exists"));
+
+//        UserOrganization organizationManager = userOrganizationRepository.findByUserAndOrganization(request.getOrganizationId(), userId)
+//                .orElseThrow(() -> CustomExceptions.unauthorized("You do not belong to this organization."));
+//
+//        if(!Objects.equals(organizationManager.getRole().getName(), "Organization Manager")){
+//            throw CustomExceptions.unauthorized("Your role not support this action");
+//        }
 
         List<Users> existingUsers = userRepository.findAllByEmail(request.getUserEmail());
 
@@ -256,27 +282,32 @@ public class OrganizationServiceImpl implements OrganizationService {
         userOrganizations = userOrganizationRepository.saveAll(userOrganizations);
 
         for(UserOrganization x : userOrganizations){
-            server.getRoomOperations(x.getUser().getId().toString()).sendEvent("invite",uoConverter.enityToDto(x));
+            server.getRoomOperations(x.getUser().getId().toString()).sendEvent("newInvite",uoConverter.enityToDto(x));
         }
-        // TODO: Send emails to users to accept join
-        return userOrganizations.stream()
-                .map(uoConverter::modelToDto)
+
+        List<InviteUserOrganizationDto> members = userOrganizations.stream()
+                .map(userOrg -> {
+                    InviteUserOrganizationDto memberDto = new InviteUserOrganizationDto();
+                    memberDto.setId(userOrg.getId());
+                    memberDto.setUser(userConverter.forInvite(userOrg.getUser()));
+                    memberDto.setRole(roleConverter.fromRoleToRoleDto(userOrg.getRole()));
+                    memberDto.setHasJoined(userOrg.isHasJoined());
+                    return memberDto;
+                })
                 .collect(Collectors.toList());
+
+        // TODO: Send emails to users to accept join
+        return InviteMemberResponse.builder()
+                .members(members)
+                .newAccountIds(newUsers.stream().map(Users::getId).collect(Collectors.toList()))
+                .build();
 
     }
 
     @Override
     public UserOrganizationDto acceptDenyInvite(UUID userId, AcceptInviteRequest request,String action) {
-        Organization o = organizationRepository.findById(request.getOrganizationId())
-                .orElseThrow(() -> CustomExceptions.notFound("Organization not exist"));
-        Users u = userRepository.findById(userId)
-                .orElseThrow(() -> CustomExceptions.notFound("User not exist"));
 
-        if (!u.isStatus()){
-            throw CustomExceptions.unauthorized("User is ban");
-        }
-
-        UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(request.getOrganizationId(), userId)
+        UserOrganization uo = userOrganizationRepository.findById(request.getId())
                 .orElseThrow(() -> CustomExceptions.notFound("User not have invite to organization"));
 
         if(uo.isHasJoined()){
@@ -285,15 +316,97 @@ public class OrganizationServiceImpl implements OrganizationService {
         switch (action){
             case "Accept":
                 uo.setHasJoined(true);
+                userOrganizationRepository.save(uo);
                 break;
             case "Deny":
-                uo.setStatus(false);
+                userOrganizationRepository.delete(uo);
                 break;
             default: break;
         }
         userOrganizationRepository.save(uo);
 
         return uoConverter.enityToDto(uo);
+    }
+
+    @Override
+    public List<MemberOrganizationDto> getMemberInOrganization(UUID userId) {
+        return userOrganizationRepository.findByUser(userId).stream()
+                .map(userOrg -> userOrg.getOrganization().getId())
+                .map(orgId -> {
+                    MemberOrganizationDto dto = new MemberOrganizationDto();
+                    dto.setId(orgId);
+
+                    List<InviteUserOrganizationDto> members = userOrganizationRepository
+                            .findByOrganization(orgId).stream()
+                            .map(userOrg -> {
+                                InviteUserOrganizationDto memberDto = new InviteUserOrganizationDto();
+                                memberDto.setId(userOrg.getId());
+                                memberDto.setUser(userConverter.forInvite(userOrg.getUser()));
+                                memberDto.setRole(roleConverter.fromRoleToRoleDto(userOrg.getRole()));
+                                memberDto.setHasJoined(userOrg.isHasJoined());
+                                return memberDto;
+                            })
+                            .collect(Collectors.toList());
+
+                    dto.setMembers(members);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserOrganizationDto> getListInviteByUser(UUID userId) {
+        Users u = userRepository.findById(userId)
+                .orElseThrow(() -> CustomExceptions.notFound("User not exist"));
+
+        List<UserOrganization> history = userOrganizationRepository.getByUser(userId);
+
+        return history.stream().map(uoConverter::enityToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public InviteUserOrganizationDto removeMember(UUID userId, UUID userOrganizationId) {
+//        UserOrganization organizationManager = userOrganizationRepository.findByUserAndOrganization(request.getOrganizationId(), userId)
+//                .orElseThrow(() -> CustomExceptions.unauthorized("You do not belong to this organization."));
+//
+//        if(!Objects.equals(organizationManager.getRole().getName(), "Organization Manager")){
+//            throw CustomExceptions.unauthorized("Your role not support this action");
+//        }
+        UserOrganization uo = userOrganizationRepository.findById(userOrganizationId)
+                .orElseThrow(() -> CustomExceptions.notFound("Member do not belong to this organization"));
+
+        uo.setStatus(false);
+        return uoConverter.modelToDto(uo);
+    }
+
+    private boolean isPdfFile(MultipartFile file) {
+        // Cách 1: Kiểm tra theo Content Type
+        if (file.getContentType() != null && file.getContentType().equals("application/pdf")) {
+            return true;
+        }
+
+        // Cách 2: Kiểm tra theo đuôi file
+        String filename = file.getOriginalFilename();
+        if (filename != null && filename.toLowerCase().endsWith(".pdf")) {
+            return true;
+        }
+
+        // Cách 3: Kiểm tra Magic Number của PDF file
+        try {
+            byte[] bytes = file.getBytes();
+            if (bytes.length > 4 &&
+                    bytes[0] == 0x25 && // %
+                    bytes[1] == 0x50 && // P
+                    bytes[2] == 0x44 && // D
+                    bytes[3] == 0x46 && // F
+                    bytes[4] == 0x2D) { // -
+                return true;
+            }
+        } catch (IOException e) {
+            return false;
+        }
+
+        return false;
     }
 
 }

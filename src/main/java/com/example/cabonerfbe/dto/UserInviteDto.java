@@ -9,7 +9,9 @@ import java.util.UUID;
 @Data
 @Getter
 @Setter
-public class UserOrganizationDto {
+public class UserInviteDto {
     private UUID id;
-    private OrganizationInviteDto organization;
+    private String fullName;
+    private String email;
+    private String profilePictureUrl;
 }
