@@ -254,18 +254,18 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         List<ProcessImpactValue> allImpactValues = new ArrayList<>();
 
         // Duyệt từng process để tính toán
-        for (Process process : processList) {
-            UUID processId = process.getId();
-            BigDecimal totalFlow = traversePath(processId, null, true).setScale(2, RoundingMode.CEILING);
-            process.setOverAllProductFlowRequired(totalFlow);
-
-            List<ProcessImpactValue> impactValues = processImpactValueRepository.findByProcessId(processId);
-            if (!impactValues.isEmpty()) {
-                updateProcess(impactValues, totalFlow, processId);
-                allImpactValues.addAll(impactValues);
-            }
-            processFlowMap.put(processId, totalFlow);
-        }
+//        for (Process process : processList) {
+//            UUID processId = process.getId();
+//            BigDecimal totalFlow = traversePath(processId, null, true).setScale(2, RoundingMode.CEILING);
+//            process.setOverAllProductFlowRequired(totalFlow);
+//
+//            List<ProcessImpactValue> impactValues = processImpactValueRepository.findByProcessId(processId);
+//            if (!impactValues.isEmpty()) {
+//                updateProcess(impactValues, totalFlow, processId);
+//                allImpactValues.addAll(impactValues);
+//            }
+//            processFlowMap.put(processId, totalFlow);
+//        }
 
 //        processRepository.saveAll(processList);
 //        processImpactValueRepository.saveAll(allImpactValues);
@@ -283,7 +283,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
         List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
         if (processList.isEmpty()) {
-            throw null;
+            return;
         }
 
         List<UUID> processIds = processList.stream()
@@ -293,13 +293,13 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         // Truy vấn connectors và kiểm tra
         List<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
         if (processList.size() > 1 && connectors.isEmpty()) {
-            throw null;
+            return;
         }
         _connectors.addAll(connectors);
 
         List<Process> processesWithoutOutgoingConnectors = processRepository.findProcessesWithoutOutgoingConnectors(projectId);
         if (processesWithoutOutgoingConnectors.size() > 1) {
-            throw null;
+            return;
         }
 
         processImpactValueRepository.setDefaultPrevious(processIds);
