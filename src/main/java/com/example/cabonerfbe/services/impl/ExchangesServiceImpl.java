@@ -168,7 +168,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         if (exchange.getExchangesType().getName().equals(EXCHANGE_TYPE_ELEMENTARY)) {
             processImpactValueService.computeProcessImpactValueSingleExchange(exchange.getProcess(), exchange, initialValue);
         }
-
+        processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId());
         return impactExchangeResponseBuilder(exchange);
     }
 
@@ -184,6 +184,8 @@ public class ExchangesServiceImpl implements ExchangesService {
         exchange.setStatus(Constants.STATUS_FALSE);
 
         exchangesRepository.save(exchange);
+        processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId());
+
         return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(exchange.getProcessId()));
     }
 
@@ -229,6 +231,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         exchangesRepository.save(exchange);
 
         processImpactValueService.computeProcessImpactValueSingleExchange(process, exchange, initialValue);
+        processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId());
 
         return impactExchangeResponseBuilder(exchange);
     }
@@ -288,6 +291,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         if (value != null) {
             exchange.setValue(value);
         }
+        processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId());
 
         exchangesRepository.save(exchange);
 
@@ -326,6 +330,8 @@ public class ExchangesServiceImpl implements ExchangesService {
         } else {
             exchange.setUnit(unitRepository.findByNameUnit(DEFAULT_PRODUCT_UNIT));
         }
+        processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId());
+
         return exchange;
     }
 

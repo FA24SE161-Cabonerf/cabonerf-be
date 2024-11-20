@@ -10,4 +10,5 @@ import java.util.UUID;
 
 public interface ProcessImpactValueService {
     List<ConnectorPercentDto> computeSystemLevelOfProject(UUID projectId);
+    void computeSystemLevelOfProjectBackground(UUID projectId);
 }

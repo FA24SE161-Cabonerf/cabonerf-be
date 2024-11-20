@@ -253,8 +253,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         Map<UUID, BigDecimal> processFlowMap = new HashMap<>();
         List<ProcessImpactValue> allImpactValues = new ArrayList<>();
 
-        // Xử lý song song để tính toán từng process
-        processList.parallelStream().forEach(process -> {
+        // Duyệt từng process để tính toán
+        for (Process process : processList) {
             UUID processId = process.getId();
             BigDecimal totalFlow = traversePath(processId, null, true).setScale(2, RoundingMode.CEILING);
             process.setOverAllProductFlowRequired(totalFlow);
@@ -262,22 +262,76 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             List<ProcessImpactValue> impactValues = processImpactValueRepository.findByProcessId(processId);
             if (!impactValues.isEmpty()) {
                 updateProcess(impactValues, totalFlow, processId);
-                synchronized (allImpactValues) {
-                    allImpactValues.addAll(impactValues);
-                }
+                allImpactValues.addAll(impactValues);
             }
             processFlowMap.put(processId, totalFlow);
-        });
+        }
+
+//        processRepository.saveAll(processList);
+//        processImpactValueRepository.saveAll(allImpactValues);
+//
+//        updatePreviousProcess();
+        updateProjectValue(processIds, projectId);
+//        calculationConnector(projectId);
+
+        return null;
+    }
+
+    public void computeSystemLevelOfProjectBackground(UUID projectId) {
+        connectorsResponse.clear();
+        _connectors.clear();
+
+        List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
+        if (processList.isEmpty()) {
+            throw null;
+        }
+
+        List<UUID> processIds = processList.stream()
+                .map(Process::getId)
+                .collect(Collectors.toList());
+
+        // Truy vấn connectors và kiểm tra
+        List<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
+        if (processList.size() > 1 && connectors.isEmpty()) {
+            throw null;
+        }
+        _connectors.addAll(connectors);
+
+        List<Process> processesWithoutOutgoingConnectors = processRepository.findProcessesWithoutOutgoingConnectors(projectId);
+        if (processesWithoutOutgoingConnectors.size() > 1) {
+            throw null;
+        }
+
+        processImpactValueRepository.setDefaultPrevious(processIds);
+
+        Map<UUID, BigDecimal> processFlowMap = new HashMap<>();
+        List<ProcessImpactValue> allImpactValues = new ArrayList<>();
+
+        // Duyệt từng process để tính toán
+        for (Process process : processList) {
+            UUID processId = process.getId();
+            BigDecimal totalFlow = traversePath(processId, null, true).setScale(2, RoundingMode.CEILING);
+            process.setOverAllProductFlowRequired(totalFlow);
+
+            List<ProcessImpactValue> impactValues = processImpactValueRepository.findByProcessId(processId);
+            if (!impactValues.isEmpty()) {
+                updateProcess(impactValues, totalFlow, processId);
+                allImpactValues.addAll(impactValues);
+            }
+            processFlowMap.put(processId, totalFlow);
+        }
 
         processRepository.saveAll(processList);
         processImpactValueRepository.saveAll(allImpactValues);
 
         updatePreviousProcess();
-        updateProjectValue(processIds, projectId);
-        calculationConnector(projectId);
+//        updateProjectValue(processIds, projectId);
+//        calculationConnector(projectId);
 
-        return connectorsResponse;
+        return ;
     }
+
+
 
     // Phương thức đệ quy để duyệt đường đi từ một process và tính toán kết quả cho mỗi nhánh
     private BigDecimal traversePath(UUID processId, String previousExchangeName, boolean isFirstProcess) {
@@ -336,6 +390,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
 
     private void updateProcess(List<ProcessImpactValue> list, BigDecimal totalRequiredFlow, UUID currentProcessId) {
+        Exchanges o = exchangesRepository.findProductOut(currentProcessId)
+                .orElse(null);
         BigDecimal outputValue = exchangesRepository.findProductOut(currentProcessId)
                 .map(Exchanges::getValue)
                 .orElse(BigDecimal.ONE);

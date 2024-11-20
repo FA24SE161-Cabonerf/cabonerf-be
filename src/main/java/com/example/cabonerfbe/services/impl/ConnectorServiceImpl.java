@@ -17,6 +17,7 @@ import com.example.cabonerfbe.request.CreateConnectorRequest;
 import com.example.cabonerfbe.response.CreateConnectorResponse;
 import com.example.cabonerfbe.response.DeleteConnectorResponse;
 import com.example.cabonerfbe.services.ConnectorService;
+import com.example.cabonerfbe.services.ProcessImpactValueService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,6 +48,8 @@ public class ConnectorServiceImpl implements ConnectorService {
     private ConnectorConverter connectorConverter;
     @Autowired
     private ProcessServiceImpl processServiceImpl;
+    @Autowired
+    private ProcessImpactValueService pivService;
 
     @Override
     public CreateConnectorResponse createConnector(CreateConnectorRequest request) {
@@ -77,6 +80,7 @@ public class ConnectorServiceImpl implements ConnectorService {
             throw CustomExceptions.badRequest(MessageConstants.INVALID_EXCHANGE);
         }
         System.out.println("den duoc day la chuan bi tra response ve");
+        pivService.computeSystemLevelOfProjectBackground(startProcess.getProject().getId());
 
         return response;
     }
@@ -88,6 +92,8 @@ public class ConnectorServiceImpl implements ConnectorService {
         );
         connector.setStatus(Constants.STATUS_FALSE);
         connectorRepository.save(connector);
+        pivService.computeSystemLevelOfProjectBackground(connector.getEndProcess().getProject().getId());
+
         return new DeleteConnectorResponse(id);
     }
 
@@ -125,6 +131,7 @@ public class ConnectorServiceImpl implements ConnectorService {
         System.out.println("den duoc day la khong có loi 2 exchange khac unit group, khac ten");
         validateEndExchangeAlreadyHadConnection(endExchange);
         System.out.println("den duoc day la khong co loi end exchange co connection roi");
+
         return CreateConnectorResponse.builder()
                 .connector(convertAndSaveConnector(startExchange, endExchange, startProcess, endProcess))
                 .updatedProcess(null)
