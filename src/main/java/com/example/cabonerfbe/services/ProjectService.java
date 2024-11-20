@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.services;
 
+import com.example.cabonerfbe.dto.CarbonIntensityDto;
 import com.example.cabonerfbe.dto.GetProjectByIdDto;
 import com.example.cabonerfbe.dto.UpdateProjectDto;
 import com.example.cabonerfbe.models.Project;
@@ -26,4 +27,5 @@ public interface ProjectService {
     GetProjectByIdDto changeProjectMethod(UUID projectId, UUID methodId);
     ResponseEntity<Resource> exportProject(UUID projectId);
     GetProjectByIdDto getProject(Project project);
+    List<CarbonIntensityDto> getIntensity(UUID projectId);
 }
