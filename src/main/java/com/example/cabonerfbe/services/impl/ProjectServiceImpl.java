@@ -5,10 +5,7 @@ import com.example.cabonerfbe.dto.*;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.Exchanges;
-import com.example.cabonerfbe.models.LifeCycleImpactAssessmentMethod;
-import com.example.cabonerfbe.models.Project;
-import com.example.cabonerfbe.models.ProjectImpactValue;
+import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
@@ -89,6 +86,10 @@ public class ProjectServiceImpl implements ProjectService {
     private static final int PAGE_INDEX_ADJUSTMENT = 1;
     @Autowired
     private ProcessImpactValueServiceImpl processImpactValueService;
+    @Autowired
+    private CarbonIntensityRepository ciRepository;
+    @Autowired
+    private CarbonIntensityConverter ciConverter;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
@@ -219,6 +220,21 @@ public class ProjectServiceImpl implements ProjectService {
         dto.setProcesses(processService.getAllProcessesByProjectId(project.getId()));
         dto.setConnectors(connectorConverter.fromListConnectorToConnectorDto(connectorRepository.findAllByProject(project.getId())));
         return dto;
+    }
+
+    @Override
+    public List<CarbonIntensityDto> getIntensity(UUID projectId) {
+        Project p = projectRepository.findById(projectId)
+                .orElseThrow(() -> CustomExceptions.notFound("Project not exist"));
+        ProjectImpactValue value = processImpactValueRepository.findCO2(projectId);
+        List<CarbonIntensity> ci = ciRepository.findAll();
+
+        ci.forEach(c ->
+                c.setValue(c.getValue().multiply(value.getValue()).setScale(2, RoundingMode.HALF_UP))
+        );
+
+
+        return ci.stream().map(ciConverter::toDto).collect(Collectors.toList());
     }
 
     @Override

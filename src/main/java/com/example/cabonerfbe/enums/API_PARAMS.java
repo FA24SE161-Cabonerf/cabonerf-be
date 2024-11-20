@@ -69,6 +69,7 @@ public class API_PARAMS {
     public static final String CHANGE_PROJECT_METHOD = "/{projectId}/impact-methods/{methodId}";
     public static final String CALCULATION_PROJECT = "/calculation/{projectId}";
     public static final String EXPORT_PROJECT = "/export/{projectId}";
+    public static final String INTENSITY_PROJECT = "/intensity/{projectId}";
 
     /************************
      *      PROCESS APIs     *
