@@ -12,7 +12,6 @@ import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
-import com.example.cabonerfbe.response.ProjectCalculationResponse;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
 import com.example.cabonerfbe.services.ProjectService;
 import lombok.extern.slf4j.Slf4j;
