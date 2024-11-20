@@ -305,11 +305,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
 //        updateProjectValue(processIds, projectId);
 //        calculationConnector(projectId);
-        return ;
-
-
-
-
+        return;
+    }
 
 //    public ContributionBreakdown calculateContributionBreakdown(UUID projectId) {
 //        // Step 1: Fetch all end processes (processes with no outgoing connectors)
@@ -395,7 +392,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 //                        )
 //                ));
 //    }
-
 
 
 //    private SankeyBreakdownDto sankeyCalculation(UUID projectId) {

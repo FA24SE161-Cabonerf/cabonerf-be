@@ -10,5 +10,5 @@ import java.util.UUID;
 public interface ProcessImpactValueService {
     void computeSystemLevelOfProject(UUID projectId);
     void computeSystemLevelOfProjectBackground(UUID projectId);
-    ProjectCalculationResponse computeSystemLevelOfProject(UUID projectId);
+//    ProjectCalculationResponse computeSystemLevelOfProject(UUID projectId);
 }

@@ -51,8 +51,6 @@ public class ConnectorServiceImpl implements ConnectorService {
     private ExchangesConverter exchangesConverter;
     @Autowired
     private ConnectorConverter connectorConverter;
-    @Autowired
-    private ProcessServiceImpl processServiceImpl;
     private ProcessImpactValueService pivService;
     private MessagePublisher messagePublisher;
 
