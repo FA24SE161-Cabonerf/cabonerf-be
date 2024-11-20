@@ -1,10 +1,10 @@
 package com.example.cabonerfbe.response;
 
-import com.example.cabonerfbe.dto.ConnectorPercentDto;
-import com.example.cabonerfbe.dto.ProcessNodeDto;
+import com.example.cabonerfbe.dto.*;
 import lombok.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -12,7 +12,13 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 public class ProjectCalculationResponse {
-    List<ConnectorPercentDto> connectorPercent;
-//    ContributionBreakdown contributionBreakdown;
+    private UUID id;
+    private String name;
+    private String description;
+    private String location;
+    private MethodDto method;
+    private List<ProjectImpactDto> impacts;
+    private List<ProcessDto> processes;
+    private List<ConnectorDto> connectors;
     ProcessNodeDto contributionBreakdown;
 }

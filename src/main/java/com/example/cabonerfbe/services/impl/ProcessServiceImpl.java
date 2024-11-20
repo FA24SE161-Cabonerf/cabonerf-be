@@ -206,6 +206,7 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     private BigDecimal calculateNet(Connector connector) {
+        // Example calculation based on the connector's start and end process or exchanges
         BigDecimal baseNet = BigDecimal.ONE;
         baseNet = baseNet.multiply(connector.getEndExchanges().getValue().divide(connector.getStartExchanges().getValue(), MathContext.DECIMAL128));
         return baseNet;
