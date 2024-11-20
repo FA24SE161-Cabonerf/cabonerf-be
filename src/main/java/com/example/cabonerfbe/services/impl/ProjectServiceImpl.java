@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -98,8 +99,11 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Optional<Project> getProjectById(UUID id) {
-        return Optional.empty();
+    public GetProjectByIdDto getProjectById(UUID id) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> CustomExceptions.notFound("Project not exist"));
+        processImpactValueService.computeSystemLevelOfProject(id);
+        return getProject(project);
     }
 
     @Override
@@ -203,7 +207,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @NotNull
-    private GetProjectByIdDto getProject(Project project) {
+    public GetProjectByIdDto getProject(Project project) {
         GetProjectByIdDto dto = new GetProjectByIdDto();
 
         dto.setId(project.getId());
@@ -269,7 +273,9 @@ public class ProjectServiceImpl implements ProjectService {
             project.setLifeCycleImpactAssessmentMethod(method);
             processImpactValueService.computeProcessImpactValueOfProject(projectRepository.save(project));
         }
-
+        CompletableFuture.runAsync(() ->
+                processImpactValueService.computeSystemLevelOfProjectBackground(project.getId())
+        );
         return getProject(project);
     }
 

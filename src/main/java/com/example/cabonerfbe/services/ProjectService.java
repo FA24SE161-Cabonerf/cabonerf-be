@@ -16,7 +16,7 @@ import java.util.UUID;
 
 public interface ProjectService {
     List<Project> getProjectListByMethodId(UUID id);
-    Optional<Project> getProjectById(UUID id);
+    GetProjectByIdDto getProjectById(UUID id);
     CreateProjectResponse createProject(UUID userId, CreateProjectRequest request);
     GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId, UUID methodId);
     GetProjectByIdDto getById(UUID id, UUID userId);
@@ -25,4 +25,5 @@ public interface ProjectService {
 
     GetProjectByIdDto changeProjectMethod(UUID projectId, UUID methodId);
     ResponseEntity<Resource> exportProject(UUID projectId);
+    GetProjectByIdDto getProject(Project project);
 }

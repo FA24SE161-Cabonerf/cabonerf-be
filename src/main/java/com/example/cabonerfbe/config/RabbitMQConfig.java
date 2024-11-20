@@ -35,6 +35,10 @@ public class RabbitMQConfig {
     public static final String CREATED_PROCESS_EXCHANGE = "process.exchange.created";
     public static final String CREATED_PROCESS_ROUTING_KEY = "process.key.created";
 
+    public static final String CONNECTOR_QUEUE = "queue.connector";
+    public static final String CONNECTOR_ROUTING_KEY = "key.connector";
+    public static final String CONNECTOR_EXCHANGE = "exchange.connector";
+
     @Bean
     public Queue queue() {
         return new Queue(QUEUE);
@@ -48,6 +52,11 @@ public class RabbitMQConfig {
     @Bean
     public Queue createdProcessQueue() {
         return new Queue(CREATED_PROCESS_QUEUE);
+    }
+
+    @Bean
+    public Queue connectorQueue() {
+        return new Queue(CONNECTOR_QUEUE);
     }
 
     @Bean
@@ -66,6 +75,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public DirectExchange connectorExchange() {
+        return new DirectExchange(CONNECTOR_EXCHANGE);
+    }
+
+    @Bean
     public Binding binding(Queue queue, DirectExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
     }
@@ -78,6 +92,11 @@ public class RabbitMQConfig {
     @Bean
     public Binding createdProcessBinding(Queue createdProcessQueue, DirectExchange createdProcessExchange) {
         return BindingBuilder.bind(createdProcessQueue).to(createdProcessExchange).with(CREATED_PROCESS_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding connectorBinding(Queue connectorQueue, DirectExchange connectorExchange) {
+        return BindingBuilder.bind(connectorQueue).to(connectorExchange).with(CONNECTOR_ROUTING_KEY);
     }
 
     // RPC queue

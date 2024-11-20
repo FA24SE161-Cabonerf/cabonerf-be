@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.services.impl;
 
+import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.converter.ConnectorConverter;
 import com.example.cabonerfbe.converter.ExchangesConverter;
 import com.example.cabonerfbe.dto.ConnectorDto;
@@ -17,12 +18,17 @@ import com.example.cabonerfbe.request.CreateConnectorRequest;
 import com.example.cabonerfbe.response.CreateConnectorResponse;
 import com.example.cabonerfbe.response.DeleteConnectorResponse;
 import com.example.cabonerfbe.services.ConnectorService;
+import com.example.cabonerfbe.services.ProcessImpactValueService;
+import com.example.cabonerfbe.services.MessagePublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -45,8 +51,8 @@ public class ConnectorServiceImpl implements ConnectorService {
     private ExchangesConverter exchangesConverter;
     @Autowired
     private ConnectorConverter connectorConverter;
-    @Autowired
-    private ProcessServiceImpl processServiceImpl;
+    private ProcessImpactValueService pivService;
+    private MessagePublisher messagePublisher;
 
     @Override
     public CreateConnectorResponse createConnector(CreateConnectorRequest request) {
@@ -78,6 +84,9 @@ public class ConnectorServiceImpl implements ConnectorService {
         }
         System.out.println("den duoc day la chuan bi tra response ve");
 
+        CompletableFuture.runAsync(() ->
+                pivService.computeSystemLevelOfProjectBackground(startProcess.getProject().getId())
+        );
         return response;
     }
 
@@ -88,6 +97,9 @@ public class ConnectorServiceImpl implements ConnectorService {
         );
         connector.setStatus(Constants.STATUS_FALSE);
         connectorRepository.save(connector);
+        CompletableFuture.runAsync(() ->
+                pivService.computeSystemLevelOfProjectBackground(connector.getEndProcess().getProject().getId())
+        );
         return new DeleteConnectorResponse(id);
     }
 
@@ -97,6 +109,30 @@ public class ConnectorServiceImpl implements ConnectorService {
                     System.out.println("loi validate (khong tim thay process): " + processId + " type: " + processType);
                     return CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND, Map.of(processType, processId));
                 });
+    }
+
+    public void deleteAssociatedConnectors(UUID id, String actionType) {
+        List<UUID> idList = new ArrayList<>();
+        if (Constants.DELETE_CONNECTOR_TYPE_EXCHANGE.equals(actionType)) {
+            List<Connector> associatedConnectorList = connectorRepository.findConnectorToExchange(id).stream().peek(
+                    connector -> {
+                        connector.setStatus(Constants.STATUS_FALSE);
+                        idList.add(connector.getId());
+                    }
+            ).toList();
+            connectorRepository.saveAll(associatedConnectorList);
+        }
+        if (Constants.DELETE_CONNECTOR_TYPE_PROCESS.equals(actionType)) {
+            List<Connector> associatedConnectorList = connectorRepository.findConnectorToProcess(id).stream().peek(
+                    connector -> {
+                        connector.setStatus(Constants.STATUS_FALSE);
+                        idList.add(connector.getId());
+                    }
+            ).toList();
+            connectorRepository.saveAll(associatedConnectorList);
+        }
+        // publish message to rabbit to find and delete connectors on node based server
+        messagePublisher.publishConnectorMessage(RabbitMQConfig.CONNECTOR_EXCHANGE, RabbitMQConfig.CONNECTOR_ROUTING_KEY, idList);
     }
 
     private void validateProcessesBelongToSameProject(Process startProcess, Process endProcess) {
@@ -125,6 +161,7 @@ public class ConnectorServiceImpl implements ConnectorService {
         System.out.println("den duoc day la khong có loi 2 exchange khac unit group, khac ten");
         validateEndExchangeAlreadyHadConnection(endExchange);
         System.out.println("den duoc day la khong co loi end exchange co connection roi");
+
         return CreateConnectorResponse.builder()
                 .connector(convertAndSaveConnector(startExchange, endExchange, startProcess, endProcess))
                 .updatedProcess(null)

@@ -84,11 +84,11 @@ public class ProjectController {
         );
     }
 
-    @PutMapping(API_PARAMS.CALCULATION_PROJECT)
+    @GetMapping(API_PARAMS.CALCULATION_PROJECT)
     public ResponseEntity<ResponseObject> calculation(@PathVariable("projectId") UUID projectId){
         log.info("Start calculationProject. Id: {}", projectId);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Calculation project success",  service.computeSystemLevelOfProject(projectId))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Calculation project success",  projectService.getProjectById(projectId))
         );
     }
 
