@@ -201,7 +201,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         Thread deleteConnectorThread = new Thread(() -> connectorService.deleteAssociatedConnectors(exchangeId, Constants.DELETE_CONNECTOR_TYPE_EXCHANGE));
         deleteConnectorThread.start();
-CompletableFuture.runAsync(() ->
+        CompletableFuture.runAsync(() ->
                 processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId())
         );
         return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(exchange.getProcessId()));
