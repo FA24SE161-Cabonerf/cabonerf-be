@@ -169,44 +169,41 @@ public class ProcessServiceImpl implements ProcessService {
         messagePublisher.publishCreateProcess(RabbitMQConfig.CREATED_PROCESS_EXCHANGE, RabbitMQConfig.CREATED_PROCESS_ROUTING_KEY, processDto);
     }
 
-//    public ProcessNodeDto constructListProcessNodeDto(UUID projectId) {
-//        // Step 1: Retrieve connectors and root nodes
-//        List<Connector> connectorList = connectorRepository.findAllByProject(projectId);
-//        List<Process> rootNode = processRepository.findRootProcess(projectId);
-//        UUID rootNodeId = rootNode.get(0).getId();  // Assuming only one root node is present
-//
-//        // Step 2: Construct linked list from the root node
-//        // Find the connectors that lead to the root node
-//        List<Connector> connectors = connectorRepository.findConnectorToProcess(rootNodeId);
-//
-//        // Step 3: Iterate through connectors and create PathDto for each
-//        Map<String, List<PathDto>> contributions = new HashMap<>();
-//
-//        for (Connector connector : connectors) {
-//            Process startProcess = connector.getStartProcess();
-//            Process endProcess = connector.getEndProcess();
-//
-//            // Create or update the list of paths for the start process
-//            if (!contributions.containsKey(startProcess.getId().toString())) {
-//                contributions.put(startProcess.getId().toString(), new ArrayList<>());
-//            }
-//
-//            // Step 4: Construct PathDto
-//            PathDto pathDto = new PathDto();
-//            pathDto.setDestinationNodeId(endProcess.getId().toString());
-//            pathDto.setNet(calculateNet(connector)); // Assuming calculateNet is a method you define to get the net contribution
-//            pathDto.setPath(buildPath(connector)); // Assuming buildPath is a method to build the path from start to destination
-//
-//            // Add pathDto to the contributions map for the start process
-//            contributions.get(startProcess.getId().toString()).add(pathDto);
-//        }
-//
-//        // Step 5: Create ProcessNodeDto objects for each root process and add to result
-//        ProcessNodeDto processNodeDto = new ProcessNodeDto();
-//        processNodeDto.setContributions(contributions);
-//
-//        return processNodeDto;
-//    }
+    public ProcessNodeDto constructListProcessNodeDto(UUID projectId) {
+        log.info("constructing contribution breakdown data");
+        List<Connector> connectorList = connectorRepository.findAllByProject(projectId);
+
+        List<Process> rootProcesses = processRepository.findRootProcess(projectId);
+
+        if (rootProcesses.isEmpty()) {
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND);
+        }
+
+        UUID rootNodeId = rootProcesses.get(0).getId();
+
+        return buildTree(rootNodeId, connectorList, BigDecimal.ONE);
+    }
+
+    private ProcessNodeDto buildTree(UUID currentNodeId, List<Connector> connectors, BigDecimal currentNet) {
+        ProcessNodeDto nodeTree = new ProcessNodeDto();
+        nodeTree.setProcessId(currentNodeId);
+        nodeTree.setNet(currentNet);
+
+        List<ProcessNodeDto> children = new ArrayList<>();
+        for (Connector connector : connectors) {
+            if (connector.getEndProcess().getId().equals(currentNodeId)) {
+                UUID startProcessId = connector.getStartProcess().getId();
+                BigDecimal newNet = currentNet.multiply(calculateNet(connector));
+
+                ProcessNodeDto childTree = buildTree(startProcessId, connectors, newNet);
+                children.add(childTree);
+            }
+        }
+
+        nodeTree.setSubProcesses(children);
+
+        return nodeTree;
+    }
 
     private BigDecimal calculateNet(Connector connector) {
         // Example calculation based on the connector's start and end process or exchanges
@@ -214,14 +211,5 @@ public class ProcessServiceImpl implements ProcessService {
         baseNet = baseNet.multiply(connector.getEndExchanges().getValue().divide(connector.getStartExchanges().getValue(), MathContext.DECIMAL128));
         return baseNet;
     }
-
-    private List<String> buildPath(Connector connector) {
-        List<String> path = new ArrayList<>();
-        path.add(connector.getStartProcess().getId().toString());
-        path.add(connector.getEndProcess().getId().toString());
-        // You could expand this logic to handle more complex paths, e.g., handling multiple intermediary processes
-        return path;
-    }
-
 
 }

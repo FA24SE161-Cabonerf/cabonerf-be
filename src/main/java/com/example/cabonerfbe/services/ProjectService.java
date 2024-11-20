@@ -8,16 +8,16 @@ import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.CreateProjectResponse;
 import com.example.cabonerfbe.response.GetAllProjectResponse;
+import com.example.cabonerfbe.response.ProjectCalculationResponse;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface ProjectService {
     List<Project> getProjectListByMethodId(UUID id);
-    GetProjectByIdDto getProjectById(UUID id);
+    ProjectCalculationResponse calculateProject(UUID id);
     CreateProjectResponse createProject(UUID userId, CreateProjectRequest request);
     GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId, UUID methodId);
     GetProjectByIdDto getById(UUID id, UUID userId);

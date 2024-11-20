@@ -2,8 +2,9 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 @Data
 @Getter
@@ -11,5 +12,8 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProcessNodeDto {
-    private Map<String, List<PathDto>> contributions;
+    private UUID processId;
+    private BigDecimal net;
+    private List<ProcessNodeDto> subProcesses;
 }
+

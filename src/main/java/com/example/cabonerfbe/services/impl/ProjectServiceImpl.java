@@ -11,7 +11,7 @@ import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.CreateProjectResponse;
 import com.example.cabonerfbe.response.GetAllProjectResponse;
-import com.example.cabonerfbe.services.ProcessService;
+import com.example.cabonerfbe.response.ProjectCalculationResponse;
 import com.example.cabonerfbe.services.ProjectService;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -79,7 +79,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Autowired
     private ConnectorConverter connectorConverter;
     @Autowired
-    private ProcessService processService;
+    private ProcessServiceImpl processService;
     @Autowired
     private EmissionSubstanceConverter emissionSubstanceConverter;
 
@@ -100,11 +100,13 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public GetProjectByIdDto getProjectById(UUID id) {
+    public ProjectCalculationResponse calculateProject(UUID id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> CustomExceptions.notFound("Project not exist"));
         processImpactValueService.computeSystemLevelOfProject(id);
-        return getProject(project);
+        ProjectCalculationResponse response = projectConverter.fromGetProjectDtoToCalculateResponse(getProject(project));
+        response.setContributionBreakdown(processService.constructListProcessNodeDto(id));
+        return response;
     }
 
     @Override
@@ -304,7 +306,7 @@ public class ProjectServiceImpl implements ProjectService {
         byte[] file = createFile(p);
         ByteArrayResource resource = new ByteArrayResource(file);
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+p.getName()+".xlsx")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + p.getName() + ".xlsx")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .contentLength(file.length)
                 .body(resource);
@@ -336,9 +338,9 @@ public class ProjectServiceImpl implements ProjectService {
             CellStyle boldStyle = createStyle(workbook);
 
             createGuideSheet(guide, workbook, p, boldStyle);
-            createLcaOverviewSheet(lcaOverview,workbook,p,boldStyle);
-            createLciResultsSheet(lciResults,workbook,p,boldStyle);
-            createLciaResultsSheet(lciaResults,workbook,p,boldStyle);
+            createLcaOverviewSheet(lcaOverview, workbook, p, boldStyle);
+            createLciResultsSheet(lciResults, workbook, p, boldStyle);
+            createLciaResultsSheet(lciaResults, workbook, p, boldStyle);
             // Write the workbook to a byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
@@ -412,7 +414,7 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
-    private void createLcaOverviewSheet(XSSFSheet lcaOverview, XSSFWorkbook workbook, Project p,CellStyle boldStyle) {
+    private void createLcaOverviewSheet(XSSFSheet lcaOverview, XSSFWorkbook workbook, Project p, CellStyle boldStyle) {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         // Các tiêu đề cần in đậm
@@ -426,12 +428,12 @@ public class ProjectServiceImpl implements ProjectService {
         Object[][] guideData = {
                 {"LCA Process Overview - Carbonerf Excel Export"},
                 {},
-                {"Field","Value"},
+                {"Field", "Value"},
                 {"Project ID", p.getId()},
-                {"Name",p.getName()},
-                {"Description",p.getDescription()},
-                {"Last change",p.getModifiedAt().format(formatter)},
-                {"Location",p.getLocation()}
+                {"Name", p.getName()},
+                {"Description", p.getDescription()},
+                {"Last change", p.getModifiedAt().format(formatter)},
+                {"Location", p.getLocation()}
         };
 
         // Viết dữ liệu vào sheet Guide
@@ -522,7 +524,7 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
-    private void createLciaResultsSheet(XSSFSheet lciaResults, XSSFWorkbook workbook, Project p, CellStyle boldStyle){
+    private void createLciaResultsSheet(XSSFSheet lciaResults, XSSFWorkbook workbook, Project p, CellStyle boldStyle) {
 
         List<ProjectImpactValue> data = projectImpactValueRepository.findAllByProjectId(p.getId());
 
@@ -539,7 +541,7 @@ public class ProjectServiceImpl implements ProjectService {
         Object[][] guideData = {
                 {"LCA Process Impact Summary - Carbonerf Excel Export"},
                 {},
-                {"Name","Amount","Unit","Method","Description"},
+                {"Name", "Amount", "Unit", "Method", "Description"},
 
         };
 
@@ -572,7 +574,7 @@ public class ProjectServiceImpl implements ProjectService {
             row.createCell(columnCount++).setCellValue(x.getImpactMethodCategory().getImpactCategory().getName());
             row.createCell(columnCount++).setCellValue(x.getValue().setScale(2, RoundingMode.HALF_UP).toString());
             row.createCell(columnCount++).setCellValue(x.getImpactMethodCategory().getImpactCategory().getMidpointImpactCategory().getUnit().getName());
-            row.createCell(columnCount++).setCellValue(x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod().getName() +"("+ x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod().getPerspective().getAbbr() +")");
+            row.createCell(columnCount++).setCellValue(x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod().getName() + "(" + x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod().getPerspective().getAbbr() + ")");
             row.createCell(columnCount++).setCellValue(x.getImpactMethodCategory().getImpactCategory().getMidpointImpactCategory().getName());
         }
 
@@ -582,7 +584,7 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
-    private CellStyle createStyle(XSSFWorkbook workbook){
+    private CellStyle createStyle(XSSFWorkbook workbook) {
         CellStyle boldStyle = workbook.createCellStyle();
         XSSFFont boldFont = workbook.createFont();
         boldFont.setBold(true);

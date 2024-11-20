@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -89,7 +88,7 @@ public class ProjectController {
     public ResponseEntity<ResponseObject> calculation(@PathVariable("projectId") UUID projectId){
         log.info("Start calculationProject. Id: {}", projectId);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Calculation project success",  projectService.getProjectById(projectId))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Calculation project success",  projectService.calculateProject(projectId))
         );
     }
 
