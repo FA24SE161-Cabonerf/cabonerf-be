@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -272,7 +273,9 @@ public class ProjectServiceImpl implements ProjectService {
             project.setLifeCycleImpactAssessmentMethod(method);
             processImpactValueService.computeProcessImpactValueOfProject(projectRepository.save(project));
         }
-
+        CompletableFuture.runAsync(() ->
+                processImpactValueService.computeSystemLevelOfProjectBackground(project.getId())
+        );
         return getProject(project);
     }
 
