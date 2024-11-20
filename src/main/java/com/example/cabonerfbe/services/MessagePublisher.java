@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -47,5 +48,10 @@ public class MessagePublisher {
         CreateProcessImpactValueRequest createProcessImpactValueRequest = new CreateProcessImpactValueRequest(processId, methodId);
         rabbitTemplate.convertAndSend(exchangeName, routingKey, createProcessImpactValueRequest);
         log.info("Publish create impact value message: {}, exchange: {}, key: {}", createProcessImpactValueRequest, exchangeName, routingKey);
+    }
+
+    public void publishConnectorMessage(String exchangeName, String routingKey, List<UUID> idList) {
+        rabbitTemplate.convertAndSend(exchangeName, routingKey, idList);
+        log.info("Publish connector message: {}, exchange: {}, key: {}", idList, exchangeName, routingKey);
     }
 }

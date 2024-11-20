@@ -2,6 +2,7 @@ package com.example.cabonerfbe.services;
 
 import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.dto.ProcessDto;
+import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.request.CreateConnectorRequest;
 import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.response.CreateConnectorResponse;
@@ -101,16 +102,20 @@ public class RpcServerService {
             CreateConnectorResponse response = connectorService.createConnector(request);
             log.error("response: {}, raw: {}", response.toString(), response);
             sendResponse(replyTo, correlationId, objectMapper.writeValueAsString(response), true);
+        } catch (CustomExceptions e) { // Catch the custom exception
+            logAndSendCustomError(replyTo, correlationId, "Business error: " + e.getError().getMessage(), e);
         } catch (Exception e) {
             logAndSendError(replyTo, correlationId, "Error processing create connector request", e);
         }
     }
-    
+
     private void handleDeleteConnector(String requestMessage, String correlationId, String replyTo) {
         try {
             String id = extractJsonField(requestMessage, "data.id");
             DeleteConnectorResponse response = connectorService.deleteConnector(UUID.fromString(id));
             sendResponse(replyTo, correlationId, objectMapper.writeValueAsString(response), true);
+        } catch (CustomExceptions e) { // Catch the custom exception
+            logAndSendCustomError(replyTo, correlationId, "Business error: " + e.getError().getMessage(), e);
         } catch (Exception e) {
             logAndSendError(replyTo, correlationId, "Error processing delete connector request", e);
         }
@@ -121,6 +126,8 @@ public class RpcServerService {
             CreateProcessRequest request = extractRequest(requestMessage, CreateProcessRequest.class);
             ProcessDto processDto = processService.createProcess(request);
             sendResponse(replyTo, correlationId, objectMapper.writeValueAsString(processDto), true);
+        } catch (CustomExceptions e) { // Catch the custom exception
+            logAndSendCustomError(replyTo, correlationId, "Business error: " + e.getError().getMessage(), e);
         } catch (Exception e) {
             logAndSendError(replyTo, correlationId, "Error processing create process request", e);
         }
@@ -131,6 +138,8 @@ public class RpcServerService {
             String id = extractJsonField(requestMessage, "data.id");
             DeleteProcessResponse deleteProcessResponse = processService.deleteProcess(UUID.fromString(id));
             sendResponse(replyTo, correlationId, objectMapper.writeValueAsString(deleteProcessResponse), true);
+        } catch (CustomExceptions e) { // Catch the custom exception
+            logAndSendCustomError(replyTo, correlationId, "Business error: " + e.getError().getMessage(), e);
         } catch (Exception e) {
             logAndSendError(replyTo, correlationId, "Error processing delete process request", e);
         }
@@ -178,7 +187,12 @@ public class RpcServerService {
     }
 
     private void logAndSendError(String replyTo, String correlationId, String errorMessage, Exception e) {
-        log.error("{}: {}", errorMessage, e.getCause().getMessage());
+        log.error("{}: {}", errorMessage, e.getCause());
+        sendResponse(replyTo, correlationId, errorMessage, false);
+    }
+
+    private void logAndSendCustomError(String replyTo, String correlationId, String errorMessage, CustomExceptions e) {
+        log.error("{}: {}", errorMessage, e.getError().getMessage());
         sendResponse(replyTo, correlationId, errorMessage, false);
     }
 }
