@@ -3,6 +3,7 @@ package com.example.cabonerfbe.services.impl;
 import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.converter.ConnectorConverter;
 import com.example.cabonerfbe.dto.ConnectorPercentDto;
+import com.example.cabonerfbe.dto.GetProjectByIdDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -11,6 +12,7 @@ import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
+import com.example.cabonerfbe.services.ProjectService;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -46,6 +48,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private ConnectorConverter connectorConverter;
     @Autowired
     private ProjectImpactValueRepository projectImpactValueRepository;
+
 
     private final List<ConnectorPercentDto> connectorsResponse = new ArrayList<>();
     private final ProjectImpactValue totalProject = new ProjectImpactValue();
@@ -218,10 +221,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
 
+    public void computeSystemLevelOfProject(UUID projectId) {
 
-    public List<ConnectorPercentDto> computeSystemLevelOfProject(UUID projectId) {
-        connectorsResponse.clear();
-        _connectors.clear();
         Project project = projectRepository.findById(projectId).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
         );
@@ -241,40 +242,14 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         if (processList.size() > 1 && connectors.isEmpty()) {
             throw CustomExceptions.notFound("There must be at least one connector to calculate");
         }
-        _connectors.addAll(connectors);
+//        _connectors.addAll(connectors);
 
         List<Process> processesWithoutOutgoingConnectors = processRepository.findProcessesWithoutOutgoingConnectors(projectId);
         if (processesWithoutOutgoingConnectors.size() > 1) {
             throw CustomExceptions.badRequest("Multiple deepest process found");
         }
 
-        processImpactValueRepository.setDefaultPrevious(processIds);
-
-        Map<UUID, BigDecimal> processFlowMap = new HashMap<>();
-        List<ProcessImpactValue> allImpactValues = new ArrayList<>();
-
-        // Duyệt từng process để tính toán
-        for (Process process : processList) {
-            UUID processId = process.getId();
-            BigDecimal totalFlow = traversePath(processId, null, true).setScale(2, RoundingMode.CEILING);
-            process.setOverAllProductFlowRequired(totalFlow);
-
-            List<ProcessImpactValue> impactValues = processImpactValueRepository.findByProcessId(processId);
-            if (!impactValues.isEmpty()) {
-                updateProcess(impactValues, totalFlow, processId);
-                allImpactValues.addAll(impactValues);
-            }
-            processFlowMap.put(processId, totalFlow);
-        }
-
-        processRepository.saveAll(processList);
-        processImpactValueRepository.saveAll(allImpactValues);
-
-        updatePreviousProcess();
         updateProjectValue(processIds, projectId);
-        calculationConnector(projectId);
-
-        return null;
     }
 
     public void computeSystemLevelOfProjectBackground(UUID projectId) {

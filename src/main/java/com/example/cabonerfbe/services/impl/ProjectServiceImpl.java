@@ -98,8 +98,10 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Optional<Project> getProjectById(UUID id) {
-        return Optional.empty();
+    public GetProjectByIdDto getProjectById(UUID id) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> CustomExceptions.notFound("Project not exist"));
+        return getProject(project);
     }
 
     @Override
@@ -203,7 +205,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @NotNull
-    private GetProjectByIdDto getProject(Project project) {
+    public GetProjectByIdDto getProject(Project project) {
         GetProjectByIdDto dto = new GetProjectByIdDto();
 
         dto.setId(project.getId());
