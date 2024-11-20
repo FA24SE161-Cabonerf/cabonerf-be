@@ -13,5 +13,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SendMailRegisterResponse {
+    private String email;
     private String token;
 }

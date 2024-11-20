@@ -56,7 +56,6 @@ public class EmailServiceImpl implements EmailService {
 
         String token = jwtService.generateEmailVerifyToken(userOrg.getUser());
         String password = PasswordGenerator.generateRandomPassword(8);
-
         userRepository.findById(userOrg.getUser().getId())
                 .ifPresent(user -> {
                     user.setPassword(password);
@@ -66,6 +65,7 @@ public class EmailServiceImpl implements EmailService {
         return SendMailCreateOrganizationResponse.builder()
                 .organizationId(organizationId)
                 .token(token)
+                .email(userOrg.getUser().getEmail())
                 .password(password)
                 .build();
     }
@@ -83,6 +83,7 @@ public class EmailServiceImpl implements EmailService {
 
         return SendMailCreateAccountResponse.builder()
                 .token(token)
+                .email(u.getEmail())
                 .password(password)
                 .build();
     }
@@ -96,6 +97,7 @@ public class EmailServiceImpl implements EmailService {
 
         return SendMailRegisterResponse.builder()
                 .token(token)
+                .email(u.getEmail())
                 .build();
     }
 }

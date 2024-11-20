@@ -14,5 +14,6 @@ import java.util.UUID;
 public class SendMailCreateOrganizationResponse {
     private UUID organizationId;
     private String token;
+    private String email;
     private String password;
 }

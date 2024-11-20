@@ -11,5 +11,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class SendMailCreateAccountResponse {
     private String token;
+    private String email;
     private String password;
 }
