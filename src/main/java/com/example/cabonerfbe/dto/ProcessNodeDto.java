@@ -12,7 +12,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProcessNodeDto {
-    //    private Map<String, List<PathDto>> contributions;
     private UUID processId;
     private BigDecimal net;
     private List<ProcessNodeDto> subProcesses;
