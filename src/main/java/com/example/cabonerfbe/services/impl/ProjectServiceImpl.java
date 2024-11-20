@@ -101,6 +101,7 @@ public class ProjectServiceImpl implements ProjectService {
     public GetProjectByIdDto getProjectById(UUID id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> CustomExceptions.notFound("Project not exist"));
+        processImpactValueService.computeSystemLevelOfProject(id);
         return getProject(project);
     }
 
