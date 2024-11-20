@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -89,6 +90,9 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         Exchanges newExchange = createNewExchange(emissionSubstance, request.isInput(), process, EXCHANGE_TYPE_ELEMENTARY);
         exchangesRepository.save(newExchange);
+        CompletableFuture.runAsync(() ->
+                processImpactValueService.computeSystemLevelOfProjectBackground(process.getProject().getId())
+        );
         return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(processId));
     }
 
@@ -105,7 +109,9 @@ public class ExchangesServiceImpl implements ExchangesService {
         Exchanges productExchange = createNewExchange(null, request.isInput(), process, EXCHANGE_TYPE_PRODUCT);
         productExchange.setName(request.getName());
         exchangesRepository.save(productExchange);
-
+        CompletableFuture.runAsync(() ->
+                processImpactValueService.computeSystemLevelOfProjectBackground(process.getProject().getId())
+        );
         return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(processId));
     }
 
@@ -168,7 +174,9 @@ public class ExchangesServiceImpl implements ExchangesService {
         if (exchange.getExchangesType().getName().equals(EXCHANGE_TYPE_ELEMENTARY)) {
             processImpactValueService.computeProcessImpactValueSingleExchange(exchange.getProcess(), exchange, initialValue);
         }
-        processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId());
+        CompletableFuture.runAsync(() ->
+                processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId())
+        );
         return impactExchangeResponseBuilder(exchange);
     }
 
@@ -184,8 +192,9 @@ public class ExchangesServiceImpl implements ExchangesService {
         exchange.setStatus(Constants.STATUS_FALSE);
 
         exchangesRepository.save(exchange);
-        processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId());
-
+        CompletableFuture.runAsync(() ->
+                processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId())
+        );
         return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(exchange.getProcessId()));
     }
 
@@ -231,8 +240,9 @@ public class ExchangesServiceImpl implements ExchangesService {
         exchangesRepository.save(exchange);
 
         processImpactValueService.computeProcessImpactValueSingleExchange(process, exchange, initialValue);
-        processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId());
-
+        CompletableFuture.runAsync(() ->
+                processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId())
+        );
         return impactExchangeResponseBuilder(exchange);
     }
 
@@ -291,10 +301,11 @@ public class ExchangesServiceImpl implements ExchangesService {
         if (value != null) {
             exchange.setValue(value);
         }
-        processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId());
-
         exchangesRepository.save(exchange);
 
+        CompletableFuture.runAsync(() ->
+                processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId())
+        );
         return exchangesRepository.findAllByIdMatches(connectedExchangeIdList)
                 .stream()
                 .map(e -> new UpdateProductExchangeResponse(e.getProcessId(), exchangesConverter.fromExchangesToExchangesDto(e)))
@@ -330,8 +341,10 @@ public class ExchangesServiceImpl implements ExchangesService {
         } else {
             exchange.setUnit(unitRepository.findByNameUnit(DEFAULT_PRODUCT_UNIT));
         }
-        processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId());
 
+        CompletableFuture.runAsync(() ->
+                processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId())
+        );
         return exchange;
     }
 

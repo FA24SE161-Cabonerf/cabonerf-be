@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -80,8 +81,10 @@ public class ConnectorServiceImpl implements ConnectorService {
             throw CustomExceptions.badRequest(MessageConstants.INVALID_EXCHANGE);
         }
         System.out.println("den duoc day la chuan bi tra response ve");
-        pivService.computeSystemLevelOfProjectBackground(startProcess.getProject().getId());
 
+        CompletableFuture.runAsync(() ->
+                pivService.computeSystemLevelOfProjectBackground(startProcess.getProject().getId())
+        );
         return response;
     }
 
@@ -92,8 +95,9 @@ public class ConnectorServiceImpl implements ConnectorService {
         );
         connector.setStatus(Constants.STATUS_FALSE);
         connectorRepository.save(connector);
-        pivService.computeSystemLevelOfProjectBackground(connector.getEndProcess().getProject().getId());
-
+        CompletableFuture.runAsync(() ->
+                pivService.computeSystemLevelOfProjectBackground(connector.getEndProcess().getProject().getId())
+        );
         return new DeleteConnectorResponse(id);
     }
 

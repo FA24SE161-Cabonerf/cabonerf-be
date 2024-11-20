@@ -254,25 +254,25 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         List<ProcessImpactValue> allImpactValues = new ArrayList<>();
 
         // Duyệt từng process để tính toán
-//        for (Process process : processList) {
-//            UUID processId = process.getId();
-//            BigDecimal totalFlow = traversePath(processId, null, true).setScale(2, RoundingMode.CEILING);
-//            process.setOverAllProductFlowRequired(totalFlow);
-//
-//            List<ProcessImpactValue> impactValues = processImpactValueRepository.findByProcessId(processId);
-//            if (!impactValues.isEmpty()) {
-//                updateProcess(impactValues, totalFlow, processId);
-//                allImpactValues.addAll(impactValues);
-//            }
-//            processFlowMap.put(processId, totalFlow);
-//        }
+        for (Process process : processList) {
+            UUID processId = process.getId();
+            BigDecimal totalFlow = traversePath(processId, null, true).setScale(2, RoundingMode.CEILING);
+            process.setOverAllProductFlowRequired(totalFlow);
 
-//        processRepository.saveAll(processList);
-//        processImpactValueRepository.saveAll(allImpactValues);
-//
-//        updatePreviousProcess();
+            List<ProcessImpactValue> impactValues = processImpactValueRepository.findByProcessId(processId);
+            if (!impactValues.isEmpty()) {
+                updateProcess(impactValues, totalFlow, processId);
+                allImpactValues.addAll(impactValues);
+            }
+            processFlowMap.put(processId, totalFlow);
+        }
+
+        processRepository.saveAll(processList);
+        processImpactValueRepository.saveAll(allImpactValues);
+
+        updatePreviousProcess();
         updateProjectValue(processIds, projectId);
-//        calculationConnector(projectId);
+        calculationConnector(projectId);
 
         return null;
     }
