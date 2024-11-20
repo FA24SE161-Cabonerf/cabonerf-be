@@ -172,7 +172,7 @@ public class ProcessServiceImpl implements ProcessService {
     public ProcessNodeDto constructListProcessNodeDto(UUID projectId) {
         // Step 1: Retrieve connectors and root nodes
         List<Connector> connectorList = connectorRepository.findAllByProject(projectId);
-        List<Process> rootNode = processRepository.findProcessesWithoutOutgoingConnectors(projectId);
+        List<Process> rootNode = processRepository.findRootProcess(projectId);
         UUID rootNodeId = rootNode.get(0).getId();  // Assuming only one root node is present
 
         // Step 2: Construct linked list from the root node
