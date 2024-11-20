@@ -244,7 +244,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         // Truy vấn connectors và kiểm tra
         List<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
         if (processList.size() > 1 && connectors.isEmpty()) {
-            throw CustomExceptions.notFound("There must be at least one connector to calculate");
+            throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE);
         }
 
         List<Process> processesWithoutOutgoingConnectors = processRepository.findProcessesWithoutOutgoingConnectors(projectId);

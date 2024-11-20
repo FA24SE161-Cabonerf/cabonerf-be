@@ -106,4 +106,6 @@ public class MessageConstants {
     public static final String EXCHANGE_ALREADY_HAD_CONNECTION = "End exchange already had connection";
     public static final String DELETE_CONNECTOR_SUCCESS = "Delete connector success";
     public static final String CONNECTOR_NOT_FOUND = "Connector not exist";
+    public static final String NO_CONNECTOR_TO_CALCULATE = "There must be at least one connector to calculate";
+    public static final String MUST_BE_ONLY_ONE_ROOT_PROCESS = "There must be one root process to calculate";
 }

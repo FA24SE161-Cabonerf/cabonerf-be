@@ -171,12 +171,24 @@ public class ProcessServiceImpl implements ProcessService {
 
     public ProcessNodeDto constructListProcessNodeDto(UUID projectId) {
         log.info("constructing contribution breakdown data");
+
+        List<Process> processList = processRepository.findAll(projectId);
         List<Connector> connectorList = connectorRepository.findAllByProject(projectId);
+        if (processList.isEmpty()) {
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND);
+        }
+
+        if (processList.size() == 1) {
+            return buildTree(processList.get(0).getId(), connectorList, BigDecimal.ONE);
+        }
+
+        if (connectorList.isEmpty()) {
+            throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE);
+        }
 
         List<Process> rootProcesses = processRepository.findRootProcess(projectId);
-
-        if (rootProcesses.isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND);
+        if (rootProcesses.size() != 1) {
+            throw CustomExceptions.badRequest(MessageConstants.MUST_BE_ONLY_ONE_ROOT_PROCESS);
         }
 
         UUID rootNodeId = rootProcesses.get(0).getId();
