@@ -29,4 +29,8 @@ public class Constants {
     public static final BigDecimal BASE_UNIT_LEVEL = BigDecimal.ZERO;
 
     public static final int BIG_DECIMAL_DEFAULT_SCALE = 60;
+
+    public static final String DELETE_CONNECTOR_TYPE_EXCHANGE = "exchange";
+    public static final String DELETE_CONNECTOR_TYPE_PROCESS = "process";
+
 }

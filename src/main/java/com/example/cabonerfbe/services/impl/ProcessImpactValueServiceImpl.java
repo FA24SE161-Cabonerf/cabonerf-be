@@ -4,6 +4,7 @@ import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.converter.ConnectorConverter;
 import com.example.cabonerfbe.dto.ConnectorPercentDto;
 import com.example.cabonerfbe.dto.GetProjectByIdDto;
+import com.example.cabonerfbe.dto.*;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -11,6 +12,7 @@ import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
+import com.example.cabonerfbe.response.ProjectCalculationResponse;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
 import com.example.cabonerfbe.services.ProjectService;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +50,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private ConnectorConverter connectorConverter;
     @Autowired
     private ProjectImpactValueRepository projectImpactValueRepository;
+    @Autowired
+    private ProcessServiceImpl processService;
 
 
     private final List<ConnectorPercentDto> connectorsResponse = new ArrayList<>();
@@ -189,7 +193,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         for (Process process : processList) {
             // alter the old ones.
             alterPrevImpactValueList(process, methodId);
-//            processImpactValueGenerateUponCreateProcess(new CreateProcessImpactValueRequest(process.getId(), methodId));
             computeProcessImpactValueAllExchangeOfProcess(process);
         }
     }
@@ -206,7 +209,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 existingValues.add(getNewProcessImpactValue(methodCategories.get(i), process));
             }
         }
-
 
         if (existingValues.size() > methodCategories.size()) {
             List<ProcessImpactValue> removeList = existingValues.subList(
@@ -300,13 +302,184 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValueRepository.saveAll(allImpactValues);
 
         updatePreviousProcess();
+
 //        updateProjectValue(processIds, projectId);
 //        calculationConnector(projectId);
-
         return ;
-    }
 
 
+
+
+
+//    public ContributionBreakdown calculateContributionBreakdown(UUID projectId) {
+//        // Step 1: Fetch all end processes (processes with no outgoing connectors)
+//        List<Process> endProcesses = processRepository.findProcessesWithoutOutgoingConnectors(projectId);
+//        if (endProcesses.isEmpty()) {
+//            throw CustomExceptions.badRequest("No end processes found for this project.");
+//        }
+//
+//        // Step 2: Build the contribution breakdown hierarchy
+//        Map<UUID, BigDecimal> totalImpactByProcess = calculateTotalImpactByProcess(projectId);
+//        BigDecimal totalProjectImpact = totalImpactByProcess.values().stream()
+//                .reduce(BigDecimal.ZERO, BigDecimal::add);
+//
+//        // Step 3: Start recursive calculation for each end process
+//        ContributionBreakdown rootBreakdown = new ContributionBreakdown();
+//        rootBreakdown.setProcessName(endProcesses.get(0).getName());
+//        rootBreakdown.setCo2Equivalent(totalProjectImpact.doubleValue());
+//        rootBreakdown.setPercentageOfTotal(100.0);
+//
+//        List<ContributionBreakdown> subBreakdowns = new ArrayList<>();
+//        for (Process endProcess : endProcesses) {
+//            ContributionBreakdown breakdown = calculateProcessContribution(
+//                    endProcess,
+//                    totalImpactByProcess,
+//                    totalProjectImpact
+//            );
+//            subBreakdowns.add(breakdown);
+//        }
+//
+//        rootBreakdown.setSubProcesses(subBreakdowns);
+//        return rootBreakdown;
+//    }
+//
+//    private ContributionBreakdown calculateProcessContribution(
+//            Process process,
+//            Map<UUID, BigDecimal> totalImpactByProcess,
+//            BigDecimal totalProjectImpact
+//    ) {
+//        // Step 4: Create a breakdown for the current process
+//        ContributionBreakdown breakdown = new ContributionBreakdown();
+//        breakdown.setProcessName(process.getName());
+//        BigDecimal processImpact = totalImpactByProcess.getOrDefault(process.getId(), BigDecimal.ZERO);
+//        breakdown.setCo2Equivalent(processImpact.doubleValue());
+//        breakdown.setPercentageOfTotal(
+//                totalProjectImpact.compareTo(BigDecimal.ZERO) == 0
+//                        ? 0.0
+//                        : processImpact.multiply(BigDecimal.valueOf(100))
+//                        .divide(totalProjectImpact, 2, RoundingMode.HALF_UP)
+//                        .doubleValue()
+//        );
+//
+//        // Step 5: Recursively calculate for sub-processes (children)
+//        //
+//        List<Connector> incomingConnectors = new ArrayList<>();
+////                = connectorRepository.findByEndProcessId(process.getId());
+//
+//        List<ContributionBreakdown> subBreakdowns = new ArrayList<>();
+//        for (Connector connector : incomingConnectors) {
+//            Process parentProcess = connector.getStartProcess();
+//            ContributionBreakdown subBreakdown = calculateProcessContribution(
+//                    parentProcess,
+//                    totalImpactByProcess,
+//                    totalProjectImpact
+//            );
+//            subBreakdowns.add(subBreakdown);
+//        }
+//
+//        breakdown.setSubProcesses(subBreakdowns);
+//        return breakdown;
+//    }
+//
+//    private Map<UUID, BigDecimal> calculateTotalImpactByProcess(UUID processId) {
+//        // Query all ProcessImpactValues for the specified process and its descendants
+//        List<ProcessImpactValue> allImpactValues = processImpactValueRepository.findAllByProcessId(processId);
+//
+//        // Group by process ID and sum the impact
+//        return allImpactValues.stream()
+//                .collect(Collectors.groupingBy(
+//                        impactValue -> impactValue.getProcess().getId(),
+//                        Collectors.mapping(
+//                                ProcessImpactValue::getSystemLevel,
+//                                Collectors.reducing(BigDecimal.ZERO, BigDecimal::add)
+//                        )
+//                ));
+//    }
+
+
+
+//    private SankeyBreakdownDto sankeyCalculation(UUID projectId) {
+//        SankeyBreakdownDto sankeyBreakdownDto = new SankeyBreakdownDto();
+//        List<SankeyNode> nodes = new ArrayList<>();
+//        List<SankeyLink> links = new ArrayList<>();
+//
+//        // Retrieve all processes in the project
+//        List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
+//        if (processList.isEmpty()) {
+//            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT);
+//        }
+//
+//        // Map for quick lookup of nodes by processId
+//        Map<UUID, SankeyNode> nodeMap = new HashMap<>();
+//
+//        // Create nodes
+//        processList.forEach(process -> {
+//            SankeyNode node = new SankeyNode();
+//            node.setId(process.getId());
+//            node.setName(process.getName()); // Assuming the Process entity has a name field
+//            nodes.add(node);
+//            nodeMap.put(process.getId(), node);
+//        });
+//
+//        // Retrieve connectors
+//        List<Connector> connectors = connectorRepository.findAllByProcessIds(
+//                processList.stream().map(Process::getId).collect(Collectors.toList())
+//        );
+//
+//        // Create links
+//        connectors.forEach(connector -> {
+//            SankeyLink link = new SankeyLink();
+//            link.setSource(connector.getStartProcess().getId());
+//            link.setTarget(connector.getEndProcess().getId());
+//
+//            // Calculate the link value (flow)
+//            BigDecimal startValue = connector.getStartExchanges().getValue();
+//            BigDecimal endValue = connector.getEndExchanges().getValue();
+//            BigDecimal value = endValue.divide(startValue, MathContext.DECIMAL128);
+//
+//            link.setValue(value);
+//            links.add(link);
+//        });
+//
+//        // Set nodes and links to the DTO
+//        sankeyBreakdownDto.setNodes(nodes);
+//        sankeyBreakdownDto.setLinks(links);
+//
+//        return sankeyBreakdownDto;
+//    }
+
+//    public List<ContributionBreakdown> calculateContributionBreakdown(SankeyBreakdownDto sankeyBreakdownDto) {
+//        Map<UUID, SankeyProcessBreakdownDto> processMap = sankeyBreakdownDto.getProcesses().stream()
+//                .collect(Collectors.toMap(SankeyProcessBreakdownDto::getId, process -> process));
+//
+//        double totalCO2 = sankeyBreakdownDto.getProcesses().stream()
+//                .mapToDouble(SankeyProcessBreakdownDto::getTotalFlow).sum();
+//
+//        // Recursive method to populate hierarchy
+//        return sankeyBreakdownDto.getProcesses().stream()
+//                .filter(process -> process.getParentId() == null) // Top-level processes
+//                .map(process -> buildHierarchy(process, processMap, totalCO2))
+//                .collect(Collectors.toList());
+//    }
+//
+//    private ContributionBreakdown buildHierarchy(SankeyProcessBreakdownDto process,
+//                                                 Map<UUID, SankeyProcessBreakdownDto> processMap,
+//                                                 double totalCO2) {
+//        double co2Equivalent = process.getTotalFlow();
+//        double percentageOfTotal = (co2Equivalent / totalCO2) * 100;
+//
+//        List<ContributionBreakdown> subProcesses = processMap.values().stream()
+//                .filter(p -> p.getParentId() != null && p.getParentId().equals(process.getId()))
+//                .map(subProcess -> buildHierarchy(subProcess, processMap, totalCO2))
+//                .collect(Collectors.toList());
+//
+//        return new ContributionBreakdown(
+//                process.getName(),
+//                co2Equivalent,
+//                percentageOfTotal,
+//                subProcesses
+//        );
+//    }
 
     // Phương thức đệ quy để duyệt đường đi từ một process và tính toán kết quả cho mỗi nhánh
     private BigDecimal traversePath(UUID processId, String previousExchangeName, boolean isFirstProcess) {
@@ -362,7 +535,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         // Kết hợp kết quả hiện tại với kết quả của các đường đi con
         return pathTotal.multiply(multiplyNumerator.divide(multiplyDenominator, MathContext.DECIMAL128));
     }
-
 
     private void updateProcess(List<ProcessImpactValue> list, BigDecimal totalRequiredFlow, UUID currentProcessId) {
         Exchanges o = exchangesRepository.findProductOut(currentProcessId)
@@ -439,7 +611,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValueRepository.saveAll(updatedValues);
     }
 
-    private void calculationConnector(UUID projectId) {
+    private void connectorCalculation(UUID projectId) {
         List<ProjectImpactValue> projectValues = projectImpactValueRepository.findAllByProjectId(projectId);
 
         _connectors.forEach(connector -> {
