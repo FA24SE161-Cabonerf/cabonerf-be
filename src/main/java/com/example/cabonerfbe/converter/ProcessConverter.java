@@ -15,6 +15,8 @@ public interface ProcessConverter {
 
     @Mapping(source = "project.id", target = "projectId")
     @Mapping(source = "overAllProductFlowRequired", target = "overallProductFlowRequired")
+    @Mapping(target = "exchanges", ignore = true)
+    @Mapping(target = "impacts", ignore = true)
     ProcessDto fromProcessToProcessDto(Process process);
 
     ProcessDetailDto fromProcessDetailToProcessDto(Process process);
