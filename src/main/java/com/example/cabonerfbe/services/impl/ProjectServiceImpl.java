@@ -104,7 +104,8 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> CustomExceptions.notFound("Project not exist"));
         processImpactValueService.computeSystemLevelOfProject(id);
-        ProjectCalculationResponse response = projectConverter.fromGetProjectDtoToCalculateResponse(getProject(project));
+        GetProjectByIdDto projectDetail = getProject(project);
+        ProjectCalculationResponse response = projectConverter.fromGetProjectDtoToCalculateResponse(projectDetail);
         response.setContributionBreakdown(processService.constructListProcessNodeDto(id));
         return response;
     }
