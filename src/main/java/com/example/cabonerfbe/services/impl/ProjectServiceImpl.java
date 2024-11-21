@@ -7,6 +7,7 @@ import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
+import com.example.cabonerfbe.request.CalculateProjectRequest;
 import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.CreateProjectResponse;
@@ -100,12 +101,13 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectCalculationResponse calculateProject(UUID id) {
-        Project project = projectRepository.findById(id)
+    public ProjectCalculationResponse calculateProject(CalculateProjectRequest request) {
+        UUID projectId = request.getProjectId();
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> CustomExceptions.notFound("Project not exist"));
-        processImpactValueService.computeSystemLevelOfProject(id);
+        processImpactValueService.computeSystemLevelOfProject(projectId);
         ProjectCalculationResponse response = projectConverter.fromGetProjectDtoToCalculateResponse(getProject(project));
-        response.setContributionBreakdown(processService.constructListProcessNodeDto(id));
+        response.setContributionBreakdown(processService.constructListProcessNodeDto(projectId));
         return response;
     }
 

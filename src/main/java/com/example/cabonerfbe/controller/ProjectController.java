@@ -3,6 +3,7 @@ package com.example.cabonerfbe.controller;
 import com.example.cabonerfbe.enums.API_PARAMS;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
+import com.example.cabonerfbe.request.CalculateProjectRequest;
 import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.ResponseObject;
@@ -86,10 +87,10 @@ public class ProjectController {
     }
 
     @PostMapping(API_PARAMS.CALCULATION_PROJECT)
-    public ResponseEntity<ResponseObject> calculation(@NotNull @RequestBody UUID projectId){
-        log.info("Start calculationProject. Id: {}", projectId);
+    public ResponseEntity<ResponseObject> calculation(@RequestBody CalculateProjectRequest request){
+        log.info("Start calculationProject. request: {}", request);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Calculation project success",  projectService.calculateProject(projectId))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Calculation project success",  projectService.calculateProject(request))
         );
     }
 
