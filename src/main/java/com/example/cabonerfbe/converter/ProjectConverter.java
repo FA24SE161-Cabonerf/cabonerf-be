@@ -34,7 +34,13 @@ public interface ProjectConverter {
         projectCalculationResponse.setLocation(project.getLocation());
         projectCalculationResponse.setMethod(project.getMethod());
         projectCalculationResponse.setImpacts(project.getImpacts());
+        if (project.getProcesses().isEmpty()) {
+            System.out.println("process list empty o converter");
+        }
         projectCalculationResponse.setProcesses(project.getProcesses());
+        if (project.getConnectors().isEmpty()) {
+            System.out.println("connector list empty o converter");
+        }
         projectCalculationResponse.setConnectors(project.getConnectors());
 
         return projectCalculationResponse;
