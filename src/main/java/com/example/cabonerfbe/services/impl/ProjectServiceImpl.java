@@ -107,6 +107,12 @@ public class ProjectServiceImpl implements ProjectService {
         GetProjectByIdDto projectDetail = getProject(project);
         ProjectCalculationResponse response = projectConverter.fromGetProjectDtoToCalculateResponse(projectDetail);
         response.setContributionBreakdown(processService.constructListProcessNodeDto(id));
+        if (response.getProcesses().isEmpty()) {
+            System.out.println("process empty o response");
+        }
+        if (response.getConnectors().isEmpty()) {
+            System.out.println("connector empty o response");
+        }
         return response;
     }
 
