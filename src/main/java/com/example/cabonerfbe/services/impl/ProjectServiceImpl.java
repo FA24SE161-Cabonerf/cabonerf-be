@@ -220,7 +220,13 @@ public class ProjectServiceImpl implements ProjectService {
         dto.setMethod(methodConverter.fromMethodToMethodDto(project.getLifeCycleImpactAssessmentMethod()));
         dto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
         dto.setProcesses(processService.getAllProcessesByProjectId(project.getId()));
+        if (dto.getProcesses().isEmpty()) {
+            System.out.println("process list empty o cho nay getProject");
+        }
         dto.setConnectors(connectorConverter.fromListConnectorToConnectorDto(connectorRepository.findAllByProject(project.getId())));
+        if (dto.getConnectors().isEmpty()) {
+            System.out.println("connector list empty o cho nay getProject");
+        }
         return dto;
     }
 

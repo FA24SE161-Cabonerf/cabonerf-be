@@ -6,11 +6,11 @@ import lombok.*;
 import java.util.List;
 import java.util.UUID;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 public class ProjectCalculationResponse {
     private UUID id;
     private String name;
