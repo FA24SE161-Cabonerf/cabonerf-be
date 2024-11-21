@@ -20,9 +20,25 @@ public interface ProjectConverter {
     ProjectDto toDto(Project project);
 
     @Mapping(source = "lifeCycleImpactAssessmentMethod", target = "method")
-
     UpdateProjectDto fromDetailToDto(Project project);
 
-    @Mapping(target = "contributionBreakdown", ignore = true)
-    ProjectCalculationResponse fromGetProjectDtoToCalculateResponse(GetProjectByIdDto project);
+    default ProjectCalculationResponse fromGetProjectDtoToCalculateResponse(GetProjectByIdDto project) {
+        if (project == null) {
+            return null;
+        }
+        ProjectCalculationResponse projectCalculationResponse = new ProjectCalculationResponse();
+
+        projectCalculationResponse.setId(project.getId());
+        projectCalculationResponse.setName(project.getName());
+        projectCalculationResponse.setDescription(project.getDescription());
+        projectCalculationResponse.setLocation(project.getLocation());
+        projectCalculationResponse.setMethod(project.getMethod());
+        projectCalculationResponse.setImpacts(project.getImpacts());
+        projectCalculationResponse.setProcesses(project.getProcesses());
+        projectCalculationResponse.setConnectors(project.getConnectors());
+
+        return projectCalculationResponse;
+    }
+
+    ;
 }
