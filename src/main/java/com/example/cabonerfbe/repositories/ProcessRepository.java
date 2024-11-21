@@ -38,6 +38,7 @@ public interface ProcessRepository extends JpaRepository<Process, UUID> {
     @Query("SELECT p FROM Process p " +
             "WHERE p.project.id = :projectId " +
             "AND p.id IN (SELECT c.endProcess.id FROM Connector c WHERE c.endProcess.project.id = :projectId) " +
-            "AND p.id NOT IN (SELECT c.startProcess.id FROM Connector c WHERE c.startProcess.project.id = :projectId)")
+            "AND p.id NOT IN (SELECT c.startProcess.id FROM Connector c WHERE c.startProcess.project.id = :projectId)" +
+            "AND p.status = true")
     List<Process> findRootProcess(@Param("projectId") UUID projectId);
 }
