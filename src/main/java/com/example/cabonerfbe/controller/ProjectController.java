@@ -9,6 +9,7 @@ import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
 import com.example.cabonerfbe.services.ProjectService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -84,8 +85,8 @@ public class ProjectController {
         );
     }
 
-    @GetMapping(API_PARAMS.CALCULATION_PROJECT)
-    public ResponseEntity<ResponseObject> calculation(@PathVariable("projectId") UUID projectId){
+    @PostMapping(API_PARAMS.CALCULATION_PROJECT)
+    public ResponseEntity<ResponseObject> calculation(@NotNull @RequestBody UUID projectId){
         log.info("Start calculationProject. Id: {}", projectId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Calculation project success",  projectService.calculateProject(projectId))

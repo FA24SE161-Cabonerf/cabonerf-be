@@ -104,15 +104,8 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> CustomExceptions.notFound("Project not exist"));
         processImpactValueService.computeSystemLevelOfProject(id);
-        GetProjectByIdDto projectDetail = getProject(project);
-        ProjectCalculationResponse response = projectConverter.fromGetProjectDtoToCalculateResponse(projectDetail);
+        ProjectCalculationResponse response = projectConverter.fromGetProjectDtoToCalculateResponse(getProject(project));
         response.setContributionBreakdown(processService.constructListProcessNodeDto(id));
-        if (response.getProcesses().isEmpty()) {
-            System.out.println("process empty o response");
-        }
-        if (response.getConnectors().isEmpty()) {
-            System.out.println("connector empty o response");
-        }
         return response;
     }
 
