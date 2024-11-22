@@ -52,14 +52,14 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private final List<ConnectorPercentDto> connectorsResponse = new ArrayList<>();
     private final ProjectImpactValue totalProject = new ProjectImpactValue();
     private final List<Connector> _connectors = new ArrayList<>();
+    private String exchangeIdNext = null;
 
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     private void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
         UUID processId = request.getProcessId();
         UUID methodId = request.getMethodId();
         Process process = processRepository.findByProcessId(processId).orElseThrow(
-                () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND)
-        );
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
         List<ImpactMethodCategory> methodCategoryList = impactMethodCategoryRepository.findByMethod(methodId);
         List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
         for (ImpactMethodCategory methodCategory : methodCategoryList) {
@@ -91,18 +91,20 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         // -> if present => unit level +=
         // todo: use map then update all at once.
         List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
-        List<Exchanges> exchangeList = exchangesRepository.findAllByProcessIdAndExchangesType(processId, Constants.ELEMENTARY_EXCHANGE);
+        List<Exchanges> exchangeList = exchangesRepository.findAllByProcessIdAndExchangesType(processId,
+                Constants.ELEMENTARY_EXCHANGE);
 
         for (Exchanges exchange : exchangeList) {
             UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
-            List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository.findByEmissionSubstanceId(emissionSubstanceId);
+            List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository
+                    .findByEmissionSubstanceId(emissionSubstanceId);
             BigDecimal exchangeValue = exchange.getValue();
             Unit exchangeUnit = exchange.getUnit();
             Unit baseUnit = exchange.getEmissionSubstance().getUnit();
             for (MidpointImpactCharacterizationFactors factors : list) {
-                Optional<ProcessImpactValue> processImpactValueOpt = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(
-                        processId, factors.getImpactMethodCategory().getId()
-                );
+                Optional<ProcessImpactValue> processImpactValueOpt = processImpactValueRepository
+                        .findByProcessIdAndImpactMethodCategoryId(
+                                processId, factors.getImpactMethodCategory().getId());
                 if (processImpactValueOpt.isPresent()) {
                     ProcessImpactValue processImpactValue = processImpactValueOpt.get();
                     BigDecimal unitLevel = processImpactValue.getUnitLevel();
@@ -127,18 +129,20 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
         Unit baseUnit = exchange.getEmissionSubstance().getUnit();
 
-        List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository.findByEmissionSubstanceId(emissionSubstanceId);
+        List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository
+                .findByEmissionSubstanceId(emissionSubstanceId);
 
         for (MidpointImpactCharacterizationFactors factors : list) {
-            Optional<ProcessImpactValue> processImpactValueOpt = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(
-                    processId, factors.getImpactMethodCategory().getId()
-            );
+            Optional<ProcessImpactValue> processImpactValueOpt = processImpactValueRepository
+                    .findByProcessIdAndImpactMethodCategoryId(
+                            processId, factors.getImpactMethodCategory().getId());
 
             if (processImpactValueOpt.isPresent()) {
                 ProcessImpactValue processImpactValue = processImpactValueOpt.get();
                 BigDecimal unitLevel = processImpactValue.getUnitLevel();
 
-                System.out.println("Processing impact method category ID: " + factors.getImpactMethodCategory().getId());
+                System.out
+                        .println("Processing impact method category ID: " + factors.getImpactMethodCategory().getId());
                 System.out.println("Initial unit level: " + unitLevel);
                 System.out.println("base exchange value (before converted): " + exchange.getValue());
                 System.out.println("initial value: " + initialValue);
@@ -146,8 +150,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 BigDecimal exchangeValue = unitService.convertValue(
                         exchange.getUnit(),
                         exchange.getValue().subtract(initialValue),
-                        baseUnit
-                );
+                        baseUnit);
                 System.out.println("Converted exchange value: " + exchangeValue);
 
                 // Adjust unit level by adding the product of exchange value and factor
@@ -165,21 +168,25 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         // Batch save processImpactValues in chunks
         int batchSize = 100;
         for (int i = 0; i < processImpactValueList.size(); i += batchSize) {
-            List<ProcessImpactValue> batch = processImpactValueList.subList(i, Math.min(i + batchSize, processImpactValueList.size()));
+            List<ProcessImpactValue> batch = processImpactValueList.subList(i,
+                    Math.min(i + batchSize, processImpactValueList.size()));
             processImpactValueRepository.saveAll(batch);
         }
     }
 
     public void computeProcessImpactValueOfProject(Project project) {
-        // the idea here is getting all the process impact value based on the project id input,
-        // then update each manually, this might take like forever since each exchange inside each process is calculated again
-        // the issue here is performance -> 1 project may have many processes, and each process can also have several exchanges
+        // the idea here is getting all the process impact value based on the project id
+        // input,
+        // then update each manually, this might take like forever since each exchange
+        // inside each process is calculated again
+        // the issue here is performance -> 1 project may have many processes, and each
+        // process can also have several exchanges
         // so we have to use nested loops,
         // forE: {
-        //      forE: {
-        //          (and even)
-        //          forE: {}
-        //      }
+        // forE: {
+        // (and even)
+        // forE: {}
+        // }
         // }
         // assume that the project is not null
         UUID projectId = project.getId();
@@ -208,8 +215,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         if (existingValues.size() > methodCategories.size()) {
             List<ProcessImpactValue> removeList = existingValues.subList(
                     methodCategories.size(),
-                    existingValues.size()
-            );
+                    existingValues.size());
             processImpactValueRepository.deleteAll(removeList);
             existingValues = existingValues.subList(0, methodCategories.size());
         }
@@ -217,12 +223,10 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValueRepository.saveAll(existingValues);
     }
 
-
     public void computeSystemLevelOfProject(UUID projectId) {
 
         Project project = projectRepository.findById(projectId).orElseThrow(
-                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
-        );
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND));
 
         // Lấy toàn bộ process và kiểm tra
         List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
@@ -242,11 +246,13 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE);
         }
 
-        List<Process> processesWithoutOutgoingConnectors = processRepository.findProcessesWithoutOutgoingConnectors(projectId);
+        List<Process> processesWithoutOutgoingConnectors = processRepository
+                .findProcessesWithoutOutgoingConnectors(projectId);
         if (processesWithoutOutgoingConnectors.size() > 1) {
-            throw CustomExceptions.badRequest("A final node is missing to complete the process. Please check the diagram structure or add a final node to proceed.");
+            throw CustomExceptions.badRequest(
+                    "A final node is missing to complete the process. Please check the diagram structure or add a final node to proceed.");
         }
-        if(processIds.size() > 1){
+        if (processIds.size() > 1) {
             boolean allValuesZero = allExchanges.stream()
                     .allMatch(exchange -> exchange.getValue().equals(BigDecimal.ZERO));
             if (allValuesZero) {
@@ -278,7 +284,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
         _connectors.addAll(connectors);
 
-        List<Process> processesWithoutOutgoingConnectors = processRepository.findProcessesWithoutOutgoingConnectors(projectId);
+        List<Process> processesWithoutOutgoingConnectors = processRepository
+                .findProcessesWithoutOutgoingConnectors(projectId);
         if (processesWithoutOutgoingConnectors.size() > 1) {
             return;
         }
@@ -309,7 +316,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         return;
     }
 
-    // Phương thức đệ quy để duyệt đường đi từ một process và tính toán kết quả cho mỗi nhánh
+    // Phương thức đệ quy để duyệt đường đi từ một process và tính toán kết quả cho
+    // mỗi nhánh
     private BigDecimal traversePath(UUID processId, String previousExchangeName, boolean isFirstProcess) {
         BigDecimal multiplyNumerator = BigDecimal.ONE;
         BigDecimal multiplyDenominator = BigDecimal.ONE;
@@ -317,7 +325,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         if (isFirstProcess) {
             String finalPreviousExchangeName = previousExchangeName;
             List<Exchanges> exchanges = exchangesRepository.findProductByProcessId(processId).stream()
-                    .filter(exchange -> !exchange.isInput() || exchange.getName().equals(finalPreviousExchangeName))
+                    .filter(exchange -> !exchange.isInput() || exchange.getId().equals(UUID.fromString(exchangeIdNext)))
                     .collect(Collectors.toList());
 
             for (Exchanges exchange : exchanges) {
@@ -328,11 +336,11 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         } else {
             String finalPreviousExchangeName = previousExchangeName;
             List<Exchanges> exchanges = exchangesRepository.findProductByProcessId(processId).stream()
-                    .filter(exchange -> !exchange.isInput() || exchange.getName().equals(finalPreviousExchangeName))
+                    .filter(exchange -> !exchange.isInput() || exchange.getId().equals(UUID.fromString(exchangeIdNext)))
                     .collect(Collectors.toList());
 
             for (Exchanges exchange : exchanges) {
-                if(exchange.getValue().equals(BigDecimal.ZERO)){
+                if (exchange.getValue().equals(BigDecimal.ZERO)) {
                     return null;
                 }
                 BigDecimal conversionFactor = exchange.getUnit().getConversionFactor();
@@ -356,10 +364,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             return multiplyNumerator.divide(multiplyDenominator, MathContext.DECIMAL128);
         }
 
-        // Nếu có connector tiếp theo, tiếp tục duyệt các đường đi khác và cộng dồn kết quả
+        // Nếu có connector tiếp theo, tiếp tục duyệt các đường đi khác và cộng dồn kết
+        // quả
         BigDecimal pathTotal = BigDecimal.ZERO;
         for (Connector nextConnector : nextConnectors) {
             UUID nextProcessId = nextConnector.getEndProcess().getId();
+            exchangeIdNext = nextConnector.getEndExchanges().getId().toString();
             pathTotal = pathTotal.add(traversePath(nextProcessId, previousExchangeName, false));
         }
 
@@ -380,15 +390,16 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                     : totalRequiredFlow.multiply(x.getUnitLevel())
                     .divide(outputValue, MathContext.DECIMAL128);
 
-//            x.setSystemLevel(value);
+            // x.setSystemLevel(value);
             x.setOverallImpactContribution(value);
         });
 
         processImpactValueRepository.saveAll(list);
     }
+
     private void updateProcessWhenCalculation(List<UUID> processIds) {
         List<ProcessImpactValue> value = processImpactValueRepository.findAllByProcessIds(processIds);
-        for (ProcessImpactValue x : value){
+        for (ProcessImpactValue x : value) {
             x.setSystemLevel(x.getOverallImpactContribution());
         }
         processImpactValueRepository.saveAll(value);
@@ -405,8 +416,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 .stream()
                 .collect(Collectors.groupingBy(
                         x -> x.getImpactMethodCategory().getId(),
-                        Collectors.mapping(ProcessImpactValue::getSystemLevel, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))
-                ));
+                        Collectors.mapping(ProcessImpactValue::getSystemLevel,
+                                Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))));
 
         if (existingValues.isEmpty()) {
             List<ProjectImpactValue> newValues = categories.stream().map(category -> {
@@ -419,7 +430,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             projectImpactValueRepository.saveAll(newValues);
         } else {
             existingValues.forEach(value -> {
-                BigDecimal sum = processImpactSums.getOrDefault(value.getImpactMethodCategory().getId(), BigDecimal.ZERO);
+                BigDecimal sum = processImpactSums.getOrDefault(value.getImpactMethodCategory().getId(),
+                        BigDecimal.ZERO);
                 value.setValue(sum);
             });
             projectImpactValueRepository.saveAll(existingValues);
@@ -429,17 +441,23 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private void updatePreviousProcess() {
         List<ProcessImpactValue> updatedValues = _connectors.stream()
                 .flatMap(connector -> {
-                    Exchanges startExchange = exchangesRepository.findById(connector.getStartExchanges().getId()).orElseThrow();
-                    Exchanges endExchange = exchangesRepository.findById(connector.getEndExchanges().getId()).orElseThrow();
+                    Exchanges startExchange = exchangesRepository.findById(connector.getStartExchanges().getId())
+                            .orElseThrow();
+                    Exchanges endExchange = exchangesRepository.findById(connector.getEndExchanges().getId())
+                            .orElseThrow();
 
-                    BigDecimal divisor = endExchange.getValue().divide(startExchange.getValue(), MathContext.DECIMAL128);
+                    BigDecimal divisor = endExchange.getValue().divide(startExchange.getValue(),
+                            MathContext.DECIMAL128);
 
-                    List<ProcessImpactValue> startValues = processImpactValueRepository.findAllByProcess(connector.getStartProcess());
-                    List<ProcessImpactValue> endValues = processImpactValueRepository.findAllByProcess(connector.getEndProcess());
+                    List<ProcessImpactValue> startValues = processImpactValueRepository
+                            .findAllByProcess(connector.getStartProcess());
+                    List<ProcessImpactValue> endValues = processImpactValueRepository
+                            .findAllByProcess(connector.getEndProcess());
 
                     return startValues.stream().flatMap(start -> endValues.stream().map(end -> {
                         if (start.getImpactMethodCategory().equals(end.getImpactMethodCategory())) {
-                            end.setPreviousProcessValue(end.getPreviousProcessValue().add(divisor.multiply(start.getUnitLevel())));
+                            end.setPreviousProcessValue(
+                                    end.getPreviousProcessValue().add(divisor.multiply(start.getUnitLevel())));
                         }
                         return end;
                     }));
@@ -449,27 +467,34 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValueRepository.saveAll(updatedValues);
     }
 
-//    private void connectorCalculation(UUID projectId) {
-//        List<ProjectImpactValue> projectValues = projectImpactValueRepository.findAllByProjectId(projectId);
-//
-//        _connectors.forEach(connector -> {
-//            BigDecimal divisor = findWay(connector);
-//
-//            List<ProcessImpactValue> startValues = processImpactValueRepository.findAllByProcess(connector.getStartProcess());
-//            ConnectorPercentDto dto = connectorConverter.fromConnectorToConnectorPercentDto(connector);
-//
-//            projectValues.stream()
-//                    .flatMap(projectValue -> startValues.stream()
-//                            .filter(start -> start.getImpactMethodCategory().equals(projectValue.getImpactMethodCategory()) && projectValue.getValue().compareTo(BigDecimal.ZERO) > 0)
-//                            .map(start -> {
-//                                BigDecimal totalValue = start.getPreviousProcessValue().add(start.getUnitLevel()).multiply(divisor);
-//                                dto.setPercent(totalValue.divide(projectValue.getValue(), 2, RoundingMode.HALF_UP));
-//                                return dto;
-//                            }))
-//                    .findFirst()
-//                    .ifPresent(connectorsResponse::add);
-//        });
-//    }
+    // private void connectorCalculation(UUID projectId) {
+    // List<ProjectImpactValue> projectValues =
+    // projectImpactValueRepository.findAllByProjectId(projectId);
+    //
+    // _connectors.forEach(connector -> {
+    // BigDecimal divisor = findWay(connector);
+    //
+    // List<ProcessImpactValue> startValues =
+    // processImpactValueRepository.findAllByProcess(connector.getStartProcess());
+    // ConnectorPercentDto dto =
+    // connectorConverter.fromConnectorToConnectorPercentDto(connector);
+    //
+    // projectValues.stream()
+    // .flatMap(projectValue -> startValues.stream()
+    // .filter(start ->
+    // start.getImpactMethodCategory().equals(projectValue.getImpactMethodCategory())
+    // && projectValue.getValue().compareTo(BigDecimal.ZERO) > 0)
+    // .map(start -> {
+    // BigDecimal totalValue =
+    // start.getPreviousProcessValue().add(start.getUnitLevel()).multiply(divisor);
+    // dto.setPercent(totalValue.divide(projectValue.getValue(), 2,
+    // RoundingMode.HALF_UP));
+    // return dto;
+    // }))
+    // .findFirst()
+    // .ifPresent(connectorsResponse::add);
+    // });
+    // }
 
     private void findWay(List<Connector> connectors) {
         BigDecimal totalWay = connectors.stream()
@@ -481,8 +506,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                     // Kiểm tra nếu startValue bằng 0
                     if (startValue.compareTo(BigDecimal.ZERO) == 0) {
                         throw CustomExceptions.badRequest(
-                                connector.getStartExchanges().getName() + " has a value of 0. Cannot perform calculation."
-                        );
+                                connector.getStartExchanges().getName()
+                                        + " has a value of 0. Cannot perform calculation.");
                     }
 
                     // Trả về kết quả chia
@@ -492,7 +517,5 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
         // In kết quả cuối cùng
     }
-
-
 
 }
