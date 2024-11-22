@@ -325,7 +325,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         if (isFirstProcess) {
             String finalPreviousExchangeName = previousExchangeName;
             List<Exchanges> exchanges = exchangesRepository.findProductByProcessId(processId).stream()
-                    .filter(exchange -> !exchange.isInput() || exchange.getId().equals(UUID.fromString(exchangeIdNext)))
+                    .filter(exchange -> {
+                        if (exchangeIdNext != null) {
+                            return !exchange.isInput() || exchange.getId().equals(UUID.fromString(exchangeIdNext));
+                        }
+                        return !exchange.isInput();
+                    })
                     .collect(Collectors.toList());
 
             for (Exchanges exchange : exchanges) {
@@ -336,7 +341,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         } else {
             String finalPreviousExchangeName = previousExchangeName;
             List<Exchanges> exchanges = exchangesRepository.findProductByProcessId(processId).stream()
-                    .filter(exchange -> !exchange.isInput() || exchange.getId().equals(UUID.fromString(exchangeIdNext)))
+                    .filter(exchange -> {
+                        if (exchangeIdNext != null) {
+                            return !exchange.isInput() || exchange.getId().equals(UUID.fromString(exchangeIdNext));
+                        }
+                        return !exchange.isInput();
+                    })
                     .collect(Collectors.toList());
 
             for (Exchanges exchange : exchanges) {
