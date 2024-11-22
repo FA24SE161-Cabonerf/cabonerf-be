@@ -170,6 +170,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                     Math.min(i + batchSize, processImpactValueList.size()));
             processImpactValueRepository.saveAll(batch);
         }
+
     }
 
     public void computeProcessImpactValueOfProject(Project project) {
