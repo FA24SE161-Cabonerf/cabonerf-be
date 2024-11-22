@@ -232,7 +232,7 @@ public class ProcessServiceImpl implements ProcessService {
         BigDecimal endValue = connector.getEndExchanges().getValue();
         BigDecimal startValue = connector.getStartExchanges().getValue();
 
-        if (startValue.equals(BigDecimal.ZERO) || endValue.equals(BigDecimal.ZERO)) {
+        if (startValue.compareTo(BigDecimal.ZERO) == 0 || endValue.compareTo(BigDecimal.ZERO) == 0) {
             throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_VALUE_CANNOT_BE_ZERO);
         }
 
