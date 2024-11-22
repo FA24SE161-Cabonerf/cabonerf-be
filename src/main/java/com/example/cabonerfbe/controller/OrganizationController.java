@@ -5,11 +5,11 @@ import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.models.Contract;
 import com.example.cabonerfbe.models.Organization;
-import com.example.cabonerfbe.request.CreateOrganizationRequest;
-import com.example.cabonerfbe.request.RequestObject;
-import com.example.cabonerfbe.request.UpdateOrganizationRequest;
+import com.example.cabonerfbe.request.*;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.OrganizationService;
+import io.swagger.v3.oas.annotations.headers.Header;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,4 +66,60 @@ public class OrganizationController {
         ));
     }
 
+    @PutMapping(API_PARAMS.ORGANIZATION_MANAGER + API_PARAMS.CONFIRM_CREATE_ORGANIZATION)
+    public ResponseEntity<ResponseObject> confirmCreateOrganization(@RequestParam("organizationId") UUID organizationId, @RequestParam("token") String token) {
+        VerifyCreateOrganizationRequest request = new VerifyCreateOrganizationRequest(organizationId, token);
+        log.info("Start confirmCreateOrganization. request: {}",request);
+        return ResponseEntity.ok().body(new ResponseObject(
+                Constants.RESPONSE_STATUS_SUCCESS,MessageConstants.CONFIRM_CREATE_ORGANIZATION_SUCCESS,organizationService.confirm(request)
+        ));
+    }
+
+    @PostMapping(API_PARAMS.ORGANIZATION_MANAGER + API_PARAMS.INVITE_MEMBER_ORGANIZATION)
+    public ResponseEntity<ResponseObject> inviteMemberOrganization(@RequestHeader("x-user-id") UUID userId, @Valid @RequestBody InviteUserToOrganizationRequest request){
+        log.info("Start inviteMemberOrganization. Request: {}", request);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Invite member organization success",organizationService.invite(userId,request))
+        );
+    }
+
+    @PutMapping(API_PARAMS.ACCEPT_INVITE_ORGANIZATION)
+    public ResponseEntity<ResponseObject> accept(@RequestHeader("x-user-id") UUID userId, @Valid @RequestBody AcceptInviteRequest request){
+        log.info("Start acceptInviteOrganization. userId: {}, request: {}", userId,request);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Accept invite organization success",organizationService.acceptDenyInvite(userId,request,"Accept"))
+        );
+    }
+
+    @PutMapping(API_PARAMS.DENY_INVITE_ORGANIZATION)
+    public ResponseEntity<ResponseObject> deny(@RequestHeader("x-user-id") UUID userId, @Valid @RequestBody AcceptInviteRequest request){
+        log.info("Start denyInviteOrganization. userId: {}, request: {}", userId,request);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Deny invite organization success",organizationService.acceptDenyInvite(userId,request,"Deny"))
+        );
+    }
+
+    @GetMapping(API_PARAMS.GET_MEMBER_IN_ORGANIZATION)
+    public ResponseEntity<ResponseObject> getMemberInOrganization(@RequestHeader("x-user-id") UUID userId){
+        log.info("Start getMemberInOrganization");
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get organization success",organizationService.getMemberInOrganization(userId))
+        );
+    }
+
+    @DeleteMapping(API_PARAMS.ORGANIZATION_MANAGER + API_PARAMS.REMOVE_MEMBER_IN_ORGANIZATION)
+    public ResponseEntity<ResponseObject> removeMember(@RequestHeader("x-user-id") UUID userId,@PathVariable("userOrganizationId") UUID userOrganizationId){
+        log.info("Start removeMember");
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Remove member success",organizationService.removeMember(userId,userOrganizationId))
+        );
+    }
+
+    @GetMapping(API_PARAMS.GET_LIST_INVITE_BY_USER)
+    public ResponseEntity<ResponseObject> getListInvite(@RequestHeader("x-user-id") UUID userId){
+        log.info("Start getListInvite");
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get list invite success",organizationService.getListInviteByUser(userId))
+        );
+    }
 }

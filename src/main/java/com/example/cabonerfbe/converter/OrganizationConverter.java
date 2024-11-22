@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.converter;
 
+import com.example.cabonerfbe.dto.InviteUserOrganizationDto;
 import com.example.cabonerfbe.dto.OrganizationDto;
 import com.example.cabonerfbe.models.Organization;
 import org.mapstruct.Mapper;

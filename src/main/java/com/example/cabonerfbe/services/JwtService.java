@@ -3,9 +3,13 @@ package com.example.cabonerfbe.services;
 import com.example.cabonerfbe.converter.UserVerifyStatusConverter;
 import com.example.cabonerfbe.dto.UserVerifyStatusDto;
 import com.example.cabonerfbe.enums.Constants;
+import com.example.cabonerfbe.exception.CustomExceptions;
+import com.example.cabonerfbe.models.EmailVerificationToken;
+import com.example.cabonerfbe.repositories.EmailVerificationTokenRepository;
 import com.example.cabonerfbe.repositories.UserRepository;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -70,6 +74,8 @@ public class JwtService {
 
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    EmailVerificationTokenRepository evtRepository;
 
     public String extractUsername(String token, String tokenType) {
         return extractClaim(token, tokenType, Claims::getSubject);
@@ -221,5 +227,38 @@ public class JwtService {
 
         // Giải mã Base64 secret key
         return Keys.hmacShaKeyFor(secretKey.getBytes());
+    }
+
+    public EmailVerificationToken checkToken(String token){
+        if(!token.startsWith("Bearer ")){
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("Email verify token", "Email verify token not valid"));
+        }
+
+        String verifyToken = token.substring(7);
+
+        try {
+            String userEmail = this.extractUsername(verifyToken, "email_verify");
+            if (this.isTokenExpired(verifyToken, "email_verify")) {
+                throw CustomExceptions.unauthorized(
+                        Constants.RESPONSE_STATUS_ERROR,
+                        Map.of("emailVerify", "Email verify token is expired")
+                );
+            }
+        } catch (JwtException e) {
+            throw CustomExceptions.validator(
+                    Constants.RESPONSE_STATUS_ERROR,
+                    Map.of("emailVerify", "Email verify token format is wrong")
+            );
+        }
+
+        EmailVerificationToken _token = evtRepository.findByToken(verifyToken);
+
+        if (_token == null) {
+            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, Map.of("Email verify token", "Email verify token not exist"));
+        }
+        if (!_token.isValid()) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("Email verify token", "Email verify token not valid"));
+        }
+        return _token;
     }
 }

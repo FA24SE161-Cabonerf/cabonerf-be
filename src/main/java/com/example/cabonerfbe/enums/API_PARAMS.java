@@ -17,6 +17,8 @@ public class API_PARAMS {
     public static final String MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR = "/midpoint-impact-characterization-factors";
     public static final String IMPORT_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR = "/import";
     public static final String BAN_UNBAN_USER = "/ban-unban-user/{userId}";
+    public static final String UPDATE_AVATAR_USER = "/avatar";
+    public static final String GET_USER_TO_INVITE = "/invite";
 
 
     /************************
@@ -156,14 +158,32 @@ public class API_PARAMS {
     public static final String ORGANIZATION = "/organizations";
     public static final String UPDATE_ORGANIZATION = "/{organizationId}";
     public static final String DELETE_ORGANIZATION = "/{organizationId}";
+    public static final String CONFIRM_CREATE_ORGANIZATION = "/confirm";
+    public static final String INVITE_MEMBER_ORGANIZATION = "/invite";
+    public static final String ACCEPT_INVITE_ORGANIZATION = "/accept";
+    public static final String DENY_INVITE_ORGANIZATION = "/deny";
+    public static final String GET_MEMBER_IN_ORGANIZATION = "/members";
+    public static final String REMOVE_MEMBER_IN_ORGANIZATION = "/remove-member/{userOrganizationId}";
+    public static final String GET_LIST_INVITE_BY_USER = "/invite-list";
 
     public static final String MANAGER = "/manager";
+    public static final String ORGANIZATION_MANAGER = "/organization-manager";
+
+    /************************
+     *   WORKSPACE APIs   *
+     ************************/
+    public static final String WORKSPACE = "/workspaces";
+
+    /************************
+     *   CONTRACT APIs   *
+     ************************/
+    public static final String CONTRACT = "/contracts";
+    public static final String DOWNLOAD_CONTRACT = "/{contractId}";
 
     /************************
      *   EMISSIONS COMPARTMENT APIs   *
      ************************/
     public static final String UPDATE_EMISSION_COMPARTMENT = "/{emissionCompartmentId}";
     public static final String DELETE_EMISSION_COMPARTMENT = "/{emissionCompartmentId}";
-
 
 }

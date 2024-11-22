@@ -28,4 +28,6 @@ public class UserOrganization extends Base{
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
+
+    private boolean hasJoined;
 }

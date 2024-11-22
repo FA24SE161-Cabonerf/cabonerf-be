@@ -58,9 +58,10 @@ public class AuthenticateController {
     }
 
     @PostMapping(API_PARAMS.EMAIL_VERIFY)
-    public ResponseEntity<ResponseObject> verify(@Valid @RequestBody(required = true) VerifyEmailRequest verifyEmailRequest) {
+    public ResponseEntity<ResponseObject> verify(@RequestParam("token") String token) {
+        VerifyEmailRequest request = new VerifyEmailRequest(token);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Verify email successfully.", authenticationService.verifyEmail(verifyEmailRequest))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Verify email successfully.", authenticationService.verifyEmail(request))
         );
     }
 
