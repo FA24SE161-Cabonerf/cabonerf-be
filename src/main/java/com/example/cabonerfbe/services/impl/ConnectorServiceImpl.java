@@ -177,6 +177,9 @@ public class ConnectorServiceImpl implements ConnectorService {
         // if the end exchange is not specified -> create new end
         Exchanges endExchange = createNewExchange(startExchange, endProcess, INPUT);
 
+        CompletableFuture.runAsync(() ->
+                pivService.computeSystemLevelOfProjectBackground(startProcess.getProject().getId())
+        );
         return CreateConnectorResponse.builder()
                 .connector(convertAndSaveConnector(startExchange, endExchange, startProcess, endProcess))
                 .updatedProcess(new ConnectorUpdatedProcessDto(endProcess.getId(), exchangesConverter.fromExchangesToExchangesDto(endExchange)))
