@@ -46,8 +46,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private ConnectorConverter connectorConverter;
     @Autowired
     private ProjectImpactValueRepository projectImpactValueRepository;
-    @Autowired
-    private ProcessServiceImpl processService;
 
     private final List<ConnectorPercentDto> connectorsResponse = new ArrayList<>();
     private final ProjectImpactValue totalProject = new ProjectImpactValue();
