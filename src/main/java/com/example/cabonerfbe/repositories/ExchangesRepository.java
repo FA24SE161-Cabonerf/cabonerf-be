@@ -27,7 +27,7 @@ public interface ExchangesRepository extends JpaRepository<Exchanges, UUID> {
     @Query("select e from Exchanges e where e.process.id = ?1 and e.exchangesType.name = ?2 and e.status = true")
     List<Exchanges> findAllByProcessIdAndExchangesType(UUID id, String exchangesType);
 
-    @Query("SELECT e FROM Exchanges e WHERE e.process.id = ?1 AND e.exchangesType.name like 'Product'")
+    @Query("SELECT e FROM Exchanges e WHERE e.process.id = ?1 AND e.exchangesType.name like 'Product'AND e.status = true")
     List<Exchanges> findProductByProcessId(UUID currentProcessId);
 
     @Query("SELECT e FROM Exchanges e WHERE e.id IN :exchangeIdList AND e.status = true")

@@ -16,6 +16,7 @@ import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.MessagePublisher;
+import com.example.cabonerfbe.services.ProcessImpactValueService;
 import com.example.cabonerfbe.services.ProcessService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,6 +60,8 @@ public class ProcessServiceImpl implements ProcessService {
     private UnitServiceImpl unitService;
     @Autowired
     private UnitRepository unitRepository;
+    @Autowired
+    private ProcessImpactValueService pivService;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
@@ -84,7 +88,6 @@ public class ProcessServiceImpl implements ProcessService {
         ProcessDto processDto = processConverter.fromProcessToProcessDto(process);
         processDto.setImpacts(new ArrayList<>());
         processDto.setExchanges(new ArrayList<>());
-
         return processDto;
     }
 
@@ -146,7 +149,9 @@ public class ProcessServiceImpl implements ProcessService {
 
         Thread deleteConnectorThread = new Thread(() -> connectorService.deleteAssociatedConnectors(id, Constants.DELETE_CONNECTOR_TYPE_PROCESS));
         deleteConnectorThread.start();
-
+        CompletableFuture.runAsync(() ->
+                pivService.computeSystemLevelOfProjectBackground(process.getId())
+        );
         return new DeleteProcessResponse(process.getId());
     }
 

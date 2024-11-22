@@ -350,10 +350,6 @@ public class ExchangesServiceImpl implements ExchangesService {
         } else {
             exchange.setUnit(unitRepository.findByNameUnit(DEFAULT_PRODUCT_UNIT));
         }
-
-        CompletableFuture.runAsync(() ->
-                processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId())
-        );
         return exchange;
     }
 
