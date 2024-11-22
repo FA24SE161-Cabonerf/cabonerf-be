@@ -298,7 +298,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         // Duyệt từng process để tính toán
         for (Process process : processList) {
             UUID processId = process.getId();
-            BigDecimal totalFlow = traversePath(processId, null, true).setScale(2, RoundingMode.CEILING);
+            exchangeIdNext = null;
+            BigDecimal totalFlow = traversePath(processId, true).setScale(2, RoundingMode.CEILING);
             process.setOverAllProductFlowRequired(totalFlow);
 
             List<ProcessImpactValue> impactValues = processImpactValueRepository.findByProcessId(processId);
@@ -318,12 +319,11 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
     // Phương thức đệ quy để duyệt đường đi từ một process và tính toán kết quả cho
     // mỗi nhánh
-    private BigDecimal traversePath(UUID processId, String previousExchangeName, boolean isFirstProcess) {
+    private BigDecimal traversePath(UUID processId, boolean isFirstProcess) {
         BigDecimal multiplyNumerator = BigDecimal.ONE;
         BigDecimal multiplyDenominator = BigDecimal.ONE;
 
         if (isFirstProcess) {
-            String finalPreviousExchangeName = previousExchangeName;
             List<Exchanges> exchanges = exchangesRepository.findProductByProcessId(processId).stream()
                     .filter(exchange -> {
                         if (exchangeIdNext != null) {
@@ -332,14 +332,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                         return !exchange.isInput();
                     })
                     .collect(Collectors.toList());
-
-            for (Exchanges exchange : exchanges) {
-                if (!exchange.isInput()) {
-                    previousExchangeName = exchange.getName();
-                }
-            }
         } else {
-            String finalPreviousExchangeName = previousExchangeName;
             List<Exchanges> exchanges = exchangesRepository.findProductByProcessId(processId).stream()
                     .filter(exchange -> {
                         if (exchangeIdNext != null) {
@@ -358,7 +351,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                         ? exchange.getValue()
                         : exchange.getValue().divide(conversionFactor, MathContext.DECIMAL128);
                 if (!exchange.isInput()) {
-                    previousExchangeName = exchange.getName();
                     multiplyDenominator = multiplyDenominator.multiply(convertUnit);
                 } else {
                     multiplyNumerator = multiplyNumerator.multiply(convertUnit);
@@ -380,7 +372,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         for (Connector nextConnector : nextConnectors) {
             UUID nextProcessId = nextConnector.getEndProcess().getId();
             exchangeIdNext = nextConnector.getEndExchanges().getId().toString();
-            pathTotal = pathTotal.add(traversePath(nextProcessId, previousExchangeName, false));
+            pathTotal = pathTotal.add(traversePath(nextProcessId, false));
         }
 
         // Kết hợp kết quả hiện tại với kết quả của các đường đi con
