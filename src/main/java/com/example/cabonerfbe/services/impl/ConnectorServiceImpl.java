@@ -231,6 +231,9 @@ public class ConnectorServiceImpl implements ConnectorService {
         Exchanges newExchange = exchangesConverter.fromExchangeToAnotherExchange(originalExchange);
         newExchange.setProcess(process);
         newExchange.setInput(inputStatus);
+        CompletableFuture.runAsync(() ->
+                pivService.computeSystemLevelOfProjectBackground(process.getProject().getId())
+        );
         return exchangesRepository.save(newExchange);
     }
 
