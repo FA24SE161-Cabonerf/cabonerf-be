@@ -3,16 +3,19 @@ package com.example.cabonerfbe.controller;
 import com.example.cabonerfbe.enums.API_PARAMS;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
+import com.example.cabonerfbe.request.CalculateProjectRequest;
 import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
 import com.example.cabonerfbe.services.ProjectService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -83,11 +86,25 @@ public class ProjectController {
         );
     }
 
-    @GetMapping("/calculation/{projectId}")
-    public ResponseEntity<ResponseObject> calculation(@PathVariable("projectId") UUID projectId){
-
+    @PostMapping(API_PARAMS.CALCULATION_PROJECT)
+    public ResponseEntity<ResponseObject> calculation(@RequestBody CalculateProjectRequest request){
+        log.info("Start calculationProject. request: {}", request);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Calculation project success",  service.computeSystemLevelOfProject(projectId))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Calculation project success",  projectService.calculateProject(request))
+        );
+    }
+
+    @GetMapping(API_PARAMS.EXPORT_PROJECT)
+    public ResponseEntity<Resource> export(@PathVariable("projectId") UUID projectId){
+        log.info("Start exportProject. Id: {}", projectId);
+        return projectService.exportProject(projectId);
+    }
+
+    @GetMapping(API_PARAMS.INTENSITY_PROJECT)
+    public ResponseEntity<ResponseObject> intensity(@PathVariable("projectId") UUID projectId){
+        log.info("Start intensity. id: {}",projectId);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get intensity success",projectService.getIntensity(projectId))
         );
     }
 }

@@ -46,6 +46,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private ConnectorConverter connectorConverter;
     @Autowired
     private ProjectImpactValueRepository projectImpactValueRepository;
+    @Autowired
+    private ProcessServiceImpl processService;
 
     private final List<ConnectorPercentDto> connectorsResponse = new ArrayList<>();
     private final ProjectImpactValue totalProject = new ProjectImpactValue();
@@ -186,7 +188,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         for (Process process : processList) {
             // alter the old ones.
             alterPrevImpactValueList(process, methodId);
-//            processImpactValueGenerateUponCreateProcess(new CreateProcessImpactValueRequest(process.getId(), methodId));
             computeProcessImpactValueAllExchangeOfProcess(process);
         }
     }
@@ -204,7 +205,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             }
         }
 
-
         if (existingValues.size() > methodCategories.size()) {
             List<ProcessImpactValue> removeList = existingValues.subList(
                     methodCategories.size(),
@@ -218,10 +218,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
 
+    public void computeSystemLevelOfProject(UUID projectId) {
 
-    public List<ConnectorPercentDto> computeSystemLevelOfProject(UUID projectId) {
-        connectorsResponse.clear();
-        _connectors.clear();
         Project project = projectRepository.findById(projectId).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
         );
@@ -236,16 +234,58 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 .map(Process::getId)
                 .collect(Collectors.toList());
 
+        List<Exchanges> allExchanges = exchangesRepository.findAllByProcessIdsInput(processIds);
+
+
+
+
+
+
         // Truy vấn connectors và kiểm tra
         List<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
         if (processList.size() > 1 && connectors.isEmpty()) {
-            throw CustomExceptions.notFound("There must be at least one connector to calculate");
+            throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE);
+        }
+
+        List<Process> processesWithoutOutgoingConnectors = processRepository.findProcessesWithoutOutgoingConnectors(projectId);
+        if (processesWithoutOutgoingConnectors.size() > 1) {
+            throw CustomExceptions.badRequest("A final node is missing to complete the process. Please check the diagram structure or add a final node to proceed.");
+        }
+        if(processIds.size() > 1){
+            boolean allValuesZero = allExchanges.stream()
+                    .allMatch(exchange -> exchange.getValue().equals(BigDecimal.ZERO));
+            if (allValuesZero) {
+                throw CustomExceptions.badRequest("All exchange have value is zero");
+            }
+            findWay(connectors);
+        }
+        updateProcessWhenCalculation(processIds);
+        updateProjectValue(processIds, projectId);
+    }
+
+    public void computeSystemLevelOfProjectBackground(UUID projectId) {
+        connectorsResponse.clear();
+        _connectors.clear();
+
+        List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
+        if (processList.isEmpty()) {
+            return;
+        }
+
+        List<UUID> processIds = processList.stream()
+                .map(Process::getId)
+                .collect(Collectors.toList());
+
+        // Truy vấn connectors và kiểm tra
+        List<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
+        if (processList.size() > 1 && connectors.isEmpty()) {
+            return;
         }
         _connectors.addAll(connectors);
 
         List<Process> processesWithoutOutgoingConnectors = processRepository.findProcessesWithoutOutgoingConnectors(projectId);
         if (processesWithoutOutgoingConnectors.size() > 1) {
-            throw CustomExceptions.badRequest("Multiple deepest process found");
+            return;
         }
 
         processImpactValueRepository.setDefaultPrevious(processIds);
@@ -253,8 +293,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         Map<UUID, BigDecimal> processFlowMap = new HashMap<>();
         List<ProcessImpactValue> allImpactValues = new ArrayList<>();
 
-        // Xử lý song song để tính toán từng process
-        processList.parallelStream().forEach(process -> {
+        // Duyệt từng process để tính toán
+        for (Process process : processList) {
             UUID processId = process.getId();
             BigDecimal totalFlow = traversePath(processId, null, true).setScale(2, RoundingMode.CEILING);
             process.setOverAllProductFlowRequired(totalFlow);
@@ -262,21 +302,16 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             List<ProcessImpactValue> impactValues = processImpactValueRepository.findByProcessId(processId);
             if (!impactValues.isEmpty()) {
                 updateProcess(impactValues, totalFlow, processId);
-                synchronized (allImpactValues) {
-                    allImpactValues.addAll(impactValues);
-                }
+                allImpactValues.addAll(impactValues);
             }
             processFlowMap.put(processId, totalFlow);
-        });
+        }
 
         processRepository.saveAll(processList);
         processImpactValueRepository.saveAll(allImpactValues);
 
         updatePreviousProcess();
-        updateProjectValue(processIds, projectId);
-        calculationConnector(projectId);
-
-        return connectorsResponse;
+        return;
     }
 
     // Phương thức đệ quy để duyệt đường đi từ một process và tính toán kết quả cho mỗi nhánh
@@ -302,6 +337,9 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                     .collect(Collectors.toList());
 
             for (Exchanges exchange : exchanges) {
+                if(exchange.getValue().equals(BigDecimal.ZERO)){
+                    return null;
+                }
                 BigDecimal conversionFactor = exchange.getUnit().getConversionFactor();
                 BigDecimal convertUnit = conversionFactor.compareTo(BigDecimal.ONE) == 0
                         ? exchange.getValue()
@@ -334,8 +372,9 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         return pathTotal.multiply(multiplyNumerator.divide(multiplyDenominator, MathContext.DECIMAL128));
     }
 
-
     private void updateProcess(List<ProcessImpactValue> list, BigDecimal totalRequiredFlow, UUID currentProcessId) {
+        Exchanges o = exchangesRepository.findProductOut(currentProcessId)
+                .orElse(null);
         BigDecimal outputValue = exchangesRepository.findProductOut(currentProcessId)
                 .map(Exchanges::getValue)
                 .orElse(BigDecimal.ONE);
@@ -346,11 +385,18 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                     : totalRequiredFlow.multiply(x.getUnitLevel())
                     .divide(outputValue, MathContext.DECIMAL128);
 
-            x.setSystemLevel(value);
+//            x.setSystemLevel(value);
             x.setOverallImpactContribution(value);
         });
 
         processImpactValueRepository.saveAll(list);
+    }
+    private void updateProcessWhenCalculation(List<UUID> processIds) {
+        List<ProcessImpactValue> value = processImpactValueRepository.findAllByProcessIds(processIds);
+        for (ProcessImpactValue x : value){
+            x.setSystemLevel(x.getOverallImpactContribution());
+        }
+        processImpactValueRepository.saveAll(value);
     }
 
     private void updateProjectValue(List<UUID> processIds, UUID projectId) {
@@ -408,40 +454,50 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValueRepository.saveAll(updatedValues);
     }
 
-    private void calculationConnector(UUID projectId) {
-        List<ProjectImpactValue> projectValues = projectImpactValueRepository.findAllByProjectId(projectId);
+//    private void connectorCalculation(UUID projectId) {
+//        List<ProjectImpactValue> projectValues = projectImpactValueRepository.findAllByProjectId(projectId);
+//
+//        _connectors.forEach(connector -> {
+//            BigDecimal divisor = findWay(connector);
+//
+//            List<ProcessImpactValue> startValues = processImpactValueRepository.findAllByProcess(connector.getStartProcess());
+//            ConnectorPercentDto dto = connectorConverter.fromConnectorToConnectorPercentDto(connector);
+//
+//            projectValues.stream()
+//                    .flatMap(projectValue -> startValues.stream()
+//                            .filter(start -> start.getImpactMethodCategory().equals(projectValue.getImpactMethodCategory()) && projectValue.getValue().compareTo(BigDecimal.ZERO) > 0)
+//                            .map(start -> {
+//                                BigDecimal totalValue = start.getPreviousProcessValue().add(start.getUnitLevel()).multiply(divisor);
+//                                dto.setPercent(totalValue.divide(projectValue.getValue(), 2, RoundingMode.HALF_UP));
+//                                return dto;
+//                            }))
+//                    .findFirst()
+//                    .ifPresent(connectorsResponse::add);
+//        });
+//    }
 
-        _connectors.forEach(connector -> {
-            BigDecimal divisor = findWay(connector);
+    private void findWay(List<Connector> connectors) {
+        BigDecimal totalWay = connectors.stream()
+                .filter(Objects::nonNull) // Loại bỏ các `null` Connector
+                .map(connector -> {
+                    BigDecimal startValue = connector.getStartExchanges().getValue();
+                    BigDecimal endValue = connector.getEndExchanges().getValue();
 
-            List<ProcessImpactValue> startValues = processImpactValueRepository.findAllByProcess(connector.getStartProcess());
-            ConnectorPercentDto dto = connectorConverter.fromConnectorToConnectorPercentDto(connector);
+                    // Kiểm tra nếu startValue bằng 0
+                    if (startValue.compareTo(BigDecimal.ZERO) == 0) {
+                        throw CustomExceptions.badRequest(
+                                connector.getStartExchanges().getName() + " has a value of 0. Cannot perform calculation."
+                        );
+                    }
 
-            projectValues.stream()
-                    .flatMap(projectValue -> startValues.stream()
-                            .filter(start -> start.getImpactMethodCategory().equals(projectValue.getImpactMethodCategory()) && projectValue.getValue().compareTo(BigDecimal.ZERO) > 0)
-                            .map(start -> {
-                                BigDecimal totalValue = start.getPreviousProcessValue().add(start.getUnitLevel()).multiply(divisor);
-                                dto.setPercent(totalValue.divide(projectValue.getValue(), 2, RoundingMode.HALF_UP));
-                                return dto;
-                            }))
-                    .findFirst()
-                    .ifPresent(connectorsResponse::add);
-        });
+                    // Trả về kết quả chia
+                    return endValue.divide(startValue, MathContext.DECIMAL128);
+                })
+                .reduce(BigDecimal.ONE, BigDecimal::multiply); // Tính tích của tất cả các giá trị chia
+
+        // In kết quả cuối cùng
     }
 
-    private BigDecimal findWay(Connector connector) {
-        BigDecimal totalWay = BigDecimal.ONE;
 
-        while (connector != null) {
-            BigDecimal divisor = connector.getEndExchanges().getValue()
-                    .divide(connector.getStartExchanges().getValue(), MathContext.DECIMAL128);
-            totalWay = totalWay.multiply(divisor);
-
-            connector = connectorRepository.findNextByStartProcessIdOne(connector.getEndProcess().getId());
-        }
-
-        return totalWay;
-    }
 
 }

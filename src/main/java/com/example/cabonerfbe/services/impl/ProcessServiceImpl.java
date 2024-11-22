@@ -5,16 +5,12 @@ import com.example.cabonerfbe.converter.ExchangesConverter;
 import com.example.cabonerfbe.converter.ImpactCategoryConverter;
 import com.example.cabonerfbe.converter.LifeCycleImpactAssessmentMethodConverter;
 import com.example.cabonerfbe.converter.ProcessConverter;
-import com.example.cabonerfbe.dto.ProcessDetailDto;
-import com.example.cabonerfbe.dto.ProcessDto;
-import com.example.cabonerfbe.dto.ProcessImpactValueDto;
+import com.example.cabonerfbe.dto.*;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.LifeCycleStage;
 import com.example.cabonerfbe.models.Process;
-import com.example.cabonerfbe.models.ProcessImpactValue;
-import com.example.cabonerfbe.models.Project;
+import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
@@ -25,9 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,6 +50,10 @@ public class ProcessServiceImpl implements ProcessService {
     private ImpactCategoryConverter categoryConverter;
     @Autowired
     private MessagePublisher messagePublisher;
+    @Autowired
+    private ConnectorServiceImpl connectorService;
+    @Autowired
+    private ConnectorRepository connectorRepository;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
@@ -139,6 +139,10 @@ public class ProcessServiceImpl implements ProcessService {
         );
         process.setStatus(false);
         processRepository.save(process);
+
+        Thread deleteConnectorThread = new Thread(() -> connectorService.deleteAssociatedConnectors(id, Constants.DELETE_CONNECTOR_TYPE_PROCESS));
+        deleteConnectorThread.start();
+
         return new DeleteProcessResponse(process.getId());
     }
 
@@ -163,6 +167,61 @@ public class ProcessServiceImpl implements ProcessService {
         log.info("create process message from nodeBased server: {}", request);
         ProcessDto processDto = createProcess(request);
         messagePublisher.publishCreateProcess(RabbitMQConfig.CREATED_PROCESS_EXCHANGE, RabbitMQConfig.CREATED_PROCESS_ROUTING_KEY, processDto);
+    }
+
+    public ProcessNodeDto constructListProcessNodeDto(UUID projectId) {
+        log.info("constructing contribution breakdown data");
+
+        List<Process> processList = processRepository.findAll(projectId);
+        List<Connector> connectorList = connectorRepository.findAllByProject(projectId);
+        if (processList.isEmpty()) {
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND);
+        }
+
+        if (processList.size() == 1) {
+            return buildTree(processList.get(0).getId(), connectorList, BigDecimal.ONE);
+        }
+
+        if (connectorList.isEmpty()) {
+            throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE);
+        }
+
+        List<Process> rootProcesses = processRepository.findRootProcess(projectId);
+        if (rootProcesses.size() != 1) {
+            throw CustomExceptions.badRequest(MessageConstants.MUST_BE_ONLY_ONE_ROOT_PROCESS);
+        }
+
+        UUID rootNodeId = rootProcesses.get(0).getId();
+
+        return buildTree(rootNodeId, connectorList, BigDecimal.ONE);
+    }
+
+    private ProcessNodeDto buildTree(UUID currentNodeId, List<Connector> connectors, BigDecimal currentNet) {
+        ProcessNodeDto nodeTree = new ProcessNodeDto();
+        nodeTree.setProcessId(currentNodeId);
+        nodeTree.setNet(currentNet);
+
+        List<ProcessNodeDto> children = new ArrayList<>();
+        for (Connector connector : connectors) {
+            if (connector.getEndProcess().getId().equals(currentNodeId)) {
+                UUID startProcessId = connector.getStartProcess().getId();
+                BigDecimal newNet = currentNet.multiply(calculateNet(connector));
+
+                ProcessNodeDto childTree = buildTree(startProcessId, connectors, newNet);
+                children.add(childTree);
+            }
+        }
+
+        nodeTree.setSubProcesses(children);
+
+        return nodeTree;
+    }
+
+    private BigDecimal calculateNet(Connector connector) {
+        // Example calculation based on the connector's start and end process or exchanges
+        BigDecimal baseNet = BigDecimal.ONE;
+        baseNet = baseNet.multiply(connector.getEndExchanges().getValue().divide(connector.getStartExchanges().getValue(), MathContext.DECIMAL128));
+        return baseNet;
     }
 
 }

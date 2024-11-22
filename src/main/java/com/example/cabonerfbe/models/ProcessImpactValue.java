@@ -32,4 +32,7 @@ public class ProcessImpactValue extends Base{
     public UUID getProcessId() {
         return process != null ? process.getId() : null;
     }
+    public UUID getImpactMethodCategoryId() {
+        return impactMethodCategory.getId();
+    }
 }

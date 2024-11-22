@@ -65,10 +65,13 @@ public class API_PARAMS {
      ************************/
 
     public static final String PROJECT = "/projects";
-    public static final String GET_PROJECT_BY_ID = "/{projectId}/{workspaceId}";
+    public static final String GET_PROJECT_BY_ID = "/{projectId}/workspaces/{workspaceId}";
     public static final String UPDATE_DETAIL_PROJECT_BY_ID = "/{projectId}";
     public static final String DELETE_PROJECT = "/{projectId}";
-    public static final String CHANGE_PROJECT_METHOD = "{projectId}/impact-methods/{methodId}";
+    public static final String CHANGE_PROJECT_METHOD = "/{projectId}/impact-methods/{methodId}";
+    public static final String CALCULATION_PROJECT = "/calculation";
+    public static final String EXPORT_PROJECT = "/export/{projectId}";
+    public static final String INTENSITY_PROJECT = "/intensity/{projectId}";
 
     /************************
      *      PROCESS APIs     *
@@ -176,4 +179,11 @@ public class API_PARAMS {
      ************************/
     public static final String CONTRACT = "/contracts";
     public static final String DOWNLOAD_CONTRACT = "/{contractId}";
+
+    /************************
+     *   EMISSIONS COMPARTMENT APIs   *
+     ************************/
+    public static final String UPDATE_EMISSION_COMPARTMENT = "/{emissionCompartmentId}";
+    public static final String DELETE_EMISSION_COMPARTMENT = "/{emissionCompartmentId}";
+
 }

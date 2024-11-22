@@ -3,6 +3,7 @@ package com.example.cabonerfbe.repositories;
 import com.example.cabonerfbe.models.Connector;
 import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.models.ProcessImpactValue;
+import com.example.cabonerfbe.models.ProjectImpactValue;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -47,4 +48,7 @@ public interface ProcessImpactValueRepository extends JpaRepository<ProcessImpac
     @Transactional
     @Query("UPDATE ProcessImpactValue p SET p.previousProcessValue = 0 WHERE p.process.id IN :processIds OR p.process.id IN :processIds AND p.status = true ")
     void setDefaultPrevious(@Param("processIds") List<UUID> processIds);
+
+    @Query("SELECT p FROM ProjectImpactValue p WHERE p.project.id = :projectId AND p.impactMethodCategory.impactCategory.name like 'Climate Change'")
+    ProjectImpactValue findCO2(@Param("projectId") UUID projectId);
 }
