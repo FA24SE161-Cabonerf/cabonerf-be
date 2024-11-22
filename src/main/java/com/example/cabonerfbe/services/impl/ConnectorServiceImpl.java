@@ -191,6 +191,9 @@ public class ConnectorServiceImpl implements ConnectorService {
         Exchanges startExchange = exchangesRepository.findByProcess_IdAndNameAndUnit_UnitGroupAndInput(
                         startProcess.getId(), endExchange.getName(), endExchange.getUnit().getUnitGroup(), OUTPUT)
                 .orElseGet(() -> createNewExchange(endExchange, startProcess, OUTPUT));
+        CompletableFuture.runAsync(() ->
+                pivService.computeSystemLevelOfProjectBackground(startProcess.getProject().getId())
+        );
         return CreateConnectorResponse.builder()
                 .connector(convertAndSaveConnector(startExchange, endExchange, startProcess, endProcess))
                 .updatedProcess(new ConnectorUpdatedProcessDto(startProcess.getId(), exchangesConverter.fromExchangesToExchangesDto(startExchange)))
@@ -231,9 +234,6 @@ public class ConnectorServiceImpl implements ConnectorService {
         Exchanges newExchange = exchangesConverter.fromExchangeToAnotherExchange(originalExchange);
         newExchange.setProcess(process);
         newExchange.setInput(inputStatus);
-        CompletableFuture.runAsync(() ->
-                pivService.computeSystemLevelOfProjectBackground(process.getProject().getId())
-        );
         return exchangesRepository.save(newExchange);
     }
 
