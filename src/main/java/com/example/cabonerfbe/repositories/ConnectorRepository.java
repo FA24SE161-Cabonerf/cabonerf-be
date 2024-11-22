@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -23,7 +24,7 @@ public interface ConnectorRepository extends JpaRepository<Connector, UUID> {
     boolean existsByStartProcess_IdAndEndProcess_Id(UUID id, UUID id1);
 
     @Query("SELECT c FROM Connector c WHERE c.startProcess.id IN :processIds OR c.endProcess.id IN :processIds AND c.status = true")
-    List<Connector> findAllByProcessIds(@Param("processIds") List<UUID> processIds);
+    Set<Connector> findAllByProcessIds(@Param("processIds") List<UUID> processIds);
 
     @Query("SELECT c FROM Connector c WHERE c.startProcess.id = ?1 AND c.status = true")
     List<Connector> findNextByStartProcessId(UUID currentProcessId);

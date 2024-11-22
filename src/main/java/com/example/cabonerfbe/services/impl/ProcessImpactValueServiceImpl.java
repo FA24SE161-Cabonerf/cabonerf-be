@@ -240,7 +240,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         List<Exchanges> allExchanges = exchangesRepository.findAllByProcessIdsInput(processIds);
 
         // Truy vấn connectors và kiểm tra
-        List<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
+        Set<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
         if (processList.size() > 1 && connectors.isEmpty()) {
             throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE);
         }
@@ -277,7 +277,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 .collect(Collectors.toList());
 
         // Truy vấn connectors và kiểm tra
-        List<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
+        Set<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
         if (processList.size() > 1 && connectors.isEmpty()) {
             return;
         }
@@ -497,7 +497,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     // });
     // }
 
-    private void findWay(List<Connector> connectors) {
+    private void findWay(Set<Connector> connectors) {
         BigDecimal totalWay = connectors.stream()
                 .filter(Objects::nonNull) // Loại bỏ các `null` Connector
                 .map(connector -> {

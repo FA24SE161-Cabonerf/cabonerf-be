@@ -84,10 +84,6 @@ public class ConnectorServiceImpl implements ConnectorService {
             throw CustomExceptions.badRequest(MessageConstants.INVALID_EXCHANGE);
         }
         System.out.println("den duoc day la chuan bi tra response ve");
-
-        CompletableFuture.runAsync(() ->
-                pivService.computeSystemLevelOfProjectBackground(startProcess.getProject().getId())
-        );
         return response;
     }
 
