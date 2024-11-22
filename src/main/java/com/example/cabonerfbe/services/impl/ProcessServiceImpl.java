@@ -54,6 +54,10 @@ public class ProcessServiceImpl implements ProcessService {
     private ConnectorServiceImpl connectorService;
     @Autowired
     private ConnectorRepository connectorRepository;
+    @Autowired
+    private UnitServiceImpl unitService;
+    @Autowired
+    private UnitRepository unitRepository;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
@@ -186,6 +190,10 @@ public class ProcessServiceImpl implements ProcessService {
             throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE);
         }
 
+        if (connectorList.size() + 1 < processList.size()) {
+            throw CustomExceptions.badRequest(MessageConstants.PROCESS_WITH_NO_CONNECTOR_ERROR);
+        }
+
         List<Process> rootProcesses = processRepository.findRootProcess(projectId);
         if (rootProcesses.size() != 1) {
             throw CustomExceptions.badRequest(MessageConstants.MUST_BE_ONLY_ONE_ROOT_PROCESS);
@@ -205,7 +213,8 @@ public class ProcessServiceImpl implements ProcessService {
         for (Connector connector : connectors) {
             if (connector.getEndProcess().getId().equals(currentNodeId)) {
                 UUID startProcessId = connector.getStartProcess().getId();
-                BigDecimal newNet = currentNet.multiply(calculateNet(connector));
+                Unit defaultUnit = unitRepository.findDefault(connector.getEndExchanges().getUnit().getUnitGroup().getId());
+                BigDecimal newNet = currentNet.multiply(calculateNet(connector, defaultUnit));
 
                 ProcessNodeDto childTree = buildTree(startProcessId, connectors, newNet);
                 children.add(childTree);
@@ -217,10 +226,25 @@ public class ProcessServiceImpl implements ProcessService {
         return nodeTree;
     }
 
-    private BigDecimal calculateNet(Connector connector) {
+    private BigDecimal calculateNet(Connector connector, Unit defaultUnit) {
         // Example calculation based on the connector's start and end process or exchanges
         BigDecimal baseNet = BigDecimal.ONE;
-        baseNet = baseNet.multiply(connector.getEndExchanges().getValue().divide(connector.getStartExchanges().getValue(), MathContext.DECIMAL128));
+        BigDecimal endValue = connector.getEndExchanges().getValue();
+        BigDecimal startValue = connector.getStartExchanges().getValue();
+
+        if (startValue.equals(BigDecimal.ZERO) || endValue.equals(BigDecimal.ZERO)) {
+            throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_VALUE_CANNOT_BE_ZERO);
+        }
+
+        if (!connector.getEndExchanges().getUnit().getIsDefault()) {
+            endValue = unitService.convertValue(connector.getEndExchanges().getUnit(), endValue, defaultUnit);
+        }
+
+        if (!connector.getStartExchanges().getUnit().getIsDefault()) {
+            startValue = unitService.convertValue(connector.getStartExchanges().getUnit(), startValue, defaultUnit);
+        }
+
+        baseNet = baseNet.multiply(endValue.divide(startValue, MathContext.DECIMAL128));
         return baseNet;
     }
 

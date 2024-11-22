@@ -236,11 +236,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
         List<Exchanges> allExchanges = exchangesRepository.findAllByProcessIdsInput(processIds);
 
-
-
-
-
-
         // Truy vấn connectors và kiểm tra
         List<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
         if (processList.size() > 1 && connectors.isEmpty()) {
