@@ -17,7 +17,7 @@ public interface ConnectorRepository extends JpaRepository<Connector, UUID> {
     @Query("SELECT c FROM Connector c WHERE c.endProcess.id = ?1")
     Connector checkExist(UUID endProcessId);
 
-    @Query("SELECT c FROM Connector c WHERE c.startProcess.project.id = ?1")
+    @Query("SELECT c FROM Connector c WHERE c.startProcess.project.id = ?1 AND c.status = true")
     List<Connector> findAllByProject(UUID projectId);
 
     @Query(QueryStrings.CONNECTOR_EXIST_BY_START_END_PROCESS)
