@@ -312,7 +312,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processRepository.saveAll(processList);
         processImpactValueRepository.saveAll(allImpactValues);
 
-        updatePreviousProcess();
+//        updatePreviousProcess();
         return;
     }
 
@@ -408,6 +408,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
     private void updateProjectValue(List<UUID> processIds, UUID projectId) {
         Project project = projectRepository.findById(projectId).orElseThrow();
+
         List<ImpactMethodCategory> categories = impactMethodCategoryRepository
                 .findByMethod(project.getLifeCycleImpactAssessmentMethod().getId());
         List<ProjectImpactValue> existingValues = projectImpactValueRepository.findAllByProjectId(projectId);
@@ -419,6 +420,15 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                         x -> x.getImpactMethodCategory().getId(),
                         Collectors.mapping(ProcessImpactValue::getSystemLevel,
                                 Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))));
+
+        // Kiểm tra nếu tất cả giá trị trong processImpactSums đều bằng 0
+        boolean allValuesAreZero = processImpactSums.values().stream()
+                .allMatch(value -> value.compareTo(BigDecimal.ZERO) == 0);
+
+        if (allValuesAreZero) {
+            // Không lưu nếu tất cả giá trị bằng 0
+            return;
+        }
 
         if (existingValues.isEmpty()) {
             List<ProjectImpactValue> newValues = categories.stream().map(category -> {
@@ -438,6 +448,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             projectImpactValueRepository.saveAll(existingValues);
         }
     }
+
 
     private void updatePreviousProcess() {
         List<ProcessImpactValue> updatedValues = _connectors.stream()
