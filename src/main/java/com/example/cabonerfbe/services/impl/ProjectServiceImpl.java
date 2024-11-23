@@ -104,7 +104,7 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectCalculationResponse calculateProject(CalculateProjectRequest request) {
         UUID projectId = request.getProjectId();
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> CustomExceptions.notFound("Project not exist"));
+                .orElseThrow(() -> CustomExceptions.notFound("Project not exist",Collections.EMPTY_LIST));
         processImpactValueService.computeSystemLevelOfProject(projectId);
         ProjectCalculationResponse response = projectConverter.fromGetProjectDtoToCalculateResponse(getProject(project));
         response.setContributionBreakdown(processService.constructListProcessNodeDto(projectId));
@@ -201,11 +201,11 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public GetProjectByIdDto getById(UUID id, UUID workspaceId) {
         Project project = projectRepository.findById(id).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND)
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND,Collections.EMPTY_LIST)
         );
 
         if (workspaceId == null) {
-            throw CustomExceptions.unauthorized("workspace not exist");
+            throw CustomExceptions.unauthorized("workspace not exist",Collections.EMPTY_LIST);
         }
 
         return getProject(project);
@@ -235,7 +235,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public List<CarbonIntensityDto> getIntensity(UUID projectId) {
         Project p = projectRepository.findById(projectId)
-                .orElseThrow(() -> CustomExceptions.notFound("Project not exist"));
+                .orElseThrow(() -> CustomExceptions.notFound("Project not exist",Collections.EMPTY_LIST));
         ProjectImpactValue value = processImpactValueRepository.findCO2(projectId);
         List<CarbonIntensity> ci = ciRepository.findAll();
 
@@ -290,11 +290,11 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public GetProjectByIdDto changeProjectMethod(UUID projectId, UUID methodId) {
         Project project = projectRepository.findById(projectId).orElseThrow(
-                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND,Collections.EMPTY_LIST)
         );
         if (!methodId.equals(project.getLifeCycleImpactAssessmentMethod().getId())) {
             LifeCycleImpactAssessmentMethod method = methodRepository.findByIdAndStatus(methodId, Constants.STATUS_TRUE).orElseThrow(
-                    () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND)
+                    () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND,Collections.EMPTY_LIST)
             );
             project.setLifeCycleImpactAssessmentMethod(method);
             processImpactValueService.computeProcessImpactValueOfProject(projectRepository.save(project));
@@ -308,7 +308,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ResponseEntity<Resource> exportProject(UUID projectId) {
         Project p = projectRepository.findById(projectId)
-                .orElseThrow(() -> CustomExceptions.notFound("Project not exist"));
+                .orElseThrow(() -> CustomExceptions.notFound("Project not exist",Collections.EMPTY_LIST));
 
 
         byte[] file = createFile(p);

@@ -225,12 +225,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     public void computeSystemLevelOfProject(UUID projectId) {
 
         Project project = projectRepository.findById(projectId).orElseThrow(
-                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND));
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND,Collections.EMPTY_LIST));
 
         // Lấy toàn bộ process và kiểm tra
         List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
         if (processList.isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT);
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT,Collections.EMPTY_LIST);
         }
 
         List<UUID> processIds = processList.stream()
@@ -242,20 +242,20 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         // Truy vấn connectors và kiểm tra
         Set<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
         if (processList.size() > 1 && connectors.isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE);
+            throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE,Collections.EMPTY_LIST);
         }
 
         List<Process> processesWithoutOutgoingConnectors = processRepository
                 .findProcessesWithoutOutgoingConnectors(projectId);
         if (processesWithoutOutgoingConnectors.size() > 1) {
             throw CustomExceptions.badRequest(
-                    "A final node is missing to complete the process. Please check the diagram structure or add a final node to proceed.");
+                    "A final node is missing to complete the process. Please check the diagram structure or add a final node to proceed.",Collections.EMPTY_LIST);
         }
         if (processIds.size() > 1) {
             boolean allValuesZero = allExchanges.stream()
                     .allMatch(exchange -> exchange.getValue().equals(BigDecimal.ZERO));
             if (allValuesZero) {
-                throw CustomExceptions.badRequest("All exchange have value is zero");
+                throw CustomExceptions.badRequest("All exchange have value is zero",Collections.EMPTY_LIST);
             }
             findWay(connectors);
         }
@@ -323,15 +323,15 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private void validateProcessWithOne(Process p){
         List<Exchanges> elementary = exchangesRepository.findElementaryByProcess(p.getId());
         if(elementary.isEmpty()){
-            throw CustomExceptions.badRequest("Process not have impact to calculate");
+            throw CustomExceptions.badRequest("Process not have impact to calculate",Collections.EMPTY_LIST);
         }
         List<Exchanges> productIn = exchangesRepository.findProductIn(p.getId());
         if(!productIn.isEmpty()){
-            throw CustomExceptions.badRequest("Product input invalid");
+            throw CustomExceptions.badRequest("Product input invalid",Collections.EMPTY_LIST);
         }
         Exchanges productOut = exchangesRepository.findProductOutWithOneProcess(p.getId());
         if(productOut != null){
-            throw CustomExceptions.badRequest("Product output invalid");
+            throw CustomExceptions.badRequest("Product output invalid",Collections.EMPTY_LIST);
         }
     }
 
@@ -529,7 +529,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                     if (startValue.compareTo(BigDecimal.ZERO) == 0) {
                         throw CustomExceptions.badRequest(
                                 connector.getStartExchanges().getName()
-                                        + " has a value of 0. Cannot perform calculation.");
+                                        + " has a value of 0. Cannot perform calculation.",Collections.EMPTY_LIST);
                     }
 
                     // Trả về kết quả chia

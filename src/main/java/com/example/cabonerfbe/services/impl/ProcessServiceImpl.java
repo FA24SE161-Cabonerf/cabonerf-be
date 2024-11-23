@@ -68,11 +68,11 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public ProcessDto createProcess(CreateProcessRequest request) {
         LifeCycleStage lifeCycleStage = lifeCycleStageRepository.findByIdAndStatus(request.getLifeCycleStageId(), Constants.STATUS_TRUE).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND)
+                () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND,Collections.EMPTY_LIST)
         );
 
         Project project = projectRepository.findById(request.getProjectId()).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND)
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND,Collections.EMPTY_LIST)
         );
 
         Process process = new Process();
@@ -94,7 +94,7 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public ProcessDto getProcessById(UUID id) {
         Process process = processRepository.findByProcessId(id).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND,Collections.EMPTY_LIST)
         );
         ProcessDto dto = processConverter.fromProcessToProcessDto(process);
 
@@ -107,7 +107,7 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public List<ProcessDto> getAllProcessesByProjectId(UUID projectId) {
         Project project = projectRepository.findById(projectId).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND)
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND,Collections.EMPTY_LIST)
         );
         List<ProcessDto> processDtos = processRepository.findAll(projectId).stream().map(processConverter::fromProcessToProcessDto).collect(Collectors.toList());
 
@@ -125,11 +125,11 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public ProcessDetailDto updateProcess(UUID id, UpdateProcessRequest request) {
         Process process = processRepository.findByProcessId(id).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND,Collections.EMPTY_LIST)
         );
 
         LifeCycleStage lifeCycleStage = lifeCycleStageRepository.findByIdAndStatus(request.getLifeCycleStagesId(), Constants.STATUS_TRUE).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND)
+                () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND,Collections.EMPTY_LIST)
         );
 
         process.setLifeCycleStage(lifeCycleStage);
@@ -142,7 +142,7 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public DeleteProcessResponse deleteProcess(UUID id) {
         Process process = processRepository.findByProcessId(id).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND,Collections.EMPTY_LIST)
         );
         process.setStatus(false);
         processRepository.save(process);
@@ -181,7 +181,7 @@ public class ProcessServiceImpl implements ProcessService {
         List<Process> processList = processRepository.findAll(projectId);
         List<Connector> connectorList = connectorRepository.findAllByProject(projectId);
         if (processList.isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND);
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND,Collections.EMPTY_LIST);
         }
 
         if (processList.size() == 1) {
@@ -189,11 +189,11 @@ public class ProcessServiceImpl implements ProcessService {
         }
 
         if (connectorList.isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE);
+            throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE,Collections.EMPTY_LIST);
         }
 
         if (connectorList.size() + 1 < processList.size()) {
-            throw CustomExceptions.badRequest(MessageConstants.PROCESS_WITH_NO_CONNECTOR_ERROR);
+            throw CustomExceptions.badRequest(MessageConstants.PROCESS_WITH_NO_CONNECTOR_ERROR,Collections.EMPTY_LIST);
         }
 
         List<Process> rootProcesses = processRepository.findRootProcess(projectId);

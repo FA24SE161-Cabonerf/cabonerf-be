@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 
+import java.util.Collections;
+
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
@@ -49,7 +51,7 @@ public class CustomExceptions extends RuntimeException{
                 .error(ErrorResponse.builder()
                         .status(Constants.RESPONSE_STATUS_ERROR)
                         .message(message)
-                        .data(data)
+                        .data(Collections.EMPTY_LIST)
                         .build())
                 .build();
     }
@@ -70,7 +72,7 @@ public class CustomExceptions extends RuntimeException{
                 .error(ErrorResponse.builder()
                         .status(Constants.RESPONSE_STATUS_ERROR)
                         .message(message)
-                        .data(data)
+                        .data(Collections.EMPTY_LIST)
                         .build())
                 .build();
     }
@@ -91,7 +93,7 @@ public class CustomExceptions extends RuntimeException{
                 .error(ErrorResponse.builder()
                         .status(Constants.RESPONSE_STATUS_ERROR)
                         .message(message)
-                        .data(data)
+                        .data(Collections.EMPTY_LIST)
                         .build())
                 .build();
     }
@@ -111,7 +113,7 @@ public class CustomExceptions extends RuntimeException{
                 .error(ErrorResponse.builder()
                         .status(Constants.RESPONSE_STATUS_ERROR)
                         .message(message)
-                        .data(data)
+                        .data(Collections.EMPTY_LIST)
                         .build())
                 .build();
     }
