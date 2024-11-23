@@ -97,6 +97,8 @@ public class MidpointController {
     @GetMapping(API_PARAMS.ADMIN + API_PARAMS.EXPORT_MIDPOINT_FACTOR)
     public ResponseEntity<Resource> exportFactor(ExportFactorRequest request){
         log.info("Start exportFactor");
+        System.out.println("methodId: " + request.getMethodId());
+        System.out.println("impactCategoryId: " + request.getImpactCategoryId());
         return excelService.exportFactor(request);
     }
 
