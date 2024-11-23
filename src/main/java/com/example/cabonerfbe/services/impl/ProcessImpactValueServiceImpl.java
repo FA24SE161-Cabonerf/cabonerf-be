@@ -331,9 +331,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
         Exchanges productOut = exchangesRepository.findProductOutWithOneProcess(p.getId());
         if(productOut != null){
-            if(productOut.getValue().equals(BigDecimal.ZERO)){
-                throw CustomExceptions.badRequest("Product output invalid with value is zero");
-            }
+            throw CustomExceptions.badRequest("Product output invalid");
         }
     }
 
