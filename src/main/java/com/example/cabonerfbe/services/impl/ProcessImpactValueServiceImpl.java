@@ -163,12 +163,13 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 // Adjust unit level by adding the product of exchange value and factor
                 BigDecimal factorValue = factors.getDecimalValue();
                 unitLevel = unitLevel.add(exchangeValue.multiply(factorValue));
-                systemLevel = systemLevel.add(exchangeValue.multiply(factorValue).multiply(totalFlow));
+                systemLevel = systemLevel.add(exchangeValue.multiply(factorValue.multiply(totalFlow)));
 
                 System.out.println("Factor value: " + factorValue);
                 System.out.println("Updated unit level: " + unitLevel);
 
                 processImpactValue.setUnitLevel(unitLevel);
+                processImpactValue.setSystemLevel(systemLevel);
                 processImpactValueList.add(processImpactValue);
             }
         }
