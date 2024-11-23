@@ -3,7 +3,6 @@ package com.example.cabonerfbe.services.impl;
 import com.example.cabonerfbe.converter.ImpactCategoryConverter;
 import com.example.cabonerfbe.converter.LifeCycleImpactAssessmentMethodConverter;
 import com.example.cabonerfbe.dto.ImpactCategoryDto;
-import com.example.cabonerfbe.dto.LifeCycleImpactAssessmentMethodDto;
 import com.example.cabonerfbe.dto.MethodDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
@@ -23,6 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class ImpactCategoryServiceImpl implements ImpactCategoryService {
+    public static final long NO_UPDATE = -1;
     @Autowired
     private ImpactCategoryRepository impactCategoryRepository;
     @Autowired
@@ -37,9 +37,6 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
     private ImpactCategoryConverter impactCategoryConverter;
     @Autowired
     private LifeCycleImpactAssessmentMethodConverter methodConverter;
-
-    public static final long NO_UPDATE = -1;
-
 
     @Override
     public List<ImpactCategoryDto> getImpactCategoryList() {
@@ -76,16 +73,16 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
     @Override
     public List<MethodDto> getMethodByImpactCategoryId(UUID categoryId) {
 
-        Optional<ImpactCategory> category = impactCategoryRepository.findByIdAndStatus(categoryId,true);
-        if(category.isEmpty()){
+        Optional<ImpactCategory> category = impactCategoryRepository.findByIdAndStatus(categoryId, true);
+        if (category.isEmpty()) {
             throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, MessageConstants.NO_IMPACT_METHOD_FOUND);
         }
         List<ImpactMethodCategory> list = impactMethodCategoryRepository.findMethodByCategory(categoryId);
-        if(list.isEmpty()){
+        if (list.isEmpty()) {
             return new ArrayList<>();
         }
         List<LifeCycleImpactAssessmentMethod> methods = new ArrayList<>();
-        for (ImpactMethodCategory x : list){
+        for (ImpactMethodCategory x : list) {
             methods.add(x.getLifeCycleImpactAssessmentMethod());
         }
 
@@ -94,13 +91,13 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
 
     @Override
     public List<String> deleteCategoryFromMethod(UUID categoryId, UUID methodId) {
-        Optional<ImpactCategory> category = impactCategoryRepository.findByIdAndStatus(categoryId,true);
-        if(category.isEmpty()){
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, MessageConstants.NO_IMPACT_METHOD_FOUND);
+        Optional<ImpactCategory> category = impactCategoryRepository.findByIdAndStatus(categoryId, true);
+        if (category.isEmpty()) {
+            throw CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND);
         }
-        Optional<ImpactMethodCategory> imc = impactMethodCategoryRepository.findByMethodAndCategory(categoryId,methodId);
-        if(imc.isEmpty()){
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Impact category not exist with method");
+        Optional<ImpactMethodCategory> imc = impactMethodCategoryRepository.findByMethodAndCategory(categoryId, methodId);
+        if (imc.isEmpty()) {
+            throw CustomExceptions.notFound("Impact category not exist with method");
         }
         imc.get().setStatus(false);
         impactMethodCategoryRepository.save(imc.get());

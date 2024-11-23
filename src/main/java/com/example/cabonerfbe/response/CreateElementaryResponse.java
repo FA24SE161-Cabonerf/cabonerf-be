@@ -1,6 +1,8 @@
 package com.example.cabonerfbe.response;
 
-import com.example.cabonerfbe.dto.*;
+import com.example.cabonerfbe.dto.ExchangesDto;
+import com.example.cabonerfbe.dto.LifeCycleStageDto;
+import com.example.cabonerfbe.dto.ProcessImpactValueDto;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;

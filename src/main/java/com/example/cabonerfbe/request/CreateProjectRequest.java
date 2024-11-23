@@ -1,6 +1,5 @@
 package com.example.cabonerfbe.request;
 
-import com.example.cabonerfbe.models.LifeCycleImpactAssessmentMethod;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;

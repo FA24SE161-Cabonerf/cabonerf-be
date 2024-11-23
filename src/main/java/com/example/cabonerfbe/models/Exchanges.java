@@ -1,7 +1,10 @@
 package com.example.cabonerfbe.models;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -12,7 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table
-public class Exchanges extends Base{
+public class Exchanges extends Base {
 
     private String name;
     private String description;

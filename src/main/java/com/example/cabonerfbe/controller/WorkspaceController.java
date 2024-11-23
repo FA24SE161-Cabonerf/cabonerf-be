@@ -24,10 +24,10 @@ public class WorkspaceController {
     private WorkspaceService workspaceService;
 
     @GetMapping()
-    public ResponseEntity<ResponseObject> getAllByUser(@RequestHeader("x-user-id") UUID userId){
-        log.info("start getAllByUser. userId: {}",userId);
+    public ResponseEntity<ResponseObject> getAllByUser(@RequestHeader("x-user-id") UUID userId) {
+        log.info("start getAllByUser. userId: {}", userId);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get all workspace success", workspaceService.getByUser(userId))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get all workspace success", workspaceService.getByUser(userId))
         );
     }
 }

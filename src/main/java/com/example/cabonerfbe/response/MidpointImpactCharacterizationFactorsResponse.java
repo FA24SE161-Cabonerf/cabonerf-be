@@ -1,8 +1,8 @@
 package com.example.cabonerfbe.response;
 
 import com.example.cabonerfbe.dto.EmissionCompartmentDto;
-import com.example.cabonerfbe.dto.SubstanceDto;
 import com.example.cabonerfbe.dto.ImpactMethodCategoryDto;
+import com.example.cabonerfbe.dto.SubstanceDto;
 import com.example.cabonerfbe.dto.UnitDto;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

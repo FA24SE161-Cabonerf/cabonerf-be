@@ -10,6 +10,22 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
+    public static final String QUEUE = "java.queue";
+    public static final String EXCHANGE = "java.exchange";
+    public static final String ROUTING_KEY = "java.key";
+    public static final String CREATE_PROCESS_QUEUE = "process.queue.create";
+    public static final String CREATE_PROCESS_EXCHANGE = "process.exchange.create";
+    public static final String CREATE_PROCESS_ROUTING_KEY = "process.key.create";
+    public static final String CREATED_PROCESS_QUEUE = "process.queue.created";
+    public static final String CREATED_PROCESS_EXCHANGE = "process.exchange.created";
+    public static final String CREATED_PROCESS_ROUTING_KEY = "process.key.created";
+    public static final String CONNECTOR_QUEUE = "queue.connector";
+    public static final String CONNECTOR_ROUTING_KEY = "key.connector";
+    public static final String CONNECTOR_EXCHANGE = "exchange.connector";
+    // RPC queue
+    public static final String RPC_QUEUE = "rpc_queue";
+    public static final String RPC_QUEUE_CONNECTOR = "rpc_queue_connector";
+
     // convert to json format
     @Bean
     public MessageConverter jsonMessageConverter() {
@@ -22,22 +38,6 @@ public class RabbitMQConfig {
         rabbitTemplate.setMessageConverter(jsonMessageConverter());
         return rabbitTemplate;
     }
-
-    public static final String QUEUE = "java.queue";
-    public static final String EXCHANGE = "java.exchange";
-    public static final String ROUTING_KEY = "java.key";
-
-    public static final String CREATE_PROCESS_QUEUE = "process.queue.create";
-    public static final String CREATE_PROCESS_EXCHANGE = "process.exchange.create";
-    public static final String CREATE_PROCESS_ROUTING_KEY = "process.key.create";
-
-    public static final String CREATED_PROCESS_QUEUE = "process.queue.created";
-    public static final String CREATED_PROCESS_EXCHANGE = "process.exchange.created";
-    public static final String CREATED_PROCESS_ROUTING_KEY = "process.key.created";
-
-    public static final String CONNECTOR_QUEUE = "queue.connector";
-    public static final String CONNECTOR_ROUTING_KEY = "key.connector";
-    public static final String CONNECTOR_EXCHANGE = "exchange.connector";
 
     @Bean
     public Queue queue() {
@@ -98,10 +98,6 @@ public class RabbitMQConfig {
     public Binding connectorBinding(Queue connectorQueue, DirectExchange connectorExchange) {
         return BindingBuilder.bind(connectorQueue).to(connectorExchange).with(CONNECTOR_ROUTING_KEY);
     }
-
-    // RPC queue
-    public static final String RPC_QUEUE = "rpc_queue";
-    public static final String RPC_QUEUE_CONNECTOR = "rpc_queue_connector";
 
     @Bean
     public Queue rpcQueue() {

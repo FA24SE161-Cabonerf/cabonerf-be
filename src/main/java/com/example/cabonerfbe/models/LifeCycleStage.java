@@ -1,10 +1,12 @@
 package com.example.cabonerfbe.models;
 
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.JdbcType;
-import org.hibernate.annotations.Type;
-import org.hibernate.type.SqlTypes;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -12,7 +14,7 @@ import org.hibernate.type.SqlTypes;
 @AllArgsConstructor
 @Entity
 @Table
-public class LifeCycleStage extends Base{
+public class LifeCycleStage extends Base {
     private String name;
     private String description;
     @Column(length = 9000)

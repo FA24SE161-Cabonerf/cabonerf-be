@@ -44,17 +44,17 @@ public class PerspectiveServiceImpl implements PerspectiveService {
         if (p == null) {
             throw CustomExceptions.notFound(MessageConstants.NO_PERSPECTIVE_FOUND);
         }
-        if(!isNotNullOrBlank(request.getName()) && !isNotNullOrBlank(request.getDescription()) && !isNotNullOrBlank(request.getAbbr())) {
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR,"Update at least one field required");
+        if (!isNotNullOrBlank(request.getName()) && !isNotNullOrBlank(request.getDescription()) && !isNotNullOrBlank(request.getAbbr())) {
+            throw CustomExceptions.badRequest("Update at least one field required");
         }
 
-        if(isNotNullOrBlank(request.getName())){
+        if (isNotNullOrBlank(request.getName())) {
             p.setName(request.getName());
         }
-        if(isNotNullOrBlank(request.getDescription())){
+        if (isNotNullOrBlank(request.getDescription())) {
             p.setDescription(request.getDescription());
         }
-        if(isNotNullOrBlank(request.getAbbr())){
+        if (isNotNullOrBlank(request.getAbbr())) {
             p.setAbbr(request.getAbbr());
         }
         return perspectiveConverter.fromPerspectiveToPerspectiveDto(perspectiveRepository.save(p));

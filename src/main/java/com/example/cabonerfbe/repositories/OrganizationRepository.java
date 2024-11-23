@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
+
 @Repository
 public interface OrganizationRepository extends JpaRepository<Organization, UUID> {
 
@@ -20,6 +21,7 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
     @NotNull
     @Query("SELECT o FROM Organization o WHERE o.status = true")
     Page<Organization> findAll(@NotNull Pageable pageable);
+
     @NotNull
     @Query("SELECT o FROM Organization o WHERE o.id = :organizationId AND o.status = true")
     Optional<Organization> findById(@NotNull @Param("organizationId") UUID id);

@@ -2,11 +2,10 @@ package com.example.cabonerfbe.repositories;
 
 import com.example.cabonerfbe.enums.QueryStrings;
 import com.example.cabonerfbe.models.ImpactCategory;
-import com.example.cabonerfbe.models.LifeCycleImpactAssessmentMethod;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +17,7 @@ public interface ImpactCategoryRepository extends JpaRepository<ImpactCategory, 
     ImpactCategory findByName(String name);
 
     List<ImpactCategory> findAllByStatus(boolean status);
+
     @Query(QueryStrings.FIND_CATEGORY_BY_IMPACT_METHOD_ID)
     List<ImpactCategory> findAllByImpactMethodId(@Param("methodId") UUID methodId);
 

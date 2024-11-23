@@ -11,10 +11,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MidpointImpactCategoryResponse {
+    UnitDto unit;
     private UUID id;
     private String name;
     private String description;
     private String abbr;
-
-    UnitDto unit;
 }

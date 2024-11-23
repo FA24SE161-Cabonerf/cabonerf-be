@@ -65,7 +65,7 @@ public class ExchangeController {
     public ResponseEntity<ResponseObject> updateElementaryExchange(@PathVariable UUID exchangeId, @Valid @RequestBody UpdateExchangeRequest request) {
         log.info("Start updateElementaryExchange. exchangeId: {}, request: {}", exchangeId, request);
         return ResponseEntity.ok().body(new ResponseObject(
-                        Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.UPDATE_EXCHANGE_SUCCESS, exchangesService.updateElementaryExchange(exchangeId, request)
+                Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.UPDATE_EXCHANGE_SUCCESS, exchangesService.updateElementaryExchange(exchangeId, request)
         ));
     }
 
@@ -73,7 +73,7 @@ public class ExchangeController {
     public ResponseEntity<ResponseObject> updateProductExchange(@PathVariable UUID exchangeId, @Valid @RequestBody UpdateExchangeRequest request) {
         log.info("Start updateProductExchange. exchangeId: {}, request: {}", exchangeId, request);
         return ResponseEntity.ok().body(new ResponseObject(
-                        Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.UPDATE_EXCHANGE_SUCCESS, exchangesService.updateProductExchange(exchangeId, request)
+                Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.UPDATE_EXCHANGE_SUCCESS, exchangesService.updateProductExchange(exchangeId, request)
         ));
     }
 

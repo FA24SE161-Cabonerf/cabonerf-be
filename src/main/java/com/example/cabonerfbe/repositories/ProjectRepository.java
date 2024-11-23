@@ -16,6 +16,7 @@ import java.util.UUID;
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, UUID> {
     ProjectDetailResponseDto dto = new ProjectDetailResponseDto();
+
     @Query("SELECT dto(" +
             "p.name, p.modifiedAt, lciam.name, ic.name, mic.name, mic.abbr, piv.value, mic.unit.name) " +
             "FROM Project p " +

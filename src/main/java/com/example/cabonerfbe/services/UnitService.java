@@ -7,9 +7,6 @@ import com.example.cabonerfbe.response.UnitResponse;
 import java.util.List;
 import java.util.UUID;
 
-import com.example.cabonerfbe.dto.PageList;
-import com.example.cabonerfbe.dto.UnitDto;
-
 public interface UnitService {
     List<UnitResponse> getAllUnitsFromGroupId(UUID id);
 

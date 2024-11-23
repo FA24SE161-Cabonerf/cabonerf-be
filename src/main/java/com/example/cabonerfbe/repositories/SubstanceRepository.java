@@ -14,6 +14,7 @@ import java.util.UUID;
 public interface SubstanceRepository extends JpaRepository<Substance, UUID>, JpaSpecificationExecutor<Substance> {
     @Query("SELECT e FROM Substance e WHERE e.name like ?1 AND e.molecularFormula like ?2")
     Substance findByName(String name, String Formula);
+
     @Query("SELECT es FROM Substance es WHERE es.name like :name AND es.status = true")
     Optional<Substance> findByName(@Param("name") String name);
 

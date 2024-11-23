@@ -19,15 +19,19 @@ public interface UnitConverter {
 
     List<UnitResponse> fromUnitListToUnitResponseList(List<Unit> units);
 
-    default Unit fromUnitRequestToUnit(CreateUnitRequest request){
+    default Unit fromUnitRequestToUnit(CreateUnitRequest request) {
         Unit newUnit = new Unit();
         newUnit.setName(request.getUnitName());
         newUnit.setConversionFactor(request.getConversionFactor());
         newUnit.setIsDefault(request.getIsDefault());
         return newUnit;
-    };
+    }
+
+    ;
 
     UnitResponse fromUnitToUnitResponse(Unit savedUnit);
+
     List<UnitDto> fromListUnitToUnitDto(List<Unit> units);
+
     UnitProjectImpactDto fromProjectToUnitResponse(Unit unit);
 }

@@ -12,6 +12,7 @@ public interface ExchangesConverter {
     ExchangesConverter INSTANCE = Mappers.getMapper(ExchangesConverter.class);
 
     ExchangesDto fromExchangesToExchangesDto(Exchanges exchanges);
+
     List<ExchangesDto> fromExchangesToExchangesDto(List<Exchanges> list);
 
     default Exchanges fromExchangeToAnotherExchange(Exchanges exchange) {
@@ -23,5 +24,7 @@ public interface ExchangesConverter {
         newExchange.setEmissionSubstance(exchange.getEmissionSubstance());
         newExchange.setDescription(exchange.getDescription());
         return newExchange;
-    };
+    }
+
+    ;
 }

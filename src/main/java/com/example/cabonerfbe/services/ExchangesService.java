@@ -19,12 +19,15 @@ public interface ExchangesService {
     List<ExchangesDto> createProductExchanges(CreateProductRequest request);
 
     SearchElementaryResponse search(int pageCurrent, int pageSize, String keyWord, UUID methodId, UUID emissionCompartmentId, UUID impactCategoryId, boolean input);
+
     List<EmissionSubstanceDto> getAllAdmin(String keyword);
 
     ImpactExchangeResponse removeElementaryExchange(UUID exchangeId);
+
     List<ExchangesDto> removeProductExchange(UUID exchangeId);
 
     ImpactExchangeResponse updateElementaryExchange(UUID exchangeId, UpdateExchangeRequest request);
+
     List<UpdateProductExchangeResponse> updateProductExchange(UUID exchangeId, UpdateExchangeRequest request);
 
 }
