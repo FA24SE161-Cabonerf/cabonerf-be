@@ -248,6 +248,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 .map(Process::getId)
                 .collect(Collectors.toList());
 
+        List<Exchanges> dataList = exchangesRepository.findAllByElementary(processIds);
+
+        if(dataList.isEmpty()){
+            throw CustomExceptions.badRequest("All process not have impact to calculate.");
+        }
+
         List<Exchanges> allExchanges = exchangesRepository.findAllByProcessIdsInput(processIds);
 
         // Truy vấn connectors và kiểm tra
@@ -409,8 +415,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
     private void updateProcess(List<ProcessImpactValue> list, BigDecimal totalRequiredFlow, UUID currentProcessId) {
-        Exchanges o = exchangesRepository.findProductOut(currentProcessId)
-                .orElse(null);
+
         BigDecimal outputValue = exchangesRepository.findProductOut(currentProcessId)
                 .map(Exchanges::getValue)
                 .orElse(BigDecimal.ONE);
