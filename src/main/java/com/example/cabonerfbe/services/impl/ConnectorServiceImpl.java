@@ -95,9 +95,7 @@ public class ConnectorServiceImpl implements ConnectorService {
         );
         connector.setStatus(Constants.STATUS_FALSE);
         connectorRepository.save(connector);
-        CompletableFuture.runAsync(() ->
-                pivService.computeSystemLevelOfProjectBackground(connector.getEndProcess().getProject().getId())
-        );
+
         return new DeleteConnectorResponse(id);
     }
 
@@ -239,9 +237,7 @@ public class ConnectorServiceImpl implements ConnectorService {
         connector.setStartExchanges(startExchange);
         connector.setEndExchanges(endExchange);
         ConnectorDto dto = connectorConverter.fromConnectorToConnectorDto(connectorRepository.save(connector));
-        CompletableFuture.runAsync(() ->
-                pivService.computeSystemLevelOfProjectBackground(startProcess.getProject().getId())
-        );
+
         return dto;
     }
 }
