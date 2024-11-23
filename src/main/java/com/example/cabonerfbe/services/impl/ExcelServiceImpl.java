@@ -411,12 +411,13 @@ public class ExcelServiceImpl implements ExcelService {
                 row.createCell(3).setCellValue(x.getCompartmentName());
                 row.createCell(4).setCellValue(x.getMolecularFormula());
                 row.createCell(5).setCellValue(x.getAlternativeFormula());
-                row.createCell(6).setCellValue(
-                        (RichTextString) Optional.ofNullable(x.getIndividualist())
-                                .orElse(Optional.ofNullable(x.getHierarchist())
-                                        .orElse(Optional.ofNullable(x.getEgalitarian())
-                                                .orElse(null)))
-                );
+                BigDecimal value = Optional.ofNullable(x.getIndividualist())
+                        .orElse(Optional.ofNullable(x.getHierarchist())
+                                .orElse(Optional.ofNullable(x.getEgalitarian())
+                                        .orElse(null)));
+
+                // Chuyển giá trị thành chuỗi và đặt vào cell
+                row.createCell(6).setCellValue(value != null ? value.toPlainString() : "");
             }
 
             // Ghi dữ liệu vào file
