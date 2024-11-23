@@ -323,6 +323,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private void validateProcessWithOne(Process p){
         List<Exchanges> elementary = exchangesRepository.findElementaryByProcess(p.getId());
         if(elementary.isEmpty()){
+
             throw CustomExceptions.badRequest("Process not have impact to calculate",Collections.EMPTY_LIST);
         }
         List<Exchanges> productIn = exchangesRepository.findProductIn(p.getId());

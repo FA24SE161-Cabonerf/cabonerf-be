@@ -51,4 +51,9 @@ public interface ProcessImpactValueRepository extends JpaRepository<ProcessImpac
 
     @Query("SELECT p FROM ProjectImpactValue p WHERE p.project.id = :projectId AND p.impactMethodCategory.impactCategory.name like 'Climate Change'")
     ProjectImpactValue findCO2(@Param("projectId") UUID projectId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE ProcessImpactValue p SET p.systemLevel = 0 WHERE p.process.id = :processIds AND p.status = true ")
+    void setDefaultSystemLevel(@Param("processIds") UUID processId);
 }
