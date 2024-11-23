@@ -149,9 +149,6 @@ public class ProcessServiceImpl implements ProcessService {
 
         Thread deleteConnectorThread = new Thread(() -> connectorService.deleteAssociatedConnectors(id, Constants.DELETE_CONNECTOR_TYPE_PROCESS));
         deleteConnectorThread.start();
-//        CompletableFuture.runAsync(() ->
-//                pivService.computeSystemLevelOfProjectBackground(process.getId())
-//        );
         return new DeleteProcessResponse(process.getId());
     }
 
