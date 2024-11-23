@@ -325,16 +325,16 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         if(elementary.isEmpty()){
             throw CustomExceptions.badRequest("Process not have impact to calculate");
         }
-//        List<Exchanges> productIn = exchangesRepository.findProductIn(p.getId());
-//        if(!productIn.isEmpty()){
-//            throw CustomExceptions.badRequest("Product input invalid");
-//        }
-//        Exchanges productOut = exchangesRepository.findProductOutWithOneProcess(p.getId());
-//        if(productOut != null){
-//            if(productOut.getValue().equals(BigDecimal.ZERO)){
-//                throw CustomExceptions.badRequest("Product output invalid with value is zero");
-//            }
-//        }
+        List<Exchanges> productIn = exchangesRepository.findProductIn(p.getId());
+        if(!productIn.isEmpty()){
+            throw CustomExceptions.badRequest("Product input invalid");
+        }
+        Exchanges productOut = exchangesRepository.findProductOutWithOneProcess(p.getId());
+        if(productOut != null){
+            if(productOut.getValue().equals(BigDecimal.ZERO)){
+                throw CustomExceptions.badRequest("Product output invalid with value is zero");
+            }
+        }
     }
 
     // Phương thức đệ quy để duyệt đường đi từ một process và tính toán kết quả cho
