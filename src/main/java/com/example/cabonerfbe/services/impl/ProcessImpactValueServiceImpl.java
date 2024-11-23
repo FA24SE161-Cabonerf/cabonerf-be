@@ -17,6 +17,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -126,6 +127,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
         Unit baseUnit = exchange.getEmissionSubstance().getUnit();
 
+        Optional<Exchanges> exchanges = exchangesRepository.findProductOut(processId);
+
         List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository
                 .findByEmissionSubstanceId(emissionSubstanceId);
 
@@ -137,7 +140,13 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             if (processImpactValueOpt.isPresent()) {
                 ProcessImpactValue processImpactValue = processImpactValueOpt.get();
                 BigDecimal unitLevel = processImpactValue.getUnitLevel();
-
+                BigDecimal systemLevel = processImpactValue.getSystemLevel();
+                BigDecimal totalFlow = BigDecimal.ZERO;
+                if(exchanges.isEmpty()){
+                    totalFlow = BigDecimal.ONE;
+                }else {
+                    totalFlow = process.getOverAllProductFlowRequired().divide(exchanges.get().getValue());
+                }
                 System.out
                         .println("Processing impact method category ID: " + factors.getImpactMethodCategory().getId());
                 System.out.println("Initial unit level: " + unitLevel);
@@ -153,11 +162,13 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 // Adjust unit level by adding the product of exchange value and factor
                 BigDecimal factorValue = factors.getDecimalValue();
                 unitLevel = unitLevel.add(exchangeValue.multiply(factorValue));
+                systemLevel = systemLevel.add(exchangeValue.multiply(factorValue.multiply(totalFlow)));
 
                 System.out.println("Factor value: " + factorValue);
                 System.out.println("Updated unit level: " + unitLevel);
 
                 processImpactValue.setUnitLevel(unitLevel);
+                processImpactValue.setSystemLevel(systemLevel);
                 processImpactValueList.add(processImpactValue);
             }
         }
@@ -235,6 +246,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         List<UUID> processIds = processList.stream()
                 .map(Process::getId)
                 .collect(Collectors.toList());
+
+        List<Exchanges> dataList = exchangesRepository.findAllByElementary(processIds);
+
+        if(dataList.isEmpty()){
+            throw CustomExceptions.badRequest("All process not have impact to calculate.");
+        }
 
         List<Exchanges> allExchanges = exchangesRepository.findAllByProcessIdsInput(processIds);
 
@@ -395,8 +412,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
     private void updateProcess(List<ProcessImpactValue> list, BigDecimal totalRequiredFlow, UUID currentProcessId) {
-        Exchanges o = exchangesRepository.findProductOut(currentProcessId)
-                .orElse(null);
+
         BigDecimal outputValue = exchangesRepository.findProductOut(currentProcessId)
                 .map(Exchanges::getValue)
                 .orElse(BigDecimal.ONE);

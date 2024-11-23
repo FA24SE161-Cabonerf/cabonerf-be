@@ -26,11 +26,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -190,9 +188,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         Thread deleteConnectorThread = new Thread(() -> connectorService.deleteAssociatedConnectors(exchangeId, Constants.DELETE_CONNECTOR_TYPE_EXCHANGE));
         deleteConnectorThread.start();
-        CompletableFuture.runAsync(() ->
-                processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId())
-        );
+
         return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(exchange.getProcessId()));
     }
 
@@ -404,5 +400,6 @@ public class ExchangesServiceImpl implements ExchangesService {
                 .impacts(processService.converterProcess(pivRepository.findByProcessId(exchange.getProcessId())))
                 .build();
     }
+
 
 }
