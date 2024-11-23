@@ -272,6 +272,9 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         if (processList.isEmpty()) {
             return;
         }
+        if(processList.size() == 1){
+            validateProcessWithOne(processList.get(0));
+        }
 
         List<UUID> processIds = processList.stream()
                 .map(Process::getId)
@@ -315,6 +318,23 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
 //        updatePreviousProcess();
         return;
+    }
+
+    private void validateProcessWithOne(Process p){
+        List<Exchanges> elementary = exchangesRepository.findElementaryByProcess(p.getId());
+        if(elementary.isEmpty()){
+            throw CustomExceptions.badRequest("Process not have impact to calculate");
+        }
+//        List<Exchanges> productIn = exchangesRepository.findProductIn(p.getId());
+//        if(!productIn.isEmpty()){
+//            throw CustomExceptions.badRequest("Product input invalid");
+//        }
+//        Exchanges productOut = exchangesRepository.findProductOutWithOneProcess(p.getId());
+//        if(productOut != null){
+//            if(productOut.getValue().equals(BigDecimal.ZERO)){
+//                throw CustomExceptions.badRequest("Product output invalid with value is zero");
+//            }
+//        }
     }
 
     // Phương thức đệ quy để duyệt đường đi từ một process và tính toán kết quả cho
@@ -421,15 +441,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                         x -> x.getImpactMethodCategory().getId(),
                         Collectors.mapping(ProcessImpactValue::getSystemLevel,
                                 Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))));
-
-        // Kiểm tra nếu tất cả giá trị trong processImpactSums đều bằng 0
-        boolean allValuesAreZero = processImpactSums.values().stream()
-                .allMatch(value -> value.compareTo(BigDecimal.ZERO) == 0);
-
-        if (allValuesAreZero) {
-            // Không lưu nếu tất cả giá trị bằng 0
-            return;
-        }
 
         if (existingValues.isEmpty()) {
             List<ProjectImpactValue> newValues = categories.stream().map(category -> {
