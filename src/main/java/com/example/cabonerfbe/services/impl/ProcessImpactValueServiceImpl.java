@@ -259,7 +259,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             }
             findWay(connectors);
         }
-        updateProcessWhenCalculation(processIds);
+        computeSystemLevelOfProjectBackground(projectId);
+//        updateProcessWhenCalculation(processIds);
         updateProjectValue(processIds, projectId);
     }
 
@@ -391,8 +392,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                     : totalRequiredFlow.multiply(x.getUnitLevel())
                     .divide(outputValue, MathContext.DECIMAL128);
 
-            // x.setSystemLevel(value);
-            x.setOverallImpactContribution(value);
+             x.setSystemLevel(value);
+//            x.setOverallImpactContribution(value);
         });
 
         processImpactValueRepository.saveAll(list);
