@@ -113,7 +113,7 @@ public class MessageConstants {
     public static final String NO_ORGANIZATION_FOUND = "Organization doesn't exist.";
 
     // CALCULATION ERROR MSG
-    public static final String FAILED_TO_PERFORM_CALCULATION = "Failed to perform calculation. \n";
+    public static final String FAILED_TO_PERFORM_CALCULATION = "Failed to perform calculation. ";
     public static final String EXCHANGE_VALUE_CANNOT_BE_ZERO = FAILED_TO_PERFORM_CALCULATION + "- Exchange value cannot be zero";
     public static final String FINAL_PROCESS_MUST_BE_SPECIFIED = FAILED_TO_PERFORM_CALCULATION + "- Final process must be specified.";
     public static final String ALL_EXCHANGE_VALUE_ZERO = FAILED_TO_PERFORM_CALCULATION + "- All exchange values are zero.";
@@ -121,6 +121,6 @@ public class MessageConstants {
     public static final String NO_CONNECTOR_TO_CALCULATE = FAILED_TO_PERFORM_CALCULATION + "- There must be connectors between processes.";
     public static final String MUST_BE_ONLY_ONE_FINAL_PROCESS = FAILED_TO_PERFORM_CALCULATION + "- There must be only one final process.";
     public static final String PROCESS_WITH_NO_CONNECTOR_ERROR = FAILED_TO_PERFORM_CALCULATION + "- There must be connectors between processes.";
-
+    public static final String ELEMENTARY_CANNOT_BE_EMPTY = FAILED_TO_PERFORM_CALCULATION + "- Elementary exchanges are required.";
 
 }

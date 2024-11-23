@@ -17,7 +17,6 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -141,14 +140,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 ProcessImpactValue processImpactValue = processImpactValueOpt.get();
                 BigDecimal unitLevel = processImpactValue.getUnitLevel();
                 BigDecimal systemLevel = processImpactValue.getSystemLevel();
-                BigDecimal totalFlow = BigDecimal.ZERO;
-                if(exchanges.isEmpty()){
-                    totalFlow = BigDecimal.ONE;
-                }else {
-                    totalFlow = process.getOverAllProductFlowRequired().divide(exchanges.get().getValue());
-                }
-                System.out
-                        .println("Processing impact method category ID: " + factors.getImpactMethodCategory().getId());
+                BigDecimal totalFlow = exchanges.map(value -> process.getOverAllProductFlowRequired().divide(value.getValue(), MathContext.DECIMAL128)).orElse(BigDecimal.ONE);
+                System.out.println("Processing impact method category ID: " + factors.getImpactMethodCategory().getId());
                 System.out.println("Initial unit level: " + unitLevel);
                 System.out.println("base exchange value (before converted): " + exchange.getValue());
                 System.out.println("initial value: " + initialValue);
@@ -190,19 +183,11 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         // inside each process is calculated again
         // the issue here is performance -> 1 project may have many processes, and each
         // process can also have several exchanges
-        // so we have to use nested loops,
-        // forE: {
-        // forE: {
-        // (and even)
-        // forE: {}
-        // }
-        // }
-        // assume that the project is not null
         UUID projectId = project.getId();
         UUID methodId = project.getLifeCycleImpactAssessmentMethod().getId();
         List<Process> processList = processRepository.findAll(projectId);
         for (Process process : processList) {
-            // alter the old ones.
+            // alter the old ones instead of generating new ones for that specific method.
             alterPrevImpactValueList(process, methodId);
             computeProcessImpactValueAllExchangeOfProcess(process);
         }
@@ -249,8 +234,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
         List<Exchanges> dataList = exchangesRepository.findAllByElementary(processIds);
 
-        if(dataList.isEmpty()){
-            throw CustomExceptions.badRequest("All process not have impact to calculate.");
+        if (dataList.isEmpty()) {
+            throw CustomExceptions.badRequest(MessageConstants.ELEMENTARY_CANNOT_BE_EMPTY);
         }
 
         List<Exchanges> allExchanges = exchangesRepository.findAllByProcessIdsInput(processIds);
@@ -548,8 +533,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                     return endValue.divide(startValue, MathContext.DECIMAL128);
                 })
                 .reduce(BigDecimal.ONE, BigDecimal::multiply); // Tính tích của tất cả các giá trị chia
-
-        // In kết quả cuối cùng
     }
 
 }
