@@ -29,14 +29,14 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public String updateFile(String key, byte[] file) {
-        try{
+        try {
             PutObjectRequest request = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
                     .build();
 
             client.putObject(request, RequestBody.fromBytes(file));
-        }catch (Exception ignored){
+        } catch (Exception ignored) {
 
         }
         return key;
@@ -58,9 +58,9 @@ public class S3ServiceImpl implements S3Service {
             ResponseBytes<GetObjectResponse> objectBytes = client.getObjectAsBytes(getObjectRequest);
             return objectBytes.asByteArray();
         } catch (S3Exception e) {
-            throw new RuntimeException("Tải file từ S3 thất bại", e);
+            throw new RuntimeException("Failed to download from S3.", e);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("URL không hợp lệ", e);
+            throw new RuntimeException("Invalid URL.", e);
         }
     }
 
@@ -79,9 +79,9 @@ public class S3ServiceImpl implements S3Service {
             // Thực thi lệnh xóa file
             s3Client.deleteObject(deleteObjectRequest);
         } catch (S3Exception e) {
-            throw new RuntimeException("Xóa file trên S3 thất bại", e);
+            throw new RuntimeException("Failed to delete from S3.", e);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("URL không hợp lệ", e);
+            throw new RuntimeException("Invalid URL.", e);
         }
     }
 
@@ -108,7 +108,7 @@ public class S3ServiceImpl implements S3Service {
             // Generate public URL
             return generatePublicUrl(fileName);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to upload image", e);
+            throw new RuntimeException("Failed to upload image.", e);
         }
     }
 
@@ -135,7 +135,7 @@ public class S3ServiceImpl implements S3Service {
             // Generate public URL
             return generatePublicUrl(fileName);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to upload contract", e);
+            throw new RuntimeException("Failed to upload contract.", e);
         }
     }
 
@@ -162,7 +162,7 @@ public class S3ServiceImpl implements S3Service {
             // Generate public URL
             return generatePublicUrl(fileName);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to upload contract", e);
+            throw new RuntimeException("Failed to upload contract.", e);
         }
     }
 
@@ -204,7 +204,7 @@ public class S3ServiceImpl implements S3Service {
             // Loại bỏ ký tự '/' ở đầu nếu có
             return path.startsWith("/") ? path.substring(1) : path;
         } catch (Exception e) {
-            throw new IllegalArgumentException("Không thể trích xuất key từ Public URL: " + publicUrl, e);
+            throw new IllegalArgumentException("Cannot extract key from Public URL: " + publicUrl, e);
         }
     }
 }

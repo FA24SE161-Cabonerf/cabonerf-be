@@ -12,6 +12,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class ProjectCalculationResponse {
+    ProcessNodeDto contributionBreakdown;
     private UUID id;
     private String name;
     private String description;
@@ -20,5 +21,4 @@ public class ProjectCalculationResponse {
     private List<ProjectImpactDto> impacts;
     private List<ProcessDto> processes;
     private List<ConnectorDto> connectors;
-    ProcessNodeDto contributionBreakdown;
 }

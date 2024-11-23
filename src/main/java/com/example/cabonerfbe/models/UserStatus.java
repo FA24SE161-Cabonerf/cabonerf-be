@@ -2,7 +2,10 @@ package com.example.cabonerfbe.models;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -10,7 +13,7 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table
-public class UserStatus extends Base{
+public class UserStatus extends Base {
 
     private String statusName;
     private String description;

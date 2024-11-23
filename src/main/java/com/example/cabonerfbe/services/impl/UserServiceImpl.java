@@ -3,7 +3,7 @@ package com.example.cabonerfbe.services.impl;
 import com.example.cabonerfbe.converter.UserConverter;
 import com.example.cabonerfbe.dto.UserAdminDto;
 import com.example.cabonerfbe.dto.UserProfileDto;
-import com.example.cabonerfbe.enums.Constants;
+import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.Users;
 import com.example.cabonerfbe.repositories.UserRepository;
@@ -32,7 +32,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -58,10 +57,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public GetProfileResponse getMe(UUID userId) {
-        var user = userRepository.findById(userId)
-                .orElseThrow(() -> CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, "User not exist"));
-        if(Objects.equals(user.getUserStatus().getStatusName(), "Banned")){
-            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR,"User is banned");
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_FOUND));
+        if (!user.isStatus()) {
+            throw CustomExceptions.unauthorized(MessageConstants.USER_IS_BANNED);
         }
         UserProfileDto userProfileDtoDto = userConverter.fromUserToUserProfileDto(user);
 
@@ -77,7 +76,7 @@ public class UserServiceImpl implements UserService {
                 : userRepository.findAll(pageable);
 
         int totalPage = users.getTotalPages();
-        if(pageCurrent > totalPage){
+        if (pageCurrent > totalPage) {
             return GetAllUserResponse.builder()
                     .pageCurrent(1)
                     .pageSize(0)
@@ -97,7 +96,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserAdminDto updateUserStatus(UUID userId) {
         Users u = userRepository.findById(userId)
-                .orElseThrow(() -> CustomExceptions.notFound("Account not exist"));
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
         u.setStatus(!u.isStatus());
         return userConverter.forAdmin(userRepository.save(u));
@@ -106,17 +105,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public UpdateAvatarUserResponse updateAvatarUser(UUID userId, MultipartFile file) {
         Users u = userRepository.findByIdWithStatus(userId)
-                .orElseThrow(() -> CustomExceptions.notFound("User not exist"));
-        if(!isImageFile(file)){
-            throw CustomExceptions.badRequest("Image invalid");
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
+        if (!isImageFile(file)) {
+            throw CustomExceptions.badRequest("Invalid image.");
         }
 
-        if(u.getProfilePictureUrl() != null){
+        if (u.getProfilePictureUrl() != null) {
             s3Service.deleteFile(u.getProfilePictureUrl());
         }
         try {
             u.setProfilePictureUrl(s3Service.uploadImage(file));
-        }catch (Exception ignored){
+        } catch (Exception ignored) {
         }
 
 
@@ -129,10 +128,10 @@ public class UserServiceImpl implements UserService {
 
         Page<Users> data = keyword == null
                 ? userRepository.findToInvite(pageable)
-                : userRepository.findToInviteByKeyword(keyword ,pageable);
+                : userRepository.findToInviteByKeyword(keyword, pageable);
 
         int totalPage = data.getTotalPages();
-        if(pageCurrent > totalPage){
+        if (pageCurrent > totalPage) {
             return GetUserToInviteResponse.builder()
                     .totalPage(0)
                     .pageSize(0)

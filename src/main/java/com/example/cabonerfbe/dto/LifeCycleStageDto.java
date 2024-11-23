@@ -1,6 +1,5 @@
 package com.example.cabonerfbe.dto;
 
-import jakarta.persistence.Column;
 import lombok.*;
 
 import java.util.UUID;

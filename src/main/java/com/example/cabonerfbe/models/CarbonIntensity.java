@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Entity
 @Table
-public class CarbonIntensity extends Base{
+public class CarbonIntensity extends Base {
     private String category;
     private BigDecimal value;
     private String unit;

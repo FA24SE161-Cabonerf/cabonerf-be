@@ -1,7 +1,10 @@
 package com.example.cabonerfbe.models;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -11,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table
-public class ForgotPasswordToken extends Base{
+public class ForgotPasswordToken extends Base {
     @Column(length = 500)
     private String token;
     private LocalDateTime expiryDate;

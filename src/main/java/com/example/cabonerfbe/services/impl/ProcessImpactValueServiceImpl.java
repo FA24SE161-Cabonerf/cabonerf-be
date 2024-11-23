@@ -26,6 +26,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class ProcessImpactValueServiceImpl implements ProcessImpactValueService {
+    private final List<ConnectorPercentDto> connectorsResponse = new ArrayList<>();
+    private final ProjectImpactValue totalProject = new ProjectImpactValue();
+    private final List<Connector> _connectors = new ArrayList<>();
     @Autowired
     ProcessRepository processRepository;
     @Autowired
@@ -46,11 +49,19 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private ConnectorConverter connectorConverter;
     @Autowired
     private ProjectImpactValueRepository projectImpactValueRepository;
-
-    private final List<ConnectorPercentDto> connectorsResponse = new ArrayList<>();
-    private final ProjectImpactValue totalProject = new ProjectImpactValue();
-    private final List<Connector> _connectors = new ArrayList<>();
     private String exchangeIdNext = null;
+
+    @NotNull
+    private static ProcessImpactValue getNewProcessImpactValue(ImpactMethodCategory methodCategory, Process process) {
+        ProcessImpactValue processImpactValue = new ProcessImpactValue();
+        processImpactValue.setProcess(process);
+        processImpactValue.setImpactMethodCategory(methodCategory);
+        processImpactValue.setOverallImpactContribution(Constants.DEFAULT_OVERALL_IMPACT_CONTRIBUTION);
+        processImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
+        processImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
+        processImpactValue.setUnitLevel(Constants.BASE_UNIT_LEVEL);
+        return processImpactValue;
+    }
 
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     private void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
@@ -65,18 +76,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             processImpactValueList.add(processImpactValue);
         }
         processImpactValueRepository.saveAll(processImpactValueList);
-    }
-
-    @NotNull
-    private static ProcessImpactValue getNewProcessImpactValue(ImpactMethodCategory methodCategory, Process process) {
-        ProcessImpactValue processImpactValue = new ProcessImpactValue();
-        processImpactValue.setProcess(process);
-        processImpactValue.setImpactMethodCategory(methodCategory);
-        processImpactValue.setOverallImpactContribution(Constants.DEFAULT_OVERALL_IMPACT_CONTRIBUTION);
-        processImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
-        processImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
-        processImpactValue.setUnitLevel(Constants.BASE_UNIT_LEVEL);
-        return processImpactValue;
     }
 
     // this one will be used once the client is too tired to update one by one.
@@ -225,12 +224,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     public void computeSystemLevelOfProject(UUID projectId) {
 
         Project project = projectRepository.findById(projectId).orElseThrow(
-                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND,Collections.EMPTY_LIST));
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
 
         // Lấy toàn bộ process và kiểm tra
         List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
         if (processList.isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT,Collections.EMPTY_LIST);
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT, Collections.EMPTY_LIST);
         }
 
         List<UUID> processIds = processList.stream()
@@ -242,20 +241,19 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         // Truy vấn connectors và kiểm tra
         Set<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
         if (processList.size() > 1 && connectors.isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE,Collections.EMPTY_LIST);
+            throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE, Collections.EMPTY_LIST);
         }
 
         List<Process> processesWithoutOutgoingConnectors = processRepository
                 .findProcessesWithoutOutgoingConnectors(projectId);
         if (processesWithoutOutgoingConnectors.size() > 1) {
-            throw CustomExceptions.badRequest(
-                    "A final node is missing to complete the process. Please check the diagram structure or add a final node to proceed.",Collections.EMPTY_LIST);
+            throw CustomExceptions.badRequest(MessageConstants.FINAL_PROCESS_MUST_BE_SPECIFIED, Collections.EMPTY_LIST);
         }
         if (processIds.size() > 1) {
             boolean allValuesZero = allExchanges.stream()
-                    .allMatch(exchange -> exchange.getValue().equals(BigDecimal.ZERO));
+                    .allMatch(exchange -> exchange.getValue().compareTo(BigDecimal.ZERO) == 0);
             if (allValuesZero) {
-                throw CustomExceptions.badRequest("All exchange have value is zero",Collections.EMPTY_LIST);
+                throw CustomExceptions.badRequest(MessageConstants.ALL_EXCHANGE_VALUE_ZERO, Collections.EMPTY_LIST);
             }
             findWay(connectors);
         }
@@ -272,7 +270,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         if (processList.isEmpty()) {
             return;
         }
-        if(processList.size() == 1){
+        if (processList.size() == 1) {
             validateProcessWithOne(processList.get(0));
         }
 
@@ -320,19 +318,17 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         return;
     }
 
-    private void validateProcessWithOne(Process p){
+    private void validateProcessWithOne(Process p) {
         List<Exchanges> elementary = exchangesRepository.findElementaryByProcess(p.getId());
-        if(elementary.isEmpty()){
-            processImpactValueRepository.setDefaultSystemLevel(p.getId());
-            throw CustomExceptions.badRequest("Process not have impact to calculate",Collections.EMPTY_LIST);
+        if (elementary.isEmpty()) {
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
+                    "- Process " + p.getName() + " has no elementary exchange.", Collections.EMPTY_LIST);
         }
         List<Exchanges> productIn = exchangesRepository.findProductIn(p.getId());
-        if(!productIn.isEmpty()){
-            throw CustomExceptions.badRequest("Product input invalid",Collections.EMPTY_LIST);
-        }
         Exchanges productOut = exchangesRepository.findProductOutWithOneProcess(p.getId());
-        if(productOut != null){
-            throw CustomExceptions.badRequest("Product output invalid",Collections.EMPTY_LIST);
+        if (!productIn.isEmpty() || productOut != null) {
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
+                    "- Process " + p.getName() + " should have 0 input/output.", Collections.EMPTY_LIST);
         }
     }
 
@@ -411,7 +407,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                     : totalRequiredFlow.multiply(x.getUnitLevel())
                     .divide(outputValue, MathContext.DECIMAL128);
 
-             x.setSystemLevel(value);
+            x.setSystemLevel(value);
 //            x.setOverallImpactContribution(value);
         });
 
@@ -528,9 +524,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
                     // Kiểm tra nếu startValue bằng 0
                     if (startValue.compareTo(BigDecimal.ZERO) == 0) {
-                        throw CustomExceptions.badRequest(
-                                connector.getStartExchanges().getName()
-                                        + " has a value of 0. Cannot perform calculation.",Collections.EMPTY_LIST);
+
+                        throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION + "- Process " + connector.getStartProcess().getName() + "'s product values cannot be 0.", Collections.EMPTY_LIST);
                     }
 
                     // Trả về kết quả chia

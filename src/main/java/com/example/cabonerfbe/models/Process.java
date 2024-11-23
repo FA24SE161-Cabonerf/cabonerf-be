@@ -1,7 +1,10 @@
 package com.example.cabonerfbe.models;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
@@ -11,7 +14,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Entity
 @Table
-public class Process extends Base{
+public class Process extends Base {
 
     private String name;
     private String description;

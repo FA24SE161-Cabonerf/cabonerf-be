@@ -1,9 +1,6 @@
 package com.example.cabonerfbe.config;
 
 import com.example.cabonerfbe.enums.Constants;
-import com.example.cabonerfbe.enums.MessageConstants;
-import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.UserVerifyStatus;
 import com.example.cabonerfbe.repositories.UserRepository;
 import com.example.cabonerfbe.repositories.UserVerifyStatusRepository;
 import com.example.cabonerfbe.services.JwtService;
@@ -16,24 +13,20 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private static final String SWAGGER_UI_PATH = "/swagger-ui/";
+    private static final String API_DOCS_PATH = "/v3/api-docs";
     @Autowired
     private JwtService jwtService;
     @Autowired
@@ -42,9 +35,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private UserRepository userRepository;
     @Autowired
     private UserVerifyStatusRepository userVerifyStatusRepository;
-
-    private static final String SWAGGER_UI_PATH = "/swagger-ui/";
-    private static final String API_DOCS_PATH = "/v3/api-docs";
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,

@@ -11,6 +11,7 @@ public interface EmissionSubstanceConverter {
     EmissionSubstanceConverter INSTANCE = Mappers.getMapper(EmissionSubstanceConverter.class);
 
     SearchEmissionSubstanceDto ToDto(EmissionSubstance emissionSubstance);
+
     EmissionSubstanceDto modelToDto(EmissionSubstance emissionSubstance);
 
 }

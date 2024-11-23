@@ -1,7 +1,11 @@
 package com.example.cabonerfbe.models;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -9,7 +13,7 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table
-public class Substance extends Base{
+public class Substance extends Base {
     private String name;
     private String chemicalName;
     private String molecularFormula;

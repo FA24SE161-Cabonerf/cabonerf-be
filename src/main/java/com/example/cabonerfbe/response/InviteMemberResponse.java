@@ -1,7 +1,6 @@
 package com.example.cabonerfbe.response;
 
 import com.example.cabonerfbe.dto.InviteUserOrganizationDto;
-import com.example.cabonerfbe.dto.UserAdminDto;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -43,21 +43,21 @@ public class MidpointImpactCategoryServiceImpl implements MidpointImpactCategory
 
     @Override
     public MidpointImpactCategoryDto create(CreateMidpointImpactCategoryRequest request) {
-        Unit u = uRepository.findByIdAndStatus(request.getUnitId(),true)
-                .orElseThrow(() -> CustomExceptions.notFound("Unit not exist"));
+        Unit u = uRepository.findByIdAndStatus(request.getUnitId(), true)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND));
 
-        MidpointImpactCategory mic = new MidpointImpactCategory(request.getName(),request.getDescription(),request.getAbbr(),u);
+        MidpointImpactCategory mic = new MidpointImpactCategory(request.getName(), request.getDescription(), request.getAbbr(), u);
 
         return midpointImpactCategoryConverter.fromMidpointImpactCategoryToMidpointImpactCategoryDto(midpointImpactCategoryRepository.save(mic));
     }
 
     @Override
     public MidpointImpactCategoryDto update(UUID id, UpdateMidpointImpactCategoryRequest request) {
-        MidpointImpactCategory mic = midpointImpactCategoryRepository.findByIdAndStatus(id,true)
-                .orElseThrow(() -> CustomExceptions.notFound("Midpoint impact category not exist"));
+        MidpointImpactCategory mic = midpointImpactCategoryRepository.findByIdAndStatus(id, true)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_MIDPOINT_IMPACT_CATEGORY_FOUND));
 
-        Unit u = uRepository.findByIdAndStatus(request.getUnitId(),true)
-                .orElseThrow(() -> CustomExceptions.notFound("Unit not exist"));
+        Unit u = uRepository.findByIdAndStatus(request.getUnitId(), true)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND));
 
         mic.setName(request.getName());
         mic.setDescription(request.getDescription());
@@ -68,8 +68,8 @@ public class MidpointImpactCategoryServiceImpl implements MidpointImpactCategory
 
     @Override
     public MidpointImpactCategoryDto delete(UUID id) {
-        MidpointImpactCategory mic = midpointImpactCategoryRepository.findByIdAndStatus(id,true)
-                .orElseThrow(() -> CustomExceptions.notFound("Midpoint impact category not exist"));
+        MidpointImpactCategory mic = midpointImpactCategoryRepository.findByIdAndStatus(id, true)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_MIDPOINT_IMPACT_CATEGORY_FOUND));
 
         mic.setStatus(false);
         return midpointImpactCategoryConverter.fromMidpointImpactCategoryToMidpointImpactCategoryDto(midpointImpactCategoryRepository.save(mic));

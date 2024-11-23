@@ -7,12 +7,10 @@ import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.EmailVerificationToken;
 import com.example.cabonerfbe.repositories.EmailVerificationTokenRepository;
 import com.example.cabonerfbe.repositories.UserRepository;
-import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +19,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -33,17 +30,14 @@ import java.util.function.Function;
 public class JwtService {
 //    private final Dotenv dotenv = Dotenv.load();
 
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    EmailVerificationTokenRepository evtRepository;
     @Value("${app.access_token_secret_key}")
     private String accessTokenSecretKey;
-
     @Value("${app.refresh_token_secret_key}")
     private String refreshTokenSecretKey;
-
-    @Value("${app.email_verify_token_secret_key}")
-    private String emailVerifyTokenSecretKey;
-
-    @Value("${app.forgot_password_token_secret_key}")
-    private String forgotPasswordTokenSecretKey;
 
 //    private final String gatewayTokenSecretKey = dotenv.get("CLIENT_GATEWAY_SECRET_KEY");
 //
@@ -54,7 +48,10 @@ public class JwtService {
 //    private final long EMAIL_VERIFY_TOKEN_EXPIRATION = Long.parseLong(Objects.requireNonNull(dotenv.get("EMAIL_VERIFY_TOKEN_EXPIRATION")));
 //    private final long FORGOT_EXPIRATION = Long.parseLong(Objects.requireNonNull(dotenv.get("FORGOT_TOKEN_EXPIRATION")));
 //    private final long GATEWAY_TOKEN_EXPIRATION = Long.parseLong(Objects.requireNonNull(dotenv.get("GATEWAY_TOKEN_EXPIRATION")));
-
+    @Value("${app.email_verify_token_secret_key}")
+    private String emailVerifyTokenSecretKey;
+    @Value("${app.forgot_password_token_secret_key}")
+    private String forgotPasswordTokenSecretKey;
     @Value("${CLIENT_GATEWAY_SECRET_KEY}")
     private String clientGatewaySecretKey;
     @Value("${MAIN_SERVICE_ID_KEY}")
@@ -71,11 +68,6 @@ public class JwtService {
     private long FORGOT_EXPIRATION;
     @Value("${GATEWAY_TOKEN_EXPIRATION}")
     private long GATEWAY_TOKEN_EXPIRATION;
-
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    EmailVerificationTokenRepository evtRepository;
 
     public String extractUsername(String token, String tokenType) {
         return extractClaim(token, tokenType, Claims::getSubject);
@@ -229,8 +221,8 @@ public class JwtService {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    public EmailVerificationToken checkToken(String token){
-        if(!token.startsWith("Bearer ")){
+    public EmailVerificationToken checkToken(String token) {
+        if (!token.startsWith("Bearer ")) {
             throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("Email verify token", "Email verify token not valid"));
         }
 

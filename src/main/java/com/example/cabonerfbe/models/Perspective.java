@@ -13,7 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table
-public class Perspective extends Base{
+public class Perspective extends Base {
     private String name;
     private String description;
     private String abbr;

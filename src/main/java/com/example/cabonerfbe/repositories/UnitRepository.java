@@ -32,10 +32,12 @@ public interface UnitRepository extends JpaRepository<Unit, UUID> {
 
     @Query("SELECT u FROM Unit u WHERE u.unitGroup.id = ?1")
     List<Unit> findAllByUnitGroupId(UUID unitGroupId);
+
     @Query("SELECT u FROM Unit u WHERE u.unitGroup.id = ?1")
     Page<Unit> findAllByUnitGroupIdWithPage(UUID unitGroupId, Pageable pageable);
 
     boolean existsByIsDefaultAndStatusAndUnitGroup(Boolean isDefault, boolean status, UnitGroup unitGroup);
+
     @Query("SELECT u FROM Unit u JOIN FETCH u.unitGroup ug WHERE ug.id = :unitGroupId AND u.isDefault = true AND u.status = true AND ug.status = true")
     Unit findDefault(@Param("unitGroupId") UUID unitGroupId);
 

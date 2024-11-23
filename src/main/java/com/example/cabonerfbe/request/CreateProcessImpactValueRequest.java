@@ -1,8 +1,5 @@
 package com.example.cabonerfbe.request;
 
-import com.example.cabonerfbe.models.Process;
-import com.example.cabonerfbe.models.Project;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.io.Serializable;

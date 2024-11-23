@@ -13,8 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 @SuperBuilder
 public class GetAllSubstanceCompartmentAdminResponse {
+    List<EmissionSubstanceDto> list;
     private int pageCurrent;
     private int pageSize;
     private int totalPage;
-    List<EmissionSubstanceDto> list;
 }

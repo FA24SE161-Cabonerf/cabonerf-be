@@ -18,8 +18,8 @@ import com.example.cabonerfbe.request.CreateConnectorRequest;
 import com.example.cabonerfbe.response.CreateConnectorResponse;
 import com.example.cabonerfbe.response.DeleteConnectorResponse;
 import com.example.cabonerfbe.services.ConnectorService;
-import com.example.cabonerfbe.services.ProcessImpactValueService;
 import com.example.cabonerfbe.services.MessagePublisher;
+import com.example.cabonerfbe.services.ProcessImpactValueService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j

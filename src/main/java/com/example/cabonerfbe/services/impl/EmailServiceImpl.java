@@ -1,7 +1,7 @@
 package com.example.cabonerfbe.services.impl;
 
+import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.Organization;
 import com.example.cabonerfbe.models.UserOrganization;
 import com.example.cabonerfbe.models.Users;
 import com.example.cabonerfbe.repositories.OrganizationRepository;
@@ -39,19 +39,19 @@ public class EmailServiceImpl implements EmailService {
     public SendMailCreateOrganizationResponse sendMailCreateOrganization(UUID organizationId) {
         // Kiểm tra organization tồn tại
         organizationRepository.findById(organizationId)
-                .orElseThrow(() -> CustomExceptions.notFound("Organization not exist"));
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
         List<UserOrganization> userOrganizations = uoRepository.findByOrganization(organizationId);
         if (userOrganizations.isEmpty()) {
-            throw CustomExceptions.badRequest("Account not exist");
+            throw CustomExceptions.badRequest("Account doesn't exist.");
         }
         if (userOrganizations.size() > 1) {
-            throw CustomExceptions.badRequest("Account already active");
+            throw CustomExceptions.badRequest("Account is already active.");
         }
 
         UserOrganization userOrg = userOrganizations.get(0);
         if (Objects.equals(userOrg.getUser().getUserVerifyStatus().getStatusName(), "Verified")) {
-            throw CustomExceptions.badRequest("Account already active");
+            throw CustomExceptions.badRequest("Account is already active.");
         }
 
         String token = jwtService.generateEmailVerifyToken(userOrg.getUser());
@@ -73,7 +73,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public SendMailCreateAccountResponse sendMailCreateAccountByOrganizationManager(UUID userId) {
         Users u = userRepository.findById(userId)
-                .orElseThrow(() -> CustomExceptions.notFound("User not found"));
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
         String token = jwtService.generateEmailVerifyToken(u);
 
@@ -91,7 +91,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public SendMailRegisterResponse sendMailRegister(UUID userId) {
         Users u = userRepository.findById(userId)
-                .orElseThrow(() -> CustomExceptions.notFound("User not found"));
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
         String token = jwtService.generateEmailVerifyToken(u);
 

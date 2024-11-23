@@ -11,5 +11,6 @@ public interface UserOrganizationConverter {
     UserOrganizationConverter INSTANCE = Mappers.getMapper(UserOrganizationConverter.class);
 
     InviteUserOrganizationDto modelToDto(UserOrganization uo);
+
     UserOrganizationDto enityToDto(UserOrganization uo);
 }

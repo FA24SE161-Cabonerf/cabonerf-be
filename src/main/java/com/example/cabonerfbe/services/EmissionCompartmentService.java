@@ -9,8 +9,11 @@ import java.util.UUID;
 
 public interface EmissionCompartmentService {
     List<EmissionCompartmentResponse> getAllEmissionCompartments();
+
     EmissionCompartmentDto create(EmissionCompartmentRequest request);
+
     EmissionCompartmentDto update(UUID emissionCompartmentId, EmissionCompartmentRequest request);
+
     EmissionCompartmentDto delete(UUID emissionCompartmentId);
 
 }

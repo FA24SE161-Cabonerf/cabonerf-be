@@ -3,12 +3,10 @@ package com.example.cabonerfbe.controller;
 import com.example.cabonerfbe.enums.API_PARAMS;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
-import com.example.cabonerfbe.models.Perspective;
 import com.example.cabonerfbe.request.CreatePerspectiveRequest;
 import com.example.cabonerfbe.request.UpdatePerspectiveRequest;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.PerspectiveService;
-import com.example.cabonerfbe.services.impl.PerspectiveServiceImpl;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -30,7 +28,7 @@ public class PerspectiveController {
     PerspectiveService perspectiveService;
 
     @GetMapping(API_PARAMS.GET_ALL_PERSPECTIVE)
-    public ResponseEntity<ResponseObject> getAllPerspective(){
+    public ResponseEntity<ResponseObject> getAllPerspective() {
         log.info("Start getAllPerspective");
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_ALL_PERSPECTIVE_SUCCESS, perspectiveService.getAllPerspective())
@@ -38,23 +36,23 @@ public class PerspectiveController {
     }
 
     @GetMapping(API_PARAMS.GET_BY_ID_PERSPECTIVE)
-    public ResponseEntity<ResponseObject> getById(@PathVariable UUID id){
-        log.info("Start getPerspectiveById. Id: ",id);
+    public ResponseEntity<ResponseObject> getById(@PathVariable UUID id) {
+        log.info("Start getPerspectiveById. Id: {}", id);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_ALL_PERSPECTIVE_SUCCESS, perspectiveService.getPerspectiveById(id))
         );
     }
 
     @PutMapping(API_PARAMS.GET_BY_ID_PERSPECTIVE)
-    public ResponseEntity<ResponseObject> updateById(@PathVariable UUID id, @RequestBody UpdatePerspectiveRequest request){
-        log.info("Start updateById. Id: ",id);
+    public ResponseEntity<ResponseObject> updateById(@PathVariable UUID id, @RequestBody UpdatePerspectiveRequest request) {
+        log.info("Start updateById. Id: {}", id);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.UPDATE_PERSPECTIVE_SUCCESS,perspectiveService.updatePerspective(request,id))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.UPDATE_PERSPECTIVE_SUCCESS, perspectiveService.updatePerspective(request, id))
         );
     }
 
     @PostMapping()
-    public ResponseEntity<ResponseObject> createPerspective(@Valid @RequestBody CreatePerspectiveRequest request){
+    public ResponseEntity<ResponseObject> createPerspective(@Valid @RequestBody CreatePerspectiveRequest request) {
         log.info("Start createPerspective");
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Create Perspective success", perspectiveService.createPerspective(request))
@@ -62,8 +60,8 @@ public class PerspectiveController {
     }
 
     @DeleteMapping(API_PARAMS.GET_BY_ID_PERSPECTIVE)
-    public ResponseEntity<ResponseObject> deletePerspective(@PathVariable UUID id){
-        log.info("Start deletePerspective. Id: " , id);
+    public ResponseEntity<ResponseObject> deletePerspective(@PathVariable UUID id) {
+        log.info("Start deletePerspective. Id: {}", id);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Create Perspective success", perspectiveService.deletePerspective(id))
         );

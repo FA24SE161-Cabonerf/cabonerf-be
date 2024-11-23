@@ -55,7 +55,7 @@ public class UnitController {
     public ResponseEntity<ResponseObject> createUnitInUnitGroup(@PathVariable UUID groupId, @Valid @RequestBody CreateUnitRequest request) {
         log.info("addUnitToUnitGroup: {}", request);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.ADD_UNIT_TO_UNIT_GROUP_SUCCESS, unitService.createUnitInUnitGroup(groupId ,request))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.ADD_UNIT_TO_UNIT_GROUP_SUCCESS, unitService.createUnitInUnitGroup(groupId, request))
         );
     }
 

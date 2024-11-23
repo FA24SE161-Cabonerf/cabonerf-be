@@ -14,12 +14,11 @@ import java.nio.charset.StandardCharsets;
 
 @Component
 public class SQLRunner implements CommandLineRunner {
+    private final JdbcTemplate jdbcTemplate;
     @Autowired
     PasswordEncoder passwordEncoder;
     @Autowired
     private UserRepository userRepository;
-
-    private final JdbcTemplate jdbcTemplate;
 
     public SQLRunner(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;

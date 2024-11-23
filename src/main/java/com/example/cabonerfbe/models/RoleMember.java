@@ -1,7 +1,11 @@
 package com.example.cabonerfbe.models;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -9,6 +13,6 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table
-public class RoleMember extends Base{
+public class RoleMember extends Base {
     private String name;
 }

@@ -13,6 +13,8 @@ public interface ImpactCategoryConverter {
     ImpactCategoryConverter INSTANCE = Mappers.getMapper(ImpactCategoryConverter.class);
 
     List<ImpactCategoryDto> fromImpactCategoryListToDtoList(List<ImpactCategory> impactCategories);
+
     ImpactCategoryDto fromImpactCategoryToImpactCategoryDto(ImpactCategory emissionSubstances);
+
     ProjectImpactCategoryDto fromProjectToImpactCategoryDto(ImpactCategory impactCategory);
 }

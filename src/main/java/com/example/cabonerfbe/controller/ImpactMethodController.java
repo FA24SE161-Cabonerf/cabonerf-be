@@ -78,7 +78,7 @@ public class ImpactMethodController {
     public ResponseEntity<ResponseObject> addImpactCategoryToImpactMethod() {
         log.info("Start getAllMethodName");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get all method name success", impactMethodService.getNameAllMethod())
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get all method name success", impactMethodService.getNameAllMethod())
         );
     }
 

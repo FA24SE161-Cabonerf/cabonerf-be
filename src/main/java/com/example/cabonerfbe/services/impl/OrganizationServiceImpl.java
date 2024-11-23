@@ -2,8 +2,11 @@ package com.example.cabonerfbe.services.impl;
 
 import com.corundumstudio.socketio.SocketIOServer;
 import com.example.cabonerfbe.converter.*;
-import com.example.cabonerfbe.dto.*;
-import com.example.cabonerfbe.enums.Constants;
+import com.example.cabonerfbe.dto.InviteUserOrganizationDto;
+import com.example.cabonerfbe.dto.MemberOrganizationDto;
+import com.example.cabonerfbe.dto.OrganizationDto;
+import com.example.cabonerfbe.dto.UserOrganizationDto;
+import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
@@ -13,7 +16,6 @@ import com.example.cabonerfbe.response.InviteMemberResponse;
 import com.example.cabonerfbe.response.LoginResponse;
 import com.example.cabonerfbe.services.*;
 import com.example.cabonerfbe.util.PasswordGenerator;
-import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +31,9 @@ import java.util.stream.Collectors;
 @Service
 public class OrganizationServiceImpl implements OrganizationService {
 
+    public static final String LCA_STAFF = "LCA Staff";
+    @Autowired
+    PasswordEncoder passwordEncoder;
     @Autowired
     private OrganizationRepository organizationRepository;
     @Autowired
@@ -43,8 +48,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     private UserVerifyStatusRepository userVerifyStatusRepository;
     @Autowired
     private UserOrganizationRepository userOrganizationRepository;
-    @Autowired
-    PasswordEncoder passwordEncoder;
     @Autowired
     private ContractRepository contractRepository;
     @Autowired
@@ -99,7 +102,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public OrganizationDto createOrganization(CreateOrganizationRequest request, MultipartFile contractFile) {
 
-        if(!isPdfFile(contractFile)){
+        if (!isPdfFile(contractFile)) {
             throw CustomExceptions.badRequest("Contract file is not .pdf");
         }
 
@@ -155,7 +158,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public OrganizationDto updateOrganization(UUID organizationId, UpdateOrganizationRequest request) {
         Organization o = organizationRepository.findById(organizationId)
-                .orElseThrow(() -> CustomExceptions.notFound("Organization not exist"));
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
         o.setName(request.getName());
         return organizationConverter.modelToDto(organizationRepository.save(o));
@@ -164,7 +167,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public OrganizationDto deleteOrganization(UUID organizationId) {
         Organization o = organizationRepository.findById(organizationId)
-                .orElseThrow(() -> CustomExceptions.notFound("Organization not exist"));
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
         contractService.deleteContract(o.getContract().getId());
         o.setStatus(false);
@@ -174,15 +177,15 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public LoginResponse confirm(VerifyCreateOrganizationRequest request) {
         Organization o = organizationRepository.findById(request.getOrganizationId())
-                .orElseThrow(() -> CustomExceptions.notFound("Organization not exist"));
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
         EmailVerificationToken _token = jwtService.checkToken(request.getToken());
 
         Users u = userRepository.findById(_token.getUsers().getId())
-                .orElseThrow(() -> CustomExceptions.notFound("User not exist"));
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
-        if(!u.getRole().getName().equals("Verified")){
-            throw CustomExceptions.badRequest("Account already verified");
+        if (!u.getRole().getName().equals("Verified")) {
+            throw CustomExceptions.badRequest("Account is already verified.");
         }
 
         u.setUserVerifyStatus(userVerifyStatusRepository.findByName("Verified").get());
@@ -197,7 +200,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         authenticationService.saveRefreshToken(refresh_token, u);
 
         UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(o.getId(), u.getId())
-                .orElseThrow(() -> CustomExceptions.notFound("User not belonging to organization"));
+                .orElseThrow(() -> CustomExceptions.notFound("User doesn't belong to organization."));
 
         Workspace w = new Workspace();
         w.setName(o.getName());
@@ -217,7 +220,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     public InviteMemberResponse invite(UUID userId, InviteUserToOrganizationRequest request) {
 
         Organization organization = organizationRepository.findById(request.getOrganizationId())
-                .orElseThrow(() -> CustomExceptions.notFound("Organization not exists"));
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
 //        UserOrganization organizationManager = userOrganizationRepository.findByUserAndOrganization(request.getOrganizationId(), userId)
 //                .orElseThrow(() -> CustomExceptions.unauthorized("You do not belong to this organization."));
@@ -241,9 +244,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         List<UUID> userIds = existingUsers.stream().map(Users::getId).collect(Collectors.toList());
 
         List<UserOrganization> checkInvite = userOrganizationRepository.findInvite(userIds, organization.getId());
-        if(!checkInvite.isEmpty()){
+        if (!checkInvite.isEmpty()) {
             Set<UUID> userHaveInvite = checkInvite.stream()
-                    .map(UserOrganization :: getUser)
+                    .map(UserOrganization::getUser)
                     .map(Users::getId)
                     .collect(Collectors.toSet());
             existingUsers = existingUsers.stream()
@@ -257,7 +260,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                     user.setEmail(email);
                     user.setFullName(email.split("@")[0]);
                     user.setUserVerifyStatus(userVerifyStatusRepository.findByName("Pending").orElseThrow());
-                    user.setRole(roleRepository.findByName("LCA Staff").orElseThrow());
+                    user.setRole(roleRepository.findByName(LCA_STAFF).orElseThrow());
                     user.setPassword(passwordEncoder.encode(PasswordGenerator.generateRandomPassword(8)));
                     return user;
                 }).collect(Collectors.toList());
@@ -274,15 +277,15 @@ public class OrganizationServiceImpl implements OrganizationService {
                     UserOrganization uo = new UserOrganization();
                     uo.setOrganization(organization);
                     uo.setUser(user);
-                    uo.setRole(roleRepository.findByName("LCA Staff").orElseThrow());
+                    uo.setRole(roleRepository.findByName(LCA_STAFF).orElseThrow());
                     uo.setHasJoined(false);
                     return uo;
                 }).collect(Collectors.toList());
 
         userOrganizations = userOrganizationRepository.saveAll(userOrganizations);
 
-        for(UserOrganization x : userOrganizations){
-            server.getRoomOperations(x.getUser().getId().toString()).sendEvent("newInvite",uoConverter.enityToDto(x));
+        for (UserOrganization x : userOrganizations) {
+            server.getRoomOperations(x.getUser().getId().toString()).sendEvent("newInvite", uoConverter.enityToDto(x));
         }
 
         List<InviteUserOrganizationDto> members = userOrganizations.stream()
@@ -305,15 +308,15 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public UserOrganizationDto acceptDenyInvite(UUID userId, AcceptInviteRequest request,String action) {
+    public UserOrganizationDto acceptDenyInvite(UUID userId, AcceptInviteRequest request, String action) {
 
         UserOrganization uo = userOrganizationRepository.findById(request.getId())
-                .orElseThrow(() -> CustomExceptions.notFound("User not have invite to organization"));
+                .orElseThrow(() -> CustomExceptions.notFound("User doesn't have invitation to organization."));
 
-        if(uo.isHasJoined()){
-            throw CustomExceptions.badRequest("User already join organization");
+        if (uo.isHasJoined()) {
+            throw CustomExceptions.badRequest("User already joined organization.");
         }
-        switch (action){
+        switch (action) {
             case "Accept":
                 uo.setHasJoined(true);
                 userOrganizationRepository.save(uo);
@@ -321,7 +324,8 @@ public class OrganizationServiceImpl implements OrganizationService {
             case "Deny":
                 userOrganizationRepository.delete(uo);
                 break;
-            default: break;
+            default:
+                break;
         }
         userOrganizationRepository.save(uo);
 

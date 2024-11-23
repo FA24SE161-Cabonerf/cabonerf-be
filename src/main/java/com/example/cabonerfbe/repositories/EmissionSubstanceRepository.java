@@ -90,7 +90,7 @@ public interface EmissionSubstanceRepository extends JpaRepository<EmissionSubst
             "LEFT JOIN FETCH sc.emissionCompartment " +
             "JOIN MidpointImpactCharacterizationFactors f ON f.emissionSubstance.id = sc.id " +
             "WHERE sc.status = true AND sc.isInput = :isInput AND f.impactMethodCategory.impactCategory.id = :categoryId")
-    Page<EmissionSubstance> findAllWithJoinFetchCategory(@Param("isInput") boolean input,@Param("categoryId") UUID categoryId, Pageable pageable);
+    Page<EmissionSubstance> findAllWithJoinFetchCategory(@Param("isInput") boolean input, @Param("categoryId") UUID categoryId, Pageable pageable);
 
     @Query("SELECT DISTINCT sc FROM EmissionSubstance sc " +
             "LEFT JOIN FETCH sc.substance es " +
@@ -102,14 +102,14 @@ public interface EmissionSubstanceRepository extends JpaRepository<EmissionSubst
             "OR LOWER(es.molecularFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
             "OR LOWER(es.alternativeFormula) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
             "OR LOWER(es.cas) like LOWER(CONCAT('%', :keyword, '%')))")
-    Page<EmissionSubstance> searchByKeywordWithJoinFetchCategory(@Param("isInput") boolean input, @Param("keyword") String keyword,@Param("categoryId") UUID categoryId, Pageable pageable);
+    Page<EmissionSubstance> searchByKeywordWithJoinFetchCategory(@Param("isInput") boolean input, @Param("keyword") String keyword, @Param("categoryId") UUID categoryId, Pageable pageable);
 
     @Query("SELECT DISTINCT sc FROM EmissionSubstance sc " +
             "LEFT JOIN FETCH sc.substance " +
             "LEFT JOIN FETCH sc.emissionCompartment ec " +
             "JOIN MidpointImpactCharacterizationFactors f ON f.emissionSubstance.id = sc.id " +
             "WHERE ec.id = :compartmentId AND sc.status = true AND sc.isInput = :isInput AND f.impactMethodCategory.impactCategory.id = :categoryId ")
-    Page<EmissionSubstance> searchByCompartmentWithJoinFetchCategory(@Param("isInput") boolean input, @Param("compartmentId") UUID compartmentId,@Param("categoryId") UUID categoryId, Pageable pageable);
+    Page<EmissionSubstance> searchByCompartmentWithJoinFetchCategory(@Param("isInput") boolean input, @Param("compartmentId") UUID compartmentId, @Param("categoryId") UUID categoryId, Pageable pageable);
 
     @Query("SELECT DISTINCT sc FROM EmissionSubstance sc " +
             "LEFT JOIN FETCH sc.substance es " +

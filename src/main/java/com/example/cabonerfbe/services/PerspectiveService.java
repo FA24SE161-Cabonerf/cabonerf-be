@@ -9,8 +9,12 @@ import java.util.UUID;
 
 public interface PerspectiveService {
     List<PerspectiveResponse> getAllPerspective();
+
     PerspectiveResponse getPerspectiveById(UUID id);
+
     PerspectiveResponse updatePerspective(UpdatePerspectiveRequest request, UUID id);
+
     PerspectiveResponse createPerspective(CreatePerspectiveRequest request);
+
     PerspectiveResponse deletePerspective(UUID id);
 }

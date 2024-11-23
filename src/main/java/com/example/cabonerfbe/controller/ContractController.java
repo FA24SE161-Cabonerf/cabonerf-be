@@ -1,8 +1,6 @@
 package com.example.cabonerfbe.controller;
 
 import com.example.cabonerfbe.enums.API_PARAMS;
-import com.example.cabonerfbe.enums.Constants;
-import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.ContractService;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -25,8 +23,8 @@ public class ContractController {
     private ContractService contractService;
 
     @GetMapping(API_PARAMS.DOWNLOAD_CONTRACT)
-    public ResponseEntity<Resource> downloadContract(@PathVariable("contractId") UUID contractId){
-        log.info("Start downloadContract. Id: {}",contractId);
+    public ResponseEntity<Resource> downloadContract(@PathVariable("contractId") UUID contractId) {
+        log.info("Start downloadContract. Id: {}", contractId);
         return contractService.downloadContract(contractId);
     }
 }

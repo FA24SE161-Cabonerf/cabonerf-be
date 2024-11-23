@@ -51,20 +51,20 @@ public class UserController {
     }
 
     @PutMapping(API_PARAMS.UPDATE_AVATAR_USER)
-    public ResponseEntity<ResponseObject> updateAvatar(@RequestHeader("x-user-id") UUID userId, @RequestParam("image") MultipartFile image){
+    public ResponseEntity<ResponseObject> updateAvatar(@RequestHeader("x-user-id") UUID userId, @RequestParam("image") MultipartFile image) {
         log.info("Start updateAvatar. id: {}", userId);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Update avatar user success",userService.updateAvatarUser(userId,image))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Update avatar user success", userService.updateAvatarUser(userId, image))
         );
     }
 
     @GetMapping(API_PARAMS.GET_USER_TO_INVITE)
     public ResponseEntity<ResponseObject> getUserToInvite(@RequestParam(defaultValue = "1") int pageCurrent,
                                                           @RequestParam(defaultValue = "5") int pageSize,
-                                                          @RequestParam(required = false) String keyword){
+                                                          @RequestParam(required = false) String keyword) {
         log.info("Start getUserToInvite");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get user to invite success",userService.getToInvite(pageCurrent, pageSize, keyword))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get user to invite success", userService.getToInvite(pageCurrent, pageSize, keyword))
         );
     }
 
