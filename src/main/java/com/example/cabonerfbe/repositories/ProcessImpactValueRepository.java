@@ -54,6 +54,6 @@ public interface ProcessImpactValueRepository extends JpaRepository<ProcessImpac
 
     @Modifying
     @Transactional
-    @Query("UPDATE ProcessImpactValue p SET p.systemLevel = 0 WHERE p.process.id = :processIds AND p.status = true ")
-    void setDefaultSystemLevel(@Param("processIds") UUID processId);
+    @Query("UPDATE ProcessImpactValue p SET p.systemLevel = 0 WHERE p.process.id = :processId AND p.status = true ")
+    void setDefaultSystemLevel(@Param("processId") UUID processId);
 }
