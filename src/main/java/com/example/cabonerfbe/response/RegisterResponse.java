@@ -10,6 +10,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class RegisterResponse extends AuthenticationResponse{
+public class RegisterResponse extends AuthenticationResponse {
     private UserDto user;
 }

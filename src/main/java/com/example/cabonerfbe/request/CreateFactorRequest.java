@@ -30,7 +30,7 @@ public class CreateFactorRequest {
     @NotNull(message = "Cas is required")
     private String cas;
     @NotNull(message = "Value is required.")
-    @Min(value = 0,message = "Value must be greater than or equal to zero")
+    @Min(value = 0, message = "Value must be greater than or equal to zero")
     private BigDecimal value;
     @NotNull(message = "Emission compartment is required.")
     private UUID emissionCompartmentId;

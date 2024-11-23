@@ -9,7 +9,9 @@ import java.util.UUID;
 
 public interface PerspectiveRepository extends JpaRepository<Perspective, UUID> {
     Perspective findByIdAndStatus(UUID id, boolean status);
+
     List<Perspective> findByStatus(boolean status);
+
     @Query("SELECT p FROM Perspective p WHERE p.name like ?1 AND p.status = true AND p.id <> ?2")
     Perspective findByNameAAndId(String name, UUID id);
 }

@@ -59,18 +59,18 @@ public class MidpointController {
     }
 
     @PostMapping(API_PARAMS.ADMIN)
-    public ResponseEntity<ResponseObject> create(@Valid @RequestBody CreateFactorRequest request){
+    public ResponseEntity<ResponseObject> create(@Valid @RequestBody CreateFactorRequest request) {
         log.info("Start createFactor. request: {}", request);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Create factor success",midpointService.create(request))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Create factor success", midpointService.create(request))
         );
     }
 
     @DeleteMapping(API_PARAMS.ADMIN + API_PARAMS.DELETE_MIDPOINT_FACTOR_BY_ID)
-    public ResponseEntity<ResponseObject> delete(@PathVariable UUID id){
-        log.info("Start deleteFactor. Id: {}",id);
+    public ResponseEntity<ResponseObject> delete(@PathVariable UUID id) {
+        log.info("Start deleteFactor. Id: {}", id);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Delete factor success",midpointService.delete(id))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Delete factor success", midpointService.delete(id))
         );
     }
 
@@ -78,13 +78,13 @@ public class MidpointController {
     public ResponseEntity<ResponseObject> importExcel(@RequestParam("file") MultipartFile file, @RequestParam String methodName) throws IOException {
         log.info("Start importExcel");
         return ResponseEntity.ok(new ResponseObject(
-                Constants.RESPONSE_STATUS_SUCCESS,"Import success",excelService.readExcel(file,methodName)
+                Constants.RESPONSE_STATUS_SUCCESS, "Import success", excelService.readExcel(file, methodName)
         ));
     }
 
     @GetMapping(API_PARAMS.ADMIN + API_PARAMS.DOWNLOAD_ERROR_LOG_MIDPOINT_FACTOR_BY_ID)
     public ResponseEntity<Resource> downloadFileLog(@RequestParam String fileName) throws IOException {
-        log.info("Start downloadFileLog . fileName: {}",fileName);
+        log.info("Start downloadFileLog . fileName: {}", fileName);
         return excelService.downloadErrorLog(fileName);
     }
 
@@ -95,7 +95,7 @@ public class MidpointController {
     }
 
     @GetMapping(API_PARAMS.ADMIN + API_PARAMS.EXPORT_MIDPOINT_FACTOR)
-    public ResponseEntity<Resource> exportFactor(ExportFactorRequest request){
+    public ResponseEntity<Resource> exportFactor(ExportFactorRequest request) {
         log.info("Start exportFactor");
         return excelService.exportFactor(request);
     }

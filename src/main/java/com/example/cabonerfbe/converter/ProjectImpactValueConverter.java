@@ -12,5 +12,6 @@ public interface ProjectImpactValueConverter {
     ProjectImpactValueConverter INSTANCE = Mappers.getMapper(ProjectImpactValueConverter.class);
 
     ProjectImpactValueDto fromProjectImpactValueToProjectImpactValueDto(ProjectImpactValue projectImpactValue);
+
     List<ProjectImpactValueDto> fromListProjectImpactValueToProjectImpactValueDto(List<ProjectImpactValue> list);
 }

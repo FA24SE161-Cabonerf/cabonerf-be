@@ -15,7 +15,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table
-public class Organization extends Base{
+public class Organization extends Base {
     private String name;
     @OneToOne(mappedBy = "organization", cascade = CascadeType.ALL)
     private Contract contract;

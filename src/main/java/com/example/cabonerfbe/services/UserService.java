@@ -11,8 +11,12 @@ import java.util.UUID;
 
 public interface UserService {
     GetProfileResponse getMe(UUID userId);
+
     GetAllUserResponse getAll(int pageCurrent, int pageSize, String keyword);
+
     UserAdminDto updateUserStatus(UUID userId);
+
     UpdateAvatarUserResponse updateAvatarUser(UUID userId, MultipartFile file);
+
     GetUserToInviteResponse getToInvite(int pageCurrent, int pageSize, String keyword);
 }

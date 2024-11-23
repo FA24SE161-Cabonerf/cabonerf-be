@@ -1,7 +1,10 @@
 package com.example.cabonerfbe.models;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -9,7 +12,7 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table
-public class ImpactCategory extends Base{
+public class ImpactCategory extends Base {
     private String name;
     private String indicator;
     private String indicatorDescription;

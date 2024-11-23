@@ -12,7 +12,6 @@ import com.example.cabonerfbe.response.MidpointSubstanceFactorsResponse;
 import com.example.cabonerfbe.services.ExcelService;
 import com.example.cabonerfbe.services.MidpointService;
 import com.example.cabonerfbe.services.S3Service;
-import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -20,7 +19,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,25 +26,24 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class ExcelServiceImpl implements ExcelService {
 
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
     @Autowired
     private EmissionCompartmentRepository emissionCompartmentRepository;
     @Autowired
@@ -73,9 +70,7 @@ public class ExcelServiceImpl implements ExcelService {
     private MidpointImpactCharacterizationFactorConverter midpointConverter;
     @Autowired
     private S3Service s3Service;
-
     private ArrayList<String> errorContent = new ArrayList<>();
-    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     @Override
     public ImportFactorResponse readExcel(MultipartFile file, String name) throws IOException {
@@ -86,7 +81,7 @@ public class ExcelServiceImpl implements ExcelService {
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
             ImpactCategory category = impactCategoryRepository.findByName(workbook.getSheetName(0).toUpperCase());
-            if(category == null){
+            if (category == null) {
                 throw CustomExceptions.notFound("Impact category not exist");
             }
             for (Row row : sheet) {
@@ -130,12 +125,12 @@ public class ExcelServiceImpl implements ExcelService {
             BigDecimal value = getBigDecimalValueFromCell(row.getCell(col));
             if (value != null) {
                 ImpactMethodCategory methodCategory = getImpactMethodCategory(methodName, category.getId(), name);
-                if (createOrUpdateFactor(factorsList, emissionSubstance, methodCategory, value,0,row.getRowNum(),col)) {
+                if (createOrUpdateFactor(factorsList, emissionSubstance, methodCategory, value, 0, row.getRowNum(), col)) {
                     response.setMethodValue(methodName, value);
                 }
             }
         });
-        if(response.getEgalitarian() == null && response.getEgalitarian() == null && response.getIndividualist() == null){
+        if (response.getEgalitarian() == null && response.getEgalitarian() == null && response.getIndividualist() == null) {
             return null;
         }
         return response;
@@ -190,8 +185,7 @@ public class ExcelServiceImpl implements ExcelService {
                 ByteArrayResource resource = new ByteArrayResource(fileData);
                 String name = fileName.contains("error") ? "error.xlsx" : "factor-template.xlsx";
                 HttpHeaders headers = new HttpHeaders();
-                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\""+ name +"\"");
-
+                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"");
 
 
                 return ResponseEntity.ok()

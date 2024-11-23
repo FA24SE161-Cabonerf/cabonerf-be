@@ -1,7 +1,10 @@
 package com.example.cabonerfbe.models;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.sql.Timestamp;
 
@@ -11,7 +14,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @Entity
 @Table
-public class EmailVerificationToken extends Base{
+public class EmailVerificationToken extends Base {
     @Column(length = 500)
     private String token;
     private Timestamp expiryDate;

@@ -47,5 +47,6 @@ public interface MidpointImpactCharacterizationFactorConverter {
     List<MidpointImpactCharacterizationFactorsResponse> fromMidpointListToMidpointResponseList(List<MidpointImpactCharacterizationFactors> factors);
 
     MidpointImpactCharacterizationFactorsResponse fromMidpointToMidpointResponse(MidpointImpactCharacterizationFactors factor);
+
     FactorDto fromMidpointToFactor(MidpointImpactCharacterizationFactors factor);
 }

@@ -2,7 +2,6 @@ package com.example.cabonerfbe.controller;
 
 import com.example.cabonerfbe.enums.API_PARAMS;
 import com.example.cabonerfbe.enums.Constants;
-import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.request.LifeCycleStagesRequest;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.LifeCycleStageService;
@@ -36,23 +35,23 @@ public class LifeCycleStageController {
     }
 
     @PostMapping()
-    public ResponseEntity<ResponseObject> create(@Valid @RequestBody LifeCycleStagesRequest request){
-        log.info("Start createLifeCycleStages. request: {}",request);
+    public ResponseEntity<ResponseObject> create(@Valid @RequestBody LifeCycleStagesRequest request) {
+        log.info("Start createLifeCycleStages. request: {}", request);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Create life cycle stages success",lifeCycleStageService.create(request))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Create life cycle stages success", lifeCycleStageService.create(request))
         );
     }
 
     @PutMapping(API_PARAMS.LIFE_CYCLE_STAGE_UPDATE)
-    public ResponseEntity<ResponseObject> update(@PathVariable UUID id, @Valid @RequestBody LifeCycleStagesRequest request){
+    public ResponseEntity<ResponseObject> update(@PathVariable UUID id, @Valid @RequestBody LifeCycleStagesRequest request) {
         log.info("Start updateLifeCycleStages. Id: {}, request: {}", id, request);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Update life cycle stages success", lifeCycleStageService.update(id,request))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Update life cycle stages success", lifeCycleStageService.update(id, request))
         );
     }
 
     @DeleteMapping(API_PARAMS.LIFE_CYCLE_STAGE_DELETE)
-    public ResponseEntity<ResponseObject> delete(@PathVariable UUID id){
+    public ResponseEntity<ResponseObject> delete(@PathVariable UUID id) {
         log.info("Start deleteLifeCycleStages. Id: {}", id);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Delete life cycle stages success", lifeCycleStageService.delete(id))

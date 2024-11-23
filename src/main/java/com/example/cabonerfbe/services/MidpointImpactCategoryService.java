@@ -12,7 +12,10 @@ public interface MidpointImpactCategoryService {
     List<MidpointImpactCategoryResponse> getAllMidpointImpactCategories();
 
     List<MidpointImpactCategoryDto> get();
+
     MidpointImpactCategoryDto create(CreateMidpointImpactCategoryRequest request);
+
     MidpointImpactCategoryDto update(UUID id, UpdateMidpointImpactCategoryRequest request);
+
     MidpointImpactCategoryDto delete(UUID id);
 }

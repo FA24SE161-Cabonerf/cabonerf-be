@@ -5,7 +5,10 @@ import com.example.cabonerfbe.converter.ExchangesConverter;
 import com.example.cabonerfbe.converter.ImpactCategoryConverter;
 import com.example.cabonerfbe.converter.LifeCycleImpactAssessmentMethodConverter;
 import com.example.cabonerfbe.converter.ProcessConverter;
-import com.example.cabonerfbe.dto.*;
+import com.example.cabonerfbe.dto.ProcessDetailDto;
+import com.example.cabonerfbe.dto.ProcessDto;
+import com.example.cabonerfbe.dto.ProcessImpactValueDto;
+import com.example.cabonerfbe.dto.ProcessNodeDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -24,8 +27,10 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -68,11 +73,11 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public ProcessDto createProcess(CreateProcessRequest request) {
         LifeCycleStage lifeCycleStage = lifeCycleStageRepository.findByIdAndStatus(request.getLifeCycleStageId(), Constants.STATUS_TRUE).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND,Collections.EMPTY_LIST)
+                () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND, Collections.EMPTY_LIST)
         );
 
         Project project = projectRepository.findById(request.getProjectId()).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND,Collections.EMPTY_LIST)
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST)
         );
 
         Process process = new Process();
@@ -94,7 +99,7 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public ProcessDto getProcessById(UUID id) {
         Process process = processRepository.findByProcessId(id).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND,Collections.EMPTY_LIST)
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND, Collections.EMPTY_LIST)
         );
         ProcessDto dto = processConverter.fromProcessToProcessDto(process);
 
@@ -107,7 +112,7 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public List<ProcessDto> getAllProcessesByProjectId(UUID projectId) {
         Project project = projectRepository.findById(projectId).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND,Collections.EMPTY_LIST)
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST)
         );
         List<ProcessDto> processDtos = processRepository.findAll(projectId).stream().map(processConverter::fromProcessToProcessDto).collect(Collectors.toList());
 
@@ -125,11 +130,11 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public ProcessDetailDto updateProcess(UUID id, UpdateProcessRequest request) {
         Process process = processRepository.findByProcessId(id).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND,Collections.EMPTY_LIST)
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND, Collections.EMPTY_LIST)
         );
 
         LifeCycleStage lifeCycleStage = lifeCycleStageRepository.findByIdAndStatus(request.getLifeCycleStagesId(), Constants.STATUS_TRUE).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND,Collections.EMPTY_LIST)
+                () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND, Collections.EMPTY_LIST)
         );
 
         process.setLifeCycleStage(lifeCycleStage);
@@ -142,7 +147,7 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public DeleteProcessResponse deleteProcess(UUID id) {
         Process process = processRepository.findByProcessId(id).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND,Collections.EMPTY_LIST)
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND, Collections.EMPTY_LIST)
         );
         process.setStatus(false);
         processRepository.save(process);
@@ -181,7 +186,7 @@ public class ProcessServiceImpl implements ProcessService {
         List<Process> processList = processRepository.findAll(projectId);
         List<Connector> connectorList = connectorRepository.findAllByProject(projectId);
         if (processList.isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND,Collections.EMPTY_LIST);
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND, Collections.EMPTY_LIST);
         }
 
         if (processList.size() == 1) {
@@ -189,16 +194,16 @@ public class ProcessServiceImpl implements ProcessService {
         }
 
         if (connectorList.isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE,Collections.EMPTY_LIST);
+            throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE, Collections.EMPTY_LIST);
         }
 
         if (connectorList.size() + 1 < processList.size()) {
-            throw CustomExceptions.badRequest(MessageConstants.PROCESS_WITH_NO_CONNECTOR_ERROR,Collections.EMPTY_LIST);
+            throw CustomExceptions.badRequest(MessageConstants.PROCESS_WITH_NO_CONNECTOR_ERROR, Collections.EMPTY_LIST);
         }
 
         List<Process> rootProcesses = processRepository.findRootProcess(projectId);
         if (rootProcesses.size() != 1) {
-            throw CustomExceptions.badRequest(MessageConstants.MUST_BE_ONLY_ONE_ROOT_PROCESS);
+            throw CustomExceptions.badRequest(MessageConstants.MUST_BE_ONLY_ONE_FINAL_PROCESS);
         }
 
         UUID rootNodeId = rootProcesses.get(0).getId();
@@ -234,8 +239,12 @@ public class ProcessServiceImpl implements ProcessService {
         BigDecimal endValue = connector.getEndExchanges().getValue();
         BigDecimal startValue = connector.getStartExchanges().getValue();
 
-        if (startValue.compareTo(BigDecimal.ZERO) == 0 || endValue.compareTo(BigDecimal.ZERO) == 0) {
-            throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_VALUE_CANNOT_BE_ZERO);
+        if (startValue.compareTo(BigDecimal.ZERO) == 0) {
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION + "- Process " + connector.getStartProcess().getName() + "'s product value cannot be 0.");
+        }
+
+        if (endValue.compareTo(BigDecimal.ZERO) == 0) {
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION + "- Process " + connector.getEndProcess().getName() + "'s product value cannot be 0.");
         }
 
         if (!connector.getEndExchanges().getUnit().getIsDefault()) {

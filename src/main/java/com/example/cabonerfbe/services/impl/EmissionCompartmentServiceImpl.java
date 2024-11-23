@@ -42,10 +42,10 @@ public class EmissionCompartmentServiceImpl implements EmissionCompartmentServic
 
     @Override
     public EmissionCompartmentDto update(UUID emissionCompartmentId, EmissionCompartmentRequest request) {
-        EmissionCompartment ec = emissionCompartmentRepository.findByIdAndStatus(emissionCompartmentId,true)
-                .orElseThrow(() -> CustomExceptions.notFound("Emission compartment not exist"));
+        EmissionCompartment ec = emissionCompartmentRepository.findByIdAndStatus(emissionCompartmentId, true)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_EMISSION_COMPARTMENT_FOUND));
         ec.setName(request.getName());
-        if(!request.getDescription().isEmpty()){
+        if (!request.getDescription().isEmpty()) {
             ec.setDescription(request.getDescription());
         }
         return emissionCompartmentConverter.fromEmissionCompartmentToEmissionCompartmentDto(emissionCompartmentRepository.save(ec));
@@ -53,8 +53,8 @@ public class EmissionCompartmentServiceImpl implements EmissionCompartmentServic
 
     @Override
     public EmissionCompartmentDto delete(UUID emissionCompartmentId) {
-        EmissionCompartment ec = emissionCompartmentRepository.findByIdAndStatus(emissionCompartmentId,true)
-                .orElseThrow(() -> CustomExceptions.notFound("Emission compartment not exist"));
+        EmissionCompartment ec = emissionCompartmentRepository.findByIdAndStatus(emissionCompartmentId, true)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_EMISSION_COMPARTMENT_FOUND));
         ec.setStatus(false);
         return emissionCompartmentConverter.fromEmissionCompartmentToEmissionCompartmentDto(emissionCompartmentRepository.save(ec));
     }

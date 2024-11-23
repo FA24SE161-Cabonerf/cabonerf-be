@@ -1,6 +1,6 @@
 package com.example.cabonerfbe.config;
 
-import com.corundumstudio.socketio.Configuration; // Socket.IO Configuration
+import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.HandshakeData;
 import com.corundumstudio.socketio.SocketIOServer;
 import org.springframework.context.annotation.Bean;
@@ -38,7 +38,7 @@ public class SocketIOConfig {
             if (userId != null && !userId.isEmpty()) {
                 client.leaveRoom(userId); // Rời khỏi Room khi ngắt kết nối
                 System.out.println("User disconnected: " + userId);
-            }else {
+            } else {
                 System.out.println("Disconnect rejected: userId is missing");
             }
         });

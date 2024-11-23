@@ -1,6 +1,10 @@
 package com.example.cabonerfbe.models;
+
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
@@ -10,7 +14,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Entity
 @Table
-public class Unit extends Base{
+public class Unit extends Base {
     private String name;
     @Column(precision = 100, scale = 60)
     private BigDecimal conversionFactor;

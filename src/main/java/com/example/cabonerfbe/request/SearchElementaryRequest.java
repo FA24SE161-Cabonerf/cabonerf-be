@@ -15,7 +15,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SearchElementaryRequest{
+public class SearchElementaryRequest {
     String search;
     UUID emissionCompartmentId;
     @NotNull(message = "Method is required")

@@ -15,9 +15,9 @@ public class UserDto {
     UUID id;
     String fullName;
     String email;
-//    String phone;
+    //    String phone;
     String profilePictureUrl;
-//    String bio;
+    //    String bio;
     RoleDto role;
     SubscriptionType subscription;
     UserStatus userStatus;

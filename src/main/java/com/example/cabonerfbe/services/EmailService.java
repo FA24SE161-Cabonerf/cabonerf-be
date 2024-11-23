@@ -8,6 +8,8 @@ import java.util.UUID;
 
 public interface EmailService {
     SendMailCreateOrganizationResponse sendMailCreateOrganization(UUID organizationId);
+
     SendMailCreateAccountResponse sendMailCreateAccountByOrganizationManager(UUID userId);
+
     SendMailRegisterResponse sendMailRegister(UUID userId);
 }
