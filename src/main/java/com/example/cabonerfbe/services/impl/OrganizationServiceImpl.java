@@ -202,12 +202,17 @@ public class OrganizationServiceImpl implements OrganizationService {
         UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(o.getId(), u.getId())
                 .orElseThrow(() -> CustomExceptions.notFound("User doesn't belong to organization."));
 
+        Workspace personWorkspace = new Workspace();
+        personWorkspace.setName("My Workspace");
+        personWorkspace.setOwner(u);
+        personWorkspace.setOrganization(null);
+
         Workspace w = new Workspace();
         w.setName(o.getName());
         w.setOwner(u);
         w.setOrganization(o);
 
-        workspaceRepository.save(w);
+        workspaceRepository.saveAll(List.of(personWorkspace, w));
 
         return LoginResponse.builder()
                 .access_token(access_token)
