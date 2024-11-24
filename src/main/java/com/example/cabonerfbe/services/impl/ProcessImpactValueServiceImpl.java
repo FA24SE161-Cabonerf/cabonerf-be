@@ -10,6 +10,7 @@ import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
+import com.example.cabonerfbe.response.ProjectCalculationResponse;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -218,7 +219,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValueRepository.saveAll(existingValues);
     }
 
-    public void computeSystemLevelOfProject(UUID projectId) {
+    public ProcessNodeDto computeSystemLevelOfProject(UUID projectId) {
 
         Project project = projectRepository.findById(projectId).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
@@ -228,7 +229,9 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         if (processList.isEmpty()) {
             throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT, Collections.EMPTY_LIST);
         }
-
+        if (processList.size() == 1) {
+            validateProcessWithOne(processList.get(0));
+        }
         List<UUID> processIds = processList.stream()
                 .map(Process::getId)
                 .collect(Collectors.toList());
@@ -260,65 +263,9 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             }
             findWay(connectors);
         }
-        calculationFast(projectId);
-//        updateProcessWhenCalculation(processIds);
+        ProcessNodeDto dto = calculationFast(projectId);
         updateProjectValue(processIds, projectId);
-    }
-
-    public void computeSystemLevelOfProjectBackground(UUID projectId) {
-        connectorsResponse.clear();
-        _connectors.clear();
-
-        List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
-        if (processList.isEmpty()) {
-            return;
-        }
-        if (processList.size() == 1) {
-            validateProcessWithOne(processList.get(0));
-        }
-
-        List<UUID> processIds = processList.stream()
-                .map(Process::getId)
-                .collect(Collectors.toList());
-
-        // Truy vấn connectors và kiểm tra
-        Set<Connector> connectors = connectorRepository.findAllByProcessIds(processIds);
-        if (processList.size() > 1 && connectors.isEmpty()) {
-            return;
-        }
-        _connectors.addAll(connectors);
-
-        List<Process> processesWithoutOutgoingConnectors = processRepository
-                .findProcessesWithoutOutgoingConnectors(projectId);
-        if (processesWithoutOutgoingConnectors.size() > 1) {
-            return;
-        }
-
-        processImpactValueRepository.setDefaultPrevious(processIds);
-
-        Map<UUID, BigDecimal> processFlowMap = new HashMap<>();
-        List<ProcessImpactValue> allImpactValues = new ArrayList<>();
-
-        // Duyệt từng process để tính toán
-        for (Process process : processList) {
-            UUID processId = process.getId();
-            exchangeIdNext = null;
-            BigDecimal totalFlow = traversePath(processId, true).setScale(2, RoundingMode.CEILING);
-            process.setOverAllProductFlowRequired(totalFlow);
-
-            List<ProcessImpactValue> impactValues = processImpactValueRepository.findByProcessId(processId);
-            if (!impactValues.isEmpty()) {
-                updateProcess(impactValues, totalFlow, processId);
-                allImpactValues.addAll(impactValues);
-            }
-            processFlowMap.put(processId, totalFlow);
-        }
-
-        processRepository.saveAll(processList);
-        processImpactValueRepository.saveAll(allImpactValues);
-
-//        updatePreviousProcess();
-        return;
+        return dto;
     }
 
     private void validateProcessWithOne(Process p) {
@@ -333,95 +280,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
                     "- Process " + p.getName() + " should have 0 input/output.", Collections.EMPTY_LIST);
         }
-    }
-
-    // Phương thức đệ quy để duyệt đường đi từ một process và tính toán kết quả cho
-    // mỗi nhánh
-    private BigDecimal traversePath(UUID processId, boolean isFirstProcess) {
-        BigDecimal multiplyNumerator = BigDecimal.ONE;
-        BigDecimal multiplyDenominator = BigDecimal.ONE;
-
-        if (isFirstProcess) {
-            List<Exchanges> exchanges = exchangesRepository.findProductByProcessId(processId).stream()
-                    .filter(exchange -> {
-                        if (exchangeIdNext != null) {
-                            return !exchange.isInput() || exchange.getId().equals(UUID.fromString(exchangeIdNext));
-                        }
-                        return !exchange.isInput();
-                    })
-                    .collect(Collectors.toList());
-        } else {
-            List<Exchanges> exchanges = exchangesRepository.findProductByProcessId(processId).stream()
-                    .filter(exchange -> {
-                        if (exchangeIdNext != null) {
-                            return !exchange.isInput() || exchange.getId().equals(UUID.fromString(exchangeIdNext));
-                        }
-                        return !exchange.isInput();
-                    })
-                    .collect(Collectors.toList());
-
-            for (Exchanges exchange : exchanges) {
-                if (exchange.getValue().equals(BigDecimal.ZERO)) {
-                    return null;
-                }
-                BigDecimal conversionFactor = exchange.getUnit().getConversionFactor();
-                BigDecimal convertUnit = conversionFactor.compareTo(BigDecimal.ONE) == 0
-                        ? exchange.getValue()
-                        : exchange.getValue().divide(conversionFactor, MathContext.DECIMAL128);
-                if (!exchange.isInput()) {
-                    multiplyDenominator = multiplyDenominator.multiply(convertUnit);
-                } else {
-                    multiplyNumerator = multiplyNumerator.multiply(convertUnit);
-                }
-            }
-        }
-
-        // Lấy tất cả các connector tiếp theo và thực hiện đệ quy cho từng nhánh
-        List<Connector> nextConnectors = connectorRepository.findNextByStartProcessId(processId);
-
-        // Nếu không có connector tiếp theo, trả về kết quả của đường đi hiện tại
-        if (nextConnectors.isEmpty()) {
-            return multiplyNumerator.divide(multiplyDenominator, MathContext.DECIMAL128);
-        }
-
-        // Nếu có connector tiếp theo, tiếp tục duyệt các đường đi khác và cộng dồn kết
-        // quả
-        BigDecimal pathTotal = BigDecimal.ZERO;
-        for (Connector nextConnector : nextConnectors) {
-            UUID nextProcessId = nextConnector.getEndProcess().getId();
-            exchangeIdNext = nextConnector.getEndExchanges().getId().toString();
-            pathTotal = pathTotal.add(traversePath(nextProcessId, false));
-        }
-
-        // Kết hợp kết quả hiện tại với kết quả của các đường đi con
-        return pathTotal.multiply(multiplyNumerator.divide(multiplyDenominator, MathContext.DECIMAL128));
-    }
-
-    private void updateProcess(List<ProcessImpactValue> list, BigDecimal totalRequiredFlow, UUID currentProcessId) {
-
-        BigDecimal outputValue = exchangesRepository.findProductOut(currentProcessId)
-                .map(Exchanges::getValue)
-                .orElse(BigDecimal.ONE);
-
-        list.forEach(x -> {
-            BigDecimal value = totalRequiredFlow.equals(BigDecimal.ZERO)
-                    ? x.getUnitLevel()
-                    : totalRequiredFlow.multiply(x.getUnitLevel())
-                    .divide(outputValue, MathContext.DECIMAL128);
-
-            x.setSystemLevel(value);
-//            x.setOverallImpactContribution(value);
-        });
-
-        processImpactValueRepository.saveAll(list);
-    }
-
-    private void updateProcessWhenCalculation(List<UUID> processIds) {
-        List<ProcessImpactValue> value = processImpactValueRepository.findAllByProcessIds(processIds);
-        for (ProcessImpactValue x : value) {
-            x.setSystemLevel(x.getOverallImpactContribution());
-        }
-        processImpactValueRepository.saveAll(value);
     }
 
     private void updateProjectValue(List<UUID> processIds, UUID projectId) {
@@ -458,65 +316,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
     }
 
-
-    private void updatePreviousProcess() {
-        List<ProcessImpactValue> updatedValues = _connectors.stream()
-                .flatMap(connector -> {
-                    Exchanges startExchange = exchangesRepository.findById(connector.getStartExchanges().getId())
-                            .orElseThrow();
-                    Exchanges endExchange = exchangesRepository.findById(connector.getEndExchanges().getId())
-                            .orElseThrow();
-
-                    BigDecimal divisor = endExchange.getValue().divide(startExchange.getValue(),
-                            MathContext.DECIMAL128);
-
-                    List<ProcessImpactValue> startValues = processImpactValueRepository
-                            .findAllByProcess(connector.getStartProcess());
-                    List<ProcessImpactValue> endValues = processImpactValueRepository
-                            .findAllByProcess(connector.getEndProcess());
-
-                    return startValues.stream().flatMap(start -> endValues.stream().map(end -> {
-                        if (start.getImpactMethodCategory().equals(end.getImpactMethodCategory())) {
-                            end.setPreviousProcessValue(
-                                    end.getPreviousProcessValue().add(divisor.multiply(start.getUnitLevel())));
-                        }
-                        return end;
-                    }));
-                })
-                .toList();
-
-        processImpactValueRepository.saveAll(updatedValues);
-    }
-
-    // private void connectorCalculation(UUID projectId) {
-    // List<ProjectImpactValue> projectValues =
-    // projectImpactValueRepository.findAllByProjectId(projectId);
-    //
-    // _connectors.forEach(connector -> {
-    // BigDecimal divisor = findWay(connector);
-    //
-    // List<ProcessImpactValue> startValues =
-    // processImpactValueRepository.findAllByProcess(connector.getStartProcess());
-    // ConnectorPercentDto dto =
-    // connectorConverter.fromConnectorToConnectorPercentDto(connector);
-    //
-    // projectValues.stream()
-    // .flatMap(projectValue -> startValues.stream()
-    // .filter(start ->
-    // start.getImpactMethodCategory().equals(projectValue.getImpactMethodCategory())
-    // && projectValue.getValue().compareTo(BigDecimal.ZERO) > 0)
-    // .map(start -> {
-    // BigDecimal totalValue =
-    // start.getPreviousProcessValue().add(start.getUnitLevel()).multiply(divisor);
-    // dto.setPercent(totalValue.divide(projectValue.getValue(), 2,
-    // RoundingMode.HALF_UP));
-    // return dto;
-    // }))
-    // .findFirst()
-    // .ifPresent(connectorsResponse::add);
-    // });
-    // }
-
     private void findWay(Set<Connector> connectors) {
         BigDecimal totalWay = connectors.stream()
                 .filter(Objects::nonNull) // Loại bỏ các `null` Connector
@@ -536,7 +335,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 .reduce(BigDecimal.ONE, BigDecimal::multiply); // Tính tích của tất cả các giá trị chia
     }
 
-    private void calculationFast(UUID projectId){
+    private ProcessNodeDto calculationFast(UUID projectId){
         ProcessNodeDto dto = processService.constructListProcessNodeDto(projectId);
         Map<UUID, BigDecimal> totalNet = aggregateNet(dto);
 
@@ -552,7 +351,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                         .toList()
         );
 
-
+        return dto;
     }
 
     private static Map<UUID, BigDecimal> aggregateNet(ProcessNodeDto root) {

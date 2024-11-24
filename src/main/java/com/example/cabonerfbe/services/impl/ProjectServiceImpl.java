@@ -104,9 +104,8 @@ public class ProjectServiceImpl implements ProjectService {
         UUID projectId = request.getProjectId();
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
-        processImpactValueService.computeSystemLevelOfProject(projectId);
         ProjectCalculationResponse response = projectConverter.fromGetProjectDtoToCalculateResponse(getProject(project));
-        response.setContributionBreakdown(processService.constructListProcessNodeDto(projectId));
+        response.setContributionBreakdown(processImpactValueService.computeSystemLevelOfProject(projectId));
         return response;
     }
 
@@ -292,9 +291,6 @@ public class ProjectServiceImpl implements ProjectService {
             project.setLifeCycleImpactAssessmentMethod(method);
             processImpactValueService.computeProcessImpactValueOfProject(projectRepository.save(project));
         }
-        CompletableFuture.runAsync(() ->
-                processImpactValueService.computeSystemLevelOfProjectBackground(project.getId())
-        );
         return getProject(project);
     }
 
