@@ -1,8 +1,8 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.config.RabbitMQConfig;
-import com.example.cabonerfbe.converter.ConnectorConverter;
 import com.example.cabonerfbe.dto.ConnectorPercentDto;
+import com.example.cabonerfbe.dto.ProcessNodeDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -46,10 +46,11 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     @Autowired
     private ConnectorRepository connectorRepository;
     @Autowired
-    private ConnectorConverter connectorConverter;
-    @Autowired
     private ProjectImpactValueRepository projectImpactValueRepository;
     private String exchangeIdNext = null;
+
+    @Autowired
+    private ProcessServiceImpl processService;
 
     @NotNull
     private static ProcessImpactValue getNewProcessImpactValue(ImpactMethodCategory methodCategory, Process process) {
@@ -259,7 +260,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             }
             findWay(connectors);
         }
-        computeSystemLevelOfProjectBackground(projectId);
+        calculationFast(projectId);
 //        updateProcessWhenCalculation(processIds);
         updateProjectValue(processIds, projectId);
     }
@@ -533,6 +534,46 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                     return endValue.divide(startValue, MathContext.DECIMAL128);
                 })
                 .reduce(BigDecimal.ONE, BigDecimal::multiply); // Tính tích của tất cả các giá trị chia
+    }
+
+    private void calculationFast(UUID projectId){
+        ProcessNodeDto dto = processService.constructListProcessNodeDto(projectId);
+        Map<UUID, BigDecimal> totalNet = aggregateNet(dto);
+
+        totalNet.forEach((processId, net) ->
+                processImpactValueRepository.findByProcessId(processId).forEach(x -> {
+                    x.setSystemLevel(net.multiply(x.getUnitLevel()));
+                })
+        );
+
+        processImpactValueRepository.saveAll(
+                totalNet.keySet().stream()
+                        .flatMap(processId -> processImpactValueRepository.findByProcessId(processId).stream())
+                        .toList()
+        );
+
+
+    }
+
+    private static Map<UUID, BigDecimal> aggregateNet(ProcessNodeDto root) {
+        Map<UUID, BigDecimal> result = new HashMap<>();
+        aggregateNetRecursive(root, result);
+        return result;
+    }
+
+    private static void aggregateNetRecursive(ProcessNodeDto node, Map<UUID, BigDecimal> result) {
+        if (node == null) return;
+
+        // Cộng giá trị `net` của node hiện tại vào `Map`
+        result.put(
+                node.getProcessId(),
+                result.getOrDefault(node.getProcessId(), BigDecimal.ZERO).add(node.getNet())
+        );
+
+        // Đệ quy xử lý các `subProcesses`
+        for (ProcessNodeDto subProcess : node.getSubProcesses()) {
+            aggregateNetRecursive(subProcess, result);
+        }
     }
 
 }

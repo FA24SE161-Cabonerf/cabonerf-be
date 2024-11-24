@@ -65,8 +65,6 @@ public class ProcessServiceImpl implements ProcessService {
     private UnitServiceImpl unitService;
     @Autowired
     private UnitRepository unitRepository;
-    @Autowired
-    private ProcessImpactValueService pivService;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
