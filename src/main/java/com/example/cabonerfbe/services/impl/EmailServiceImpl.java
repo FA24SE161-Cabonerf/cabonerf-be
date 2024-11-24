@@ -12,6 +12,7 @@ import com.example.cabonerfbe.response.SendMailCreateOrganizationResponse;
 import com.example.cabonerfbe.response.SendMailRegisterResponse;
 import com.example.cabonerfbe.services.EmailService;
 import com.example.cabonerfbe.services.JwtService;
+import com.example.cabonerfbe.services.MessagePublisher;
 import com.example.cabonerfbe.util.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,8 +36,11 @@ public class EmailServiceImpl implements EmailService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    MessagePublisher messagePublisher;
+
     @Override
-    public SendMailCreateOrganizationResponse sendMailCreateOrganization(UUID organizationId) {
+    public void sendMailCreateOrganization(UUID organizationId) {
         // Kiểm tra organization tồn tại
         organizationRepository.findById(organizationId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
@@ -62,16 +66,20 @@ public class EmailServiceImpl implements EmailService {
                     userRepository.save(user);
                 });
 
-        return SendMailCreateOrganizationResponse.builder()
+        // build the response
+        SendMailCreateOrganizationResponse createOrganizationResponse = SendMailCreateOrganizationResponse.builder()
                 .organizationId(organizationId)
                 .token(token)
                 .email(userOrg.getUser().getEmail())
                 .password(password)
                 .build();
+
+        // publish the msg to rabbit queue
+        messagePublisher.publishSendMailCreateOrganization(createOrganizationResponse);
     }
 
     @Override
-    public SendMailCreateAccountResponse sendMailCreateAccountByOrganizationManager(UUID userId) {
+    public void sendMailCreateAccountByOrganizationManager(UUID userId) {
         Users u = userRepository.findById(userId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
@@ -81,23 +89,27 @@ public class EmailServiceImpl implements EmailService {
         u.setPassword(password);
         userRepository.save(u);
 
-        return SendMailCreateAccountResponse.builder()
+        SendMailCreateAccountResponse createAccountResponse = SendMailCreateAccountResponse.builder()
                 .token(token)
                 .email(u.getEmail())
                 .password(password)
                 .build();
+
+        messagePublisher.publishSendMailCreateAccountByOrganizationManager(createAccountResponse);
     }
 
     @Override
-    public SendMailRegisterResponse sendMailRegister(UUID userId) {
+    public void sendMailRegister(UUID userId) {
         Users u = userRepository.findById(userId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
         String token = jwtService.generateEmailVerifyToken(u);
 
-        return SendMailRegisterResponse.builder()
+        SendMailRegisterResponse registerResponse = SendMailRegisterResponse.builder()
                 .token(token)
                 .email(u.getEmail())
                 .build();
+
+        messagePublisher.publishSendMailRegister(registerResponse);
     }
 }
