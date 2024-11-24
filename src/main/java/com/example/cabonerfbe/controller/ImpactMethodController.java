@@ -75,10 +75,18 @@ public class ImpactMethodController {
     }
 
     @GetMapping(API_PARAMS.GET_ALL_METHOD_NAME)
-    public ResponseEntity<ResponseObject> addImpactCategoryToImpactMethod() {
+    public ResponseEntity<ResponseObject> getNameAllMethod() {
         log.info("Start getAllMethodName");
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get all method name success", impactMethodService.getNameAllMethod())
+        );
+    }
+
+    @PostMapping(API_PARAMS.ADD_IMPACT_CATEGORY_TO_IMPACT_METHOD)
+    public ResponseEntity<ResponseObject> addImpactCategoryToImpactMethod(@PathVariable UUID methodId, @PathVariable UUID categoryId) {
+        log.info("Start addImpactCategoryToImpactMethod");
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Add impact category to impact method", impactMethodService.addImpactCategoryToImpactMethod(methodId, categoryId))
         );
     }
 
