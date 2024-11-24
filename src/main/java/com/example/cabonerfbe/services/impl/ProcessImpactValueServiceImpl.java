@@ -335,24 +335,26 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 .reduce(BigDecimal.ONE, BigDecimal::multiply); // Tính tích của tất cả các giá trị chia
     }
 
-    private ProcessNodeDto calculationFast(UUID projectId){
+    private ProcessNodeDto calculationFast(UUID projectId) {
         ProcessNodeDto dto = processService.constructListProcessNodeDto(projectId);
         Map<UUID, BigDecimal> totalNet = aggregateNet(dto);
 
-        totalNet.forEach((processId, net) ->
-                processImpactValueRepository.findByProcessId(processId).forEach(x -> {
-                    x.setSystemLevel(net.multiply(x.getUnitLevel()));
-                })
-        );
+        List<ProcessImpactValue> updatedImpactValues = totalNet.keySet().stream()
+                .flatMap(processId -> processImpactValueRepository.findByProcessId(processId).stream()
+                        .peek(x -> x.setSystemLevel(totalNet.get(processId).multiply(x.getUnitLevel()))))
+                .toList();
+        processImpactValueRepository.saveAll(updatedImpactValues);
 
-        processImpactValueRepository.saveAll(
-                totalNet.keySet().stream()
-                        .flatMap(processId -> processImpactValueRepository.findByProcessId(processId).stream())
-                        .toList()
+        totalNet.forEach((processId, net) ->
+                processRepository.findByProcessId(processId).ifPresent(data -> {
+                    data.setOverAllProductFlowRequired(net);
+                    processRepository.save(data);
+                })
         );
 
         return dto;
     }
+
 
     private static Map<UUID, BigDecimal> aggregateNet(ProcessNodeDto root) {
         Map<UUID, BigDecimal> result = new HashMap<>();
