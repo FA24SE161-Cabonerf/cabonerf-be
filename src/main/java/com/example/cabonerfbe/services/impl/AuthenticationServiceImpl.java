@@ -224,7 +224,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         userRepository.save(user);
 
         Workspace w = new Workspace();
-        w.setName(user.getFullName() + "'s workspace");
+        w.setName("My Workspace");
         w.setOwner(user);
         w.setOrganization(null);
         workspaceRepository.save(w);
