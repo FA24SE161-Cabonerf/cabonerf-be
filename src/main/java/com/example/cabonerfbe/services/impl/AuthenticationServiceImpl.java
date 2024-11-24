@@ -50,10 +50,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Autowired
     JwtService jwtService;
     @Autowired
-    SubscriptionTypeRepository subscriptionTypeRepository;
-    @Autowired
-    UserStatusRepository statusRepository;
-    @Autowired
     UserVerifyStatusRepository userVerifyStatusRepository;
     @Autowired
     RoleRepository roleRepository;
@@ -116,10 +112,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .email(request.getEmail())
                 .fullName(request.getFullName())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .userStatus(statusRepository.findUserStatusByName("Active").get())
                 .userVerifyStatus(userVerifyStatusRepository.findByName("Verified").get())
                 .role(roleRepository.findByName("LCA Staff").get())
-                .subscription(subscriptionTypeRepository.findBySubscriptionName("Basic").get())
                 .status(true)
                 .build();
 
