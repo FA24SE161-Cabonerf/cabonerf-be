@@ -104,9 +104,11 @@ public class ProjectServiceImpl implements ProjectService {
         UUID projectId = request.getProjectId();
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
-        ProjectCalculationResponse response = projectConverter.fromGetProjectDtoToCalculateResponse(getProject(project));
-        response.setContributionBreakdown(processImpactValueService.computeSystemLevelOfProject(projectId));
+        var contributionBreakdown = processImpactValueService.computeSystemLevelOfProject(projectId);
+        var response = projectConverter.fromGetProjectDtoToCalculateResponse(getProject(project));
+        response.setContributionBreakdown(contributionBreakdown);
         return response;
+
     }
 
     @Override
