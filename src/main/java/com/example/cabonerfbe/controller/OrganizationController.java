@@ -29,8 +29,8 @@ public class OrganizationController {
     private OrganizationService organizationService;
 
     @PostMapping(API_PARAMS.MANAGER)
-    public ResponseEntity<ResponseObject> createOrganization(@RequestParam String name, @RequestParam String email, @RequestParam MultipartFile contractFile) {
-        CreateOrganizationRequest request = new CreateOrganizationRequest(name, email);
+    public ResponseEntity<ResponseObject> createOrganization(@RequestParam CreateOrganizationRequest request, @RequestPart MultipartFile contractFile) {
+//        CreateOrganizationRequest request = new CreateOrganizationRequest(name, email);
         log.info("Start createOrganization. Request: {}", request);
         return ResponseEntity.ok().body(new ResponseObject(
                 Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CREATE_ORGANIZATION_SUCCESS, organizationService.createOrganization(request, contractFile)

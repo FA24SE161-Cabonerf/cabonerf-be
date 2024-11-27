@@ -103,14 +103,14 @@ public class OrganizationServiceImpl implements OrganizationService {
     public OrganizationDto createOrganization(CreateOrganizationRequest request, MultipartFile contractFile) {
 
         if (!isPdfFile(contractFile)) {
-            throw CustomExceptions.badRequest("Contract file is not .pdf");
+            throw CustomExceptions.badRequest(MessageConstants.INVALID_PDF);
         }
 
         Optional<Users> user = userRepository.findByEmail(request.getEmail());
         String password = PasswordGenerator.generateRandomPassword(8);
         if (user.isPresent()) {
             if (Objects.equals(user.get().getRole().getName(), "Organization Manager")) {
-                throw CustomExceptions.badRequest("Email already use with other organization");
+                throw CustomExceptions.badRequest(MessageConstants.EMAIL_USED_FOR_OTHER_ORGANIZATION);
             }
 
             user.get().setRole(roleRepository.findByName("Organization Manager").get());
