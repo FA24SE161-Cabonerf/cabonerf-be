@@ -32,16 +32,8 @@ public class Users extends Base implements UserDetails {
     private String bio;
 
     @ManyToOne
-    @JoinColumn(name = "subscription_id")
-    private SubscriptionType subscription;
-
-    @ManyToOne
     @JoinColumn(name = "user_verify_status_id")
     private UserVerifyStatus userVerifyStatus;
-
-    @ManyToOne
-    @JoinColumn(name = "user_status_id")
-    private UserStatus userStatus;
 
     @ManyToOne
     @JoinColumn(name = "role_id")
