@@ -8,7 +8,10 @@ import java.util.UUID;
 
 public interface LifeCycleStageService {
     List<LifeCycleStageDto> getAll();
+
     LifeCycleStageDto create(LifeCycleStagesRequest request);
+
     LifeCycleStageDto update(UUID lifeCycleStagesId, LifeCycleStagesRequest request);
+
     LifeCycleStageDto delete(UUID lifeCycleStagesId);
 }

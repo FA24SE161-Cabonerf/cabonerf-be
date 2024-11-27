@@ -38,11 +38,11 @@ import java.io.IOException;
 import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
 public class ProjectServiceImpl implements ProjectService {
+    private static final int PAGE_INDEX_ADJUSTMENT = 1;
     @Autowired
     private ProjectRepository projectRepository;
     @Autowired
@@ -83,8 +83,6 @@ public class ProjectServiceImpl implements ProjectService {
     private ProcessServiceImpl processService;
     @Autowired
     private EmissionSubstanceConverter emissionSubstanceConverter;
-
-    private static final int PAGE_INDEX_ADJUSTMENT = 1;
     @Autowired
     private ProcessImpactValueServiceImpl processImpactValueService;
     @Autowired
@@ -104,64 +102,54 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectCalculationResponse calculateProject(CalculateProjectRequest request) {
         UUID projectId = request.getProjectId();
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> CustomExceptions.notFound("Project not exist"));
-        processImpactValueService.computeSystemLevelOfProject(projectId);
-        ProjectCalculationResponse response = projectConverter.fromGetProjectDtoToCalculateResponse(getProject(project));
-        response.setContributionBreakdown(processService.constructListProcessNodeDto(projectId));
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
+        var contributionBreakdown = processImpactValueService.computeSystemLevelOfProject(projectId);
+        var response = projectConverter.fromGetProjectDtoToCalculateResponse(getProject(project));
+        response.setContributionBreakdown(contributionBreakdown);
         return response;
+
     }
 
     @Override
     public CreateProjectResponse createProject(UUID userId, CreateProjectRequest request) {
 
-        if (userRepository.findById(userId).isEmpty()) {
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "User not exist");
-        }
+        Users user = userRepository.findByIdWithStatus(userId).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND, Collections.EMPTY_LIST)
+        );
 
-        if (workspaceRepository.findById(request.getWorkspaceId()).isEmpty()) {
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Workspace not exist");
-        }
+        Workspace workspace = workspaceRepository.findByWorkspaceId(request.getWorkspaceId()).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.WORKSPACE_NOT_FOUND, Collections.EMPTY_LIST)
+        );
 
-        if (methodRepository.findById(request.getMethodId()).isEmpty()) {
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Method not exist");
-        }
+        LifeCycleImpactAssessmentMethod method = methodRepository.findByIdAndStatus(request.getMethodId(), Constants.STATUS_TRUE).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND, Collections.EMPTY_LIST)
+        );
 
         Project project = new Project();
         project.setName(request.getName());
         project.setDescription(request.getDescription());
         project.setLocation(request.getLocation());
-        project.setUser(userRepository.findById(userId).get());
-        project.setWorkspace(workspaceRepository.findById(request.getWorkspaceId()).get());
-        project.setLifeCycleImpactAssessmentMethod(methodRepository.findById(request.getMethodId()).get());
+        project.setUser(user);
+        project.setWorkspace(workspace);
+        project.setLifeCycleImpactAssessmentMethod(method);
 
         project = projectRepository.save(project);
 
-//        List<ImpactMethodCategory> list = impactMethodCategoryRepository.findByMethod(request.getMethodId());
-//        List<ProjectImpactValue> listValues = new ArrayList<>();
-//        for(ImpactMethodCategory x:list){
-//            ProjectImpactValue values = new ProjectImpactValue();
-//            values.setProject(project);
-//            values.setValue(0);
-//            values.setImpactMethodCategory(x);
-//            listValues.add(values);
-//        }
-//
-//        projectImpactValueRepository.saveAll(listValues);
         return CreateProjectResponse.builder()
                 .projectId(project.getId())
                 .build();
     }
 
     @Override
-    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId, UUID methodId) {
+    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId, UUID methodId, UUID workspaceId) {
 
         Pageable pageable = PageRequest.of(pageCurrent - PAGE_INDEX_ADJUSTMENT, pageSize);
 
-        Page<Project> projects = null;
+        Page<Project> projects;
         if (methodId == null) {
-            projects = projectRepository.findAll(userId, pageable);
+            projects = projectRepository.findAll(userId, workspaceId, pageable);
         } else {
-            projects = projectRepository.sortByMethod(userId, methodId, pageable);
+            projects = projectRepository.sortByMethod(userId, workspaceId, methodId, pageable);
         }
 
         if (projects.isEmpty()) {
@@ -201,11 +189,11 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public GetProjectByIdDto getById(UUID id, UUID workspaceId) {
         Project project = projectRepository.findById(id).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND)
+                () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST)
         );
 
         if (workspaceId == null) {
-            throw CustomExceptions.unauthorized("workspace not exist");
+            throw CustomExceptions.unauthorized(MessageConstants.WORKSPACE_NOT_FOUND, Collections.EMPTY_LIST);
         }
 
         return getProject(project);
@@ -222,20 +210,14 @@ public class ProjectServiceImpl implements ProjectService {
         dto.setMethod(methodConverter.fromMethodToMethodDto(project.getLifeCycleImpactAssessmentMethod()));
         dto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
         dto.setProcesses(processService.getAllProcessesByProjectId(project.getId()));
-        if (dto.getProcesses().isEmpty()) {
-            System.out.println("process list empty o cho nay getProject");
-        }
         dto.setConnectors(connectorConverter.fromListConnectorToConnectorDto(connectorRepository.findAllByProject(project.getId())));
-        if (dto.getConnectors().isEmpty()) {
-            System.out.println("connector list empty o cho nay getProject");
-        }
         return dto;
     }
 
     @Override
     public List<CarbonIntensityDto> getIntensity(UUID projectId) {
         Project p = projectRepository.findById(projectId)
-                .orElseThrow(() -> CustomExceptions.notFound("Project not exist"));
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
         ProjectImpactValue value = processImpactValueRepository.findCO2(projectId);
         List<CarbonIntensity> ci = ciRepository.findAll();
 
@@ -252,12 +234,12 @@ public class ProjectServiceImpl implements ProjectService {
         if ((Objects.isNull(request.getName()) || request.getName().isEmpty())
                 && (Objects.isNull(request.getDescription()) || request.getDescription().isEmpty())
                 && (Objects.isNull(request.getLocation()) || request.getLocation().isEmpty())) {
-            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "Update at least 1 field");
+            throw CustomExceptions.badRequest("Update at least 1 field", Collections.EMPTY_LIST);
         }
 
         Optional<Project> p = projectRepository.findById(id);
         if (p.isEmpty()) {
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Project not exist");
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST);
         }
 
         if (!Objects.isNull(request.getName()) && !request.getName().isEmpty()) {
@@ -278,7 +260,7 @@ public class ProjectServiceImpl implements ProjectService {
     public List<Project> deleteProject(UUID id) {
         Optional<Project> project = projectRepository.findById(id);
         if (project.isEmpty()) {
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Project not exist");
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST);
         }
 
         project.get().setStatus(false);
@@ -290,25 +272,22 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public GetProjectByIdDto changeProjectMethod(UUID projectId, UUID methodId) {
         Project project = projectRepository.findById(projectId).orElseThrow(
-                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST)
         );
         if (!methodId.equals(project.getLifeCycleImpactAssessmentMethod().getId())) {
             LifeCycleImpactAssessmentMethod method = methodRepository.findByIdAndStatus(methodId, Constants.STATUS_TRUE).orElseThrow(
-                    () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND)
+                    () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND, Collections.EMPTY_LIST)
             );
             project.setLifeCycleImpactAssessmentMethod(method);
             processImpactValueService.computeProcessImpactValueOfProject(projectRepository.save(project));
         }
-        CompletableFuture.runAsync(() ->
-                processImpactValueService.computeSystemLevelOfProjectBackground(project.getId())
-        );
         return getProject(project);
     }
 
     @Override
     public ResponseEntity<Resource> exportProject(UUID projectId) {
         Project p = projectRepository.findById(projectId)
-                .orElseThrow(() -> CustomExceptions.notFound("Project not exist"));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
 
 
         byte[] file = createFile(p);
@@ -363,7 +342,7 @@ public class ProjectServiceImpl implements ProjectService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         // Các tiêu đề cần in đậm
         Set<String> boldHeaders = new HashSet<>(Arrays.asList(
-                "Exported Carbonerf LCA Model Results",
+                "Exported Cabonerf LCA Model Results",
                 "What is included in this workbook?",
                 "LCA Overview",
                 "LCI Results",
@@ -372,9 +351,9 @@ public class ProjectServiceImpl implements ProjectService {
 
         // Dữ liệu của tab Guide
         Object[][] guideData = {
-                {"Exported Carbonerf LCA Model Results"},
+                {"Exported Cabonerf LCA Model Results"},
                 {"Date Created", p.getCreatedAt().format(formatter)},
-                {"Created Using:", "Carbonerf"},
+                {"Created Using:", "Cabonerf"},
                 {},
                 {"What is included in this workbook?"},
                 {"This workbook provides a static summary of a Life Cycle Assessment (LCA) model produced in CarbonGraph."},
@@ -427,14 +406,14 @@ public class ProjectServiceImpl implements ProjectService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         // Các tiêu đề cần in đậm
         Set<String> boldHeaders = new HashSet<>(Arrays.asList(
-                "LCA Process Overview - Carbonerf Excel Export",
+                "LCA Process Overview - Cabonerf Excel Export",
                 "Field",
                 "Value"
         ));
 
         // Dữ liệu của tab Guide
         Object[][] guideData = {
-                {"LCA Process Overview - Carbonerf Excel Export"},
+                {"LCA Process Overview - Cabonerf Excel Export"},
                 {},
                 {"Field", "Value"},
                 {"Project ID", p.getId()},
@@ -478,7 +457,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         // Tiêu đề cần in đậm
         Set<String> boldHeaders = new HashSet<>(Arrays.asList(
-                "LCA Process Exchange Summary - Carbonerf Excel Export",
+                "LCA Process Exchange Summary - Cabonerf Excel Export",
                 "Amount",
                 "Unit",
                 "Input",
@@ -489,7 +468,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         // Ghi dữ liệu tiêu đề vào Excel
         Object[][] headerData = {
-                {"LCA Process Exchange Summary - Carbonerf Excel Export"},
+                {"LCA Process Exchange Summary - Cabonerf Excel Export"},
                 {},
                 {"Amount", "Unit", "Input", "Name", "Type", "Compartment"}
         };
@@ -537,7 +516,7 @@ public class ProjectServiceImpl implements ProjectService {
         List<ProjectImpactValue> data = projectImpactValueRepository.findAllByProjectId(p.getId());
 
         Set<String> boldHeaders = new HashSet<>(Arrays.asList(
-                "LCA Process Impact Summary - Carbonerf Excel Export",
+                "LCA Process Impact Summary - Cabonerf Excel Export",
                 "Name",
                 "Amount",
                 "Unit",
@@ -547,7 +526,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         // Dữ liệu của tab Guide
         Object[][] guideData = {
-                {"LCA Process Impact Summary - Carbonerf Excel Export"},
+                {"LCA Process Impact Summary - Cabonerf Excel Export"},
                 {},
                 {"Name", "Amount", "Unit", "Method", "Description"},
 

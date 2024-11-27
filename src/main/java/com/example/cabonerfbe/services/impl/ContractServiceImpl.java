@@ -1,7 +1,6 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.ContractConverter;
-import com.example.cabonerfbe.dto.ContractDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.Contract;
@@ -38,7 +37,7 @@ public class ContractServiceImpl implements ContractService {
             if (fileData != null && fileData.length > 0) {
                 ByteArrayResource resource = new ByteArrayResource(fileData);
                 HttpHeaders headers = new HttpHeaders();
-                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\""+ c.getOrganization().getName() +"\"");
+                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + c.getOrganization().getName() + "\"");
 
 
                 return ResponseEntity.ok()

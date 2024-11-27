@@ -18,15 +18,24 @@ import java.util.UUID;
 
 public interface ProjectService {
     List<Project> getProjectListByMethodId(UUID id);
+
     ProjectCalculationResponse calculateProject(CalculateProjectRequest request);
+
     CreateProjectResponse createProject(UUID userId, CreateProjectRequest request);
-    GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId, UUID methodId);
+
+    GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId, UUID methodId, UUID workspaceId);
+
     GetProjectByIdDto getById(UUID id, UUID userId);
+
     UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request);
+
     List<Project> deleteProject(UUID id);
 
     GetProjectByIdDto changeProjectMethod(UUID projectId, UUID methodId);
+
     ResponseEntity<Resource> exportProject(UUID projectId);
+
     GetProjectByIdDto getProject(Project project);
+
     List<CarbonIntensityDto> getIntensity(UUID projectId);
 }

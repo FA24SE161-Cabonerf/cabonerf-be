@@ -14,6 +14,7 @@ public interface UnitGroupConverter {
     UnitGroupConverter INSTANCE = Mappers.getMapper(UnitGroupConverter.class);
 
     UnitGroupDto fromUnitGroupToUnitGroupDto(UnitGroup unitGroup);
+
     List<UnitGroupDto> fromListUnitGroupToUnitGroupDto(List<UnitGroup> unitGroups);
 
     @Mapping(source = "name", target = "unitGroupName")

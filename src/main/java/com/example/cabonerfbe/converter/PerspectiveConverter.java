@@ -1,6 +1,5 @@
 package com.example.cabonerfbe.converter;
 
-import com.example.cabonerfbe.dto.PerspectiveDto;
 import com.example.cabonerfbe.models.Perspective;
 import com.example.cabonerfbe.response.PerspectiveResponse;
 import org.mapstruct.Mapper;

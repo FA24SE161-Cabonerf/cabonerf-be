@@ -1,7 +1,10 @@
 package com.example.cabonerfbe.models;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -12,7 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table
-public class ProcessImpactValue extends Base{
+public class ProcessImpactValue extends Base {
     @ManyToOne
     @JoinColumn(name = "impact_method_category_id")
     private ImpactMethodCategory impactMethodCategory;
@@ -32,6 +35,7 @@ public class ProcessImpactValue extends Base{
     public UUID getProcessId() {
         return process != null ? process.getId() : null;
     }
+
     public UUID getImpactMethodCategoryId() {
         return impactMethodCategory.getId();
     }

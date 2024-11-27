@@ -15,7 +15,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table
-public class Contract extends Base{
+public class Contract extends Base {
     private String url;
     @OneToOne
     @JoinColumn(name = "organization_id", referencedColumnName = "id")

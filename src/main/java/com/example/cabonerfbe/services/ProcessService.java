@@ -11,8 +11,12 @@ import java.util.UUID;
 
 public interface ProcessService {
     ProcessDto createProcess(CreateProcessRequest request);
+
     ProcessDto getProcessById(UUID id);
+
     List<ProcessDto> getAllProcessesByProjectId(UUID projectId);
+
     ProcessDetailDto updateProcess(UUID id, UpdateProcessRequest request);
+
     DeleteProcessResponse deleteProcess(UUID id);
 }

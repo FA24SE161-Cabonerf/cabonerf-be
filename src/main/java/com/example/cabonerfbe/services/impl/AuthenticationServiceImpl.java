@@ -10,22 +10,29 @@ import com.example.cabonerfbe.models.Users;
 import com.example.cabonerfbe.models.Workspace;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.*;
-import com.example.cabonerfbe.response.*;
-import com.example.cabonerfbe.services.EmailVerificationTokenService;
-import com.example.cabonerfbe.services.JwtService;
+import com.example.cabonerfbe.response.AuthenticationResponse;
+import com.example.cabonerfbe.response.LoginResponse;
+import com.example.cabonerfbe.response.RegisterResponse;
+import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.AuthenticationService;
 import com.example.cabonerfbe.services.EmailService;
+import com.example.cabonerfbe.services.EmailVerificationTokenService;
+import com.example.cabonerfbe.services.JwtService;
 import io.jsonwebtoken.JwtException;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Data
@@ -34,49 +41,45 @@ import java.time.LocalDateTime;
 @SuperBuilder
 @AllArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
+    public static final String PASSWORD_FIELD = "password";
+    public static final String EMAIL_FIELD = "email";
     @Autowired
     UserRepository userRepository;
-
     @Autowired
     PasswordEncoder passwordEncoder;
-
     @Autowired
     JwtService jwtService;
-
-    @Autowired
-    SubscriptionTypeRepository subscriptionTypeRepository;
-
-    @Autowired
-    UserStatusRepository statusRepository;
-
     @Autowired
     UserVerifyStatusRepository userVerifyStatusRepository;
-
     @Autowired
     RoleRepository roleRepository;
-
     @Autowired
     RefreshTokenRepository refreshTokenRepository;
-
     @Autowired
     EmailService emailService;
-
     @Autowired
     EmailVerificationTokenService emailVerificationTokenService;
-
     @Autowired
     EmailVerificationTokenRepository verificationTokenRepository;
-
     @Autowired
     WorkspaceRepository workspaceRepository;
 
-    public static final String PASSWORD_FIELD = "password";
-    public static final String EMAIL_FIELD = "email";
+    private static RefreshToken createRefreshTokenEntity(String refreshToken, Users user) {
+        RefreshToken token = new RefreshToken();
+        token.setToken(refreshToken);
+        token.setCreatedAt(LocalDateTime.now());
+        token.setValid(true);
+        token.setUsers(user);
+        return token;
+    }
 
     @Override
     public LoginResponse loginByEmail(LoginByEmailRequest request) {
         var user = userRepository.findByEmail(request.getEmail()).orElseThrow(()
                 -> CustomExceptions.unauthorized(MessageConstants.EMAIL_PASSWORD_WRONG, Map.of(PASSWORD_FIELD, MessageConstants.EMAIL_PASSWORD_WRONG)));
+        if (!user.isStatus()) {
+            throw CustomExceptions.unauthorized(MessageConstants.USER_IS_BANNED);
+        }
         // flow: lấy pw nhận vào -> encode -> nếu trùng với trong DB -> authen
         boolean isAuthenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!isAuthenticated) {
@@ -109,10 +112,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .email(request.getEmail())
                 .fullName(request.getFullName())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .userStatus(statusRepository.findUserStatusByName("Active").get())
                 .userVerifyStatus(userVerifyStatusRepository.findByName("Verified").get())
                 .role(roleRepository.findByName("LCA Staff").get())
-                .subscription(subscriptionTypeRepository.findBySubscriptionName("Basic").get())
                 .status(true)
                 .build();
 
@@ -130,7 +131,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .user(UserConverter.INSTANCE.fromUserToUserDto(saved.get()))
                 .build();
     }
-
 
     @Override
     public AuthenticationResponse refreshToken(RefreshTokenRequest request) {
@@ -158,7 +158,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token format is wrong"));
         }
         Optional<RefreshToken> _refresh_token = refreshTokenRepository.findByToken(refresh_token);
-        if(_refresh_token.isEmpty()){
+        if (_refresh_token.isEmpty()) {
             throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("refreshToken", "Refresh token not exist"));
         }
         Users user = userRepository.findById(_refresh_token.get().getUsers().getId()).get();
@@ -197,7 +197,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> CustomExceptions.notFound("Email not exist"));
-        if(user.getRole().getName().equals("Verified")){
+        if (user.getRole().getName().equals("Verified")) {
             throw CustomExceptions.badRequest("Account already verified");
         }
 
@@ -213,12 +213,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var access_token = jwtService.generateToken(user);
         var refresh_token = jwtService.generateRefreshToken(user);
 
-        saveRefreshToken(refresh_token,user);
+        saveRefreshToken(refresh_token, user);
 
         userRepository.save(user);
 
         Workspace w = new Workspace();
-        w.setName(user.getFullName() + "'s workspace");
+        w.setName("My Workspace");
         w.setOwner(user);
         w.setOrganization(null);
         workspaceRepository.save(w);
@@ -230,15 +230,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
     }
 
-    private static RefreshToken createRefreshTokenEntity(String refreshToken, Users user) {
-        RefreshToken token = new RefreshToken();
-        token.setToken(refreshToken);
-        token.setCreatedAt(LocalDateTime.now());
-        token.setValid(true);
-        token.setUsers(user);
-        return token;
-    }
-
     public void saveRefreshToken(String refreshTokenString, Users user) {
         refreshTokenRepository.save(createRefreshTokenEntity(refreshTokenString, user));
     }
@@ -248,10 +239,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> CustomExceptions.notFound("User not exist"));
 
-        if(request.getOldPassword().equals(request.getNewPassword())){
+        if (request.getOldPassword().equals(request.getNewPassword())) {
             throw CustomExceptions.badRequest("New password equals old password");
         }
-        if(!request.getNewPassword().equals(request.getNewPasswordConfirm())){
+        if (!request.getNewPassword().equals(request.getNewPasswordConfirm())) {
             throw CustomExceptions.badRequest("Confirm password not equals new password");
         }
 

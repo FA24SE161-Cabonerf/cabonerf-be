@@ -26,12 +26,12 @@ import java.util.UUID;
 @Slf4j
 public class RpcServerService {
 
+    public static final String PROCESS_QUEUE_TYPE = "process";
+    public static final String CONNECTOR_QUEUE_TYPE = "connector";
     private final RabbitTemplate rabbitTemplate;
     private final ProcessServiceImpl processService;
     private final ConnectorServiceImpl connectorService;
     private final ObjectMapper objectMapper;
-    public static final String PROCESS_QUEUE_TYPE = "process";
-    public static final String CONNECTOR_QUEUE_TYPE = "connector";
 
     @Autowired
     public RpcServerService(RabbitTemplate rabbitTemplate, ProcessServiceImpl processService, ConnectorServiceImpl connectorService, ObjectMapper objectMapper) {

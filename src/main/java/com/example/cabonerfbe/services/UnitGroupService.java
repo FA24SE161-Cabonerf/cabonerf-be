@@ -4,13 +4,13 @@ import com.example.cabonerfbe.dto.UnitGroupDto;
 import com.example.cabonerfbe.request.CreateUnitGroupRequest;
 import com.example.cabonerfbe.request.UpdateUnitGroupRequest;
 import com.example.cabonerfbe.response.UnitGroupResponse;
-import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface UnitGroupService {
     List<UnitGroupDto> getAllUnitGroup();
+
     UnitGroupDto getUnitGroupById(UUID id);
 
     UnitGroupResponse createUnitGroup(CreateUnitGroupRequest request);

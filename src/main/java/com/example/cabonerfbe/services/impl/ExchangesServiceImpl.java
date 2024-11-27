@@ -18,7 +18,6 @@ import com.example.cabonerfbe.response.ImpactExchangeResponse;
 import com.example.cabonerfbe.response.SearchElementaryResponse;
 import com.example.cabonerfbe.response.UpdateProductExchangeResponse;
 import com.example.cabonerfbe.services.ExchangesService;
-import com.example.cabonerfbe.services.MessagePublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,17 +26,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
 public class ExchangesServiceImpl implements ExchangesService {
 
+    public static final String EXCHANGE_TYPE_ELEMENTARY = "Elementary";
+    public static final String EXCHANGE_TYPE_PRODUCT = "Product";
+    public static final BigDecimal DEFAULT_VALUE = BigDecimal.valueOf(0);
+    public static final String DEFAULT_PRODUCT_UNIT = "kg";
     @Autowired
     private ProcessRepository processRepository;
     @Autowired
@@ -74,15 +75,8 @@ public class ExchangesServiceImpl implements ExchangesService {
     private ProcessImpactValueServiceImpl processImpactValueService;
     @Autowired
     private ConnectorServiceImpl connectorService;
-
-    public static final String EXCHANGE_TYPE_ELEMENTARY = "Elementary";
-    public static final String EXCHANGE_TYPE_PRODUCT = "Product";
-    public static final BigDecimal DEFAULT_VALUE = BigDecimal.valueOf(0);
-    public static final String DEFAULT_PRODUCT_UNIT = "kg";
     @Autowired
     private ConnectorRepository connectorRepository;
-    @Autowired
-    private MessagePublisher messagePublisher;
 
     @Override
     public List<ExchangesDto> createElementaryExchanges(CreateElementaryRequest request) {
@@ -96,9 +90,6 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         Exchanges newExchange = createNewExchange(emissionSubstance, request.isInput(), process, EXCHANGE_TYPE_ELEMENTARY);
         exchangesRepository.save(newExchange);
-        CompletableFuture.runAsync(() ->
-                processImpactValueService.computeSystemLevelOfProjectBackground(process.getProject().getId())
-        );
         return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(processId));
     }
 
@@ -115,9 +106,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         Exchanges productExchange = createNewExchange(null, request.isInput(), process, EXCHANGE_TYPE_PRODUCT);
         productExchange.setName(request.getName());
         exchangesRepository.save(productExchange);
-        CompletableFuture.runAsync(() ->
-                processImpactValueService.computeSystemLevelOfProjectBackground(process.getProject().getId())
-        );
+
         return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(processId));
     }
 
@@ -180,9 +169,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         if (exchange.getExchangesType().getName().equals(EXCHANGE_TYPE_ELEMENTARY)) {
             processImpactValueService.computeProcessImpactValueSingleExchange(exchange.getProcess(), exchange, initialValue);
         }
-        CompletableFuture.runAsync(() ->
-                processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId())
-        );
+
         return impactExchangeResponseBuilder(exchange);
     }
 
@@ -201,9 +188,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         Thread deleteConnectorThread = new Thread(() -> connectorService.deleteAssociatedConnectors(exchangeId, Constants.DELETE_CONNECTOR_TYPE_EXCHANGE));
         deleteConnectorThread.start();
-        CompletableFuture.runAsync(() ->
-                processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId())
-        );
+
         return exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.findAllByProcess(exchange.getProcessId()));
     }
 
@@ -249,9 +234,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         exchangesRepository.save(exchange);
 
         processImpactValueService.computeProcessImpactValueSingleExchange(process, exchange, initialValue);
-        CompletableFuture.runAsync(() ->
-                processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId())
-        );
+
         return impactExchangeResponseBuilder(exchange);
     }
 
@@ -312,9 +295,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         }
         exchangesRepository.save(exchange);
 
-        CompletableFuture.runAsync(() ->
-                processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId())
-        );
+
         return exchangesRepository.findAllByIdMatches(connectedExchangeIdList)
                 .stream()
                 .map(e -> new UpdateProductExchangeResponse(e.getProcessId(), exchangesConverter.fromExchangesToExchangesDto(e)))
@@ -333,7 +314,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
     private void validateMethod(UUID methodId) {
         methodRepository.findByIdAndStatus(methodId, true)
-                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Method not exist"));
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND, Collections.EMPTY_LIST));
     }
 
     private Exchanges createNewExchange(EmissionSubstance emissionSubstance, boolean isInput,
@@ -350,10 +331,6 @@ public class ExchangesServiceImpl implements ExchangesService {
         } else {
             exchange.setUnit(unitRepository.findByNameUnit(DEFAULT_PRODUCT_UNIT));
         }
-
-        CompletableFuture.runAsync(() ->
-                processImpactValueService.computeSystemLevelOfProjectBackground(exchange.getProcess().getProject().getId())
-        );
         return exchange;
     }
 
@@ -398,7 +375,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
     private EmissionCompartment findEmissionCompartment(UUID emissionCompartmentId) {
         return ecRepository.findByIdAndStatus(emissionCompartmentId, true)
-                .orElseThrow(() -> CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "Compartment not exist"));
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_EMISSION_COMPARTMENT_FOUND, Collections.EMPTY_LIST));
     }
 
 
@@ -423,5 +400,6 @@ public class ExchangesServiceImpl implements ExchangesService {
                 .impacts(processService.converterProcess(pivRepository.findByProcessId(exchange.getProcessId())))
                 .build();
     }
+
 
 }

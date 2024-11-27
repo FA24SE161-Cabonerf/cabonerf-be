@@ -33,7 +33,7 @@ public interface MidpointRepository extends JpaRepository<MidpointImpactCharacte
     @Query(value = QueryStrings.FIND_FACTOR_BY_KEYWORD_AND_COMPARTMENT,
             countQuery = QueryStrings.COUNT_FACTORS_BY_KEYWORD_AND_COMPARTMENT,
             nativeQuery = true)
-    Page<Object[]> findByKeyWordAndCompartmentId(@Param("keyword") String keyword,@Param("compartmentId") UUID compartmentId, Pageable pageable);
+    Page<Object[]> findByKeyWordAndCompartmentId(@Param("keyword") String keyword, @Param("compartmentId") UUID compartmentId, Pageable pageable);
 
     @Query(value = QueryStrings.FIND_MIDPOINT_SUBSTANCE_FACTORS, nativeQuery = true)
     List<Object[]> getWhenCreate(@Param("id") UUID id);

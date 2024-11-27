@@ -12,6 +12,7 @@ import java.util.UUID;
 
 public interface ImpactMethodService {
     List<LifeCycleImpactAssessmentMethodDto> getAllImpactMethods();
+
     LifeCycleImpactAssessmentMethodDto getImpactMethodById(UUID id);
 
     List<ImpactCategoryDto> getCategoryByMethodId(UUID id);

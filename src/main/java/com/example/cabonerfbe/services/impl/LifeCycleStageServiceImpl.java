@@ -2,7 +2,6 @@ package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.LifeCycleStageConverter;
 import com.example.cabonerfbe.dto.LifeCycleStageDto;
-import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.LifeCycleStage;
@@ -30,15 +29,15 @@ public class LifeCycleStageServiceImpl implements LifeCycleStageService {
 
     @Override
     public LifeCycleStageDto create(LifeCycleStagesRequest request) {
-        LifeCycleStage lif = new LifeCycleStage(request.getName(),request.getDescription(),request.getIconUrl());
+        LifeCycleStage lif = new LifeCycleStage(request.getName(), request.getDescription(), request.getIconUrl());
         return converter.fromLifecycleStageToLifecycleStageDto(repository.save(lif));
     }
 
     @Override
     public LifeCycleStageDto update(UUID lifeCycleStagesId, LifeCycleStagesRequest request) {
         Optional<LifeCycleStage> lif = repository.findByIdAndStatus(lifeCycleStagesId, true);
-        if(lif.isEmpty()){
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Life cycle stages not exist");
+        if (lif.isEmpty()) {
+            throw CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND);
         }
         lif.get().setName(request.getName());
         lif.get().setDescription(request.getDescription());
@@ -49,8 +48,8 @@ public class LifeCycleStageServiceImpl implements LifeCycleStageService {
     @Override
     public LifeCycleStageDto delete(UUID lifeCycleStagesId) {
         Optional<LifeCycleStage> lif = repository.findByIdAndStatus(lifeCycleStagesId, true);
-        if(lif.isEmpty()){
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR,"Life cycle stages not exist");
+        if (lif.isEmpty()) {
+            throw CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND);
         }
         lif.get().setStatus(false);
         return converter.fromLifecycleStageToLifecycleStageDto(repository.save(lif.get()));

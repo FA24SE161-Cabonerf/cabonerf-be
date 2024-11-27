@@ -12,4 +12,5 @@ import java.util.UUID;
 public class WorkspaceDto {
     private UUID id;
     private String name;
+    private boolean isDefault;
 }

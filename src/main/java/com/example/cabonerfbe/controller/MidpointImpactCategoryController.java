@@ -36,26 +36,26 @@ public class MidpointImpactCategoryController {
     }
 
     @PostMapping(API_PARAMS.CREATE_MIDPOINT_IMPACT_CATEGORY)
-    private ResponseEntity<ResponseObject> create(@Valid @RequestBody CreateMidpointImpactCategoryRequest request){
+    private ResponseEntity<ResponseObject> create(@Valid @RequestBody CreateMidpointImpactCategoryRequest request) {
         log.info("Start create midpoint impact category. Request: {}", request);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Create midpoint impact category success",midpointImpactCategoryService.create(request))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Create midpoint impact category success", midpointImpactCategoryService.create(request))
         );
     }
 
     @PutMapping(API_PARAMS.UPDATE_MIDPOINT_IMPACT_CATEGORY)
-    private ResponseEntity<ResponseObject> create(@PathVariable UUID id, @Valid @RequestBody UpdateMidpointImpactCategoryRequest request){
-        log.info("Start update midpoint impact category.Id: {}, Request: {}",id, request);
+    private ResponseEntity<ResponseObject> create(@PathVariable UUID id, @Valid @RequestBody UpdateMidpointImpactCategoryRequest request) {
+        log.info("Start update midpoint impact category.Id: {}, Request: {}", id, request);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Update midpoint impact category success",midpointImpactCategoryService.update(id,request))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Update midpoint impact category success", midpointImpactCategoryService.update(id, request))
         );
     }
 
     @DeleteMapping(API_PARAMS.DELETE_MIDPOINT_IMPACT_CATEGORY)
-    private ResponseEntity<ResponseObject> create(@PathVariable UUID id){
-        log.info("Delete update midpoint impact category.Id: {}",id);
+    private ResponseEntity<ResponseObject> create(@PathVariable UUID id) {
+        log.info("Delete update midpoint impact category.Id: {}", id);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Delete midpoint impact category success",midpointImpactCategoryService.delete(id))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Delete midpoint impact category success", midpointImpactCategoryService.delete(id))
         );
     }
 

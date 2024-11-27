@@ -15,7 +15,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table
-public class UserOrganization extends Base{
+public class UserOrganization extends Base {
 
     @ManyToOne
     @JoinColumn(name = "user_id")

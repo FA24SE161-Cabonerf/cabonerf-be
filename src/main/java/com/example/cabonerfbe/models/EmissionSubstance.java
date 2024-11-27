@@ -12,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table
-public class EmissionSubstance extends Base{
+public class EmissionSubstance extends Base {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "substance_id", nullable = false)
     private Substance substance;

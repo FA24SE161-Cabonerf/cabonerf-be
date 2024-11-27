@@ -2,9 +2,12 @@ package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.WorkspaceConverter;
 import com.example.cabonerfbe.dto.WorkspaceDto;
+import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.*;
-import com.example.cabonerfbe.models.Process;
+import com.example.cabonerfbe.models.Organization;
+import com.example.cabonerfbe.models.UserOrganization;
+import com.example.cabonerfbe.models.Users;
+import com.example.cabonerfbe.models.Workspace;
 import com.example.cabonerfbe.repositories.UserOrganizationRepository;
 import com.example.cabonerfbe.repositories.UserRepository;
 import com.example.cabonerfbe.repositories.WorkspaceRepository;
@@ -29,7 +32,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     @Override
     public Set<WorkspaceDto> getByUser(UUID userId) {
         Users u = userRepository.findById(userId)
-                .orElseThrow(() -> CustomExceptions.notFound("User not exist"));
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
         List<UserOrganization> uo = uoRepository.findByUser(userId);
 
@@ -40,14 +43,25 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
         List<Workspace> workspaceOrganization = workspaceRepository.findByOrganization(organizationIds);
 
-        Set<Workspace> workspaces = new HashSet<>(!workspaceOrganization.isEmpty() ? workspaceOrganization : Collections.emptySet());
+        List<Workspace> userWorkspaces = workspaceRepository.findByUser(userId);
 
-        List<Workspace> w = workspaceRepository.findByUser(userId);
+        Set<Workspace> workspaces = new HashSet<>(workspaceOrganization);
+        workspaces.addAll(userWorkspaces);
 
-        workspaces.addAll( !w.isEmpty() ? w : Collections.emptyList());
+        return workspaces.stream()
+                .map(workspace -> {
+                    WorkspaceDto dto = workspaceConverter.fromWorkspaceToWorkspaceDto(workspace);
 
-        return !workspaces.isEmpty()
-                ? workspaces.stream().map(workspaceConverter::fromWorkspaceToWorkspaceDto).collect(Collectors.toSet())
-                : Collections.emptySet();
+                    if (workspace.getOrganization() == null) {
+                        dto.setDefault(true);
+                    } else {
+                        dto.setDefault(!organizationIds.contains(workspace.getOrganization().getId()));
+                    }
+
+                    return dto;
+                })
+                .collect(Collectors.toSet());
+
     }
+
 }

@@ -4,11 +4,11 @@ import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
 import com.example.cabonerfbe.request.RabbitMqJsonRequest;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import com.example.cabonerfbe.response.SendMailCreateAccountResponse;
+import com.example.cabonerfbe.response.SendMailCreateOrganizationResponse;
+import com.example.cabonerfbe.response.SendMailRegisterResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -17,17 +17,18 @@ import java.util.UUID;
 
 @Service
 @Slf4j
-@NoArgsConstructor
-@AllArgsConstructor
 public class MessagePublisher {
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
     @Value(RabbitMQConfig.EXCHANGE)
     private String exchangeName;
 
     @Value(RabbitMQConfig.ROUTING_KEY)
     private String routingKey;
+
+    public MessagePublisher(final RabbitTemplate rabbitTemplate) {
+        this.rabbitTemplate = rabbitTemplate;
+    }
 
     public void sendMessage(RabbitMqJsonRequest request) {
         rabbitTemplate.convertAndSend(exchangeName, routingKey, request);
@@ -53,5 +54,20 @@ public class MessagePublisher {
     public void publishConnectorMessage(String exchangeName, String routingKey, List<UUID> idList) {
         rabbitTemplate.convertAndSend(exchangeName, routingKey, idList);
         log.info("Publish connector message: {}, exchange: {}, key: {}", idList, exchangeName, routingKey);
+    }
+
+    public void publishSendMailCreateOrganization(SendMailCreateOrganizationResponse response) {
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EMAIL_EXCHANGE, RabbitMQConfig.EMAIL_CREATE_ORGANIZATION_ROUTING_KEY, response);
+        log.info("Publish SendMailCreateOrganization: {}", response.getEmail());
+    }
+
+    public void publishSendMailCreateAccountByOrganizationManager(SendMailCreateAccountResponse response) {
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EMAIL_EXCHANGE, RabbitMQConfig.EMAIL_CREATE_ACCOUNT_MANAGER_ROUTING_KEY, response);
+        log.info("Publish SendMailCreateAccountByOrganizationManager: {}", response.getEmail());
+    }
+
+    public void publishSendMailRegister(SendMailRegisterResponse response) {
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EMAIL_EXCHANGE, RabbitMQConfig.EMAIL_REGISTER_ROUTING_KEY, response);
+        log.info("Publish SendMailRegister: {}", response.getEmail());
     }
 }
