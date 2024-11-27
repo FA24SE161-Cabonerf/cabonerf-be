@@ -38,10 +38,12 @@ public class ProjectController {
             @RequestHeader("x-user-id") UUID userId,
             @RequestParam(defaultValue = "1") int pageCurrent,
             @RequestParam(defaultValue = "5") int pageSize,
-            @RequestParam(required = false) UUID methodId) {
+            @RequestParam(required = false) UUID methodId,
+            @RequestParam(required = true) UUID workspaceId
+    ) {
         log.info("Start getAllProject");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_LIST_SUCCESS, projectService.getAllProject(pageCurrent, pageSize, userId, methodId)
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_LIST_SUCCESS, projectService.getAllProject(pageCurrent, pageSize, userId, methodId, workspaceId)
                 ));
     }
 

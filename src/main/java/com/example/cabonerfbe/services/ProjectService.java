@@ -23,7 +23,7 @@ public interface ProjectService {
 
     CreateProjectResponse createProject(UUID userId, CreateProjectRequest request);
 
-    GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId, UUID methodId);
+    GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId, UUID methodId, UUID workspaceId);
 
     GetProjectByIdDto getById(UUID id, UUID userId);
 

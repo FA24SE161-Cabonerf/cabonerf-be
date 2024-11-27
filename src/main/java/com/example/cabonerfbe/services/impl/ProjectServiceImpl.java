@@ -38,7 +38,6 @@ import java.io.IOException;
 import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -114,54 +113,43 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public CreateProjectResponse createProject(UUID userId, CreateProjectRequest request) {
 
-        if (userRepository.findById(userId).isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND, Collections.EMPTY_LIST);
-        }
+        Users user = userRepository.findByIdWithStatus(userId).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND, Collections.EMPTY_LIST)
+        );
 
-        if (workspaceRepository.findById(request.getWorkspaceId()).isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.WORKSPACE_NOT_FOUND, Collections.EMPTY_LIST);
-        }
+        Workspace workspace = workspaceRepository.findByWorkspaceId(request.getWorkspaceId()).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.WORKSPACE_NOT_FOUND, Collections.EMPTY_LIST)
+        );
 
-        if (methodRepository.findById(request.getMethodId()).isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND, Collections.EMPTY_LIST);
-        }
+        LifeCycleImpactAssessmentMethod method = methodRepository.findByIdAndStatus(request.getMethodId(), Constants.STATUS_TRUE).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND, Collections.EMPTY_LIST)
+        );
 
         Project project = new Project();
         project.setName(request.getName());
         project.setDescription(request.getDescription());
         project.setLocation(request.getLocation());
-        project.setUser(userRepository.findById(userId).get());
-        project.setWorkspace(workspaceRepository.findById(request.getWorkspaceId()).get());
-        project.setLifeCycleImpactAssessmentMethod(methodRepository.findById(request.getMethodId()).get());
+        project.setUser(user);
+        project.setWorkspace(workspace);
+        project.setLifeCycleImpactAssessmentMethod(method);
 
         project = projectRepository.save(project);
 
-//        List<ImpactMethodCategory> list = impactMethodCategoryRepository.findByMethod(request.getMethodId());
-//        List<ProjectImpactValue> listValues = new ArrayList<>();
-//        for(ImpactMethodCategory x:list){
-//            ProjectImpactValue values = new ProjectImpactValue();
-//            values.setProject(project);
-//            values.setValue(0);
-//            values.setImpactMethodCategory(x);
-//            listValues.add(values);
-//        }
-//
-//        projectImpactValueRepository.saveAll(listValues);
         return CreateProjectResponse.builder()
                 .projectId(project.getId())
                 .build();
     }
 
     @Override
-    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId, UUID methodId) {
+    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId, UUID methodId, UUID workspaceId) {
 
         Pageable pageable = PageRequest.of(pageCurrent - PAGE_INDEX_ADJUSTMENT, pageSize);
 
-        Page<Project> projects = null;
+        Page<Project> projects;
         if (methodId == null) {
-            projects = projectRepository.findAll(userId, pageable);
+            projects = projectRepository.findAll(userId, workspaceId, pageable);
         } else {
-            projects = projectRepository.sortByMethod(userId, methodId, pageable);
+            projects = projectRepository.sortByMethod(userId, workspaceId, methodId, pageable);
         }
 
         if (projects.isEmpty()) {
