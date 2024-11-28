@@ -58,7 +58,7 @@ public class ContractServiceImpl implements ContractService {
         Contract c = repository.findById(contractId)
                 .orElseThrow(() -> CustomExceptions.notFound("Contract not exist"));
 
-        s3Service.downloadFile(c.getUrl());
+        s3Service.deleteFile(c.getUrl());
         c.setStatus(false);
         repository.save(c);
     }
