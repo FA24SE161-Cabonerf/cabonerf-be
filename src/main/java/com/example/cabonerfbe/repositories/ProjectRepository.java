@@ -40,4 +40,6 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
     @Query("SELECT p FROM Project p WHERE p.id = ?1 AND p.status = true")
     Optional<Project> findById(UUID id);
 
+    @Query("SELECT count(p) FROM Project p WHERE p.status = true")
+    int findAllByStatus();
 }

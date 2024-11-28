@@ -7,10 +7,7 @@ import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.Users;
 import com.example.cabonerfbe.repositories.UserRepository;
-import com.example.cabonerfbe.response.GetAllUserResponse;
-import com.example.cabonerfbe.response.GetProfileResponse;
-import com.example.cabonerfbe.response.GetUserToInviteResponse;
-import com.example.cabonerfbe.response.UpdateAvatarUserResponse;
+import com.example.cabonerfbe.response.*;
 import com.example.cabonerfbe.services.JwtService;
 import com.example.cabonerfbe.services.S3Service;
 import com.example.cabonerfbe.services.UserService;
@@ -31,9 +28,15 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Data
@@ -146,6 +149,30 @@ public class UserServiceImpl implements UserService {
                 .pageCurrent(pageCurrent)
                 .users(data.stream().map(userConverter::forInvite).collect(Collectors.toList()))
                 .build();
+    }
+
+    @Override
+    public List<UserDashboardResponse> getNewUserInThisYear() {
+
+        int currentYear = LocalDate.now().getYear();
+
+        List<String> months = Stream.of(Month.values())
+                .map(Month::name)
+                .collect(Collectors.toList());
+
+        return months.stream()
+                .map(month -> {
+
+                    int monthNumber = Month.valueOf(month).getValue();
+
+                    return new UserDashboardResponse(month, userRepository.countByCreatedAtMonthAndYear(monthNumber, currentYear));
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public int countAllUser() {
+        return userRepository.findAll().size();
     }
 
     private boolean isImageFile(MultipartFile file) {

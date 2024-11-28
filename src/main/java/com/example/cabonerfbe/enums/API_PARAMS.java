@@ -19,6 +19,8 @@ public class API_PARAMS {
     public static final String BAN_UNBAN_USER = "/ban-unban-user/{userId}";
     public static final String UPDATE_AVATAR_USER = "/avatar";
     public static final String GET_USER_TO_INVITE = "/invite";
+    public static final String GET_USER_TO_DASHBOARD = "/count-user-new";
+    public static final String GET_ALL_USER_TO_DASHBOARD = "/count-all-user";
 
 
     /************************
@@ -71,6 +73,8 @@ public class API_PARAMS {
     public static final String CALCULATION_PROJECT = "/calculation";
     public static final String EXPORT_PROJECT = "/export/{projectId}";
     public static final String INTENSITY_PROJECT = "/intensity/{projectId}";
+    public static final String COUNT_PROJECT = "/count-project";
+    public static final String SUM_IMPACT = "/sum-impact";
 
     /************************
      *      PROCESS APIs     *
@@ -134,6 +138,7 @@ public class API_PARAMS {
     public static final String GET_ALL_EMISSION_COMPARTMENTS = "/emission-compartments";
     public static final String GET_EMISSION_COMPARTMENTS_BY_ID = "/emission-compartments/{id}";
     public static final String EMISSION_SUBSTANCE = "/emission-substance";
+    public static final String EMISSION_SUBSTANCE_COUNT = "/count-emission-substance";
 
     /************************
      *   EXCHANGE APIs   *

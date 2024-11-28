@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,4 +26,6 @@ public interface ProjectImpactValueRepository extends JpaRepository<ProjectImpac
     @Query("SELECT piv FROM ProjectImpactValue piv WHERE piv.project.id = ?1 AND piv.value > 0")
     List<ProjectImpactValue> getValue(UUID projectId);
 
+    @Query("SELECT SUM(p.value) FROM ProjectImpactValue p WHERE p.impactMethodCategory.impactCategory.id = :categoryId")
+    BigDecimal getSumImpact(@Param("categoryId") UUID categoryId);
 }

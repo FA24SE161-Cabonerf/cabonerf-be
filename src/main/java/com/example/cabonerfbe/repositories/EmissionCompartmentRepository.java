@@ -18,4 +18,7 @@ public interface EmissionCompartmentRepository extends JpaRepository<EmissionCom
     List<EmissionCompartment> findByStatus(boolean statusTrue);
 
     Optional<EmissionCompartment> findByIdAndStatus(UUID emissionCompartmentId, boolean statusTrue);
+
+    @Query("SELECT ec FROM EmissionCompartment ec WHERE ec.status = true")
+    List<EmissionCompartment> findAllByStatus();
 }
