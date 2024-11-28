@@ -12,4 +12,5 @@ import java.util.UUID;
 public class OrganizationInviteDto {
     private UUID id;
     private String name;
+    private String logo;
 }

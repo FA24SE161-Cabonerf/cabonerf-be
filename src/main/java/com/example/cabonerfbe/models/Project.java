@@ -26,8 +26,8 @@ public class Project extends Base {
     private LifeCycleImpactAssessmentMethod lifeCycleImpactAssessmentMethod;
 
     @ManyToOne
-    @JoinColumn(name = "workspace_id")
-    private Workspace workspace;
+    @JoinColumn(name = "organization_id")
+    private Organization organization;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

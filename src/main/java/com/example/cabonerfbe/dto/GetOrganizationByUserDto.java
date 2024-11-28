@@ -9,9 +9,8 @@ import java.util.UUID;
 @Data
 @Getter
 @Setter
-public class OrganizationDto {
-    UUID id;
+public class GetOrganizationByUserDto {
+    private UUID id;
     private String name;
     private String logo;
-    private ContractDto contract;
 }

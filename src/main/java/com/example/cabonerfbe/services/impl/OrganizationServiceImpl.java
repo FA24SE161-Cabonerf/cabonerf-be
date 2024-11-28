@@ -2,10 +2,7 @@ package com.example.cabonerfbe.services.impl;
 
 import com.corundumstudio.socketio.SocketIOServer;
 import com.example.cabonerfbe.converter.*;
-import com.example.cabonerfbe.dto.InviteUserOrganizationDto;
-import com.example.cabonerfbe.dto.MemberOrganizationDto;
-import com.example.cabonerfbe.dto.OrganizationDto;
-import com.example.cabonerfbe.dto.UserOrganizationDto;
+import com.example.cabonerfbe.dto.*;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
@@ -39,8 +36,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Autowired
     private OrganizationConverter organizationConverter;
     @Autowired
-    private EmailService emailService;
-    @Autowired
     private UserRepository userRepository;
     @Autowired
     private RoleRepository roleRepository;
@@ -56,8 +51,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     private AuthenticationService authenticationService;
     @Autowired
     private UserConverter userConverter;
-    @Autowired
-    private WorkspaceRepository workspaceRepository;
     @Autowired
     private S3Service s3Service;
     @Autowired
@@ -108,21 +101,29 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         Optional<Users> user = userRepository.findByEmail(request.getEmail());
         String password = PasswordGenerator.generateRandomPassword(8);
-        if (user.isPresent()) {
-            if (Objects.equals(user.get().getRole().getName(), "Organization Manager")) {
-                throw CustomExceptions.badRequest("Email already use with other organization");
-            }
+//        if (user.isPresent())
+//        {
+////            if (Objects.equals(user.get().getRole().getName(), "Organization Manager")) {
+////                throw CustomExceptions.badRequest("Email already use with other organization");
+////            }
+//        } else {
+//            Users newUser = new Users();
+//            newUser.setEmail(request.getEmail());
+//            newUser.setFullName(request.getName());
+//            newUser.setUserVerifyStatus(userVerifyStatusRepository.findByName("Pending").get());
+//            newUser.setRole(roleRepository.findByName("Organization Manager").get());
+//            newUser.setPassword(passwordEncoder.encode(password));
+//            user = Optional.of(userRepository.save(newUser));
+//        }
 
-            user.get().setRole(roleRepository.findByName("Organization Manager").get());
-            userRepository.save(user.get());
-        } else {
-            Users newUser = new Users();
-            newUser.setEmail(request.getEmail());
-            newUser.setFullName(request.getName());
-            newUser.setUserVerifyStatus(userVerifyStatusRepository.findByName("Pending").get());
-            newUser.setRole(roleRepository.findByName("Organization Manager").get());
-            newUser.setPassword(passwordEncoder.encode(password));
-            user = Optional.of(userRepository.save(newUser));
+        if(user.isEmpty()){
+            Users newAccount = new Users();
+            newAccount.setEmail(request.getEmail());
+            newAccount.setFullName(request.getName());
+            newAccount.setUserVerifyStatus(userVerifyStatusRepository.findByName("Pending").get());
+            newAccount.setRole(roleRepository.findByName("Organization Manager").get());
+            newAccount.setPassword(passwordEncoder.encode(password));
+            user = Optional.of(userRepository.save(newAccount));
         }
 
         Organization o = new Organization();
@@ -132,6 +133,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         UserOrganization uo = new UserOrganization();
         uo.setOrganization(o);
         uo.setUser(user.get());
+        uo.setHasJoined(false);
         uo.setRole(roleRepository.findByName("Organization Manager").get());
         userOrganizationRepository.save(uo);
 
@@ -151,6 +153,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         o.setName(request.getName());
         o.setContract(c);
+        o.setLogo("");
         o = organizationRepository.save(o);
         return organizationConverter.modelToDto(o);
     }
@@ -170,6 +173,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
         contractService.deleteContract(o.getContract().getId());
+        s3Service.deleteFile(o.getLogo());
         o.setStatus(false);
         return organizationConverter.modelToDto(organizationRepository.save(o));
     }
@@ -184,12 +188,19 @@ public class OrganizationServiceImpl implements OrganizationService {
         Users u = userRepository.findById(_token.getUsers().getId())
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
-        if (!u.getRole().getName().equals("Verified")) {
-            throw CustomExceptions.badRequest("Account is already verified.");
-        }
+        UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(o.getId(), u.getId())
+                .orElseThrow(() -> CustomExceptions.notFound("User doesn't belong to organization."));
 
+        if (u.getRole().getName().equals("Verified")) {
+            if(uo.isHasJoined()){
+                throw CustomExceptions.badRequest("Account is already join organization.");
+            }
+        }
         u.setUserVerifyStatus(userVerifyStatusRepository.findByName("Verified").get());
         userRepository.save(u);
+
+        uo.setHasJoined(true);
+        userOrganizationRepository.save(uo);
 
         _token.setValid(false);
         evtRepository.save(_token);
@@ -198,21 +209,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         var refresh_token = jwtService.generateRefreshToken(u);
 
         authenticationService.saveRefreshToken(refresh_token, u);
-
-        UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(o.getId(), u.getId())
-                .orElseThrow(() -> CustomExceptions.notFound("User doesn't belong to organization."));
-
-        Workspace personWorkspace = new Workspace();
-        personWorkspace.setName("My Workspace");
-        personWorkspace.setOwner(u);
-        personWorkspace.setOrganization(null);
-
-        Workspace w = new Workspace();
-        w.setName(o.getName());
-        w.setOwner(u);
-        w.setOrganization(o);
-
-        workspaceRepository.saveAll(List.of(personWorkspace, w));
 
         return LoginResponse.builder()
                 .access_token(access_token)
@@ -304,9 +300,8 @@ public class OrganizationServiceImpl implements OrganizationService {
                 })
                 .collect(Collectors.toList());
 
-        // TODO: Send emails to users to accept join
         return InviteMemberResponse.builder()
-                .members(members)
+                .newMembers(members)
                 .newAccountIds(newUsers.stream().map(Users::getId).collect(Collectors.toList()))
                 .build();
 
@@ -315,7 +310,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public UserOrganizationDto acceptDenyInvite(UUID userId, AcceptInviteRequest request, String action) {
 
-        UserOrganization uo = userOrganizationRepository.findById(request.getId())
+        UserOrganization uo = userOrganizationRepository.findById(request.getUserOrganizationId())
                 .orElseThrow(() -> CustomExceptions.notFound("User doesn't have invitation to organization."));
 
         if (uo.isHasJoined()) {
@@ -338,29 +333,23 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public List<MemberOrganizationDto> getMemberInOrganization(UUID userId) {
-        return userOrganizationRepository.findByUser(userId).stream()
-                .map(userOrg -> userOrg.getOrganization().getId())
-                .map(orgId -> {
-                    MemberOrganizationDto dto = new MemberOrganizationDto();
-                    dto.setId(orgId);
+    public List<InviteUserOrganizationDto> getMemberInOrganization(UUID organizationId) {
 
-                    List<InviteUserOrganizationDto> members = userOrganizationRepository
-                            .findByOrganization(orgId).stream()
-                            .map(userOrg -> {
-                                InviteUserOrganizationDto memberDto = new InviteUserOrganizationDto();
-                                memberDto.setId(userOrg.getId());
-                                memberDto.setUser(userConverter.forInvite(userOrg.getUser()));
-                                memberDto.setRole(roleConverter.fromRoleToRoleDto(userOrg.getRole()));
-                                memberDto.setHasJoined(userOrg.isHasJoined());
-                                return memberDto;
-                            })
-                            .collect(Collectors.toList());
+        Organization o = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
-                    dto.setMembers(members);
-                    return dto;
-                })
-                .collect(Collectors.toList());
+        List<UserOrganization> member = userOrganizationRepository.findByOrganization(organizationId);
+
+        List<InviteUserOrganizationDto> data = new ArrayList<>();
+        for (UserOrganization x : member){
+            InviteUserOrganizationDto memberDto = new InviteUserOrganizationDto();
+            memberDto.setId(x.getId());
+            memberDto.setUser(userConverter.forInvite(x.getUser()));
+            memberDto.setRole(roleConverter.fromRoleToRoleDto(x.getRole()));
+            memberDto.setHasJoined(x.isHasJoined());
+            data.add(memberDto);
+        }
+        return data;
     }
 
     @Override
@@ -371,6 +360,35 @@ public class OrganizationServiceImpl implements OrganizationService {
         List<UserOrganization> history = userOrganizationRepository.getByUser(userId);
 
         return history.stream().map(uoConverter::enityToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public OrganizationDto uploadLogo(UUID organizationId, MultipartFile logo) {
+        Organization o = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
+
+        o.setLogo(s3Service.uploadImage(logo));
+        return organizationConverter.modelToDto(o);
+    }
+
+    @Override
+    public List<GetOrganizationByUserDto> getByUser(UUID userId) {
+        Users u = userRepository.findById(userId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
+
+        List<UserOrganization> uo = userOrganizationRepository.getByUser(userId);
+
+        return uo.stream()
+                .map(UserOrganization::getOrganization)
+                .map(organizationConverter::modelToUser)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public OrganizationDto getOrganizationById(UUID organizationId) {
+        Organization o = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
+        return organizationConverter.modelToDto(o);
     }
 
     @Override
