@@ -10,6 +10,7 @@ import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateFactorRequest;
 import com.example.cabonerfbe.request.PaginationRequest;
+import com.example.cabonerfbe.response.EmissionSubstanceDashboardResponse;
 import com.example.cabonerfbe.response.MidpointImpactCharacterizationFactorsResponse;
 import com.example.cabonerfbe.response.MidpointSubstanceFactorsResponse;
 import com.example.cabonerfbe.services.MidpointService;
@@ -172,5 +173,14 @@ public class MidpointServiceImpl implements MidpointService {
                 .map(midpointConverter::fromQueryResultsToDto)
                 .collect(Collectors.toList());
         return response;
+    }
+
+    public List<EmissionSubstanceDashboardResponse> getEmissionSubstanceDashboard(){
+        List<EmissionCompartment> ec = ecRepository.findAllByStatus();
+        return ec.stream()
+                .map(c ->{
+                    return new EmissionSubstanceDashboardResponse(c.getName(),scRepository.findByCompartment(c.getId()));
+                }).collect(Collectors.toList());
+
     }
 }

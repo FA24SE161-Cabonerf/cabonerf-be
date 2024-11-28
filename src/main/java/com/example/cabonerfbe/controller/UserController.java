@@ -68,4 +68,22 @@ public class UserController {
         );
     }
 
+    @GetMapping(API_PARAMS.ADMIN + API_PARAMS.GET_USER_TO_DASHBOARD)
+    public ResponseEntity<ResponseObject> getUserInDashboard(){
+        log.info("Start getUserInDashboard");
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get user dashboard success",userService.getNewUserInThisYear())
+        );
+    }
+
+    @GetMapping(API_PARAMS.ADMIN + API_PARAMS.GET_ALL_USER_TO_DASHBOARD)
+    public ResponseEntity<ResponseObject> getAllUser(){
+        log.info("Start getAllUser");
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get all user dashboard success",userService.countAllUser())
+        );
+    }
+
+
+
 }

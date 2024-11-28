@@ -40,4 +40,7 @@ public interface UserRepository extends JpaRepository<Users, UUID> {
             "AND  u.role.name like 'Organization Manager' " +
             "OR u.role.name like 'LCA Staff'")
     Page<Users> findToInviteByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT COUNT(u) FROM Users u WHERE MONTH(u.createdAt) = :month AND YEAR(u.createdAt) = :year")
+    int countByCreatedAtMonthAndYear(@Param("month") int monthNumber,@Param("year") int currentYear);
 }

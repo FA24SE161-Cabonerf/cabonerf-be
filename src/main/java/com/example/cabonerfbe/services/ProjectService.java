@@ -9,6 +9,7 @@ import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.CreateProjectResponse;
 import com.example.cabonerfbe.response.GetAllProjectResponse;
+import com.example.cabonerfbe.response.GetImpactForAllProjectResponse;
 import com.example.cabonerfbe.response.ProjectCalculationResponse;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -38,4 +39,8 @@ public interface ProjectService {
     GetProjectByIdDto getProject(Project project);
 
     List<CarbonIntensityDto> getIntensity(UUID projectId);
+
+    int countAllProject();
+
+    List<GetImpactForAllProjectResponse> countImpactInDashboard();
 }

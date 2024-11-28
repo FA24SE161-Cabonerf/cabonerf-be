@@ -4,6 +4,7 @@ import com.example.cabonerfbe.dto.MidpointSubstanceFactorsDto;
 import com.example.cabonerfbe.dto.PageList;
 import com.example.cabonerfbe.request.CreateFactorRequest;
 import com.example.cabonerfbe.request.PaginationRequest;
+import com.example.cabonerfbe.response.EmissionSubstanceDashboardResponse;
 import com.example.cabonerfbe.response.MidpointImpactCharacterizationFactorsResponse;
 import com.example.cabonerfbe.response.MidpointSubstanceFactorsResponse;
 
@@ -20,4 +21,6 @@ public interface MidpointService {
     List<MidpointSubstanceFactorsDto> create(CreateFactorRequest request);
 
     List<MidpointSubstanceFactorsDto> delete(UUID id);
+
+    List<EmissionSubstanceDashboardResponse> getEmissionSubstanceDashboard();
 }
