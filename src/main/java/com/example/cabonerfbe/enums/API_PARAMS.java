@@ -21,7 +21,8 @@ public class API_PARAMS {
     public static final String GET_USER_TO_INVITE = "/invite";
     public static final String GET_USER_TO_DASHBOARD = "/count-user-new";
     public static final String GET_ALL_USER_TO_DASHBOARD = "/count-all-user";
-
+    public static final String CHANGE_PASSWORD = "/password";
+    public static final String UPDATE_PROFILE = "/profile";
 
     /************************
      *      IMPACTS APIs     *

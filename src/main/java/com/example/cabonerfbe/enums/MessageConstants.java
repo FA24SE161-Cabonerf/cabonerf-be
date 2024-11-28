@@ -49,12 +49,17 @@ public class MessageConstants {
     public static final String ADD_IMPACT_CATEGORY_TO_IMPACT_METHOD_SUCCESS = "Add impact category to impact method success.";
     public static final String GET_ALL_LIFE_STAGE_SUCCESS = "Get all life cycle stage success.";
     public static final String GET_LIFE_STAGE_BY_ID_SUCCESS = "Get life cycle stage by success.";
+    public static final String CHANGE_PASSWORD_SUCCESS = "Change password success.";
+    public static final String UPDATE_USER_PROFILE_SUCCESS = "Update user profile success.";
+
 
 
     public static final String EMAIL_PASSWORD_WRONG = "Email or password wrong!";
+    public static final String PASSWORD_WRONG = "Password is wrong.";
+
     public static final String EMAIL_ALREADY_EXIST = "Email already exist.";
     public static final String USER_IS_BANNED = "User is banned.";
-    public static final String CONFIRM_PASSWORD_NOT_MATCH = "Confirm Passwords do not match.";
+    public static final String CONFIRM_PASSWORD_NOT_MATCH = "Confirm password does not match.";
     public static final String USER_NOT_FOUND = "User doesn't exist!";
     public static final String WORKSPACE_NOT_FOUND = "Workspace doesn't exist!";
     public static final String INVALID_REFRESH_TOKEN = "Invalid or expired refresh token.";
@@ -111,6 +116,9 @@ public class MessageConstants {
     public static final String NO_IMPACT_METHOD_CATEGORY_FOUND = "Impact method category doesn't exist.";
     public static final String NO_EMISSION_SUBSTANCE_FOUND = "Emission substance doesn't exist.";
     public static final String NO_ORGANIZATION_FOUND = "Organization doesn't exist.";
+    public static final String NEW_PASSWORD_SAME_AS_OLD = "The new password must be different from the current password.";
+    public static final String FAILED_TO_UPLOAD_IMAGE = "Failed to upload image. Please try again.";
+
 
     // CALCULATION ERROR MSG
     public static final String FAILED_TO_PERFORM_CALCULATION = "Failed to perform calculation. ";

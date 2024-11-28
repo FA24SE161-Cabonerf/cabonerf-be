@@ -1,6 +1,7 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.UserConverter;
+import com.example.cabonerfbe.dto.UserDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -235,23 +236,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public void changePassword(UUID userId, ChangePasswordRequest request) {
+    public UserDto changePassword(UUID userId, ChangePasswordRequest request) {
         Users user = userRepository.findById(userId)
-                .orElseThrow(() -> CustomExceptions.notFound("User not exist"));
-
-        if (request.getOldPassword().equals(request.getNewPassword())) {
-            throw CustomExceptions.badRequest("New password equals old password");
-        }
-        if (!request.getNewPassword().equals(request.getNewPasswordConfirm())) {
-            throw CustomExceptions.badRequest("Confirm password not equals new password");
-        }
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-            throw CustomExceptions.unauthorized("Password is wrong");
+            throw CustomExceptions.unauthorized(MessageConstants.PASSWORD_WRONG);
         }
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
 
+        if (request.getOldPassword().equals(request.getNewPassword())) {
+            throw CustomExceptions.badRequest(MessageConstants.NEW_PASSWORD_SAME_AS_OLD);
+        }
+        if (!request.getNewPassword().equals(request.getNewPasswordConfirm())) {
+            throw CustomExceptions.badRequest(MessageConstants.CONFIRM_PASSWORD_NOT_MATCH);
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        return UserConverter.INSTANCE.fromUserToUserDto(userRepository.save(user));
     }
 
     public String rotateRefreshToken(String oldRefreshTokenString, Users user) {

@@ -7,6 +7,7 @@ import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.Users;
 import com.example.cabonerfbe.repositories.UserRepository;
+import com.example.cabonerfbe.request.UpdateUserInfoRequest;
 import com.example.cabonerfbe.response.*;
 import com.example.cabonerfbe.services.JwtService;
 import com.example.cabonerfbe.services.S3Service;
@@ -28,10 +29,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -119,8 +118,8 @@ public class UserServiceImpl implements UserService {
         try {
             u.setProfilePictureUrl(s3Service.uploadImage(file));
         } catch (Exception ignored) {
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_UPLOAD_IMAGE);
         }
-
 
         return userConverter.forUpdateAvatar(userRepository.save(u));
     }
@@ -168,6 +167,20 @@ public class UserServiceImpl implements UserService {
                     return new UserDashboardResponse(month, userRepository.countByCreatedAtMonthAndYear(monthNumber, currentYear));
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserProfileDto updateProfile(UUID userId, UpdateUserInfoRequest request) {
+        Users user = userRepository.findByIdWithStatus(userId).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND)
+        );
+
+        user.setBio(request.getBio());
+        user.setProfilePictureUrl(request.getProfilePictureUrl());
+        user.setPhone(request.getPhone());
+        user.setFullName(request.getFullName());
+
+        return userConverter.fromUserToUserProfileDto(userRepository.save(user));
     }
 
     @Override
