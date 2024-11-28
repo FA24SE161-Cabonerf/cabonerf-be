@@ -38,10 +38,12 @@ public class ProjectController {
             @RequestHeader("x-user-id") UUID userId,
             @RequestParam(defaultValue = "1") int pageCurrent,
             @RequestParam(defaultValue = "5") int pageSize,
-            @RequestParam(required = false) UUID methodId) {
+            @RequestParam(required = false) UUID methodId,
+            @RequestParam(required = true) UUID workspaceId
+    ) {
         log.info("Start getAllProject");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_LIST_SUCCESS, projectService.getAllProject(pageCurrent, pageSize, userId, methodId)
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_LIST_SUCCESS, projectService.getAllProject(pageCurrent, pageSize, userId, methodId, workspaceId)
                 ));
     }
 
@@ -104,6 +106,22 @@ public class ProjectController {
         log.info("Start intensity. id: {}", projectId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get intensity success", projectService.getIntensity(projectId))
+        );
+    }
+
+    @GetMapping(API_PARAMS.ADMIN + API_PARAMS.COUNT_PROJECT)
+    public ResponseEntity<ResponseObject> countAllProject(){
+        log.info("Start countAllProject");
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Count all project success",projectService.countAllProject())
+        );
+    }
+
+    @GetMapping(API_PARAMS.ADMIN + API_PARAMS.SUM_IMPACT)
+    public ResponseEntity<ResponseObject> getSumImpact(){
+        log.info("Start getImpactSum");
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get sum impact success",projectService.countImpactInDashboard())
         );
     }
 }

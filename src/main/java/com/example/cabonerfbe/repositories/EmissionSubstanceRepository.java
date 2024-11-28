@@ -128,5 +128,7 @@ public interface EmissionSubstanceRepository extends JpaRepository<EmissionSubst
             @Param("categoryId") UUID categoryId,
             Pageable pageable);
 
+    @Query("SELECT count(es) FROM EmissionSubstance es WHERE es.emissionCompartment.id = :emissionCompartmentId")
+    int findByCompartment(@Param("emissionCompartmentId") UUID emissionCompartmentId);
 }
 

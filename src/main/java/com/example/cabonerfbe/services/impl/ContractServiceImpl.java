@@ -59,7 +59,7 @@ public class ContractServiceImpl implements ContractService {
         Contract contract = repository.findById(contractId)
                 .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.CONTRACT_NOT_FOUND));
 
-        s3Service.downloadFile(contract.getUrl());
+        s3Service.deleteFile(contract.getUrl());
         contract.setStatus(false);
         repository.save(contract);
     }

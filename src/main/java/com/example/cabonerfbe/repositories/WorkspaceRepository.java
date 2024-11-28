@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -17,4 +18,7 @@ public interface WorkspaceRepository extends JpaRepository<Workspace, UUID> {
 
     @Query("SELECT w FROM Workspace w WHERE w.organization.id IN :organizationIds AND w.status = true")
     List<Workspace> findByOrganization(@Param("organizationIds") List<UUID> organizationIds);
+
+    @Query("SELECT w FROM Workspace w WHERE w.id = :workspaceId AND w.status = true")
+    Optional<Workspace> findByWorkspaceId(@Param("workspaceId") UUID workspaceId);
 }

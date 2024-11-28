@@ -100,4 +100,12 @@ public class MidpointController {
         return excelService.exportFactor(request);
     }
 
+    @GetMapping(API_PARAMS.ADMIN + API_PARAMS.EMISSION_SUBSTANCE_COUNT)
+    public ResponseEntity<ResponseObject> getEmissionSubstanceInDashboard(){
+        log.info("Start getEmissionSubstanceInDashboard");
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get Emission Substance Dashboard success",midpointService.getEmissionSubstanceDashboard())
+        );
+    }
+
 }
