@@ -64,8 +64,8 @@ public class OrganizationController {
     }
 
     @PutMapping(API_PARAMS.ORGANIZATION_MANAGER + API_PARAMS.CONFIRM_CREATE_ORGANIZATION)
-    public ResponseEntity<ResponseObject> confirmCreateOrganization(@RequestParam("organizationId") UUID organizationId, @RequestParam("token") String token) {
-        VerifyCreateOrganizationRequest request = new VerifyCreateOrganizationRequest(organizationId, token);
+    public ResponseEntity<ResponseObject> confirmCreateOrganization(@Valid @RequestParam VerifyCreateOrganizationRequest request) {
+//        VerifyCreateOrganizationRequest request = new VerifyCreateOrganizationRequest(organizationId, token);
         log.info("Start confirmCreateOrganization. request: {}", request);
         return ResponseEntity.ok().body(new ResponseObject(
                 Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CONFIRM_CREATE_ORGANIZATION_SUCCESS, organizationService.confirm(request)

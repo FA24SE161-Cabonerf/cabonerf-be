@@ -2,6 +2,7 @@ package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.ContractConverter;
 import com.example.cabonerfbe.enums.Constants;
+import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.Contract;
 import com.example.cabonerfbe.repositories.ContractRepository;
@@ -55,11 +56,11 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public void deleteContract(UUID contractId) {
-        Contract c = repository.findById(contractId)
-                .orElseThrow(() -> CustomExceptions.notFound("Contract not exist"));
+        Contract contract = repository.findById(contractId)
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.CONTRACT_NOT_FOUND));
 
-        s3Service.downloadFile(c.getUrl());
-        c.setStatus(false);
-        repository.save(c);
+        s3Service.downloadFile(contract.getUrl());
+        contract.setStatus(false);
+        repository.save(contract);
     }
 }

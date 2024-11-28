@@ -6,6 +6,7 @@ import com.example.cabonerfbe.dto.InviteUserOrganizationDto;
 import com.example.cabonerfbe.dto.MemberOrganizationDto;
 import com.example.cabonerfbe.dto.OrganizationDto;
 import com.example.cabonerfbe.dto.UserOrganizationDto;
+import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
@@ -107,76 +108,77 @@ public class OrganizationServiceImpl implements OrganizationService {
         }
 
         Optional<Users> user = userRepository.findByEmail(request.getEmail());
-        String password = PasswordGenerator.generateRandomPassword(8);
+        Role organizationManager = roleRepository.findByName(Constants.ORGANIZATION_MANAGER).orElseGet(
+                () -> new Role(Constants.ORGANIZATION_MANAGER)
+        );
         if (user.isPresent()) {
-            if (Objects.equals(user.get().getRole().getName(), "Organization Manager")) {
-                throw CustomExceptions.badRequest(MessageConstants.EMAIL_USED_FOR_OTHER_ORGANIZATION);
+            if (Constants.ORGANIZATION_MANAGER.equals(user.get().getRole().getName())) {
+                throw CustomExceptions.badRequest(MessageConstants.EMAIL_IS_USED_FOR_OTHER_ORGANIZATION);
             }
-
-            user.get().setRole(roleRepository.findByName("Organization Manager").get());
+            user.get().setRole(organizationManager);
             userRepository.save(user.get());
         } else {
             Users newUser = new Users();
             newUser.setEmail(request.getEmail());
             newUser.setFullName(request.getName());
-            newUser.setUserVerifyStatus(userVerifyStatusRepository.findByName("Pending").get());
-            newUser.setRole(roleRepository.findByName("Organization Manager").get());
-            newUser.setPassword(passwordEncoder.encode(password));
+            newUser.setUserVerifyStatus(userVerifyStatusRepository.findByName(Constants.VERIFY_STATUS_PENDING).orElseGet(
+                    () -> new UserVerifyStatus(Constants.VERIFY_STATUS_PENDING, Constants.VERIFY_STATUS_PENDING)));
+            newUser.setRole(organizationManager);
+            newUser.setPassword(passwordEncoder.encode(PasswordGenerator.generateRandomPassword(8)));
             user = Optional.of(userRepository.save(newUser));
         }
-
-        Organization o = new Organization();
-
-        o = organizationRepository.save(o);
-
-        UserOrganization uo = new UserOrganization();
-        uo.setOrganization(o);
-        uo.setUser(user.get());
-        uo.setRole(roleRepository.findByName("Organization Manager").get());
-        userOrganizationRepository.save(uo);
-
-        //send-mail
 
         //storage contract
         String url = "";
         try {
             url = s3Service.uploadContract(contractFile);
         } catch (Exception ignored) {
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_UPLOAD_CONTRACT);
         }
 
-        Contract c = new Contract();
-        c.setOrganization(o);
-        c.setUrl(url);
-        c = contractRepository.save(c);
+        Organization organization = new Organization();
+        organization.setName(request.getName());
 
-        o.setName(request.getName());
-        o.setContract(c);
-        o = organizationRepository.save(o);
-        return organizationConverter.modelToDto(o);
+        Contract contract = new Contract();
+        contract.setOrganization(organization);
+        contract.setUrl(url);
+
+        organization.setContract(contract);
+
+        // cascade.all -> auto save contract
+        organization = organizationRepository.save(organization);
+
+        UserOrganization userOrganization = new UserOrganization();
+        userOrganization.setOrganization(organization);
+        userOrganization.setUser(user.get());
+        userOrganization.setRole(organizationManager);
+        userOrganizationRepository.save(userOrganization);
+
+        return organizationConverter.modelToDto(organization);
     }
 
     @Override
     public OrganizationDto updateOrganization(UUID organizationId, UpdateOrganizationRequest request) {
-        Organization o = organizationRepository.findById(organizationId)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
+        Organization organization = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_ORGANIZATION_FOUND));
 
-        o.setName(request.getName());
-        return organizationConverter.modelToDto(organizationRepository.save(o));
+        organization.setName(request.getName());
+        return organizationConverter.modelToDto(organizationRepository.save(organization));
     }
 
     @Override
     public OrganizationDto deleteOrganization(UUID organizationId) {
-        Organization o = organizationRepository.findById(organizationId)
+        Organization organization = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
-        contractService.deleteContract(o.getContract().getId());
-        o.setStatus(false);
-        return organizationConverter.modelToDto(organizationRepository.save(o));
+        contractService.deleteContract(organization.getContract().getId());
+        organization.setStatus(Constants.STATUS_FALSE);
+        return organizationConverter.modelToDto(organizationRepository.save(organization));
     }
 
     @Override
     public LoginResponse confirm(VerifyCreateOrganizationRequest request) {
-        Organization o = organizationRepository.findById(request.getOrganizationId())
+        Organization organization = organizationRepository.findById(request.getOrganizationId())
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
         EmailVerificationToken _token = jwtService.checkToken(request.getToken());
@@ -199,7 +201,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         authenticationService.saveRefreshToken(refresh_token, u);
 
-        UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(o.getId(), u.getId())
+        UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(organization.getId(), u.getId())
                 .orElseThrow(() -> CustomExceptions.notFound("User doesn't belong to organization."));
 
         Workspace personWorkspace = new Workspace();
@@ -208,9 +210,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         personWorkspace.setOrganization(null);
 
         Workspace w = new Workspace();
-        w.setName(o.getName());
+        w.setName(organization.getName());
         w.setOwner(u);
-        w.setOrganization(o);
+        w.setOrganization(organization);
 
         workspaceRepository.saveAll(List.of(personWorkspace, w));
 

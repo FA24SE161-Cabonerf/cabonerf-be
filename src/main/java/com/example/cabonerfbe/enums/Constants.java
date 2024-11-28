@@ -33,4 +33,7 @@ public class Constants {
     public static final String DELETE_CONNECTOR_TYPE_EXCHANGE = "exchange";
     public static final String DELETE_CONNECTOR_TYPE_PROCESS = "process";
 
+    public static final String ORGANIZATION_MANAGER = "Organization Manager";
+
+    public static final String VERIFY_STATUS_PENDING = "Pending";
 }

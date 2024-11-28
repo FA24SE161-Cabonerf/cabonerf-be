@@ -111,8 +111,13 @@ public class MessageConstants {
     public static final String NO_IMPACT_METHOD_CATEGORY_FOUND = "Impact method category doesn't exist.";
     public static final String NO_EMISSION_SUBSTANCE_FOUND = "Emission substance doesn't exist.";
     public static final String NO_ORGANIZATION_FOUND = "Organization doesn't exist.";
+    public static final String CONTRACT_NOT_FOUND = "Contract doesn't exist.";
+
 
     public static final String INVALID_PDF = "Contract file is not in pdf format";
+
+    public static final String EMAIL_IS_USED_FOR_OTHER_ORGANIZATION = "Email is already used for other organization.";
+    public static final String FAILED_TO_UPLOAD_CONTRACT = "Failed to upload contract. Please check again.";
 
     // CALCULATION ERROR MSG
     public static final String FAILED_TO_PERFORM_CALCULATION = "Failed to perform calculation. ";
@@ -125,5 +130,4 @@ public class MessageConstants {
     public static final String PROCESS_WITH_NO_CONNECTOR_ERROR = FAILED_TO_PERFORM_CALCULATION + "- There must be connectors between processes.";
     public static final String ELEMENTARY_CANNOT_BE_EMPTY = FAILED_TO_PERFORM_CALCULATION + "- Elementary exchanges are required.";
 
-    public static final String EMAIL_USED_FOR_OTHER_ORGANIZATION = "Email is already used for other organization.";
 }
