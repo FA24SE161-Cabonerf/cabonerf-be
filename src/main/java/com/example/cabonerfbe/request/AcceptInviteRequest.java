@@ -16,6 +16,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AcceptInviteRequest {
-    @NotNull(message = "Id is required")
-    private UUID id;
+    @NotNull(message = "User organization id is required")
+    private UUID userOrganizationId;
 }

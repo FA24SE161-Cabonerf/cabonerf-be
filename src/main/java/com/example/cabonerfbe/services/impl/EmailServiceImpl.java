@@ -49,17 +49,16 @@ public class EmailServiceImpl implements EmailService {
         if (userOrganizations.isEmpty()) {
             throw CustomExceptions.badRequest("Account doesn't exist.");
         }
+        String password;
         if (userOrganizations.size() > 1) {
-            throw CustomExceptions.badRequest("Account is already active.");
+            password = "Password current";
+        }else{
+            password = PasswordGenerator.generateRandomPassword(8);
         }
 
         UserOrganization userOrg = userOrganizations.get(0);
-        if (Objects.equals(userOrg.getUser().getUserVerifyStatus().getStatusName(), "Verified")) {
-            throw CustomExceptions.badRequest("Account is already active.");
-        }
 
         String token = jwtService.generateEmailVerifyToken(userOrg.getUser());
-        String password = PasswordGenerator.generateRandomPassword(8);
         userRepository.findById(userOrg.getUser().getId())
                 .ifPresent(user -> {
                     user.setPassword(password);

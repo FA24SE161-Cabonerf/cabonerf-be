@@ -1,9 +1,6 @@
 package com.example.cabonerfbe.services;
 
-import com.example.cabonerfbe.dto.InviteUserOrganizationDto;
-import com.example.cabonerfbe.dto.MemberOrganizationDto;
-import com.example.cabonerfbe.dto.OrganizationDto;
-import com.example.cabonerfbe.dto.UserOrganizationDto;
+import com.example.cabonerfbe.dto.*;
 import com.example.cabonerfbe.request.*;
 import com.example.cabonerfbe.response.GetAllOrganizationResponse;
 import com.example.cabonerfbe.response.InviteMemberResponse;
@@ -30,7 +27,13 @@ public interface OrganizationService {
 
     InviteUserOrganizationDto removeMember(UUID userId, UUID userOrganizationId);
 
-    List<MemberOrganizationDto> getMemberInOrganization(UUID userId);
+    List<InviteUserOrganizationDto> getMemberInOrganization(UUID organizationId);
 
     List<UserOrganizationDto> getListInviteByUser(UUID userId);
+
+    OrganizationDto uploadLogo(UUID organizationId, MultipartFile logo);
+
+    List<GetOrganizationByUserDto> getByUser(UUID userId);
+
+    OrganizationDto getOrganizationById(UUID organizationId);
 }

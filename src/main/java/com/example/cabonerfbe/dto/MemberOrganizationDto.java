@@ -13,5 +13,4 @@ import java.util.UUID;
 public class MemberOrganizationDto {
     private UUID id;
     private List<InviteUserOrganizationDto> members;
-    private ContractDto contract;
 }

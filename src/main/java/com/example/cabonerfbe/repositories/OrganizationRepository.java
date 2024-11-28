@@ -15,11 +15,11 @@ import java.util.UUID;
 @Repository
 public interface OrganizationRepository extends JpaRepository<Organization, UUID> {
 
-    @Query("SELECT o FROM Organization o WHERE UPPER(o.name) like UPPER(CONCAT('%',:keyword,'%')) AND o.status = true")
+    @Query("SELECT o FROM Organization o WHERE UPPER(o.name) like UPPER(CONCAT('%',:keyword,'%')) AND o.status = true AND o.contract is null")
     Page<Organization> findAllByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     @NotNull
-    @Query("SELECT o FROM Organization o WHERE o.status = true")
+    @Query("SELECT o FROM Organization o WHERE o.status = true AND o.contract is null")
     Page<Organization> findAll(@NotNull Pageable pageable);
 
     @NotNull

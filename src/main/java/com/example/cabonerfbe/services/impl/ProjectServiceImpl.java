@@ -58,7 +58,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private WorkspaceRepository workspaceRepository;
+    private OrganizationRepository oRepository;
     @Autowired
     private LifeCycleImpactAssessmentMethodRepository methodRepository;
     @Autowired
@@ -121,8 +121,8 @@ public class ProjectServiceImpl implements ProjectService {
                 () -> CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND, Collections.EMPTY_LIST)
         );
 
-        Workspace workspace = workspaceRepository.findByWorkspaceId(request.getWorkspaceId()).orElseThrow(
-                () -> CustomExceptions.badRequest(MessageConstants.WORKSPACE_NOT_FOUND, Collections.EMPTY_LIST)
+        Organization organization = oRepository.findById(request.getOrganizationId()).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_ORGANIZATION_FOUND, Collections.EMPTY_LIST)
         );
 
         LifeCycleImpactAssessmentMethod method = methodRepository.findByIdAndStatus(request.getMethodId(), Constants.STATUS_TRUE).orElseThrow(
@@ -134,7 +134,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setDescription(request.getDescription());
         project.setLocation(request.getLocation());
         project.setUser(user);
-        project.setWorkspace(workspace);
+        project.setOrganization(organization);
         project.setLifeCycleImpactAssessmentMethod(method);
 
         project = projectRepository.save(project);
@@ -145,15 +145,15 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId, UUID methodId, UUID workspaceId) {
+    public GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId, UUID methodId, UUID organizationId) {
 
         Pageable pageable = PageRequest.of(pageCurrent - PAGE_INDEX_ADJUSTMENT, pageSize);
 
         Page<Project> projects;
         if (methodId == null) {
-            projects = projectRepository.findAll(userId, workspaceId, pageable);
+            projects = projectRepository.findAll(userId, organizationId, pageable);
         } else {
-            projects = projectRepository.sortByMethod(userId, workspaceId, methodId, pageable);
+            projects = projectRepository.sortByMethod(userId, organizationId, methodId, pageable);
         }
 
         if (projects.isEmpty()) {
@@ -191,13 +191,13 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public GetProjectByIdDto getById(UUID id, UUID workspaceId) {
+    public GetProjectByIdDto getById(UUID id, UUID organizationId) {
         Project project = projectRepository.findById(id).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST)
         );
 
-        if (workspaceId == null) {
-            throw CustomExceptions.unauthorized(MessageConstants.WORKSPACE_NOT_FOUND, Collections.EMPTY_LIST);
+        if (organizationId == null) {
+            throw CustomExceptions.unauthorized(MessageConstants.NO_ORGANIZATION_FOUND, Collections.EMPTY_LIST);
         }
 
         return getProject(project);

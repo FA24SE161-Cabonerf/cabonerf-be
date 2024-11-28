@@ -5,10 +5,7 @@ import com.example.cabonerfbe.dto.UserDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.EmailVerificationToken;
-import com.example.cabonerfbe.models.RefreshToken;
-import com.example.cabonerfbe.models.Users;
-import com.example.cabonerfbe.models.Workspace;
+import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.*;
 import com.example.cabonerfbe.response.AuthenticationResponse;
@@ -63,7 +60,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Autowired
     EmailVerificationTokenRepository verificationTokenRepository;
     @Autowired
-    WorkspaceRepository workspaceRepository;
+    UserOrganizationRepository uoRepository;
+    @Autowired
+    OrganizationRepository oRepository;
 
     private static RefreshToken createRefreshTokenEntity(String refreshToken, Users user) {
         RefreshToken token = new RefreshToken();
@@ -125,6 +124,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
         saveRefreshToken(refreshToken, user);
+        Organization o = new Organization();
+        o.setName("My organization");
+        o.setContract(null);
+        o.setLogo("");
+        o = oRepository.save(o);
+
+        UserOrganization uo = new UserOrganization();
+        uo.setUser(user);
+        uo.setOrganization(o);
+        uo.setHasJoined(true);
+        uo.setRole(roleRepository.findByName("Organization Manager").get());
+        uoRepository.save(uo);
 
         return RegisterResponse.builder()
                 .access_token(accessToken)
@@ -218,11 +229,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         userRepository.save(user);
 
-        Workspace w = new Workspace();
-        w.setName("My Workspace");
-        w.setOwner(user);
-        w.setOrganization(null);
-        workspaceRepository.save(w);
+
 
         return LoginResponse.builder()
                 .access_token(access_token)
