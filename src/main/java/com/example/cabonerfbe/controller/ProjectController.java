@@ -56,10 +56,10 @@ public class ProjectController {
     }
 
     @GetMapping(API_PARAMS.GET_PROJECT_BY_ID)
-    public ResponseEntity<ResponseObject> getProjectById(@PathVariable UUID projectId, @PathVariable UUID organizationId) {
+    public ResponseEntity<ResponseObject> getProjectById(@RequestHeader("x-user-id") UUID userId, @PathVariable UUID projectId) {
         log.info("Start getProjectById, id: {}", projectId);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_BY_ID_SUCCESS, projectService.getById(projectId, organizationId)
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_BY_ID_SUCCESS, projectService.getById(projectId,userId)
                 ));
     }
 
