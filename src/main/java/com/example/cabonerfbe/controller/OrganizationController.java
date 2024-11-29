@@ -99,7 +99,7 @@ public class OrganizationController {
 
     @GetMapping(API_PARAMS.GET_MEMBER_IN_ORGANIZATION)
     public ResponseEntity<ResponseObject> getMemberInOrganization(@PathVariable UUID organizationId) {
-        log.info("Start getMemberInOrganization. organizationId: {}",organizationId);
+        log.info("Start getMemberInOrganization. organizationId: {}", organizationId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get member organization success", organizationService.getMemberInOrganization(organizationId))
         );
@@ -122,26 +122,26 @@ public class OrganizationController {
     }
 
     @PutMapping(API_PARAMS.UPLOAD_LOGO)
-    public ResponseEntity<ResponseObject> uploadLogo(@PathVariable("organizationId") UUID organizationId, @RequestParam("logo") MultipartFile logo){
-        log.info("Start uploadLogoOrganization. Id: {}",organizationId);
+    public ResponseEntity<ResponseObject> uploadLogo(@PathVariable("organizationId") UUID organizationId, @RequestParam("logo") MultipartFile logo) {
+        log.info("Start uploadLogoOrganization. Id: {}", organizationId);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Upload logo success", organizationService.uploadLogo(organizationId,logo))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Upload logo success", organizationService.uploadLogo(organizationId, logo))
         );
     }
 
     @GetMapping()
-    public ResponseEntity<ResponseObject> getAllByUser(@RequestHeader("x-user-id") UUID userId){
-        log.info("Start getAllOrganizationByUser. userId: {}",userId);
+    public ResponseEntity<ResponseObject> getAllByUser(@RequestHeader("x-user-id") UUID userId) {
+        log.info("Start getAllOrganizationByUser. userId: {}", userId);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get all organization by user success",organizationService.getByUser(userId))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get all organization by user success", organizationService.getByUser(userId))
         );
     }
 
     @GetMapping(API_PARAMS.GET_ORGANIZATION_BY_ID)
-    public ResponseEntity<ResponseObject> getOrganizationById(@PathVariable UUID organizationId){
+    public ResponseEntity<ResponseObject> getOrganizationById(@PathVariable UUID organizationId) {
         log.info("Start getOrganizationById. Id: {}", organizationId);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get organization by id success",organizationService.getOrganizationById(organizationId))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get organization by id success", organizationService.getOrganizationById(organizationId))
         );
     }
 }

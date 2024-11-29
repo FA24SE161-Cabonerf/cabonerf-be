@@ -36,7 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -202,7 +201,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
         UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(),userId)
-                .orElseThrow(() -> CustomExceptions.unauthorized("User doesn't belong to organization."));
+                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
         return getProject(project);
     }
 
