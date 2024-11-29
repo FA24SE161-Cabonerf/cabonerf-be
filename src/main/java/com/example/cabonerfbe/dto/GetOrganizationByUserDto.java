@@ -13,4 +13,5 @@ public class GetOrganizationByUserDto {
     private UUID id;
     private String name;
     private String logo;
+    private boolean isDefault;
 }
