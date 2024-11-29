@@ -55,7 +55,7 @@ public class MessageConstants {
 
 
     public static final String EMAIL_PASSWORD_WRONG = "Email or password wrong!";
-    public static final String PASSWORD_WRONG = "oldPassword is wrong.";
+    public static final String PASSWORD_WRONG = "Old password is wrong.";
 
     public static final String EMAIL_ALREADY_EXIST = "Email already exist.";
     public static final String USER_IS_BANNED = "User is banned.";
