@@ -33,6 +33,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -175,10 +176,17 @@ public class UserServiceImpl implements UserService {
                 () -> CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND)
         );
 
-        user.setBio(request.getBio());
-        user.setProfilePictureUrl(request.getProfilePictureUrl());
-        user.setPhone(request.getPhone());
-        user.setFullName(request.getFullName());
+        if (Stream.of(request.getFullName(), request.getBio(), request.getPhone(), request.getProfilePictureUrl())
+                .allMatch(String::isEmpty)) {
+            throw CustomExceptions.badRequest("Update at least one field");
+        }
+
+        user.setFullName(Optional.ofNullable(request.getFullName()).filter(s -> !s.isEmpty()).orElse(user.getFullName()));
+        user.setBio(Optional.ofNullable(request.getBio()).filter(s -> !s.isEmpty()).orElse(user.getBio()));
+        user.setPhone(Optional.ofNullable(request.getPhone()).filter(s -> !s.isEmpty()).orElse(user.getPhone()));
+        user.setProfilePictureUrl(Optional.ofNullable(request.getProfilePictureUrl())
+                .filter(s -> !s.isEmpty())
+                .orElse(user.getProfilePictureUrl()));
 
         return userConverter.fromUserToUserProfileDto(userRepository.save(user));
     }
