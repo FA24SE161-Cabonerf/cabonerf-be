@@ -9,11 +9,8 @@ import lombok.*;
 @AllArgsConstructor
 @Data
 public class UpdateUserInfoRequest {
-    @NotEmpty
     String fullName;
-    @NotEmpty
     String phone;
     String profilePictureUrl;
-    @NotEmpty
     String bio;
 }
