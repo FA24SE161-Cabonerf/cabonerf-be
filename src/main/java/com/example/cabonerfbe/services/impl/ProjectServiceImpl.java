@@ -151,6 +151,9 @@ public class ProjectServiceImpl implements ProjectService {
 
         Pageable pageable = PageRequest.of(pageCurrent - PAGE_INDEX_ADJUSTMENT, pageSize);
 
+        UserOrganization uo = uoRepository.findByUserAndOrganization(organizationId,userId)
+                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+
         Page<Project> projects;
         if (methodId == null) {
             projects = projectRepository.findAll(userId, organizationId, pageable);
@@ -163,7 +166,7 @@ public class ProjectServiceImpl implements ProjectService {
             response.setPageCurrent(0);
             response.setPageSize(0);
             response.setTotalPage(0);
-            response.setProjects(null);
+            response.setProjects(Collections.EMPTY_LIST);
             return response;
         }
 
@@ -187,8 +190,6 @@ public class ProjectServiceImpl implements ProjectService {
         response.setPageSize(pageSize);
         response.setTotalPage(totalPage);
         response.setProjects(list);
-
-
         return response;
     }
 
