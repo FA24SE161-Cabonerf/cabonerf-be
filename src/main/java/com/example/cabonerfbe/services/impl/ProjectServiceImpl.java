@@ -252,12 +252,21 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public UpdateProjectDto updateFavorite(UUID projectId) {
+        Project p = projectRepository.findById(projectId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND));
+
+        p.setFavorite(!p.getFavorite());
+
+        return projectConverter.fromDetailToDto(projectRepository.save(p));
+    }
+
+    @Override
     public UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request) {
         // Validate that at least one field is updated
         boolean isAnyFieldUpdated = !isNullOrEmpty(request.getName())
                 || !isNullOrEmpty(request.getDescription())
-                || !isNullOrEmpty(request.getLocation())
-                || request.getFavorite() != null;
+                || !isNullOrEmpty(request.getLocation());
 
         if (!isAnyFieldUpdated) {
             throw CustomExceptions.badRequest("Update at least 1 field", Collections.EMPTY_LIST);
@@ -271,7 +280,6 @@ public class ProjectServiceImpl implements ProjectService {
         Optional.ofNullable(request.getName()).filter(name -> !name.isEmpty()).ifPresent(project::setName);
         Optional.ofNullable(request.getDescription()).filter(desc -> !desc.isEmpty()).ifPresent(project::setDescription);
         Optional.ofNullable(request.getLocation()).filter(loc -> !loc.isEmpty()).ifPresent(project::setLocation);
-        Optional.ofNullable(request.getFavorite()).ifPresent(project::setFavorite);
 
         return projectConverter.fromDetailToDto(projectRepository.save(project));
     }
