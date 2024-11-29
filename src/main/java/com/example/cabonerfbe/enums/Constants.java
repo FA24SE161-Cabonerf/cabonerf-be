@@ -38,7 +38,5 @@ public class Constants {
     public static final String LCA_STAFF = "LCA Staff";
     public static final String ORGANIZATION_MANAGER = "Organization Manager";
 
-    public static final String ORGANIZATION_MANAGER = "Organization Manager";
-
     public static final String VERIFY_STATUS_PENDING = "Pending";
 }

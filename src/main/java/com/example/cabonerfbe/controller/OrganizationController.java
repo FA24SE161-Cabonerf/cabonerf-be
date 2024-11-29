@@ -121,7 +121,7 @@ public class OrganizationController {
         );
     }
 
-    @PutMapping(API_PARAMS.UPLOAD_LOGO)
+    @PostMapping(API_PARAMS.UPLOAD_LOGO)
     public ResponseEntity<ResponseObject> uploadLogo(@PathVariable("organizationId") UUID organizationId, @RequestParam("logo") MultipartFile logo) {
         log.info("Start uploadLogoOrganization. Id: {}", organizationId);
         return ResponseEntity.ok().body(
