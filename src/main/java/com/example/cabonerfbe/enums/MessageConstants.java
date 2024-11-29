@@ -119,6 +119,13 @@ public class MessageConstants {
     public static final String NEW_PASSWORD_SAME_AS_OLD = "The new password must be different from the current password.";
     public static final String FAILED_TO_UPLOAD_IMAGE = "Failed to upload image. Please try again.";
     public static final String USER_NOT_BELONG_TO_ORGANIZATION = "User doesn't belong to organization.";
+    public static final String CONTRACT_NOT_FOUND = "Contract doesn't exist.";
+
+
+    public static final String INVALID_PDF = "Contract file is not in pdf format.";
+    public static final String INVALID_IMAGE = "The image is not in the right format.";
+    public static final String EMAIL_IS_USED_FOR_OTHER_ORGANIZATION = "Email is already used for other organization.";
+    public static final String FAILED_TO_UPLOAD_CONTRACT = "Failed to upload contract. Please check again.";
 
 
     // CALCULATION ERROR MSG
