@@ -248,14 +248,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-            throw CustomExceptions.unauthorized(MessageConstants.PASSWORD_WRONG);
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,Map.of("oldPassword",MessageConstants.PASSWORD_WRONG));
         }
 
         if (request.getOldPassword().equals(request.getNewPassword())) {
-            throw CustomExceptions.badRequest(MessageConstants.NEW_PASSWORD_SAME_AS_OLD);
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,Map.of("newPassword",MessageConstants.NEW_PASSWORD_SAME_AS_OLD));
         }
         if (!request.getNewPassword().equals(request.getNewPasswordConfirm())) {
-            throw CustomExceptions.badRequest(MessageConstants.CONFIRM_PASSWORD_NOT_MATCH);
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,Map.of("newPasswordConfirm",MessageConstants.CONFIRM_PASSWORD_NOT_MATCH));
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));

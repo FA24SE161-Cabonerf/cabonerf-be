@@ -55,11 +55,11 @@ public class MessageConstants {
 
 
     public static final String EMAIL_PASSWORD_WRONG = "Email or password wrong!";
-    public static final String PASSWORD_WRONG = "Password is wrong.";
+    public static final String PASSWORD_WRONG = "Old password is wrong.";
 
     public static final String EMAIL_ALREADY_EXIST = "Email already exist.";
     public static final String USER_IS_BANNED = "User is banned.";
-    public static final String CONFIRM_PASSWORD_NOT_MATCH = "Confirm password does not match.";
+    public static final String CONFIRM_PASSWORD_NOT_MATCH = "New confirm password does not match.";
     public static final String USER_NOT_FOUND = "User doesn't exist!";
     public static final String WORKSPACE_NOT_FOUND = "Workspace doesn't exist!";
     public static final String INVALID_REFRESH_TOKEN = "Invalid or expired refresh token.";
