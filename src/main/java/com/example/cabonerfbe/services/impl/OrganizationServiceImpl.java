@@ -389,15 +389,21 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         List<UserOrganization> uo = userOrganizationRepository.getByUser(userId);
 
+        // Stream processing with role check
         return uo.stream()
                 .map(UserOrganization::getOrganization)
                 .map(organization -> {
                     GetOrganizationByUserDto dto = organizationConverter.modelToUser(organization);
-                    // Kiểm tra nếu contract bị null thì set isDefault = true
-                    dto.setDefault(organization.getContract() == null);
+
+                    boolean isOrganizationManager = uo.stream()
+                            .filter(us -> us.getOrganization().equals(organization))
+                            .anyMatch(us -> "Organization Manager".equalsIgnoreCase(us.getRole().getName()));
+
+                    dto.setDefault(isOrganizationManager && organization.getContract() == null);
                     return dto;
                 })
                 .collect(Collectors.toList());
+
     }
 
     @Override
