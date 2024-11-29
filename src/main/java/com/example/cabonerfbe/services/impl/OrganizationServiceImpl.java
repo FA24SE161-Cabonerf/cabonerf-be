@@ -330,7 +330,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
 
         UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(organizationId,userId)
-                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_HAVE_INVITE_ORGANIZATION));
 
         if (uo.isHasJoined()) {
             throw CustomExceptions.badRequest("User already joined organization.");

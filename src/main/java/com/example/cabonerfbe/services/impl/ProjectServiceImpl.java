@@ -126,6 +126,9 @@ public class ProjectServiceImpl implements ProjectService {
                 () -> CustomExceptions.badRequest(MessageConstants.NO_ORGANIZATION_FOUND, Collections.EMPTY_LIST)
         );
 
+        UserOrganization uo = uoRepository.findByUserAndOrganization(request.getOrganizationId(), userId)
+                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+
         LifeCycleImpactAssessmentMethod method = methodRepository.findByIdAndStatus(request.getMethodId(), Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND, Collections.EMPTY_LIST)
         );
@@ -262,7 +265,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request) {
+    public UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request,UUID userId) {
         // Validate that at least one field is updated
         boolean isAnyFieldUpdated = !isNullOrEmpty(request.getName())
                 || !isNullOrEmpty(request.getDescription())
@@ -275,6 +278,9 @@ public class ProjectServiceImpl implements ProjectService {
         // Find the project by ID
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
+
+        UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(),userId)
+                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
         // Update fields if provided
         Optional.ofNullable(request.getName()).filter(name -> !name.isEmpty()).ifPresent(project::setName);
@@ -290,14 +296,15 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     @Override
-    public List<Project> deleteProject(UUID id) {
-        Optional<Project> project = projectRepository.findById(id);
-        if (project.isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST);
-        }
+    public List<Project> deleteProject(UUID id,UUID userId) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND));
 
-        project.get().setStatus(false);
-        projectRepository.save(project.get());
+        UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(),userId)
+                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+
+        project.setStatus(false);
+        projectRepository.save(project);
         return new ArrayList<>();
     }
 
