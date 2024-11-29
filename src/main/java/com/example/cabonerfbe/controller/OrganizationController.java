@@ -30,11 +30,11 @@ public class OrganizationController {
     private OrganizationService organizationService;
 
     @PostMapping(API_PARAMS.MANAGER)
-    public ResponseEntity<ResponseObject> createOrganization(@RequestParam String name, @RequestParam @Email String email, @RequestParam MultipartFile contractFile) {
+    public ResponseEntity<ResponseObject> createOrganization(@RequestParam String name, @RequestParam @Email String email, @RequestParam MultipartFile contractFile, @RequestParam MultipartFile logo) {
         CreateOrganizationRequest request = new CreateOrganizationRequest(name, email);
         log.info("Start createOrganization. Request: {}", request);
         return ResponseEntity.ok().body(new ResponseObject(
-                Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CREATE_ORGANIZATION_SUCCESS, organizationService.createOrganization(request, contractFile)
+                Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CREATE_ORGANIZATION_SUCCESS, organizationService.createOrganization(request, contractFile, logo)
         ));
     }
 

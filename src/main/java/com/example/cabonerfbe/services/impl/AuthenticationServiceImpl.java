@@ -111,9 +111,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var user = Users.builder()
                 .email(request.getEmail())
                 .fullName(request.getFullName())
+                .profilePictureUrl(Constants.DEFAULT_USER_IMAGE)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .userVerifyStatus(userVerifyStatusRepository.findByName("Verified").get())
-                .role(roleRepository.findByName("LCA Staff").get())
+                .role(roleRepository.findByName(Constants.LCA_STAFF).get())
                 .status(true)
                 .build();
 
@@ -125,16 +126,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         saveRefreshToken(refreshToken, user);
         Organization o = new Organization();
-        o.setName("My organization");
+        o.setName(Constants.DEFAULT_ORGANIZATION);
         o.setContract(null);
-        o.setLogo("");
+        o.setLogo(Constants.DEFAULT_USER_IMAGE);
         o = oRepository.save(o);
 
         UserOrganization uo = new UserOrganization();
         uo.setUser(user);
         uo.setOrganization(o);
         uo.setHasJoined(true);
-        uo.setRole(roleRepository.findByName("Organization Manager").get());
+        uo.setRole(roleRepository.findByName(Constants.ORGANIZATION_MANAGER).get());
         uoRepository.save(uo);
 
         return RegisterResponse.builder()

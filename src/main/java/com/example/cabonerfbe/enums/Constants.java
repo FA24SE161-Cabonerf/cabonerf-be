@@ -30,7 +30,12 @@ public class Constants {
 
     public static final int BIG_DECIMAL_DEFAULT_SCALE = 60;
 
+    public static final String DEFAULT_USER_IMAGE = "https://cabonerf-storage.s3.ap-southeast-1.amazonaws.com/image/default_user.png";
+
     public static final String DELETE_CONNECTOR_TYPE_EXCHANGE = "exchange";
     public static final String DELETE_CONNECTOR_TYPE_PROCESS = "process";
+    public static final String DEFAULT_ORGANIZATION = "Personal";
+    public static final String LCA_STAFF = "LCA Staff";
+    public static final String ORGANIZATION_MANAGER = "Organization Manager";
 
 }

@@ -13,7 +13,7 @@ import java.util.UUID;
 public interface OrganizationService {
     GetAllOrganizationResponse getAll(int pageCurrent, int pageSize, String keyword);
 
-    OrganizationDto createOrganization(CreateOrganizationRequest request, MultipartFile contractFile);
+    OrganizationDto createOrganization(CreateOrganizationRequest request, MultipartFile contractFile, MultipartFile logo);
 
     OrganizationDto updateOrganization(UUID organizationId, UpdateOrganizationRequest request);
 
