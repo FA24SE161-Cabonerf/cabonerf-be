@@ -380,7 +380,12 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         return uo.stream()
                 .map(UserOrganization::getOrganization)
-                .map(organizationConverter::modelToUser)
+                .map(organization -> {
+                    GetOrganizationByUserDto dto = organizationConverter.modelToUser(organization);
+                    // Kiểm tra nếu contract bị null thì set isDefault = true
+                    dto.setDefault(organization.getContract() == null);
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
