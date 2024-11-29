@@ -126,6 +126,9 @@ public class ProjectServiceImpl implements ProjectService {
                 () -> CustomExceptions.badRequest(MessageConstants.NO_ORGANIZATION_FOUND, Collections.EMPTY_LIST)
         );
 
+        UserOrganization uo = uoRepository.findByUserAndOrganization(request.getOrganizationId(), userId)
+                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+
         LifeCycleImpactAssessmentMethod method = methodRepository.findByIdAndStatus(request.getMethodId(), Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND, Collections.EMPTY_LIST)
         );
@@ -151,7 +154,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         Pageable pageable = PageRequest.of(pageCurrent - PAGE_INDEX_ADJUSTMENT, pageSize);
 
-        UserOrganization uo = uoRepository.findByUserAndOrganization(organizationId,userId)
+        UserOrganization uo = uoRepository.findByUserAndOrganization(organizationId, userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
         Page<Project> projects;
@@ -202,7 +205,7 @@ public class ProjectServiceImpl implements ProjectService {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
-        UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(),userId)
+        UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(), userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
         return getProject(project);
     }
@@ -262,7 +265,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request) {
+    public UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request, UUID userId) {
         // Validate that at least one field is updated
         boolean isAnyFieldUpdated = !isNullOrEmpty(request.getName())
                 || !isNullOrEmpty(request.getDescription())
@@ -275,6 +278,9 @@ public class ProjectServiceImpl implements ProjectService {
         // Find the project by ID
         Project project = projectRepository.findByIdAndStatusTrue(id)
                 .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
+
+        UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(), userId)
+                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
         // Update fields if provided
         Optional.ofNullable(request.getName()).filter(name -> !name.isEmpty()).ifPresent(project::setName);
@@ -290,10 +296,12 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     @Override
-    public List<Project> deleteProject(UUID id) {
-        Project project = projectRepository.findByIdAndStatusTrue(id).orElseThrow(
-                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST)
-        );
+    public List<Project> deleteProject(UUID id, UUID userId) {
+        Project project = projectRepository.findByIdAndStatusTrue(id)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND));
+
+        UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(), userId)
+                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
         project.setStatus(false);
         projectRepository.save(project);

@@ -111,4 +111,25 @@ public class EmailServiceImpl implements EmailService {
 
         messagePublisher.publishSendMailRegister(registerResponse);
     }
+
+    @Override
+    public SendMailRegisterResponse sendMailInviteOrganization(UUID userId, UUID organizationId) {
+        Users u = userRepository.findById(userId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
+
+        organizationRepository.findById(organizationId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
+
+        UserOrganization uo = uoRepository.findByUserAndOrganization(organizationId,userId)
+                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_HAVE_INVITE_ORGANIZATION));
+
+        String token = jwtService.generateEmailVerifyToken(u);
+
+        return SendMailRegisterResponse.builder()
+                .token(token)
+                .email(u.getEmail())
+                .build();
+    }
+
+
 }

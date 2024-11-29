@@ -28,9 +28,9 @@ public interface ProjectService {
 
     GetProjectByIdDto getById(UUID id, UUID userId);
 
-    UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request);
+    UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request, UUID userId);
 
-    List<Project> deleteProject(UUID id);
+    List<Project> deleteProject(UUID id, UUID userId);
 
     GetProjectByIdDto changeProjectMethod(UUID projectId, UUID methodId);
 

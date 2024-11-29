@@ -1,5 +1,7 @@
 package com.example.cabonerfbe.services;
 
+import com.example.cabonerfbe.response.SendMailRegisterResponse;
+
 import java.util.UUID;
 
 public interface EmailService {
@@ -8,4 +10,6 @@ public interface EmailService {
     void sendMailCreateAccountByOrganizationManager(UUID userId);
 
     void sendMailRegister(UUID userId);
+
+    SendMailRegisterResponse sendMailInviteOrganization(UUID userId, UUID organizationId);
 }

@@ -1,6 +1,5 @@
 package com.example.cabonerfbe.services.impl;
 
-import com.corundumstudio.socketio.SocketIOServer;
 import com.example.cabonerfbe.converter.*;
 import com.example.cabonerfbe.dto.GetOrganizationByUserDto;
 import com.example.cabonerfbe.dto.InviteUserOrganizationDto;
@@ -59,8 +58,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     private S3Service s3Service;
     @Autowired
     private UserOrganizationConverter uoConverter;
-    @Autowired
-    private SocketIOServer server;
     @Autowired
     private ContractConverter contractConverter;
     @Autowired
@@ -263,7 +260,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                     .map(Users::getId)
                     .collect(Collectors.toSet());
             existingUsers = existingUsers.stream()
-                    .filter(user -> !userHaveInvite.contains(user.getId())) // Lọc các user không có trong userHaveInvite
+                    .filter(user -> !userHaveInvite.contains(user.getId()))
                     .collect(Collectors.toList());
         }
         // Create and save new users
@@ -297,9 +294,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         userOrganizations = userOrganizationRepository.saveAll(userOrganizations);
 
-        for (UserOrganization x : userOrganizations) {
-            server.getRoomOperations(x.getUser().getId().toString()).sendEvent("newInvite", uoConverter.enityToDto(x));
-        }
 
         List<InviteUserOrganizationDto> members = userOrganizations.stream()
                 .map(userOrg -> {
@@ -320,28 +314,43 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public UserOrganizationDto acceptDenyInvite(UUID userId, AcceptInviteRequest request, String action) {
+    public LoginResponse acceptInvite(UUID userId, UUID organizationId, String token) {
 
-        UserOrganization uo = userOrganizationRepository.findById(request.getUserOrganizationId())
-                .orElseThrow(() -> CustomExceptions.notFound("User doesn't have invitation to organization."));
+        EmailVerificationToken _token = jwtService.checkToken(token);
+
+        Users u = userRepository.findById(userId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
+
+        if(!u.isStatus()){
+            throw CustomExceptions.unauthorized("Account is banned");
+        }
+
+        Organization o = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
+
+
+        UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(organizationId,userId)
+                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_HAVE_INVITE_ORGANIZATION));
 
         if (uo.isHasJoined()) {
             throw CustomExceptions.badRequest("User already joined organization.");
         }
-        switch (action) {
-            case "Accept":
-                uo.setHasJoined(true);
-                userOrganizationRepository.save(uo);
-                break;
-            case "Deny":
-                userOrganizationRepository.delete(uo);
-                break;
-            default:
-                break;
-        }
+        uo.setHasJoined(true);
         userOrganizationRepository.save(uo);
 
-        return uoConverter.enityToDto(uo);
+        _token.setValid(false);
+        evtRepository.save(_token);
+
+        var access_token = jwtService.generateToken(u);
+        var refresh_token = jwtService.generateRefreshToken(u);
+
+        authenticationService.saveRefreshToken(refresh_token, u);
+
+        return LoginResponse.builder()
+                .access_token(access_token)
+                .refresh_token(refresh_token)
+                .user(userConverter.fromUserToUserDto(u))
+                .build();
     }
 
     @Override
@@ -362,16 +371,6 @@ public class OrganizationServiceImpl implements OrganizationService {
             data.add(memberDto);
         }
         return data;
-    }
-
-    @Override
-    public List<UserOrganizationDto> getListInviteByUser(UUID userId) {
-        Users u = userRepository.findById(userId)
-                .orElseThrow(() -> CustomExceptions.notFound("User not exist"));
-
-        List<UserOrganization> history = userOrganizationRepository.getByUser(userId);
-
-        return history.stream().map(uoConverter::enityToDto).collect(Collectors.toList());
     }
 
     @Override
