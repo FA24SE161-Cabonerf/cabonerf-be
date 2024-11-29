@@ -126,10 +126,10 @@ public class ProjectController {
     }
 
     @PutMapping(API_PARAMS.SET_FAVORITE_PROJECT)
-    public ResponseEntity<ResponseObject> favorite(@PathVariable UUID projectId){
-        log.info("Start updateFavorite. projectId: {}",projectId);
+    public ResponseEntity<ResponseObject> favorite(@PathVariable UUID projectId) {
+        log.info("Start updateFavorite. projectId: {}", projectId);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Update favorite success",projectService.updateFavorite(projectId))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Update favorite success", projectService.updateFavorite(projectId))
         );
     }
 }

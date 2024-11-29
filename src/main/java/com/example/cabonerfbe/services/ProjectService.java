@@ -30,7 +30,7 @@ public interface ProjectService {
 
     UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request, UUID userId);
 
-    List<Project> deleteProject(UUID id, UUID userId);
+    List<Project> deleteProject(UUID userId, UUID projectId);
 
     GetProjectByIdDto changeProjectMethod(UUID projectId, UUID methodId);
 

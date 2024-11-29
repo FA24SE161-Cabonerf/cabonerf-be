@@ -296,8 +296,8 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     @Override
-    public List<Project> deleteProject(UUID id, UUID userId) {
-        Project project = projectRepository.findByIdAndStatusTrue(id)
+    public List<Project> deleteProject(UUID userId, UUID projectId) {
+        Project project = projectRepository.findByIdAndStatusTrue(projectId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND));
 
         UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(), userId)
