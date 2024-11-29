@@ -10,7 +10,6 @@ import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
-import com.example.cabonerfbe.response.ProjectCalculationResponse;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -221,7 +219,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
     public ProcessNodeDto computeSystemLevelOfProject(UUID projectId) {
 
-        Project project = projectRepository.findById(projectId).orElseThrow(
+        Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
 
         // Lấy toàn bộ process và kiểm tra
@@ -283,7 +281,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
     private void updateProjectValue(List<UUID> processIds, UUID projectId) {
-        Project project = projectRepository.findById(projectId).orElseThrow();
+        Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow();
 
         List<ImpactMethodCategory> categories = impactMethodCategoryRepository
                 .findByMethod(project.getLifeCycleImpactAssessmentMethod().getId());

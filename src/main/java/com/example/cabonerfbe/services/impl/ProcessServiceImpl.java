@@ -19,7 +19,6 @@ import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.MessagePublisher;
-import com.example.cabonerfbe.services.ProcessImpactValueService;
 import com.example.cabonerfbe.services.ProcessService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +73,7 @@ public class ProcessServiceImpl implements ProcessService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND, Collections.EMPTY_LIST)
         );
 
-        Project project = projectRepository.findById(request.getProjectId()).orElseThrow(
+        Project project = projectRepository.findByIdAndStatusTrue(request.getProjectId()).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST)
         );
 
@@ -109,7 +108,7 @@ public class ProcessServiceImpl implements ProcessService {
 
     @Override
     public List<ProcessDto> getAllProcessesByProjectId(UUID projectId) {
-        Project project = projectRepository.findById(projectId).orElseThrow(
+        Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST)
         );
         List<ProcessDto> processDtos = processRepository.findAll(projectId).stream().map(processConverter::fromProcessToProcessDto).collect(Collectors.toList());

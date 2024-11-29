@@ -106,7 +106,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ProjectCalculationResponse calculateProject(CalculateProjectRequest request) {
         UUID projectId = request.getProjectId();
-        Project project = projectRepository.findById(projectId)
+        Project project = projectRepository.findByIdAndStatusTrue(projectId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
         var contributionBreakdown = processImpactValueService.computeSystemLevelOfProject(projectId);
         var response = projectConverter.fromGetProjectDtoToCalculateResponse(getProject(project));
@@ -195,7 +195,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public GetProjectByIdDto getById(UUID id, UUID userId) {
-        Project project = projectRepository.findById(id).orElseThrow(
+        Project project = projectRepository.findByIdAndStatusTrue(id).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST)
         );
 
@@ -224,7 +224,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public List<CarbonIntensityDto> getIntensity(UUID projectId) {
-        Project p = projectRepository.findById(projectId)
+        Project p = projectRepository.findByIdAndStatusTrue(projectId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
         ProjectImpactValue value = processImpactValueRepository.findCO2(projectId);
         List<CarbonIntensity> ci = ciRepository.findAll();
@@ -253,7 +253,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public UpdateProjectDto updateFavorite(UUID projectId) {
-        Project p = projectRepository.findById(projectId)
+        Project p = projectRepository.findByIdAndStatusTrue(projectId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND));
 
         p.setFavorite(!p.getFavorite());
@@ -273,7 +273,7 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         // Find the project by ID
-        Project project = projectRepository.findById(id)
+        Project project = projectRepository.findByIdAndStatusTrue(id)
                 .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
 
         // Update fields if provided
@@ -291,20 +291,19 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public List<Project> deleteProject(UUID id) {
-        Optional<Project> project = projectRepository.findById(id);
-        if (project.isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST);
-        }
+        Project project = projectRepository.findByIdAndStatusTrue(id).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST)
+        );
 
-        project.get().setStatus(false);
-        projectRepository.save(project.get());
+        project.setStatus(false);
+        projectRepository.save(project);
         return new ArrayList<>();
     }
 
     @Transactional
     @Override
     public GetProjectByIdDto changeProjectMethod(UUID projectId, UUID methodId) {
-        Project project = projectRepository.findById(projectId).orElseThrow(
+        Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST)
         );
         if (!methodId.equals(project.getLifeCycleImpactAssessmentMethod().getId())) {
@@ -319,7 +318,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ResponseEntity<Resource> exportProject(UUID projectId) {
-        Project p = projectRepository.findById(projectId)
+        Project p = projectRepository.findByIdAndStatusTrue(projectId)
                 .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
 
 
