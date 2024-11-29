@@ -43,4 +43,6 @@ public interface ProjectService {
     int countAllProject();
 
     List<GetImpactForAllProjectResponse> countImpactInDashboard();
+
+    UpdateProjectDto updateFavorite(UUID projectId);
 }

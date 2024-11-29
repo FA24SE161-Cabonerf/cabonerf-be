@@ -76,6 +76,7 @@ public class API_PARAMS {
     public static final String INTENSITY_PROJECT = "/intensity/{projectId}";
     public static final String COUNT_PROJECT = "/count-project";
     public static final String SUM_IMPACT = "/sum-impact";
+    public static final String SET_FAVORITE_PROJECT = "/favorite/{projectId}";
 
     /************************
      *      PROCESS APIs     *

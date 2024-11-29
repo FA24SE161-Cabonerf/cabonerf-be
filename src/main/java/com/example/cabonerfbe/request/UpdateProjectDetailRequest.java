@@ -15,6 +15,5 @@ import lombok.experimental.SuperBuilder;
 public class UpdateProjectDetailRequest {
     private String name;
     private String description;
-    private Boolean favorite;
     private String location;
 }
