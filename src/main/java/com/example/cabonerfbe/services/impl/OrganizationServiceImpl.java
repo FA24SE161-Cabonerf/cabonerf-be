@@ -397,7 +397,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
                     boolean isOrganizationManager = uo.stream()
                             .filter(us -> us.getOrganization().equals(organization))
-                            .anyMatch(us -> "Organization Manager".equalsIgnoreCase(us.getRole().getName()));
+                            .anyMatch(us -> Constants.ORGANIZATION_MANAGER.equalsIgnoreCase(us.getRole().getName()));
 
                     dto.setDefault(isOrganizationManager && organization.getContract() == null);
                     return dto;
