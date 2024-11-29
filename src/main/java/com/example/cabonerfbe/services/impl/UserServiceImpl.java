@@ -3,14 +3,17 @@ package com.example.cabonerfbe.services.impl;
 import com.example.cabonerfbe.converter.UserConverter;
 import com.example.cabonerfbe.dto.UserAdminDto;
 import com.example.cabonerfbe.dto.UserProfileDto;
+import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.Users;
 import com.example.cabonerfbe.repositories.UserRepository;
+import com.example.cabonerfbe.request.UpdateUserInfoRequest;
 import com.example.cabonerfbe.response.*;
 import com.example.cabonerfbe.services.JwtService;
 import com.example.cabonerfbe.services.S3Service;
 import com.example.cabonerfbe.services.UserService;
+import com.example.cabonerfbe.util.FileUtil;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,15 +28,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -57,6 +56,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     S3Service s3Service;
+
+    @Autowired
+    FileUtil fileUtil;
 
     @Override
     public GetProfileResponse getMe(UUID userId) {
@@ -109,18 +111,18 @@ public class UserServiceImpl implements UserService {
     public UpdateAvatarUserResponse updateAvatarUser(UUID userId, MultipartFile file) {
         Users u = userRepository.findByIdWithStatus(userId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
-        if (!isImageFile(file)) {
+        if (!fileUtil.isImageFile(file)) {
             throw CustomExceptions.badRequest("Invalid image.");
         }
 
-        if (u.getProfilePictureUrl() != null) {
+        if (u.getProfilePictureUrl() != null && !Constants.DEFAULT_USER_IMAGE.equals(u.getProfilePictureUrl())) {
             s3Service.deleteFile(u.getProfilePictureUrl());
         }
         try {
             u.setProfilePictureUrl(s3Service.uploadImage(file));
         } catch (Exception ignored) {
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_UPLOAD_IMAGE);
         }
-
 
         return userConverter.forUpdateAvatar(userRepository.save(u));
     }
@@ -171,41 +173,30 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserProfileDto updateProfile(UUID userId, UpdateUserInfoRequest request) {
+        Users user = userRepository.findByIdWithStatus(userId).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND)
+        );
+
+        if (Stream.of(request.getFullName(), request.getBio(), request.getPhone(), request.getProfilePictureUrl())
+                .allMatch(String::isEmpty)) {
+            throw CustomExceptions.badRequest("Update at least one field");
+        }
+
+        user.setFullName(Optional.ofNullable(request.getFullName()).filter(s -> !s.isEmpty()).orElse(user.getFullName()));
+        user.setBio(Optional.ofNullable(request.getBio()).filter(s -> !s.isEmpty()).orElse(user.getBio()));
+        user.setPhone(Optional.ofNullable(request.getPhone()).filter(s -> !s.isEmpty()).orElse(user.getPhone()));
+        user.setProfilePictureUrl(Optional.ofNullable(request.getProfilePictureUrl())
+                .filter(s -> !s.isEmpty())
+                .orElse(user.getProfilePictureUrl()));
+
+        return userConverter.fromUserToUserProfileDto(userRepository.save(user));
+    }
+
+    @Override
     public int countAllUser() {
         return userRepository.findAll().size();
     }
 
-    private boolean isImageFile(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            return false;
-        }
 
-        boolean isMimeTypeImage = isImageFileMine(file);
-        boolean isExtensionImage = isImageFileExtension(file);
-        boolean isContentValidImage = isValidImageFile(file);
-
-        return isMimeTypeImage && isExtensionImage && isContentValidImage;
-    }
-
-    private boolean isImageFileMine(MultipartFile file) {
-        String contentType = file.getContentType();
-        return contentType != null && contentType.startsWith("image/");
-    }
-
-    private boolean isImageFileExtension(MultipartFile file) {
-        String fileName = file.getOriginalFilename();
-        if (fileName != null) {
-            return fileName.toLowerCase().matches(".*\\.(png|jpg|jpeg|gif|bmp|webp)$");
-        }
-        return false;
-    }
-
-    private boolean isValidImageFile(MultipartFile file) {
-        try {
-            BufferedImage image = ImageIO.read(file.getInputStream());
-            return image != null;
-        } catch (IOException e) {
-            return false;
-        }
-    }
 }

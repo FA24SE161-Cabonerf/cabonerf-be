@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.services;
 
+import com.example.cabonerfbe.dto.UserDto;
 import com.example.cabonerfbe.models.Users;
 import com.example.cabonerfbe.request.*;
 import com.example.cabonerfbe.response.AuthenticationResponse;
@@ -22,5 +23,5 @@ public interface AuthenticationService {
 
     void saveRefreshToken(String refreshTokenString, Users user);
 
-    void changePassword(UUID userId, ChangePasswordRequest request);
+    UserDto changePassword(UUID userId, ChangePasswordRequest request);
 }

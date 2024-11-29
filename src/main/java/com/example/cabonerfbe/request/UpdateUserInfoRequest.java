@@ -1,20 +1,16 @@
-package com.example.cabonerfbe.dto;
+package com.example.cabonerfbe.request;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
-import java.util.UUID;
-
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Getter
-@Setter
-public class UserDto {
-    UUID id;
+public class UpdateUserInfoRequest {
     String fullName;
-    String email;
     String phone;
     String profilePictureUrl;
     String bio;
-    RoleDto role;
 }

@@ -17,6 +17,6 @@ import java.util.UUID;
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class InviteMemberResponse {
-    private List<InviteUserOrganizationDto> members;
+    private List<InviteUserOrganizationDto> newMembers;
     private List<UUID> newAccountIds;
 }

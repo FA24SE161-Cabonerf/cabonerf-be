@@ -2,8 +2,8 @@ package com.example.cabonerfbe.services.impl;
 
 import com.corundumstudio.socketio.SocketIOServer;
 import com.example.cabonerfbe.converter.*;
+import com.example.cabonerfbe.dto.GetOrganizationByUserDto;
 import com.example.cabonerfbe.dto.InviteUserOrganizationDto;
-import com.example.cabonerfbe.dto.MemberOrganizationDto;
 import com.example.cabonerfbe.dto.OrganizationDto;
 import com.example.cabonerfbe.dto.UserOrganizationDto;
 import com.example.cabonerfbe.enums.Constants;
@@ -16,6 +16,7 @@ import com.example.cabonerfbe.response.GetAllOrganizationResponse;
 import com.example.cabonerfbe.response.InviteMemberResponse;
 import com.example.cabonerfbe.response.LoginResponse;
 import com.example.cabonerfbe.services.*;
+import com.example.cabonerfbe.util.FileUtil;
 import com.example.cabonerfbe.util.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,22 +26,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class OrganizationServiceImpl implements OrganizationService {
 
-    public static final String LCA_STAFF = "LCA Staff";
     @Autowired
     PasswordEncoder passwordEncoder;
     @Autowired
     private OrganizationRepository organizationRepository;
     @Autowired
     private OrganizationConverter organizationConverter;
-    @Autowired
-    private EmailService emailService;
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -58,8 +55,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Autowired
     private UserConverter userConverter;
     @Autowired
-    private WorkspaceRepository workspaceRepository;
-    @Autowired
     private S3Service s3Service;
     @Autowired
     private UserOrganizationConverter uoConverter;
@@ -73,6 +68,8 @@ public class OrganizationServiceImpl implements OrganizationService {
     private EmailVerificationTokenRepository evtRepository;
     @Autowired
     private RoleConverter roleConverter;
+    @Autowired
+    private FileUtil fileUtil;
 
     @Override
     public GetAllOrganizationResponse getAll(int pageCurrent, int pageSize, String keyword) {
@@ -101,84 +98,101 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public OrganizationDto createOrganization(CreateOrganizationRequest request, MultipartFile contractFile) {
+    public OrganizationDto createOrganization(CreateOrganizationRequest request, MultipartFile contractFile, MultipartFile logo) {
 
-        if (!isPdfFile(contractFile)) {
-            throw CustomExceptions.badRequest(MessageConstants.INVALID_PDF);
+        if (!fileUtil.isPdfFile(contractFile)) {
+            throw CustomExceptions.badRequest("Contract file is not .pdf");
+        }
+
+        if (!fileUtil.isImageFile(logo)) {
+            throw CustomExceptions.badRequest("Invalid image.");
         }
 
         Optional<Users> user = userRepository.findByEmail(request.getEmail());
-        Role organizationManager = roleRepository.findByName(Constants.ORGANIZATION_MANAGER).orElseGet(
-                () -> new Role(Constants.ORGANIZATION_MANAGER)
-        );
-        if (user.isPresent()) {
-            if (Constants.ORGANIZATION_MANAGER.equals(user.get().getRole().getName())) {
-                throw CustomExceptions.badRequest(MessageConstants.EMAIL_IS_USED_FOR_OTHER_ORGANIZATION);
-            }
-            user.get().setRole(organizationManager);
-            userRepository.save(user.get());
-        } else {
-            Users newUser = new Users();
-            newUser.setEmail(request.getEmail());
-            newUser.setFullName(request.getName());
-            newUser.setUserVerifyStatus(userVerifyStatusRepository.findByName(Constants.VERIFY_STATUS_PENDING).orElseGet(
-                    () -> new UserVerifyStatus(Constants.VERIFY_STATUS_PENDING, Constants.VERIFY_STATUS_PENDING)));
-            newUser.setRole(organizationManager);
-            newUser.setPassword(passwordEncoder.encode(PasswordGenerator.generateRandomPassword(8)));
-            user = Optional.of(userRepository.save(newUser));
+        String password = PasswordGenerator.generateRandomPassword(8);
+//        if (user.isPresent())
+//        {
+////            if (Objects.equals(user.get().getRole().getName(), "Organization Manager")) {
+////                throw CustomExceptions.badRequest("Email already use with other organization");
+////            }
+//        } else {
+//            Users newUser = new Users();
+//            newUser.setEmail(request.getEmail());
+//            newUser.setFullName(request.getName());
+//            newUser.setUserVerifyStatus(userVerifyStatusRepository.findByName("Pending").get());
+//            newUser.setRole(roleRepository.findByName("Organization Manager").get());
+//            newUser.setPassword(passwordEncoder.encode(password));
+//            user = Optional.of(userRepository.save(newUser));
+//        }
+
+        if(user.isEmpty()){
+            Users newAccount = new Users();
+            newAccount.setEmail(request.getEmail());
+            newAccount.setFullName(request.getName());
+            newAccount.setUserVerifyStatus(userVerifyStatusRepository.findByName("Pending").get());
+            newAccount.setRole(roleRepository.findByName(Constants.ORGANIZATION_MANAGER).get());
+            newAccount.setPassword(passwordEncoder.encode(password));
+            user = Optional.of(userRepository.save(newAccount));
         }
+
+        Organization o = new Organization();
+        o.setName(request.getName());
+
+        o = organizationRepository.save(o);
+
+        UserOrganization uo = new UserOrganization();
+        uo.setOrganization(o);
+        uo.setUser(user.get());
+        uo.setHasJoined(false);
+        uo.setRole(roleRepository.findByName(Constants.ORGANIZATION_MANAGER).get());
+        userOrganizationRepository.save(uo);
+
+        //send-mail
 
         //storage contract
-        String url = "";
+        String contractUrl = "";
+        String logoUrl = "";
+
         try {
-            url = s3Service.uploadContract(contractFile);
+            contractUrl = s3Service.uploadContract(contractFile);
         } catch (Exception ignored) {
-            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_UPLOAD_CONTRACT);
         }
 
-        Organization organization = new Organization();
-        organization.setName(request.getName());
+        Contract c = new Contract();
+        c.setOrganization(o);
+        c.setUrl(contractUrl);
+//        c = contractRepository.save(c);
 
-        Contract contract = new Contract();
-        contract.setOrganization(organization);
-        contract.setUrl(url);
+        o.setContract(c);
+        o.setLogo("");
 
-        organization.setContract(contract);
-
-        // cascade.all -> auto save contract
-        organization = organizationRepository.save(organization);
-
-        UserOrganization userOrganization = new UserOrganization();
-        userOrganization.setOrganization(organization);
-        userOrganization.setUser(user.get());
-        userOrganization.setRole(organizationManager);
-        userOrganizationRepository.save(userOrganization);
-
-        return organizationConverter.modelToDto(organization);
+        o = organizationRepository.save(o);
+        return organizationConverter.modelToDto(o);
     }
 
     @Override
     public OrganizationDto updateOrganization(UUID organizationId, UpdateOrganizationRequest request) {
-        Organization organization = organizationRepository.findById(organizationId)
-                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_ORGANIZATION_FOUND));
+        Organization o = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
-        organization.setName(request.getName());
-        return organizationConverter.modelToDto(organizationRepository.save(organization));
+        o.setName(request.getName());
+        return organizationConverter.modelToDto(organizationRepository.save(o));
     }
 
     @Override
     public OrganizationDto deleteOrganization(UUID organizationId) {
-        Organization organization = organizationRepository.findById(organizationId)
+        Organization o = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
-        contractService.deleteContract(organization.getContract().getId());
-        organization.setStatus(Constants.STATUS_FALSE);
-        return organizationConverter.modelToDto(organizationRepository.save(organization));
+        contractService.deleteContract(o.getContract().getId());
+        s3Service.deleteFile(o.getLogo());
+        o.setStatus(false);
+        return organizationConverter.modelToDto(organizationRepository.save(o));
     }
 
     @Override
     public LoginResponse confirm(VerifyCreateOrganizationRequest request) {
-        Organization organization = organizationRepository.findById(request.getOrganizationId())
+        Organization o = organizationRepository.findById(request.getOrganizationId())
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
         EmailVerificationToken _token = jwtService.checkToken(request.getToken());
@@ -186,12 +200,19 @@ public class OrganizationServiceImpl implements OrganizationService {
         Users u = userRepository.findById(_token.getUsers().getId())
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
-        if (!u.getRole().getName().equals("Verified")) {
-            throw CustomExceptions.badRequest("Account is already verified.");
-        }
+        UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(o.getId(), u.getId())
+                .orElseThrow(() -> CustomExceptions.notFound("User doesn't belong to organization."));
 
+        if (u.getRole().getName().equals("Verified")) {
+            if(uo.isHasJoined()){
+                throw CustomExceptions.badRequest("Account is already join organization.");
+            }
+        }
         u.setUserVerifyStatus(userVerifyStatusRepository.findByName("Verified").get());
         userRepository.save(u);
+
+        uo.setHasJoined(true);
+        userOrganizationRepository.save(uo);
 
         _token.setValid(false);
         evtRepository.save(_token);
@@ -200,21 +221,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         var refresh_token = jwtService.generateRefreshToken(u);
 
         authenticationService.saveRefreshToken(refresh_token, u);
-
-        UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(organization.getId(), u.getId())
-                .orElseThrow(() -> CustomExceptions.notFound("User doesn't belong to organization."));
-
-        Workspace personWorkspace = new Workspace();
-        personWorkspace.setName("My Workspace");
-        personWorkspace.setOwner(u);
-        personWorkspace.setOrganization(null);
-
-        Workspace w = new Workspace();
-        w.setName(organization.getName());
-        w.setOwner(u);
-        w.setOrganization(organization);
-
-        workspaceRepository.saveAll(List.of(personWorkspace, w));
 
         return LoginResponse.builder()
                 .access_token(access_token)
@@ -267,7 +273,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                     user.setEmail(email);
                     user.setFullName(email.split("@")[0]);
                     user.setUserVerifyStatus(userVerifyStatusRepository.findByName("Pending").orElseThrow());
-                    user.setRole(roleRepository.findByName(LCA_STAFF).orElseThrow());
+                    user.setRole(roleRepository.findByName(Constants.LCA_STAFF).orElseThrow());
                     user.setPassword(passwordEncoder.encode(PasswordGenerator.generateRandomPassword(8)));
                     return user;
                 }).collect(Collectors.toList());
@@ -284,7 +290,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                     UserOrganization uo = new UserOrganization();
                     uo.setOrganization(organization);
                     uo.setUser(user);
-                    uo.setRole(roleRepository.findByName(LCA_STAFF).orElseThrow());
+                    uo.setRole(roleRepository.findByName(Constants.LCA_STAFF).orElseThrow());
                     uo.setHasJoined(false);
                     return uo;
                 }).collect(Collectors.toList());
@@ -306,9 +312,8 @@ public class OrganizationServiceImpl implements OrganizationService {
                 })
                 .collect(Collectors.toList());
 
-        // TODO: Send emails to users to accept join
         return InviteMemberResponse.builder()
-                .members(members)
+                .newMembers(members)
                 .newAccountIds(newUsers.stream().map(Users::getId).collect(Collectors.toList()))
                 .build();
 
@@ -317,7 +322,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public UserOrganizationDto acceptDenyInvite(UUID userId, AcceptInviteRequest request, String action) {
 
-        UserOrganization uo = userOrganizationRepository.findById(request.getId())
+        UserOrganization uo = userOrganizationRepository.findById(request.getUserOrganizationId())
                 .orElseThrow(() -> CustomExceptions.notFound("User doesn't have invitation to organization."));
 
         if (uo.isHasJoined()) {
@@ -340,29 +345,23 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public List<MemberOrganizationDto> getMemberInOrganization(UUID userId) {
-        return userOrganizationRepository.findByUser(userId).stream()
-                .map(userOrg -> userOrg.getOrganization().getId())
-                .map(orgId -> {
-                    MemberOrganizationDto dto = new MemberOrganizationDto();
-                    dto.setId(orgId);
+    public List<InviteUserOrganizationDto> getMemberInOrganization(UUID organizationId) {
 
-                    List<InviteUserOrganizationDto> members = userOrganizationRepository
-                            .findByOrganization(orgId).stream()
-                            .map(userOrg -> {
-                                InviteUserOrganizationDto memberDto = new InviteUserOrganizationDto();
-                                memberDto.setId(userOrg.getId());
-                                memberDto.setUser(userConverter.forInvite(userOrg.getUser()));
-                                memberDto.setRole(roleConverter.fromRoleToRoleDto(userOrg.getRole()));
-                                memberDto.setHasJoined(userOrg.isHasJoined());
-                                return memberDto;
-                            })
-                            .collect(Collectors.toList());
+        Organization o = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
-                    dto.setMembers(members);
-                    return dto;
-                })
-                .collect(Collectors.toList());
+        List<UserOrganization> member = userOrganizationRepository.findByOrganization(organizationId);
+
+        List<InviteUserOrganizationDto> data = new ArrayList<>();
+        for (UserOrganization x : member){
+            InviteUserOrganizationDto memberDto = new InviteUserOrganizationDto();
+            memberDto.setId(x.getId());
+            memberDto.setUser(userConverter.forInvite(x.getUser()));
+            memberDto.setRole(roleConverter.fromRoleToRoleDto(x.getRole()));
+            memberDto.setHasJoined(x.isHasJoined());
+            data.add(memberDto);
+        }
+        return data;
     }
 
     @Override
@@ -373,6 +372,35 @@ public class OrganizationServiceImpl implements OrganizationService {
         List<UserOrganization> history = userOrganizationRepository.getByUser(userId);
 
         return history.stream().map(uoConverter::enityToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public OrganizationDto uploadLogo(UUID organizationId, MultipartFile logo) {
+        Organization o = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
+
+        o.setLogo(s3Service.uploadImage(logo));
+        return organizationConverter.modelToDto(o);
+    }
+
+    @Override
+    public List<GetOrganizationByUserDto> getByUser(UUID userId) {
+        Users u = userRepository.findById(userId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
+
+        List<UserOrganization> uo = userOrganizationRepository.getByUser(userId);
+
+        return uo.stream()
+                .map(UserOrganization::getOrganization)
+                .map(organizationConverter::modelToUser)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public OrganizationDto getOrganizationById(UUID organizationId) {
+        Organization o = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
+        return organizationConverter.modelToDto(o);
     }
 
     @Override
@@ -390,34 +418,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         return uoConverter.modelToDto(uo);
     }
 
-    private boolean isPdfFile(MultipartFile file) {
-        // Cách 1: Kiểm tra theo Content Type
-        if (file.getContentType() != null && file.getContentType().equals("application/pdf")) {
-            return true;
-        }
 
-        // Cách 2: Kiểm tra theo đuôi file
-        String filename = file.getOriginalFilename();
-        if (filename != null && filename.toLowerCase().endsWith(".pdf")) {
-            return true;
-        }
-
-        // Cách 3: Kiểm tra Magic Number của PDF file
-        try {
-            byte[] bytes = file.getBytes();
-            if (bytes.length > 4 &&
-                    bytes[0] == 0x25 && // %
-                    bytes[1] == 0x50 && // P
-                    bytes[2] == 0x44 && // D
-                    bytes[3] == 0x46 && // F
-                    bytes[4] == 0x2D) { // -
-                return true;
-            }
-        } catch (IOException e) {
-            return false;
-        }
-
-        return false;
-    }
 
 }

@@ -39,11 +39,11 @@ public class ProjectController {
             @RequestParam(defaultValue = "1") int pageCurrent,
             @RequestParam(defaultValue = "5") int pageSize,
             @RequestParam(required = false) UUID methodId,
-            @RequestParam(required = true) UUID workspaceId
+            @RequestParam(required = true) UUID organizationId
     ) {
         log.info("Start getAllProject");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_LIST_SUCCESS, projectService.getAllProject(pageCurrent, pageSize, userId, methodId, workspaceId)
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_LIST_SUCCESS, projectService.getAllProject(pageCurrent, pageSize, userId, methodId, organizationId)
                 ));
     }
 
@@ -56,10 +56,10 @@ public class ProjectController {
     }
 
     @GetMapping(API_PARAMS.GET_PROJECT_BY_ID)
-    public ResponseEntity<ResponseObject> getProjectById(@PathVariable UUID projectId, @PathVariable UUID workspaceId) {
+    public ResponseEntity<ResponseObject> getProjectById(@RequestHeader("x-user-id") UUID userId, @PathVariable UUID projectId) {
         log.info("Start getProjectById, id: {}", projectId);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_BY_ID_SUCCESS, projectService.getById(projectId, workspaceId)
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.GET_PROJECT_BY_ID_SUCCESS, projectService.getById(projectId, userId)
                 ));
     }
 
@@ -110,18 +110,18 @@ public class ProjectController {
     }
 
     @GetMapping(API_PARAMS.ADMIN + API_PARAMS.COUNT_PROJECT)
-    public ResponseEntity<ResponseObject> countAllProject(){
+    public ResponseEntity<ResponseObject> countAllProject() {
         log.info("Start countAllProject");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Count all project success",projectService.countAllProject())
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Count all project success", projectService.countAllProject())
         );
     }
 
     @GetMapping(API_PARAMS.ADMIN + API_PARAMS.SUM_IMPACT)
-    public ResponseEntity<ResponseObject> getSumImpact(){
+    public ResponseEntity<ResponseObject> getSumImpact() {
         log.info("Start getImpactSum");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS,"Get sum impact success",projectService.countImpactInDashboard())
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get sum impact success", projectService.countImpactInDashboard())
         );
     }
 }

@@ -2,8 +2,11 @@ package com.example.cabonerfbe.controller;
 
 import com.example.cabonerfbe.enums.API_PARAMS;
 import com.example.cabonerfbe.enums.Constants;
+import com.example.cabonerfbe.enums.MessageConstants;
+import com.example.cabonerfbe.request.UpdateUserInfoRequest;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.UserService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -69,21 +72,28 @@ public class UserController {
     }
 
     @GetMapping(API_PARAMS.ADMIN + API_PARAMS.GET_USER_TO_DASHBOARD)
-    public ResponseEntity<ResponseObject> getUserInDashboard(){
+    public ResponseEntity<ResponseObject> getUserInDashboard() {
         log.info("Start getUserInDashboard");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get user dashboard success",userService.getNewUserInThisYear())
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get user dashboard success", userService.getNewUserInThisYear())
         );
     }
 
     @GetMapping(API_PARAMS.ADMIN + API_PARAMS.GET_ALL_USER_TO_DASHBOARD)
-    public ResponseEntity<ResponseObject> getAllUser(){
+    public ResponseEntity<ResponseObject> getAllUser() {
         log.info("Start getAllUser");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get all user dashboard success",userService.countAllUser())
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get all user dashboard success", userService.countAllUser())
         );
     }
 
+    @PutMapping(API_PARAMS.UPDATE_PROFILE)
+    public ResponseEntity<ResponseObject> updateUserProfile(@RequestHeader("x-user-id") UUID userId, @Valid @RequestBody UpdateUserInfoRequest request) {
+        log.info("Start updateUserProfile. id: {}", userId);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.UPDATE_USER_PROFILE_SUCCESS, userService.updateProfile(userId, request))
+        );
+    }
 
 
 }

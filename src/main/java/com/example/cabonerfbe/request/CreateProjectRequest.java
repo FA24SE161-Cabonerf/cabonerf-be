@@ -23,6 +23,6 @@ public class CreateProjectRequest {
     private String location;
     @NotNull(message = "Method is required")
     private UUID methodId;
-    @NotNull(message = "Workspace is required")
-    private UUID workspaceId;
+    @NotNull(message = "Organization is required")
+    private UUID organizationId;
 }

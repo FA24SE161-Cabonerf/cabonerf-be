@@ -1,13 +1,11 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.UserConverter;
+import com.example.cabonerfbe.dto.UserDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.EmailVerificationToken;
-import com.example.cabonerfbe.models.RefreshToken;
-import com.example.cabonerfbe.models.Users;
-import com.example.cabonerfbe.models.Workspace;
+import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.*;
 import com.example.cabonerfbe.response.AuthenticationResponse;
@@ -62,7 +60,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Autowired
     EmailVerificationTokenRepository verificationTokenRepository;
     @Autowired
-    WorkspaceRepository workspaceRepository;
+    UserOrganizationRepository uoRepository;
+    @Autowired
+    OrganizationRepository oRepository;
 
     private static RefreshToken createRefreshTokenEntity(String refreshToken, Users user) {
         RefreshToken token = new RefreshToken();
@@ -111,9 +111,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var user = Users.builder()
                 .email(request.getEmail())
                 .fullName(request.getFullName())
+                .profilePictureUrl(Constants.DEFAULT_USER_IMAGE)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .userVerifyStatus(userVerifyStatusRepository.findByName("Verified").get())
-                .role(roleRepository.findByName("LCA Staff").get())
+                .role(roleRepository.findByName(Constants.LCA_STAFF).get())
                 .status(true)
                 .build();
 
@@ -124,6 +125,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
         saveRefreshToken(refreshToken, user);
+        Organization o = new Organization();
+        o.setName(Constants.DEFAULT_ORGANIZATION);
+        o.setContract(null);
+        o.setLogo(Constants.DEFAULT_USER_IMAGE);
+        o = oRepository.save(o);
+
+        UserOrganization uo = new UserOrganization();
+        uo.setUser(user);
+        uo.setOrganization(o);
+        uo.setHasJoined(true);
+        uo.setRole(roleRepository.findByName(Constants.ORGANIZATION_MANAGER).get());
+        uoRepository.save(uo);
 
         return RegisterResponse.builder()
                 .access_token(accessToken)
@@ -217,11 +230,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         userRepository.save(user);
 
-        Workspace w = new Workspace();
-        w.setName("My Workspace");
-        w.setOwner(user);
-        w.setOrganization(null);
-        workspaceRepository.save(w);
+
 
         return LoginResponse.builder()
                 .access_token(access_token)
@@ -235,23 +244,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public void changePassword(UUID userId, ChangePasswordRequest request) {
+    public UserDto changePassword(UUID userId, ChangePasswordRequest request) {
         Users user = userRepository.findById(userId)
-                .orElseThrow(() -> CustomExceptions.notFound("User not exist"));
-
-        if (request.getOldPassword().equals(request.getNewPassword())) {
-            throw CustomExceptions.badRequest("New password equals old password");
-        }
-        if (!request.getNewPassword().equals(request.getNewPasswordConfirm())) {
-            throw CustomExceptions.badRequest("Confirm password not equals new password");
-        }
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-            throw CustomExceptions.unauthorized("Password is wrong");
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,Map.of("oldPassword",MessageConstants.PASSWORD_WRONG));
         }
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
 
+        if (request.getOldPassword().equals(request.getNewPassword())) {
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,Map.of("newPassword",MessageConstants.NEW_PASSWORD_SAME_AS_OLD));
+        }
+        if (!request.getNewPassword().equals(request.getNewPasswordConfirm())) {
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,Map.of("newPasswordConfirm",MessageConstants.CONFIRM_PASSWORD_NOT_MATCH));
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        return UserConverter.INSTANCE.fromUserToUserDto(userRepository.save(user));
     }
 
     public String rotateRefreshToken(String oldRefreshTokenString, Users user) {

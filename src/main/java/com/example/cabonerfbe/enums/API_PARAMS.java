@@ -21,7 +21,8 @@ public class API_PARAMS {
     public static final String GET_USER_TO_INVITE = "/invite";
     public static final String GET_USER_TO_DASHBOARD = "/count-user-new";
     public static final String GET_ALL_USER_TO_DASHBOARD = "/count-all-user";
-
+    public static final String CHANGE_PASSWORD = "/password";
+    public static final String UPDATE_PROFILE = "/profile";
 
     /************************
      *      IMPACTS APIs     *
@@ -66,7 +67,7 @@ public class API_PARAMS {
      ************************/
 
     public static final String PROJECT = "/projects";
-    public static final String GET_PROJECT_BY_ID = "/{projectId}/workspaces/{workspaceId}";
+    public static final String GET_PROJECT_BY_ID = "/{projectId}";
     public static final String UPDATE_DETAIL_PROJECT_BY_ID = "/{projectId}";
     public static final String DELETE_PROJECT = "/{projectId}";
     public static final String CHANGE_PROJECT_METHOD = "/{projectId}/impact-methods/{methodId}";
@@ -166,9 +167,11 @@ public class API_PARAMS {
     public static final String INVITE_MEMBER_ORGANIZATION = "/invite";
     public static final String ACCEPT_INVITE_ORGANIZATION = "/accept";
     public static final String DENY_INVITE_ORGANIZATION = "/deny";
-    public static final String GET_MEMBER_IN_ORGANIZATION = "/members";
+    public static final String GET_MEMBER_IN_ORGANIZATION = "/{organizationId}/members";
     public static final String REMOVE_MEMBER_IN_ORGANIZATION = "/remove-member/{userOrganizationId}";
     public static final String GET_LIST_INVITE_BY_USER = "/invite-list";
+    public static final String UPLOAD_LOGO = "/{organizationId}/upload-logo";
+    public static final String GET_ORGANIZATION_BY_ID = "/{organizationId}";
 
     public static final String MANAGER = "/manager";
     public static final String ORGANIZATION_MANAGER = "/organization-manager";
