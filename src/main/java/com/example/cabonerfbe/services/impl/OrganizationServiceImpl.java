@@ -185,7 +185,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
         contractService.deleteContract(o.getContract().getId());
-        s3Service.deleteFile(o.getLogo());
+//        s3Service.deleteFile(o.getLogo());
         o.setStatus(false);
         return organizationConverter.modelToDto(organizationRepository.save(o));
     }
