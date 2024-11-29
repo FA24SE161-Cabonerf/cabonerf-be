@@ -136,6 +136,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setDescription(request.getDescription());
         project.setLocation(request.getLocation());
         project.setUser(user);
+        project.setFavorite(false);
         project.setOrganization(organization);
         project.setLifeCycleImpactAssessmentMethod(method);
 
@@ -252,30 +253,33 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request) {
-        if ((Objects.isNull(request.getName()) || request.getName().isEmpty())
-                && (Objects.isNull(request.getDescription()) || request.getDescription().isEmpty())
-                && (Objects.isNull(request.getLocation()) || request.getLocation().isEmpty())) {
+        // Validate that at least one field is updated
+        boolean isAnyFieldUpdated = !isNullOrEmpty(request.getName())
+                || !isNullOrEmpty(request.getDescription())
+                || !isNullOrEmpty(request.getLocation())
+                || request.getFavorite() != null;
+
+        if (!isAnyFieldUpdated) {
             throw CustomExceptions.badRequest("Update at least 1 field", Collections.EMPTY_LIST);
         }
 
-        Optional<Project> p = projectRepository.findById(id);
-        if (p.isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST);
-        }
+        // Find the project by ID
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
 
-        if (!Objects.isNull(request.getName()) && !request.getName().isEmpty()) {
-            p.get().setName(request.getName());
-        }
-        if (!Objects.isNull(request.getDescription()) && !request.getDescription().isEmpty()) {
-            p.get().setDescription(request.getDescription());
-        }
-        if (!Objects.isNull(request.getLocation()) && !request.getLocation().isEmpty()) {
-            p.get().setLocation(request.getLocation());
-        }
+        // Update fields if provided
+        Optional.ofNullable(request.getName()).filter(name -> !name.isEmpty()).ifPresent(project::setName);
+        Optional.ofNullable(request.getDescription()).filter(desc -> !desc.isEmpty()).ifPresent(project::setDescription);
+        Optional.ofNullable(request.getLocation()).filter(loc -> !loc.isEmpty()).ifPresent(project::setLocation);
+        Optional.ofNullable(request.getFavorite()).ifPresent(project::setFavorite);
 
-
-        return projectConverter.fromDetailToDto(projectRepository.save(p.get()));
+        return projectConverter.fromDetailToDto(projectRepository.save(project));
     }
+
+    private boolean isNullOrEmpty(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
 
     @Override
     public List<Project> deleteProject(UUID id) {
