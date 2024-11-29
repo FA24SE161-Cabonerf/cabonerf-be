@@ -82,18 +82,10 @@ public class OrganizationController {
     }
 
     @PutMapping(API_PARAMS.ACCEPT_INVITE_ORGANIZATION)
-    public ResponseEntity<ResponseObject> accept(@RequestHeader("x-user-id") UUID userId, @Valid @RequestBody AcceptInviteRequest request) {
-        log.info("Start acceptInviteOrganization. userId: {}, request: {}", userId, request);
+    public ResponseEntity<ResponseObject> accept(@RequestParam UUID userId, @RequestParam UUID organizationId, @RequestParam String token) {
+        log.info("Start acceptInviteOrganization.");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Accept invite organization success", organizationService.acceptDenyInvite(userId, request, "Accept"))
-        );
-    }
-
-    @PutMapping(API_PARAMS.DENY_INVITE_ORGANIZATION)
-    public ResponseEntity<ResponseObject> deny(@RequestHeader("x-user-id") UUID userId, @Valid @RequestBody AcceptInviteRequest request) {
-        log.info("Start denyInviteOrganization. userId: {}, request: {}", userId, request);
-        return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Deny invite organization success", organizationService.acceptDenyInvite(userId, request, "Deny"))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Accept invite organization success", organizationService.acceptInvite(userId, organizationId, token))
         );
     }
 
@@ -110,14 +102,6 @@ public class OrganizationController {
         log.info("Start removeMember");
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Remove member success", organizationService.removeMember(userId, userOrganizationId))
-        );
-    }
-
-    @GetMapping(API_PARAMS.GET_LIST_INVITE_BY_USER)
-    public ResponseEntity<ResponseObject> getListInvite(@RequestHeader("x-user-id") UUID userId) {
-        log.info("Start getListInvite");
-        return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get list invite success", organizationService.getListInviteByUser(userId))
         );
     }
 
