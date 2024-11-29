@@ -72,11 +72,11 @@ public class API_PARAMS {
     public static final String DELETE_PROJECT = "/{projectId}";
     public static final String CHANGE_PROJECT_METHOD = "/{projectId}/impact-methods/{methodId}";
     public static final String CALCULATION_PROJECT = "/calculation";
-    public static final String EXPORT_PROJECT = "/export/{projectId}";
-    public static final String INTENSITY_PROJECT = "/intensity/{projectId}";
+    public static final String EXPORT_PROJECT = "/{projectId}/export";
+    public static final String INTENSITY_PROJECT = "/{projectId}/intensity";
     public static final String COUNT_PROJECT = "/count-project";
     public static final String SUM_IMPACT = "/sum-impact";
-    public static final String SET_FAVORITE_PROJECT = "/favorite/{projectId}";
+    public static final String SET_FAVORITE_PROJECT = "/{projectId}/favorite";
 
     /************************
      *      PROCESS APIs     *
