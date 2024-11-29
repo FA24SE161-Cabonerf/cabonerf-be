@@ -170,7 +170,7 @@ public class API_PARAMS {
     public static final String GET_MEMBER_IN_ORGANIZATION = "/{organizationId}/members";
     public static final String REMOVE_MEMBER_IN_ORGANIZATION = "/remove-member/{userOrganizationId}";
     public static final String GET_LIST_INVITE_BY_USER = "/invite-list";
-    public static final String UPLOAD_LOGO = "/upload-logo/{organizationId}";
+    public static final String UPLOAD_LOGO = "/{organizationId}/upload-logo";
     public static final String GET_ORGANIZATION_BY_ID = "/{organizationId}";
 
     public static final String MANAGER = "/manager";
