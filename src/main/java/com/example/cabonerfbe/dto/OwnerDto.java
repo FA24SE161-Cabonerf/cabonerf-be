@@ -12,7 +12,7 @@ import java.util.UUID;
 @Data
 public class OwnerDto {
     private UUID id;
-    private String name;
+    private String fullName;
     private String email;
     private String profilePictureUrl;
 }
