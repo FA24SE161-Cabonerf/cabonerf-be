@@ -20,6 +20,7 @@ public class Project extends Base {
     private String name;
     private String description;
     private String location;
+    private Boolean favorite;
 
     @ManyToOne
     @JoinColumn(name = "method_id")

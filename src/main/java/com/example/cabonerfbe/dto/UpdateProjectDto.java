@@ -15,6 +15,7 @@ public class UpdateProjectDto {
     private String name;
     private String description;
     private String location;
+    private boolean favorite;
     private MethodDto method;
     private LocalDate modifiedAt;
 }
