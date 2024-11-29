@@ -5,6 +5,7 @@ import com.example.cabonerfbe.request.*;
 import com.example.cabonerfbe.response.GetAllOrganizationResponse;
 import com.example.cabonerfbe.response.InviteMemberResponse;
 import com.example.cabonerfbe.response.LoginResponse;
+import com.example.cabonerfbe.response.UploadOrgLogoResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public interface OrganizationService {
 
     List<UserOrganizationDto> getListInviteByUser(UUID userId);
 
-    OrganizationDto uploadLogo(UUID organizationId, MultipartFile logo);
+    UploadOrgLogoResponse uploadLogo(UUID organizationId, MultipartFile logo);
 
     List<GetOrganizationByUserDto> getByUser(UUID userId);
 

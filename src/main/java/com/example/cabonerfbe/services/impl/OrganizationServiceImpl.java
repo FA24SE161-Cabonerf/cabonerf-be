@@ -15,6 +15,7 @@ import com.example.cabonerfbe.request.*;
 import com.example.cabonerfbe.response.GetAllOrganizationResponse;
 import com.example.cabonerfbe.response.InviteMemberResponse;
 import com.example.cabonerfbe.response.LoginResponse;
+import com.example.cabonerfbe.response.UploadOrgLogoResponse;
 import com.example.cabonerfbe.services.*;
 import com.example.cabonerfbe.util.FileUtil;
 import com.example.cabonerfbe.util.PasswordGenerator;
@@ -184,7 +185,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
         contractService.deleteContract(o.getContract().getId());
-        s3Service.deleteFile(o.getLogo());
+//        s3Service.deleteFile(o.getLogo());
         o.setStatus(false);
         return organizationConverter.modelToDto(organizationRepository.save(o));
     }
@@ -374,12 +375,18 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public OrganizationDto uploadLogo(UUID organizationId, MultipartFile logo) {
-        Organization o = organizationRepository.findById(organizationId)
+    public UploadOrgLogoResponse uploadLogo(UUID organizationId, MultipartFile logo) {
+        Organization organization = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
-        o.setLogo(s3Service.uploadImage(logo));
-        return organizationConverter.modelToDto(o);
+        String logoUrl;
+        try {
+            logoUrl = s3Service.uploadImage(logo);
+        } catch (Exception e) {
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_UPLOAD_IMAGE);
+        }
+
+        return new UploadOrgLogoResponse(organization.getId(), logoUrl);
     }
 
     @Override
