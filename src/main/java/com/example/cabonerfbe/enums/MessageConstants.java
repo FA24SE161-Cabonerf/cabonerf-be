@@ -119,6 +119,7 @@ public class MessageConstants {
     public static final String NEW_PASSWORD_SAME_AS_OLD = "The new password must be different from the current password.";
     public static final String FAILED_TO_UPLOAD_IMAGE = "Failed to upload image. Please try again.";
     public static final String USER_NOT_BELONG_TO_ORGANIZATION = "User doesn't belong to organization.";
+    public static final String USER_NOT_HAVE_INVITE_ORGANIZATION = "User have not invite to organization.";
     public static final String CONTRACT_NOT_FOUND = "Contract doesn't exist.";
 
 

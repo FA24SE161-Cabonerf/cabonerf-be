@@ -24,13 +24,11 @@ public interface OrganizationService {
 
     InviteMemberResponse invite(UUID userId, InviteUserToOrganizationRequest request);
 
-    UserOrganizationDto acceptDenyInvite(UUID userId, AcceptInviteRequest request, String action);
+    LoginResponse acceptInvite(UUID userId, UUID organizationId, String token);
 
     InviteUserOrganizationDto removeMember(UUID userId, UUID userOrganizationId);
 
     List<InviteUserOrganizationDto> getMemberInOrganization(UUID organizationId);
-
-    List<UserOrganizationDto> getListInviteByUser(UUID userId);
 
     UploadOrgLogoResponse uploadLogo(UUID organizationId, MultipartFile logo);
 
