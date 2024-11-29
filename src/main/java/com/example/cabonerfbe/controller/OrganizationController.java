@@ -7,6 +7,7 @@ import com.example.cabonerfbe.request.*;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.OrganizationService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +30,7 @@ public class OrganizationController {
     private OrganizationService organizationService;
 
     @PostMapping(API_PARAMS.MANAGER)
-    public ResponseEntity<ResponseObject> createOrganization(@RequestParam String name, @RequestParam String email, @RequestParam MultipartFile contractFile) {
+    public ResponseEntity<ResponseObject> createOrganization(@RequestParam String name, @RequestParam @Email String email, @RequestParam MultipartFile contractFile) {
         CreateOrganizationRequest request = new CreateOrganizationRequest(name, email);
         log.info("Start createOrganization. Request: {}", request);
         return ResponseEntity.ok().body(new ResponseObject(

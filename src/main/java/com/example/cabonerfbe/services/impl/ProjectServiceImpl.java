@@ -93,6 +93,8 @@ public class ProjectServiceImpl implements ProjectService {
     private CarbonIntensityConverter ciConverter;
     @Autowired
     private ImpactCategoryRepository icRepository;
+    @Autowired
+    private UserOrganizationRepository uoRepository;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
@@ -191,15 +193,16 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public GetProjectByIdDto getById(UUID id, UUID organizationId) {
+    public GetProjectByIdDto getById(UUID id, UUID userId) {
         Project project = projectRepository.findById(id).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST)
         );
 
-        if (organizationId == null) {
-            throw CustomExceptions.unauthorized(MessageConstants.NO_ORGANIZATION_FOUND, Collections.EMPTY_LIST);
-        }
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
+        UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(),userId)
+                .orElseThrow(() -> CustomExceptions.unauthorized("User doesn't belong to organization."));
         return getProject(project);
     }
 

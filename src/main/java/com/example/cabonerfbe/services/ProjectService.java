@@ -26,7 +26,7 @@ public interface ProjectService {
 
     GetAllProjectResponse getAllProject(int pageCurrent, int pageSize, UUID userId, UUID methodId, UUID workspaceId);
 
-    GetProjectByIdDto getById(UUID id, UUID organizationId);
+    GetProjectByIdDto getById(UUID id, UUID userId);
 
     UpdateProjectDto updateDetail(UUID id, UpdateProjectDetailRequest request);
 
