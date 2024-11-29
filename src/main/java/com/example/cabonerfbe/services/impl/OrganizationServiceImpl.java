@@ -101,73 +101,72 @@ public class OrganizationServiceImpl implements OrganizationService {
     public OrganizationDto createOrganization(CreateOrganizationRequest request, MultipartFile contractFile, MultipartFile logo) {
 
         if (!fileUtil.isPdfFile(contractFile)) {
-            throw CustomExceptions.badRequest("Contract file is not .pdf");
+            throw CustomExceptions.badRequest(MessageConstants.INVALID_PDF);
         }
 
         if (!fileUtil.isImageFile(logo)) {
-            throw CustomExceptions.badRequest("Invalid image.");
+            throw CustomExceptions.badRequest(MessageConstants.INVALID_IMAGE);
         }
 
-        Optional<Users> user = userRepository.findByEmail(request.getEmail());
         String password = PasswordGenerator.generateRandomPassword(8);
-//        if (user.isPresent())
-//        {
-////            if (Objects.equals(user.get().getRole().getName(), "Organization Manager")) {
-////                throw CustomExceptions.badRequest("Email already use with other organization");
-////            }
-//        } else {
-//            Users newUser = new Users();
-//            newUser.setEmail(request.getEmail());
-//            newUser.setFullName(request.getName());
-//            newUser.setUserVerifyStatus(userVerifyStatusRepository.findByName("Pending").get());
-//            newUser.setRole(roleRepository.findByName("Organization Manager").get());
-//            newUser.setPassword(passwordEncoder.encode(password));
-//            user = Optional.of(userRepository.save(newUser));
-//        }
 
-        if(user.isEmpty()){
-            Users newAccount = new Users();
-            newAccount.setEmail(request.getEmail());
-            newAccount.setFullName(request.getName());
-            newAccount.setUserVerifyStatus(userVerifyStatusRepository.findByName("Pending").get());
-            newAccount.setRole(roleRepository.findByName(Constants.ORGANIZATION_MANAGER).get());
-            newAccount.setPassword(passwordEncoder.encode(password));
-            user = Optional.of(userRepository.save(newAccount));
-        }
+        Role organizationManager = roleRepository.findByName(Constants.ORGANIZATION_MANAGER).orElseGet(
+                () -> roleRepository.save(new Role(Constants.ORGANIZATION_MANAGER))
+        );
 
-        Organization o = new Organization();
-        o.setName(request.getName());
+        UserVerifyStatus pendingStatus = userVerifyStatusRepository.findByName(Constants.VERIFY_STATUS_PENDING).orElseGet(
+                () -> userVerifyStatusRepository.save(new UserVerifyStatus(Constants.VERIFY_STATUS_PENDING, Constants.VERIFY_STATUS_PENDING))
+        );
 
-        o = organizationRepository.save(o);
+        Users user = userRepository.findByEmail(request.getEmail()).orElseGet(
+                () -> {
+                    Users newAccount = new Users();
+                    newAccount.setEmail(request.getEmail());
+                    newAccount.setFullName(request.getName());
+                    newAccount.setUserVerifyStatus(pendingStatus);
+                    newAccount.setRole(organizationManager);
+                    newAccount.setPassword(passwordEncoder.encode(password));
+                    return userRepository.save(newAccount);
+                }
+        );
 
-        UserOrganization uo = new UserOrganization();
-        uo.setOrganization(o);
-        uo.setUser(user.get());
-        uo.setHasJoined(false);
-        uo.setRole(roleRepository.findByName(Constants.ORGANIZATION_MANAGER).get());
-        userOrganizationRepository.save(uo);
-
-        //send-mail
-
-        //storage contract
-        String contractUrl = "";
         String logoUrl = "";
+        String contractUrl = "";
 
         try {
             contractUrl = s3Service.uploadContract(contractFile);
         } catch (Exception ignored) {
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_UPLOAD_CONTRACT);
         }
 
-        Contract c = new Contract();
-        c.setOrganization(o);
-        c.setUrl(contractUrl);
-//        c = contractRepository.save(c);
+        try {
+            logoUrl = s3Service.uploadImage(logo);
+        } catch (Exception ignored) {
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_UPLOAD_IMAGE);
+        }
 
-        o.setContract(c);
-        o.setLogo("");
+        Organization organization = new Organization();
+        organization.setName(request.getName());
+        organization.setLogo(logoUrl);
 
-        o = organizationRepository.save(o);
-        return organizationConverter.modelToDto(o);
+        organization = organizationRepository.save(organization);
+
+        UserOrganization userOrganization = new UserOrganization();
+        userOrganization.setOrganization(organization);
+        userOrganization.setUser(user);
+        userOrganization.setHasJoined(false);
+        userOrganization.setRole(organizationManager);
+        userOrganizationRepository.save(userOrganization);
+
+        // todo: send-mail
+
+        Contract contract = new Contract();
+        contract.setOrganization(organization);
+        contract.setUrl(contractUrl);
+
+        organization.setContract(contract);
+        organization = organizationRepository.save(organization);
+        return organizationConverter.modelToDto(organization);
     }
 
     @Override
@@ -204,8 +203,8 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .orElseThrow(() -> CustomExceptions.notFound("User doesn't belong to organization."));
 
         if (u.getRole().getName().equals("Verified")) {
-            if(uo.isHasJoined()){
-                throw CustomExceptions.badRequest("Account is already join organization.");
+            if (uo.isHasJoined()) {
+                throw CustomExceptions.badRequest("Account has already joined organization.");
             }
         }
         u.setUserVerifyStatus(userVerifyStatusRepository.findByName("Verified").get());
@@ -353,7 +352,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         List<UserOrganization> member = userOrganizationRepository.findByOrganization(organizationId);
 
         List<InviteUserOrganizationDto> data = new ArrayList<>();
-        for (UserOrganization x : member){
+        for (UserOrganization x : member) {
             InviteUserOrganizationDto memberDto = new InviteUserOrganizationDto();
             memberDto.setId(x.getId());
             memberDto.setUser(userConverter.forInvite(x.getUser()));
@@ -422,7 +421,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         uo.setStatus(false);
         return uoConverter.modelToDto(uo);
     }
-
 
 
 }
