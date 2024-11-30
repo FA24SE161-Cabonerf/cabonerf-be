@@ -199,7 +199,7 @@ public class API_PARAMS {
      * OBJECT LIBRARY *
      *****************/
     public static final String OBJECT_LIBRARY = "/object-library";
-    public static final String GET_OBJECT_LIBRARY_OF_ORGANIZATION = "/organization/{organizationId}";
+    public static final String GET_OBJECT_LIBRARY_OF_ORGANIZATION = "/organizations/{organizationId}";
 
 
 }
