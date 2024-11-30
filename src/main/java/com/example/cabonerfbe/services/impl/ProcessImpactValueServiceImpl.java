@@ -11,6 +11,7 @@ import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
+import com.example.cabonerfbe.services.ProcessService;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -49,7 +50,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private String exchangeIdNext = null;
 
     @Autowired
-    private ProcessServiceImpl processService;
+    private ProcessService processService;
 
     @NotNull
     private static ProcessImpactValue getNewProcessImpactValue(ImpactMethodCategory methodCategory, Process process) {
