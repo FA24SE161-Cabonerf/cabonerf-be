@@ -19,7 +19,7 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
     Page<Organization> findAllByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     @NotNull
-    @Query("SELECT o FROM Organization o WHERE o.status = true AND o.contract is null")
+    @Query("SELECT o FROM Organization o WHERE o.status = true AND o.contract is not null")
     Page<Organization> findAll(@NotNull Pageable pageable);
 
     @NotNull
