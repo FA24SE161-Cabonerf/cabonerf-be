@@ -64,14 +64,14 @@ public class OrganizationController {
         ));
     }
 
-    @PutMapping(API_PARAMS.ORGANIZATION_MANAGER + API_PARAMS.CONFIRM_CREATE_ORGANIZATION)
-    public ResponseEntity<ResponseObject> confirmCreateOrganization(@Valid @RequestParam VerifyCreateOrganizationRequest request) {
-//        VerifyCreateOrganizationRequest request = new VerifyCreateOrganizationRequest(organizationId, token);
-        log.info("Start confirmCreateOrganization. request: {}", request);
-        return ResponseEntity.ok().body(new ResponseObject(
-                Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CONFIRM_CREATE_ORGANIZATION_SUCCESS, organizationService.confirm(request)
-        ));
-    }
+//    @PutMapping(API_PARAMS.ORGANIZATION_MANAGER + API_PARAMS.CONFIRM_CREATE_ORGANIZATION)
+//    public ResponseEntity<ResponseObject> confirmCreateOrganization(@Valid @RequestParam VerifyCreateOrganizationRequest request) {
+////        VerifyCreateOrganizationRequest request = new VerifyCreateOrganizationRequest(organizationId, token);
+//        log.info("Start confirmCreateOrganization. request: {}", request);
+//        return ResponseEntity.ok().body(new ResponseObject(
+//                Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CONFIRM_CREATE_ORGANIZATION_SUCCESS, organizationService.confirm(request)
+//        ));
+//    }
 
     @PostMapping(API_PARAMS.ORGANIZATION_MANAGER + API_PARAMS.INVITE_MEMBER_ORGANIZATION)
     public ResponseEntity<ResponseObject> inviteMemberOrganization(@RequestHeader("x-user-id") UUID userId, @Valid @RequestBody InviteUserToOrganizationRequest request) {
@@ -82,10 +82,10 @@ public class OrganizationController {
     }
 
     @PutMapping(API_PARAMS.ACCEPT_INVITE_ORGANIZATION)
-    public ResponseEntity<ResponseObject> accept(@RequestParam UUID userId, @RequestParam UUID organizationId, @RequestParam String token) {
+    public ResponseEntity<ResponseObject> accept(@RequestParam UUID userOrganizationId, @RequestParam String token) {
         log.info("Start acceptInviteOrganization.");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Accept invite organization success", organizationService.acceptInvite(userId, organizationId, token))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Accept invite organization success", organizationService.acceptInvite(userOrganizationId, token))
         );
     }
 

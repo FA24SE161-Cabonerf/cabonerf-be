@@ -14,17 +14,17 @@ import java.util.UUID;
 public interface OrganizationService {
     GetAllOrganizationResponse getAll(int pageCurrent, int pageSize, String keyword);
 
-    OrganizationDto createOrganization(CreateOrganizationRequest request, MultipartFile contractFile, MultipartFile logo);
+    CreateOrganizationDto createOrganization(CreateOrganizationRequest request, MultipartFile contractFile, MultipartFile logo);
 
     OrganizationDto updateOrganization(UUID organizationId, UpdateOrganizationRequest request);
 
     OrganizationDto deleteOrganization(UUID organizationId);
 
-    LoginResponse confirm(VerifyCreateOrganizationRequest request);
+//    LoginResponse confirm(VerifyCreateOrganizationRequest request);
 
-    InviteMemberResponse invite(UUID userId, InviteUserToOrganizationRequest request);
+    List<InviteUserOrganizationDto> invite(UUID userId, InviteUserToOrganizationRequest request);
 
-    LoginResponse acceptInvite(UUID userId, UUID organizationId, String token);
+    LoginResponse acceptInvite(UUID organizationId, String token);
 
     InviteUserOrganizationDto removeMember(UUID userId, UUID userOrganizationId);
 

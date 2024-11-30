@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.converter;
 
+import com.example.cabonerfbe.dto.CreateOrganizationDto;
 import com.example.cabonerfbe.dto.GetOrganizationByUserDto;
 import com.example.cabonerfbe.dto.OrganizationDto;
 import com.example.cabonerfbe.models.Organization;
@@ -11,6 +12,7 @@ public interface OrganizationConverter {
     OrganizationConverter INSTANCE = Mappers.getMapper(OrganizationConverter.class);
 
     OrganizationDto modelToDto(Organization organization);
+    CreateOrganizationDto modelToCreateDto(Organization organization);
 
     GetOrganizationByUserDto modelToUser(Organization organization);
 }

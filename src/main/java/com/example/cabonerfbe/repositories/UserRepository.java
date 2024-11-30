@@ -27,8 +27,8 @@ public interface UserRepository extends JpaRepository<Users, UUID> {
             "WHERE uo.organization.id = :organizationId AND uo.role.name like 'Organization Manager'")
     Users getOwnerOrganization(@Param("organizationId") UUID organizationId);
 
-    @Query("SELECT u FROM Users u WHERE u.email in :userEmail AND u.status = true")
-    List<Users> findAllByEmail(@Param("userEmail") List<String> userEmail);
+    @Query("SELECT u FROM Users u WHERE u.id in :userIds AND u.status = true")
+    List<Users> findAllByEmail(@Param("userIds") List<UUID> userIds);
 
     @Query("SELECT u FROM Users u WHERE u.id = :userId AND u.status = true")
     Optional<Users> findByIdWithStatus(@Param("userId") UUID userId);

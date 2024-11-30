@@ -18,5 +18,4 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class InviteMemberResponse {
     private List<InviteUserOrganizationDto> newMembers;
-    private List<UUID> newAccountIds;
 }
