@@ -353,6 +353,19 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         return dto;
     }
 
+    public List<ProcessImpactValue> calculateToDesignatedProcess(ProcessNodeDto node) {
+        Map<UUID, BigDecimal> totalNet = aggregateNet(node);
+
+        List<ProcessImpactValue> updatedImpactValues = totalNet.keySet().stream()
+                .flatMap(processId -> processImpactValueRepository.findByProcessId(processId).stream()
+                        .peek(x -> x.setSystemLevel(totalNet.get(processId).multiply(x.getUnitLevel()))))
+                .toList();
+
+//        processImpactValueRepository.saveAll(updatedImpactValues);
+
+        return updatedImpactValues.stream().parallel().filter(x -> x.getProcessId().equals(node.getProcessId())).collect(Collectors.toList());
+    }
+
 
     private static Map<UUID, BigDecimal> aggregateNet(ProcessNodeDto root) {
         Map<UUID, BigDecimal> result = new HashMap<>();

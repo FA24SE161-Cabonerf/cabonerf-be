@@ -65,6 +65,8 @@ public class ProcessServiceImpl implements ProcessService {
     private UnitServiceImpl unitService;
     @Autowired
     private UnitRepository unitRepository;
+    @Autowired
+    private ProcessImpactValueServiceImpl processImpactValueService;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
@@ -301,18 +303,21 @@ public class ProcessServiceImpl implements ProcessService {
                 ).toList();
         exchangesRepository.saveAll(exchangesList);
 
-        List<ProcessImpactValue> processImpactValueList = processImpactValueRepository.findByProcessId(process.getId()).stream()
+        List<ProcessImpactValue> processImpactValueList = processImpactValueService.calculateToDesignatedProcess(buildTree(process.getId(), connectorRepository.findConnectorToProcess(process.getId()), BigDecimal.ONE));
+
+        processImpactValueList = processImpactValueList.stream()
                 .map(oldValue -> {
                             ProcessImpactValue newImpactValue = new ProcessImpactValue();
                             newImpactValue.setImpactMethodCategory(oldValue.getImpactMethodCategory());
                             newImpactValue.setProcess(newProcess);
-                            newImpactValue.setUnitLevel(oldValue.getUnitLevel());
+                            newImpactValue.setUnitLevel(oldValue.getSystemLevel());
                             newImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
                             newImpactValue.setOverallImpactContribution(Constants.DEFAULT_OVERALL_IMPACT_CONTRIBUTION);
                             newImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
                             return newImpactValue;
                         }
                 ).toList();
+
         processImpactValueRepository.saveAll(processImpactValueList);
 
     }
