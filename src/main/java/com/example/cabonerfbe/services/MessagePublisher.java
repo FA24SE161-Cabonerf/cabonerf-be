@@ -55,9 +55,9 @@ public class MessagePublisher {
         log.info("Publish connector message: {}, exchange: {}, key: {}", idList, exchangeName, routingKey);
     }
 
-    public void publishSendMailCreateOrganization(SendMailCreateAccountOrganizationResponse response) {
+    public void publishSendMailCreateAccountOrganization(SendMailCreateAccountOrganizationResponse response) {
         rabbitTemplate.convertAndSend(RabbitMQConfig.EMAIL_EXCHANGE, RabbitMQConfig.EMAIL_CREATE_ORGANIZATION_ROUTING_KEY, response);
-        log.info("Publish SendMailCreateOrganization: {}", response.getEmail());
+        log.info("Publish SendMailCreateAccountOrganization: {}", response.getEmail());
     }
 
 //    public void publishSendMailCreateAccountByOrganizationManager(SendMailCreateAccountResponse response) {

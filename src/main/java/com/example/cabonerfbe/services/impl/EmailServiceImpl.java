@@ -58,7 +58,7 @@ public class EmailServiceImpl implements EmailService {
                 .build();
 
         // publish the msg to rabbit queue
-        messagePublisher.publishSendMailCreateOrganization(createOrganizationResponse);
+        messagePublisher.publishSendMailCreateAccountOrganization(createOrganizationResponse);
     }
 //
 //    @Override
