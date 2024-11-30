@@ -51,6 +51,8 @@ public class MessageConstants {
     public static final String GET_LIFE_STAGE_BY_ID_SUCCESS = "Get life cycle stage by success.";
     public static final String CHANGE_PASSWORD_SUCCESS = "Change password success.";
     public static final String UPDATE_USER_PROFILE_SUCCESS = "Update user profile success.";
+    public static final String ADD_TO_OBJECT_LIBRARY_SUCCESS = "Add process to object library success.";
+    public static final String GET_OBJECT_LIBRARY_OF_ORGANIZATION_SUCCESS = "Get object library of organization success.";
 
 
 

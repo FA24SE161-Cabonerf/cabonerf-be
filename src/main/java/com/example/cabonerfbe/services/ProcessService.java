@@ -2,6 +2,7 @@ package com.example.cabonerfbe.services;
 
 import com.example.cabonerfbe.dto.ProcessDetailDto;
 import com.example.cabonerfbe.dto.ProcessDto;
+import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
@@ -19,4 +20,6 @@ public interface ProcessService {
     ProcessDetailDto updateProcess(UUID id, UpdateProcessRequest request);
 
     DeleteProcessResponse deleteProcess(UUID id);
+
+    List<Process> addToObjectLibrary(UUID processId);
 }

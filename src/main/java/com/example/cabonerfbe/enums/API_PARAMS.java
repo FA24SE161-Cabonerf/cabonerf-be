@@ -83,6 +83,8 @@ public class API_PARAMS {
      ************************/
     public static final String PROCESS = "/process";
     public static final String PROCESS_BY_ID = "/{id}";
+    public static final String ADD_PROCESS_TO_OBJECT_LIBRARY = "/{processId}/object-library";
+
 
     /************************
      *      UNIT APIs     *
@@ -173,7 +175,6 @@ public class API_PARAMS {
     public static final String GET_LIST_INVITE_BY_USER = "/invite-list";
     public static final String UPLOAD_LOGO = "/{organizationId}/upload-logo";
     public static final String GET_ORGANIZATION_BY_ID = "/{organizationId}";
-
     public static final String MANAGER = "/manager";
     public static final String ORGANIZATION_MANAGER = "/organization-manager";
 
@@ -183,7 +184,7 @@ public class API_PARAMS {
     public static final String WORKSPACE = "/workspaces";
 
     /************************
-     *   CONTRACT APIs   *
+     *   CONTRACT APIs *
      ************************/
     public static final String CONTRACT = "/contracts";
     public static final String DOWNLOAD_CONTRACT = "/{contractId}";
@@ -193,5 +194,12 @@ public class API_PARAMS {
      ************************/
     public static final String UPDATE_EMISSION_COMPARTMENT = "/{emissionCompartmentId}";
     public static final String DELETE_EMISSION_COMPARTMENT = "/{emissionCompartmentId}";
+
+    /******************
+     * OBJECT LIBRARY *
+     *****************/
+    public static final String OBJECT_LIBRARY = "/object-library";
+    public static final String GET_OBJECT_LIBRARY_OF_ORGANIZATION = "/organization/{organizationId}";
+
 
 }

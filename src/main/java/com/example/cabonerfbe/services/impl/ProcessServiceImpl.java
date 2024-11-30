@@ -23,6 +23,7 @@ import com.example.cabonerfbe.services.ProcessService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -73,6 +74,8 @@ public class ProcessServiceImpl implements ProcessService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND, Collections.EMPTY_LIST)
         );
 
+        //todo: giới hạn số process (20)
+
         Project project = projectRepository.findByIdAndStatusTrue(request.getProjectId()).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST)
         );
@@ -81,6 +84,7 @@ public class ProcessServiceImpl implements ProcessService {
         process.setName(request.getName());
         process.setLifeCycleStage(lifeCycleStage);
         process.setProject(project);
+        process.setMethodId(project.getLifeCycleImpactAssessmentMethod().getId());
         process.setOverAllProductFlowRequired(Constants.NEW_OVERALL_FLOW);
         process = processRepository.save(process);
 
@@ -152,6 +156,18 @@ public class ProcessServiceImpl implements ProcessService {
         Thread deleteConnectorThread = new Thread(() -> connectorService.deleteAssociatedConnectors(id, Constants.DELETE_CONNECTOR_TYPE_PROCESS));
         deleteConnectorThread.start();
         return new DeleteProcessResponse(process.getId());
+    }
+
+    @Transactional
+    @Override
+    public List<Process> addToObjectLibrary(UUID processId) {
+        Process process = processRepository.findByProcessId(processId).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND)
+        );
+
+        convertProcessToObjectLibrary(process);
+
+        return new ArrayList<>();
     }
 
     public List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list) {
@@ -256,4 +272,48 @@ public class ProcessServiceImpl implements ProcessService {
         return baseNet;
     }
 
+    private void convertProcessToObjectLibrary(Process process) {
+        Process newProcess = new Process();
+        newProcess.setLibrary(true);
+        newProcess.setName(process.getName());
+        newProcess.setDescription(process.getDescription());
+        newProcess.setProject(null);
+        newProcess.setMethodId(process.getMethodId());
+        newProcess.setLifeCycleStage(process.getLifeCycleStage());
+        newProcess.setOrganization(process.getProject().getOrganization());
+        newProcess.setOverAllProductFlowRequired(Constants.DEFAULT_OVERALL_PRODUCT_FLOW_REQUIRED);
+        processRepository.save(newProcess);
+
+        List<Exchanges> exchangesList = exchangesRepository.findAllByProcess(process.getId()).stream()
+                .filter(x -> !(Constants.PRODUCT_EXCHANGE.equals(x.getExchangesType().getName()) && x.isInput())).map(
+                        oldExchange -> {
+                            Exchanges newExchanges = new Exchanges();
+                            newExchanges.setName(oldExchange.getName());
+                            newExchanges.setDescription(oldExchange.getDescription());
+                            newExchanges.setValue(oldExchange.getValue());
+                            newExchanges.setExchangesType(oldExchange.getExchangesType());
+                            newExchanges.setProcess(newProcess);
+                            newExchanges.setUnit(oldExchange.getUnit());
+                            newExchanges.setInput(oldExchange.isInput());
+                            newExchanges.setEmissionSubstance(oldExchange.getEmissionSubstance());
+                            return newExchanges;
+                        }
+                ).toList();
+        exchangesRepository.saveAll(exchangesList);
+
+        List<ProcessImpactValue> processImpactValueList = processImpactValueRepository.findByProcessId(process.getId()).stream()
+                .map(oldValue -> {
+                            ProcessImpactValue newImpactValue = new ProcessImpactValue();
+                            newImpactValue.setImpactMethodCategory(oldValue.getImpactMethodCategory());
+                            newImpactValue.setProcess(newProcess);
+                            newImpactValue.setUnitLevel(oldValue.getUnitLevel());
+                            newImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
+                            newImpactValue.setOverallImpactContribution(Constants.DEFAULT_OVERALL_IMPACT_CONTRIBUTION);
+                            newImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
+                            return newImpactValue;
+                        }
+                ).toList();
+        processImpactValueRepository.saveAll(processImpactValueList);
+
+    }
 }

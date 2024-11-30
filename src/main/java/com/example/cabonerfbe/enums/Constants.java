@@ -26,6 +26,7 @@ public class Constants {
     public static final BigDecimal DEFAULT_OVERALL_IMPACT_CONTRIBUTION = BigDecimal.ZERO;
     public static final BigDecimal DEFAULT_SYSTEM_LEVEL = BigDecimal.ZERO;
     public static final BigDecimal DEFAULT_PREVIOUS_PROCESS_VALUE = BigDecimal.ZERO;
+    public static final BigDecimal DEFAULT_OVERALL_PRODUCT_FLOW_REQUIRED = BigDecimal.ZERO;
     public static final BigDecimal BASE_UNIT_LEVEL = BigDecimal.ZERO;
 
     public static final int BIG_DECIMAL_DEFAULT_SCALE = 60;

@@ -1,6 +1,8 @@
 package com.example.cabonerfbe.repositories;
 
 import com.example.cabonerfbe.models.Process;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -41,4 +43,10 @@ public interface ProcessRepository extends JpaRepository<Process, UUID> {
             "AND p.id NOT IN (SELECT c.startProcess.id FROM Connector c WHERE c.startProcess.project.id = :projectId AND c.status = true)" +
             "AND p.status = true")
     List<Process> findRootProcess(@Param("projectId") UUID projectId);
+
+    @Query("SELECT p FROM Process p " +
+            "WHERE p.organization.id = :organizationId AND p.status = true " +
+            "AND p.methodId = :methodId " +
+            "AND (:keyword IS NULL OR p.name ILIKE CONCAT('%', :keyword, '%'))")
+    Page<Process> findObjectLibrary(@Param("organizationId") UUID organizationId, @Param("methodId") UUID methodId, @Param("keyword") String keyword, Pageable pageable);
 }
