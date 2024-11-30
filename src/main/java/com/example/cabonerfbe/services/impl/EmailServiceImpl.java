@@ -9,6 +9,7 @@ import com.example.cabonerfbe.repositories.UserOrganizationRepository;
 import com.example.cabonerfbe.repositories.UserRepository;
 import com.example.cabonerfbe.response.SendMailCreateAccountResponse;
 import com.example.cabonerfbe.response.SendMailCreateOrganizationResponse;
+import com.example.cabonerfbe.response.SendMailInviteResponse;
 import com.example.cabonerfbe.response.SendMailRegisterResponse;
 import com.example.cabonerfbe.services.EmailService;
 import com.example.cabonerfbe.services.JwtService;
@@ -113,7 +114,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public SendMailRegisterResponse sendMailInviteOrganization(UUID userId, UUID organizationId) {
+    public void sendMailInviteOrganization(UUID userId, UUID organizationId) {
         Users u = userRepository.findById(userId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
@@ -125,9 +126,10 @@ public class EmailServiceImpl implements EmailService {
 
         String token = jwtService.generateEmailVerifyToken(u);
 
-        return SendMailRegisterResponse.builder()
+        SendMailInviteResponse response = SendMailInviteResponse.builder()
                 .token(token)
                 .email(u.getEmail())
+                .organizationId(organizationId)
                 .build();
     }
 

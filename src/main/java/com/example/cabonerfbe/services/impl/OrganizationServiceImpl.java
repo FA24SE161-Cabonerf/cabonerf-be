@@ -146,6 +146,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         Organization organization = new Organization();
         organization.setName(request.getName());
         organization.setLogo(logoUrl);
+        organization.setStatus(false);
 
         organization = organizationRepository.save(organization);
 
@@ -207,6 +208,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         }
         u.setUserVerifyStatus(userVerifyStatusRepository.findByName("Verified").get());
         userRepository.save(u);
+
+        o.setStatus(false);
+        organizationRepository.save(o);
 
         uo.setHasJoined(true);
         userOrganizationRepository.save(uo);
