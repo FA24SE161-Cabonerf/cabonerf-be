@@ -83,7 +83,7 @@ public class API_PARAMS {
      ************************/
     public static final String PROCESS = "/process";
     public static final String PROCESS_BY_ID = "/{id}";
-    public static final String ADD_PROCESS_TO_OBJECT_LIBRARY = "/{processId}/object-library";
+    public static final String SAVE_PROCESS_TO_OBJECT_LIBRARY = "/{processId}/object-library";
 
 
     /************************

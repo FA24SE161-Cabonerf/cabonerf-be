@@ -72,11 +72,11 @@ public class ProcessController {
         );
     }
 
-    @PostMapping(API_PARAMS.ADD_PROCESS_TO_OBJECT_LIBRARY)
-    public ResponseEntity<ResponseObject> addToObjectLibrary(@PathVariable UUID processId) {
+    @PostMapping(API_PARAMS.SAVE_PROCESS_TO_OBJECT_LIBRARY)
+    public ResponseEntity<ResponseObject> saveToObjectLibrary(@PathVariable UUID processId) {
         log.info("Start addToObjectLibrary. processId: {}", processId);
         return ResponseEntity.ok().body(new ResponseObject(
-                        Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.ADD_TO_OBJECT_LIBRARY_SUCCESS, processService.addToObjectLibrary(processId)
+                        Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.ADD_TO_OBJECT_LIBRARY_SUCCESS, processService.saveToObjectLibrary(processId)
                 )
         );
     }

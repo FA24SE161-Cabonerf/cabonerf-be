@@ -353,6 +353,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         return dto;
     }
 
+    @Override
     public List<ProcessImpactValue> calculateToDesignatedProcess(ProcessNodeDto node) {
         Map<UUID, BigDecimal> totalNet = aggregateNet(node);
 

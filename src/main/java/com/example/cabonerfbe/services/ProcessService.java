@@ -21,5 +21,5 @@ public interface ProcessService {
 
     DeleteProcessResponse deleteProcess(UUID id);
 
-    List<Process> addToObjectLibrary(UUID processId);
+    List<Process> saveToObjectLibrary(UUID processId);
 }

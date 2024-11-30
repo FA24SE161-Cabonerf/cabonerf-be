@@ -19,6 +19,7 @@ import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.MessagePublisher;
+import com.example.cabonerfbe.services.ProcessImpactValueService;
 import com.example.cabonerfbe.services.ProcessService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,8 +66,9 @@ public class ProcessServiceImpl implements ProcessService {
     private UnitServiceImpl unitService;
     @Autowired
     private UnitRepository unitRepository;
+
     @Autowired
-    private ProcessImpactValueServiceImpl processImpactValueService;
+    private ProcessImpactValueService processImpactValueService;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
@@ -162,7 +164,7 @@ public class ProcessServiceImpl implements ProcessService {
 
     @Transactional
     @Override
-    public List<Process> addToObjectLibrary(UUID processId) {
+    public List<Process> saveToObjectLibrary(UUID processId) {
         Process process = processRepository.findByProcessId(processId).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND)
         );
