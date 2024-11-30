@@ -197,6 +197,7 @@ public class ProcessServiceImpl implements ProcessService {
         messagePublisher.publishCreateProcess(RabbitMQConfig.CREATED_PROCESS_EXCHANGE, RabbitMQConfig.CREATED_PROCESS_ROUTING_KEY, processDto);
     }
 
+    @Override
     public ProcessNodeDto constructListProcessNodeDto(UUID projectId) {
         log.info("constructing contribution breakdown data");
 
