@@ -40,63 +40,63 @@ public class EmailServiceImpl implements EmailService {
     @Autowired
     MessagePublisher messagePublisher;
 
-    @Override
-    public void sendMailCreateOrganization(UUID organizationId) {
-        // Kiểm tra organization tồn tại
-        organizationRepository.findByIdWhenCreate(organizationId)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
-
-        List<UserOrganization> userOrganizations = uoRepository.findByOrganization(organizationId);
-        if (userOrganizations.isEmpty()) {
-            throw CustomExceptions.badRequest("Account doesn't exist.");
-        }
-        String password;
-        if (userOrganizations.size() > 1) {
-            password = "Password current";
-        }else{
-            password = PasswordGenerator.generateRandomPassword(8);
-        }
-
-        UserOrganization userOrg = userOrganizations.get(0);
-
-        String token = jwtService.generateEmailVerifyToken(userOrg.getUser());
-        userRepository.findById(userOrg.getUser().getId())
-                .ifPresent(user -> {
-                    user.setPassword(password);
-                    userRepository.save(user);
-                });
-
-        // build the response
-        SendMailCreateOrganizationResponse createOrganizationResponse = SendMailCreateOrganizationResponse.builder()
-                .organizationId(organizationId)
-                .token(token)
-                .email(userOrg.getUser().getEmail())
-                .password(password)
-                .build();
-
-        // publish the msg to rabbit queue
-        messagePublisher.publishSendMailCreateOrganization(createOrganizationResponse);
-    }
-
-    @Override
-    public void sendMailCreateAccountByOrganizationManager(UUID userId) {
-        Users u = userRepository.findById(userId)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
-
-        String token = jwtService.generateEmailVerifyToken(u);
-
-        String password = PasswordGenerator.generateRandomPassword(8);
-        u.setPassword(password);
-        userRepository.save(u);
-
-        SendMailCreateAccountResponse createAccountResponse = SendMailCreateAccountResponse.builder()
-                .token(token)
-                .email(u.getEmail())
-                .password(password)
-                .build();
-
-        messagePublisher.publishSendMailCreateAccountByOrganizationManager(createAccountResponse);
-    }
+//    @Override
+//    public void sendMailCreateOrganization(UUID organizationId) {
+//        // Kiểm tra organization tồn tại
+//        organizationRepository.findByIdWhenCreate(organizationId)
+//                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
+//
+//        List<UserOrganization> userOrganizations = uoRepository.findByOrganization(organizationId);
+//        if (userOrganizations.isEmpty()) {
+//            throw CustomExceptions.badRequest("Account doesn't exist.");
+//        }
+//        String password;
+//        if (userOrganizations.size() > 1) {
+//            password = "Password current";
+//        }else{
+//            password = PasswordGenerator.generateRandomPassword(8);
+//        }
+//
+//        UserOrganization userOrg = userOrganizations.get(0);
+//
+//        String token = jwtService.generateEmailVerifyToken(userOrg.getUser());
+//        userRepository.findById(userOrg.getUser().getId())
+//                .ifPresent(user -> {
+//                    user.setPassword(password);
+//                    userRepository.save(user);
+//                });
+//
+//        // build the response
+//        SendMailCreateOrganizationResponse createOrganizationResponse = SendMailCreateOrganizationResponse.builder()
+//                .organizationId(organizationId)
+//                .token(token)
+//                .email(userOrg.getUser().getEmail())
+//                .password(password)
+//                .build();
+//
+//        // publish the msg to rabbit queue
+//        messagePublisher.publishSendMailCreateOrganization(createOrganizationResponse);
+//    }
+//
+//    @Override
+//    public void sendMailCreateAccountByOrganizationManager(UUID userId) {
+//        Users u = userRepository.findById(userId)
+//                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
+//
+//        String token = jwtService.generateEmailVerifyToken(u);
+//
+//        String password = PasswordGenerator.generateRandomPassword(8);
+//        u.setPassword(password);
+//        userRepository.save(u);
+//
+//        SendMailCreateAccountResponse createAccountResponse = SendMailCreateAccountResponse.builder()
+//                .token(token)
+//                .email(u.getEmail())
+//                .password(password)
+//                .build();
+//
+//        messagePublisher.publishSendMailCreateAccountByOrganizationManager(createAccountResponse);
+//    }
 
     @Override
     public void sendMailRegister(UUID userId) {
@@ -114,14 +114,11 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendMailInviteOrganization(UUID userId, UUID organizationId) {
+    public void sendMailInviteOrganization(UUID userId, UUID userOrganizationId) {
         Users u = userRepository.findById(userId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
-        organizationRepository.findByIdWhenCreate(organizationId)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
-
-        UserOrganization uo = uoRepository.findByUserAndOrganization(organizationId,userId)
+        UserOrganization uo = uoRepository.findById(userOrganizationId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_HAVE_INVITE_ORGANIZATION));
 
         String token = jwtService.generateEmailVerifyToken(u);
@@ -129,7 +126,6 @@ public class EmailServiceImpl implements EmailService {
         SendMailInviteResponse response = SendMailInviteResponse.builder()
                 .token(token)
                 .email(u.getEmail())
-                .organizationId(organizationId)
                 .build();
     }
 

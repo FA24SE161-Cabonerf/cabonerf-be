@@ -61,10 +61,10 @@ public class MessagePublisher {
         log.info("Publish SendMailCreateOrganization: {}", response.getEmail());
     }
 
-    public void publishSendMailCreateAccountByOrganizationManager(SendMailCreateAccountResponse response) {
-        rabbitTemplate.convertAndSend(RabbitMQConfig.EMAIL_EXCHANGE, RabbitMQConfig.EMAIL_CREATE_ACCOUNT_MANAGER_ROUTING_KEY, response);
-        log.info("Publish SendMailCreateAccountByOrganizationManager: {}", response.getEmail());
-    }
+//    public void publishSendMailCreateAccountByOrganizationManager(SendMailCreateAccountResponse response) {
+//        rabbitTemplate.convertAndSend(RabbitMQConfig.EMAIL_EXCHANGE, RabbitMQConfig.EMAIL_CREATE_ACCOUNT_MANAGER_ROUTING_KEY, response);
+//        log.info("Publish SendMailCreateAccountByOrganizationManager: {}", response.getEmail());
+//    }
 
     public void publishSendMailRegister(SendMailRegisterResponse response) {
         rabbitTemplate.convertAndSend(RabbitMQConfig.EMAIL_EXCHANGE, RabbitMQConfig.EMAIL_REGISTER_ROUTING_KEY, response);

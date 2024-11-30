@@ -16,6 +16,5 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SendMailInviteResponse {
     private String email;
-    private UUID organizationId;
     private String token;
 }

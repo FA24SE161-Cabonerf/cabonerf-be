@@ -18,7 +18,7 @@ import java.util.UUID;
 public class InviteUserToOrganizationRequest {
 
     @NotEmpty(message = "Invite must include at least one user")
-    private List<@Email(message = "Invalid email format") String> userEmail;
+    private List<UUID> userIds;
     @NotNull(message = "Organization is required")
     private UUID organizationId;
 }
