@@ -40,4 +40,10 @@ public class Constants {
     public static final String ORGANIZATION_MANAGER = "Organization Manager";
 
     public static final String VERIFY_STATUS_PENDING = "Pending";
+
+    public static final String USER_ID_HEADER = "x-user-id";
+
+    public static final boolean IS_LIB_TRUE = true;
+    public static final boolean IS_LIB_FALSE = false;
+
 }

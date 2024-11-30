@@ -51,8 +51,10 @@ public class MessageConstants {
     public static final String GET_LIFE_STAGE_BY_ID_SUCCESS = "Get life cycle stage by success.";
     public static final String CHANGE_PASSWORD_SUCCESS = "Change password success.";
     public static final String UPDATE_USER_PROFILE_SUCCESS = "Update user profile success.";
-    public static final String ADD_TO_OBJECT_LIBRARY_SUCCESS = "Add process to object library success.";
-    public static final String GET_OBJECT_LIBRARY_OF_ORGANIZATION_SUCCESS = "Get object library of organization success.";
+    public static final String SAVE_TO_OBJECT_LIBRARY_SUCCESS = "Save process to object library success.";
+    public static final String SEARCH_OBJECT_LIBRARY_OF_ORGANIZATION_SUCCESS = "Search object library of organization success.";
+    public static final String REMOVE_FROM_OBJECT_LIBRARY_SUCCESS = "Remove process from object library success.";
+    public static final String ADD_FROM_LIBRARY_TO_PROJECT_SUCCESS = "Add process from object library to project success.";
 
 
 
@@ -129,6 +131,12 @@ public class MessageConstants {
     public static final String INVALID_IMAGE = "The image is not in the right format.";
     public static final String EMAIL_IS_USED_FOR_OTHER_ORGANIZATION = "Email is already used for other organization.";
     public static final String FAILED_TO_UPLOAD_CONTRACT = "Failed to upload contract. Please check again.";
+    public static final String MAX_PROCESS_EXCEEDED = "Maximum number of processes in one project is 20.";
+
+    public static final String PROCESS_NOT_FOUND_IN_OBJECT_LIBRARY = "Cannot find the process in object library.";
+    public static final String PROCESS_ALREADY_IN_OBJECT_LIBRARY = "Process is already in object library.";
+    public static final String OBJECT_AND_PROJECT_METHOD_NOT_SIMILAR = "The process and project methods are not the same.";
+    public static final String OBJECT_AND_PROJECT_ORGANIZATION_NOT_SIMILAR = "The process and project organizations are not the same.";
 
 
     // CALCULATION ERROR MSG

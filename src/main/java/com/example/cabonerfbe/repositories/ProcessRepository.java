@@ -45,8 +45,14 @@ public interface ProcessRepository extends JpaRepository<Process, UUID> {
     List<Process> findRootProcess(@Param("projectId") UUID projectId);
 
     @Query("SELECT p FROM Process p " +
-            "WHERE p.organization.id = :organizationId AND p.status = true " +
+            "WHERE p.organization.id = :organizationId AND p.status = true AND p.project = null " +
             "AND p.methodId = :methodId " +
             "AND (COALESCE(:keyword, '') = '' OR p.name ILIKE CONCAT('%', :keyword, '%'))")
     Page<Process> findObjectLibrary(@Param("organizationId") UUID organizationId, @Param("methodId") UUID methodId, @Param("keyword") String keyword, Pageable pageable);
+
+    @Query("select count(*)>20 from Process p where p.project.id = ?1 and p.status = true")
+    boolean countAllByProject_Id(UUID id);
+
+    @Query("SELECT p FROM Process p WHERE p.id = :id AND p.status = true AND p.isLibrary = :is_library")
+    Optional<Process> findByProcessIdAndLibrary(@Param("id") UUID id, @Param("is_library") boolean library);
 }

@@ -55,4 +55,7 @@ public interface ExchangesRepository extends JpaRepository<Exchanges, UUID> {
     List<Exchanges> findElementaryByProcess(UUID id);
     @Query("SELECT e FROM Exchanges e WHERE e.process.id IN :processIds AND e.exchangesType.name like 'Elementary' AND e.status = true")
     List<Exchanges> findAllByElementary(@Param("processIds") List<UUID> processIds);
+
+    @Query("SELECT e FROM Exchanges e WHERE e.process.id = ?1 AND e.status = true ORDER BY e.createdAt asc ")
+    List<Exchanges> findAllByProcessJoinFetch(UUID processId);
 }

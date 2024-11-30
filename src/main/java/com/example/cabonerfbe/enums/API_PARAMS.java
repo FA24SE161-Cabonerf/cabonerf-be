@@ -83,8 +83,6 @@ public class API_PARAMS {
      ************************/
     public static final String PROCESS = "/process";
     public static final String PROCESS_BY_ID = "/{id}";
-    public static final String SAVE_PROCESS_TO_OBJECT_LIBRARY = "/{processId}/object-library";
-
 
     /************************
      *      UNIT APIs     *
@@ -199,7 +197,8 @@ public class API_PARAMS {
      * OBJECT LIBRARY *
      *****************/
     public static final String OBJECT_LIBRARY = "/object-library";
-    public static final String GET_OBJECT_LIBRARY_OF_ORGANIZATION = "/organizations/{organizationId}";
-
-
+    public static final String SEARCH_OBJECT_LIBRARY_OF_ORGANIZATION = "/organizations/{organizationId}";
+    public static final String REMOVE_PROCESS_FROM_OBJECT_LIBRARY = "/{processId}";
+    public static final String SAVE_PROCESS_TO_OBJECT_LIBRARY = "/{processId}";
+    public static final String ADD_FROM_OBJECT_LIBRARY_TO_PROJECT = "/{processId}/projects/{projectId}";
 }

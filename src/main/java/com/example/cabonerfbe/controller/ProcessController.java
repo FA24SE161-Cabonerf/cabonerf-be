@@ -2,7 +2,6 @@ package com.example.cabonerfbe.controller;
 
 import com.example.cabonerfbe.enums.API_PARAMS;
 import com.example.cabonerfbe.enums.Constants;
-import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.ResponseObject;
@@ -68,15 +67,6 @@ public class ProcessController {
         log.info("Start updateProcess. id: {}", id);
         return ResponseEntity.ok().body(new ResponseObject(
                         Constants.RESPONSE_STATUS_SUCCESS, "Create process success", processService.deleteProcess(id)
-                )
-        );
-    }
-
-    @PostMapping(API_PARAMS.SAVE_PROCESS_TO_OBJECT_LIBRARY)
-    public ResponseEntity<ResponseObject> saveToObjectLibrary(@PathVariable UUID processId) {
-        log.info("Start addToObjectLibrary. processId: {}", processId);
-        return ResponseEntity.ok().body(new ResponseObject(
-                        Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.ADD_TO_OBJECT_LIBRARY_SUCCESS, processService.saveToObjectLibrary(processId)
                 )
         );
     }
