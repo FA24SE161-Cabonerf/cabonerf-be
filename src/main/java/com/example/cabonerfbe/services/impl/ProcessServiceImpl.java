@@ -19,7 +19,6 @@ import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.MessagePublisher;
-import com.example.cabonerfbe.services.ProcessImpactValueService;
 import com.example.cabonerfbe.services.ProcessService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -66,9 +62,6 @@ public class ProcessServiceImpl implements ProcessService {
     private UnitServiceImpl unitService;
     @Autowired
     private UnitRepository unitRepository;
-
-    @Autowired
-    private ProcessImpactValueService processImpactValueService;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
@@ -174,6 +167,7 @@ public class ProcessServiceImpl implements ProcessService {
         return new ArrayList<>();
     }
 
+    @Override
     public List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list) {
         return list.stream()
                 .map(x -> {
@@ -306,7 +300,9 @@ public class ProcessServiceImpl implements ProcessService {
                 ).toList();
         exchangesRepository.saveAll(exchangesList);
 
-        List<ProcessImpactValue> processImpactValueList = processImpactValueService.calculateToDesignatedProcess(buildTree(process.getId(), connectorRepository.findConnectorToProcess(process.getId()), BigDecimal.ONE));
+
+        ProcessNodeDto tree = buildTree(process.getId(), connectorRepository.findConnectorToProcess(process.getId()), BigDecimal.ONE);
+        List<ProcessImpactValue> processImpactValueList = calculateToDesignatedProcess(tree);
 
         processImpactValueList = processImpactValueList.stream()
                 .map(oldValue -> {
@@ -322,6 +318,60 @@ public class ProcessServiceImpl implements ProcessService {
                 ).toList();
 
         processImpactValueRepository.saveAll(processImpactValueList);
+        System.out.println("new processId:" + newProcess.getId());
+    }
 
+    @Override
+    public ProcessNodeDto calculationFast(UUID projectId) {
+        ProcessNodeDto dto = constructListProcessNodeDto(projectId);
+        Map<UUID, BigDecimal> totalNet = aggregateNet(dto);
+
+        List<ProcessImpactValue> updatedImpactValues = totalNet.keySet().stream()
+                .flatMap(processId -> processImpactValueRepository.findByProcessId(processId).stream()
+                        .peek(x -> x.setSystemLevel(totalNet.get(processId).multiply(x.getUnitLevel()))))
+                .toList();
+        processImpactValueRepository.saveAll(updatedImpactValues);
+
+        totalNet.forEach((processId, net) ->
+                processRepository.findByProcessId(processId).ifPresent(data -> {
+                    data.setOverAllProductFlowRequired(net);
+                    processRepository.save(data);
+                })
+        );
+
+        return dto;
+    }
+
+    public List<ProcessImpactValue> calculateToDesignatedProcess(ProcessNodeDto node) {
+        Map<UUID, BigDecimal> totalNet = aggregateNet(node);
+
+        List<ProcessImpactValue> updatedImpactValues = totalNet.keySet().stream()
+                .flatMap(processId -> processImpactValueRepository.findByProcessId(processId).stream()
+                        .peek(x -> x.setSystemLevel(totalNet.get(processId).multiply(x.getUnitLevel()))))
+                .toList();
+
+//        processImpactValueRepository.saveAll(updatedImpactValues);
+
+        return updatedImpactValues.stream().parallel().filter(x -> x.getProcessId().equals(node.getProcessId())).collect(Collectors.toList());
+    }
+
+
+    private static Map<UUID, BigDecimal> aggregateNet(ProcessNodeDto root) {
+        Map<UUID, BigDecimal> result = new HashMap<>();
+        aggregateNetRecursive(root, result);
+        return result;
+    }
+
+    private static void aggregateNetRecursive(ProcessNodeDto node, Map<UUID, BigDecimal> result) {
+        if (node == null) return;
+
+        result.put(
+                node.getProcessId(),
+                result.getOrDefault(node.getProcessId(), BigDecimal.ZERO).add(node.getNet())
+        );
+
+        for (ProcessNodeDto subProcess : node.getSubProcesses()) {
+            aggregateNetRecursive(subProcess, result);
+        }
     }
 }

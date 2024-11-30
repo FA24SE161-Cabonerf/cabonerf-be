@@ -48,7 +48,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     @Autowired
     private ProjectImpactValueRepository projectImpactValueRepository;
     private String exchangeIdNext = null;
-
     @Autowired
     private ProcessService processService;
 
@@ -262,7 +261,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             }
             findWay(connectors);
         }
-        ProcessNodeDto dto = calculationFast(projectId);
+        ProcessNodeDto dto = processService.calculationFast(projectId);
         updateProjectValue(processIds, projectId);
         return dto;
     }
@@ -334,60 +333,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 .reduce(BigDecimal.ONE, BigDecimal::multiply); // Tính tích của tất cả các giá trị chia
     }
 
-    private ProcessNodeDto calculationFast(UUID projectId) {
-        ProcessNodeDto dto = processService.constructListProcessNodeDto(projectId);
-        Map<UUID, BigDecimal> totalNet = aggregateNet(dto);
 
-        List<ProcessImpactValue> updatedImpactValues = totalNet.keySet().stream()
-                .flatMap(processId -> processImpactValueRepository.findByProcessId(processId).stream()
-                        .peek(x -> x.setSystemLevel(totalNet.get(processId).multiply(x.getUnitLevel()))))
-                .toList();
-        processImpactValueRepository.saveAll(updatedImpactValues);
-
-        totalNet.forEach((processId, net) ->
-                processRepository.findByProcessId(processId).ifPresent(data -> {
-                    data.setOverAllProductFlowRequired(net);
-                    processRepository.save(data);
-                })
-        );
-
-        return dto;
-    }
-
-    @Override
-    public List<ProcessImpactValue> calculateToDesignatedProcess(ProcessNodeDto node) {
-        Map<UUID, BigDecimal> totalNet = aggregateNet(node);
-
-        List<ProcessImpactValue> updatedImpactValues = totalNet.keySet().stream()
-                .flatMap(processId -> processImpactValueRepository.findByProcessId(processId).stream()
-                        .peek(x -> x.setSystemLevel(totalNet.get(processId).multiply(x.getUnitLevel()))))
-                .toList();
-
-//        processImpactValueRepository.saveAll(updatedImpactValues);
-
-        return updatedImpactValues.stream().parallel().filter(x -> x.getProcessId().equals(node.getProcessId())).collect(Collectors.toList());
-    }
-
-
-    private static Map<UUID, BigDecimal> aggregateNet(ProcessNodeDto root) {
-        Map<UUID, BigDecimal> result = new HashMap<>();
-        aggregateNetRecursive(root, result);
-        return result;
-    }
-
-    private static void aggregateNetRecursive(ProcessNodeDto node, Map<UUID, BigDecimal> result) {
-        if (node == null) return;
-
-        // Cộng giá trị `net` của node hiện tại vào `Map`
-        result.put(
-                node.getProcessId(),
-                result.getOrDefault(node.getProcessId(), BigDecimal.ZERO).add(node.getNet())
-        );
-
-        // Đệ quy xử lý các `subProcesses`
-        for (ProcessNodeDto subProcess : node.getSubProcesses()) {
-            aggregateNetRecursive(subProcess, result);
-        }
-    }
 
 }

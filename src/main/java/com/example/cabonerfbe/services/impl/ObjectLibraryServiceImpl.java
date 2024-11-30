@@ -11,6 +11,7 @@ import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.PagingKeywordMethodRequest;
 import com.example.cabonerfbe.services.ObjectLibraryService;
+import com.example.cabonerfbe.services.ProcessService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,12 +28,12 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
     private final ProcessRepository processRepository;
     private final LifeCycleImpactAssessmentMethodRepository methodRepository;
     private final ProcessConverter processConverter;
-    private final ProcessServiceImpl processService;
+    private final ProcessService processService;
     private final ProcessImpactValueRepository processImpactValueRepository;
     private final ExchangesConverter exchangesConverter;
     private final ExchangesRepository exchangesRepository;
 
-    public ObjectLibraryServiceImpl(ProcessServiceImpl processService, OrganizationRepository organizationRepository, ProcessRepository processRepository, LifeCycleImpactAssessmentMethodRepository methodRepository, ProcessConverter processConverter, ProcessImpactValueRepository processImpactValueRepository, ExchangesConverter exchangesConverter, ExchangesRepository exchangesRepository, ExchangesConverter exchangesConverter1, ExchangesRepository exchangesRepository1) {
+    public ObjectLibraryServiceImpl(ProcessService processService, OrganizationRepository organizationRepository, ProcessRepository processRepository, LifeCycleImpactAssessmentMethodRepository methodRepository, ProcessConverter processConverter, ProcessImpactValueRepository processImpactValueRepository, ExchangesConverter exchangesConverter, ExchangesRepository exchangesRepository, ExchangesConverter exchangesConverter1, ExchangesRepository exchangesRepository1) {
         this.organizationRepository = organizationRepository;
         this.processRepository = processRepository;
         this.methodRepository = methodRepository;
