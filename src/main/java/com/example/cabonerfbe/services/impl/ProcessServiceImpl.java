@@ -352,7 +352,7 @@ public class ProcessServiceImpl implements ProcessService {
 
 //        processImpactValueRepository.saveAll(updatedImpactValues);
 
-        return updatedImpactValues.stream().parallel().filter(x -> x.getProcessId().equals(node.getProcessId())).collect(Collectors.toList());
+        return updatedImpactValues.stream().filter(x -> x.getProcessId().equals(node.getProcessId())).collect(Collectors.toList());
     }
 
 

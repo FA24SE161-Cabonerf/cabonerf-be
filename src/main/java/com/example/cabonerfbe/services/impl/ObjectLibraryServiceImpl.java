@@ -56,7 +56,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
 
         Page<Process> processPage = processRepository.findObjectLibrary(organizationId, request.getMethodId(), request.getKeyword(), pageable);
 
-        List<ObjectLibraryDto> objectLibraryList = processPage.getContent().stream().parallel().map(
+        List<ObjectLibraryDto> objectLibraryList = processPage.getContent().parallelStream().map(
                 process -> {
                     ObjectLibraryDto object = processConverter.fromProcessToObjectLibraryDto(process);
                     object.setImpacts(processService.converterProcess(
