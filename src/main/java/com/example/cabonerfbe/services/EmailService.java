@@ -10,6 +10,8 @@ public interface EmailService {
 //
 //    void sendMailCreateAccountByOrganizationManager(UUID userId);
 
+    void sendMailCreateAccountOrganization(UUID userId);
+
     void sendMailRegister(UUID userId);
 
     void sendMailInviteOrganization(UUID userId, UUID organizationId);

@@ -4,8 +4,7 @@ import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
 import com.example.cabonerfbe.request.RabbitMqJsonRequest;
-import com.example.cabonerfbe.response.SendMailCreateAccountResponse;
-import com.example.cabonerfbe.response.SendMailCreateOrganizationResponse;
+import com.example.cabonerfbe.response.SendMailCreateAccountOrganizationResponse;
 import com.example.cabonerfbe.response.SendMailRegisterResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -56,7 +55,7 @@ public class MessagePublisher {
         log.info("Publish connector message: {}, exchange: {}, key: {}", idList, exchangeName, routingKey);
     }
 
-    public void publishSendMailCreateOrganization(SendMailCreateOrganizationResponse response) {
+    public void publishSendMailCreateOrganization(SendMailCreateAccountOrganizationResponse response) {
         rabbitTemplate.convertAndSend(RabbitMQConfig.EMAIL_EXCHANGE, RabbitMQConfig.EMAIL_CREATE_ORGANIZATION_ROUTING_KEY, response);
         log.info("Publish SendMailCreateOrganization: {}", response.getEmail());
     }
