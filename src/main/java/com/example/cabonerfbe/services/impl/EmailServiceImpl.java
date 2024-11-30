@@ -43,7 +43,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendMailCreateOrganization(UUID organizationId) {
         // Kiểm tra organization tồn tại
-        organizationRepository.findById(organizationId)
+        organizationRepository.findByIdWhenCreate(organizationId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
         List<UserOrganization> userOrganizations = uoRepository.findByOrganization(organizationId);
@@ -118,7 +118,7 @@ public class EmailServiceImpl implements EmailService {
         Users u = userRepository.findById(userId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
-        organizationRepository.findById(organizationId)
+        organizationRepository.findByIdWhenCreate(organizationId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
         UserOrganization uo = uoRepository.findByUserAndOrganization(organizationId,userId)

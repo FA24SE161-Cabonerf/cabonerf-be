@@ -190,7 +190,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public LoginResponse confirm(VerifyCreateOrganizationRequest request) {
-        Organization o = organizationRepository.findById(request.getOrganizationId())
+        Organization o = organizationRepository.findByIdWhenCreate(request.getOrganizationId())
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
         EmailVerificationToken _token = jwtService.checkToken(request.getToken());
