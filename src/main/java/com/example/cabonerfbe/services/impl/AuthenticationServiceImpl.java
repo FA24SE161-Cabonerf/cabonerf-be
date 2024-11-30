@@ -123,7 +123,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var accessToken = jwtService.generateToken(saved.get());
         var refreshToken = jwtService.generateRefreshToken(saved.get());
 
-        System.out.println(jwtService.generateInviteOrganizationToken(saved.get()));
         saveRefreshToken(refreshToken, user);
         Organization o = new Organization();
         o.setName(Constants.DEFAULT_ORGANIZATION);
