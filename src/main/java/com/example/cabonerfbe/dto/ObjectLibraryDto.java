@@ -15,7 +15,7 @@ public class ObjectLibraryDto {
     private String name;
     private String description;
     private LifeCycleStageDto lifeCycleStage;
-    private boolean isLibrary;
+    private boolean library;
     private List<ProcessImpactValueDto> impacts;
     private List<ExchangesDto> exchanges;
 }

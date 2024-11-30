@@ -53,6 +53,6 @@ public interface ProcessRepository extends JpaRepository<Process, UUID> {
     @Query("select count(*)>20 from Process p where p.project.id = ?1 and p.status = true")
     boolean countAllByProject_Id(UUID id);
 
-    @Query("SELECT p FROM Process p WHERE p.id = :id AND p.status = true AND p.isLibrary = :is_library")
+    @Query("SELECT p FROM Process p WHERE p.id = :id AND p.status = true AND p.library = :is_library")
     Optional<Process> findByProcessIdAndLibrary(@Param("id") UUID id, @Param("is_library") boolean library);
 }
