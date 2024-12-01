@@ -234,6 +234,10 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 .map(Process::getId)
                 .collect(Collectors.toList());
 
+        if(!checkObjectLibrary(project)){
+            throw CustomExceptions.badRequest(MessageConstants.PROCESS_NOT_SAME_METHOD_WITH_PROJECT);
+        }
+
         List<Exchanges> dataList = exchangesRepository.findAllByElementary(processIds);
 
         if (dataList.isEmpty()) {
@@ -331,6 +335,23 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                     return endValue.divide(startValue, MathContext.DECIMAL128);
                 })
                 .reduce(BigDecimal.ONE, BigDecimal::multiply); // Tính tích của tất cả các giá trị chia
+    }
+
+    private boolean checkObjectLibrary(Project project) {
+
+        List<UUID> processIds = processRepository.findAllObjectLibrary(project.getId())
+                .stream()
+                .map(Process::getId)
+                .toList();
+
+        if (processIds.isEmpty()) {
+            return true;
+        }
+
+        Map<UUID, UUID> methodIdMap = processImpactValueRepository.findMethodIdsForProcesses(processIds);
+
+        UUID projectMethodId = project.getLifeCycleImpactAssessmentMethod().getId();
+        return methodIdMap.values().stream().allMatch(methodId -> methodId.equals(projectMethodId));
     }
 
 

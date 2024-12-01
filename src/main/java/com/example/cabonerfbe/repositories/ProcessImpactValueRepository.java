@@ -11,8 +11,10 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 public interface ProcessImpactValueRepository extends JpaRepository<ProcessImpactValue, UUID> {
@@ -53,4 +55,25 @@ public interface ProcessImpactValueRepository extends JpaRepository<ProcessImpac
     @Transactional
     @Query("UPDATE ProcessImpactValue p SET p.systemLevel = 0 WHERE p.process.id = :processId AND p.status = true ")
     void setDefaultSystemLevel(@Param("processId") UUID processId);
+
+    @Query("SELECT p.impactMethodCategory.lifeCycleImpactAssessmentMethod.id " +
+            "FROM ProcessImpactValue p " +
+            "WHERE p.process.id = :processId " +
+            "GROUP BY p.impactMethodCategory.lifeCycleImpactAssessmentMethod.id")
+    UUID findMethodProcessUse(@Param("processId") UUID processId);
+
+    @Query("SELECT p.process.id AS processId, " +
+            "       p.impactMethodCategory.lifeCycleImpactAssessmentMethod.id AS methodId " +
+            "FROM ProcessImpactValue p " +
+            "WHERE p.process.id IN :processIds " +
+            "GROUP BY p.process.id, p.impactMethodCategory.lifeCycleImpactAssessmentMethod.id")
+    List<Object[]> findRawMethodIdsForProcesses(@Param("processIds") List<UUID> processIds);
+
+    default Map<UUID, UUID> findMethodIdsForProcesses(List<UUID> processIds) {
+        return findRawMethodIdsForProcesses(processIds).stream()
+                .collect(Collectors.toMap(
+                        result -> (UUID) result[0], // processId
+                        result -> (UUID) result[1]  // methodId
+                ));
+    }
 }

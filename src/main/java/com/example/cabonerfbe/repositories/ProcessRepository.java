@@ -55,4 +55,7 @@ public interface ProcessRepository extends JpaRepository<Process, UUID> {
 
     @Query("SELECT p FROM Process p WHERE p.id = :id AND p.status = true AND p.library = :is_library")
     Optional<Process> findByProcessIdAndLibrary(@Param("id") UUID id, @Param("is_library") boolean library);
+
+    @Query("SELECT p FROM Process p WHERE p.library = true AND p.status = true")
+    List<Process> findAllObjectLibrary(UUID projectId);
 }

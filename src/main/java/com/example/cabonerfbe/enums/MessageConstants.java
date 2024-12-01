@@ -149,5 +149,6 @@ public class MessageConstants {
     public static final String MUST_BE_ONLY_ONE_FINAL_PROCESS = FAILED_TO_PERFORM_CALCULATION + "- There must be only one final process.";
     public static final String PROCESS_WITH_NO_CONNECTOR_ERROR = FAILED_TO_PERFORM_CALCULATION + "- There must be connectors between processes.";
     public static final String ELEMENTARY_CANNOT_BE_EMPTY = FAILED_TO_PERFORM_CALCULATION + "- Elementary exchanges are required.";
+    public static final String PROCESS_NOT_SAME_METHOD_WITH_PROJECT = FAILED_TO_PERFORM_CALCULATION + "- Has process using different method than project.";
 
 }
