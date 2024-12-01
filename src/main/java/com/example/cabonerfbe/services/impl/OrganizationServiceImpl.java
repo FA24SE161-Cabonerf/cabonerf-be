@@ -408,7 +408,9 @@ public class OrganizationServiceImpl implements OrganizationService {
                     dto.setDefault(isOrganizationManager && organization.getContract() == null);
                     return dto;
                 })
+                .sorted((dto1, dto2) -> Boolean.compare(dto2.isDefault(), dto1.isDefault())) // Sort by default in descending order
                 .collect(Collectors.toList());
+
 
     }
 
