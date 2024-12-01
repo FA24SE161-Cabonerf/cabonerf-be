@@ -166,7 +166,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         if (projects.isEmpty()) {
             GetAllProjectResponse response = new GetAllProjectResponse();
-            response.setPageCurrent(0);
+            response.setPageCurrent(1);
             response.setPageSize(0);
             response.setTotalPage(0);
             response.setProjects(Collections.EMPTY_LIST);
@@ -303,9 +303,13 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findByIdAndStatusTrue(projectId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND));
 
+
+
         UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(), userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
-
+        if(!project.getUser().getId().equals(userId) || !Constants.ORGANIZATION_MANAGER.equals(uo.getRole().getName())){
+            throw CustomExceptions.unauthorized(MessageConstants.NO_AUTHORITY);
+        }
         project.setStatus(false);
         projectRepository.save(project);
         return new ArrayList<>();
