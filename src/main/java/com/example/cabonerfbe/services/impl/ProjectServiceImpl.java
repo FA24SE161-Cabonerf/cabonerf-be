@@ -159,9 +159,9 @@ public class ProjectServiceImpl implements ProjectService {
 
         Page<Project> projects;
         if (methodId == null) {
-            projects = projectRepository.findAll(userId, organizationId, pageable);
+            projects = projectRepository.findAll( organizationId, pageable);
         } else {
-            projects = projectRepository.sortByMethod(userId, organizationId, methodId, pageable);
+            projects = projectRepository.sortByMethod(organizationId, methodId, pageable);
         }
 
         if (projects.isEmpty()) {
