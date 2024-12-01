@@ -21,5 +21,5 @@ public class ProjectDto {
     private LocalDate modifiedAt;
     private OwnerDto owner;
     private List<ProjectImpactDto> impacts;
-    private List<LifeCycleBreakdownPercentDto> lifeCycleBreakdown;
+    private List<LifeCycleBreakdownPercentDto> lifeCycleStageBreakdown;
 }
