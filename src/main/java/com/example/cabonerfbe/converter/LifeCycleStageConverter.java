@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.converter;
 
+import com.example.cabonerfbe.dto.LifeCycleBreakdownDto;
 import com.example.cabonerfbe.dto.LifeCycleStageDto;
 import com.example.cabonerfbe.models.LifeCycleStage;
 import org.mapstruct.Mapper;
@@ -15,5 +16,5 @@ public interface LifeCycleStageConverter {
 
     List<LifeCycleStageDto> fromListLifecycleStageToLifecycleStageDto(List<LifeCycleStage> lifecycleStage);
 
-
+    LifeCycleBreakdownDto toPercent(LifeCycleStage lifeCycleStage);
 }

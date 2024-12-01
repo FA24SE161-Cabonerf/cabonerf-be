@@ -1,7 +1,10 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.config.RabbitMQConfig;
+import com.example.cabonerfbe.converter.LifeCycleStageConverter;
 import com.example.cabonerfbe.dto.ConnectorPercentDto;
+import com.example.cabonerfbe.dto.LifeCycleBreakdownDto;
+import com.example.cabonerfbe.dto.ProcessLifeCycleBreakdownDto;
 import com.example.cabonerfbe.dto.ProcessNodeDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
@@ -50,6 +53,11 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
     @Autowired
     private ProcessServiceImpl processService;
+
+    @Autowired
+    private LifeCycleStageRepository lcsRepository;
+    @Autowired
+    private LifeCycleStageConverter lcsConverter;
 
     @NotNull
     private static ProcessImpactValue getNewProcessImpactValue(ImpactMethodCategory methodCategory, Process process) {
@@ -375,4 +383,31 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
     }
 
+    public List<LifeCycleBreakdownDto> buildLifeCycleBreakdown(UUID projectId) {
+        List<LifeCycleStage> lifeCycleStages = lcsRepository.findAll();
+        List<LifeCycleBreakdownDto> dto = lifeCycleStages.stream().map(lcsConverter::toPercent).collect(Collectors.toList());
+
+        List<Process> processes = processRepository.findAll(projectId);
+
+        Map<UUID, List<Process>> lifeCycleStageToProcessesMap = new HashMap<>();
+
+        for (Process p : processes) {
+            UUID stageId = p.getLifeCycleStage().getId();
+            lifeCycleStageToProcessesMap
+                    .computeIfAbsent(stageId, k -> new ArrayList<>())
+                    .add(p);
+        }
+
+        for (LifeCycleBreakdownDto x : dto) {
+            List<ProcessLifeCycleBreakdownDto> process = new ArrayList<>();
+            List<Process> relatedProcesses = lifeCycleStageToProcessesMap.getOrDefault(x.getId(), Collections.emptyList());
+
+            for (Process p : relatedProcesses) {
+                ProcessLifeCycleBreakdownDto data = new ProcessLifeCycleBreakdownDto(p.getId(), p.getOverAllProductFlowRequired());
+                process.add(data);
+            }
+            x.setProcess(process);
+        }
+        return dto;
+    }
 }

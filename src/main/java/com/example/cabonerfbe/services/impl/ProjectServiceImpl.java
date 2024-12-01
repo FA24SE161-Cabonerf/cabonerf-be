@@ -154,8 +154,8 @@ public class ProjectServiceImpl implements ProjectService {
 
         Pageable pageable = PageRequest.of(pageCurrent - PAGE_INDEX_ADJUSTMENT, pageSize);
 
-        UserOrganization uo = uoRepository.findByUserAndOrganization(organizationId, userId)
-                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+//        UserOrganization uo = uoRepository.findByUserAndOrganization(organizationId, userId)
+//                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
         Page<Project> projects;
         if (methodId == null) {
@@ -184,7 +184,7 @@ public class ProjectServiceImpl implements ProjectService {
             ProjectDto projectDto = projectConverter.toDto(project);
 
             projectDto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
-
+            projectDto.setLifeCycleBreakdown(processImpactValueService.buildLifeCycleBreakdown(project.getId()));
             list.add(projectDto);
         }
 
