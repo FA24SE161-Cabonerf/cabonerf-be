@@ -45,7 +45,7 @@ public interface ProcessRepository extends JpaRepository<Process, UUID> {
     List<Process> findRootProcess(@Param("projectId") UUID projectId);
 
     @Query("SELECT p FROM Process p " +
-            "WHERE p.organization.id = :organizationId AND p.status = true AND p.project = null " +
+            "WHERE p.organization.id = :organizationId AND p.status = true AND p.project is NULL " +
             "AND p.methodId = :methodId " +
             "AND (COALESCE(:keyword, '') = '' OR p.name ILIKE CONCAT('%', :keyword, '%'))")
     Page<Process> findObjectLibrary(@Param("organizationId") UUID organizationId, @Param("methodId") UUID methodId, @Param("keyword") String keyword, Pageable pageable);

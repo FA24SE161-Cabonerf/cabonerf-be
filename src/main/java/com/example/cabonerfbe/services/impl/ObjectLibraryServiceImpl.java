@@ -123,7 +123,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
             throw CustomExceptions.badRequest(MessageConstants.PROCESS_ALREADY_IN_OBJECT_LIBRARY);
         }
 
-        UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(process.getOrganization().getId(), userId)
+        UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(process.getProject().getOrganization().getId(), userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
         processService.convertProcessToObjectLibrary(process);
