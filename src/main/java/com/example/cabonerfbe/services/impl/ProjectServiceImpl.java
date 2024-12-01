@@ -154,8 +154,8 @@ public class ProjectServiceImpl implements ProjectService {
 
         Pageable pageable = PageRequest.of(pageCurrent - PAGE_INDEX_ADJUSTMENT, pageSize);
 
-        UserOrganization uo = uoRepository.findByUserAndOrganization(organizationId, userId)
-                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+//        UserOrganization uo = uoRepository.findByUserAndOrganization(organizationId, userId)
+//                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
         Page<Project> projects;
         if (methodId == null) {
@@ -184,7 +184,8 @@ public class ProjectServiceImpl implements ProjectService {
             ProjectDto projectDto = projectConverter.toDto(project);
 
             projectDto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
-            projectDto.setLifeCycleBreakdown(processImpactValueService.buildLifeCycleBreakdown(project.getId()));
+            projectDto.setLifeCycleBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
+
             list.add(projectDto);
         }
 
@@ -193,6 +194,7 @@ public class ProjectServiceImpl implements ProjectService {
         response.setPageSize(pageSize);
         response.setTotalPage(totalPage);
         response.setProjects(list);
+
         return response;
     }
 
@@ -205,8 +207,8 @@ public class ProjectServiceImpl implements ProjectService {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
-        UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(), userId)
-                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+//        UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(), userId)
+//                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
         return getProject(project);
     }
 
@@ -222,6 +224,7 @@ public class ProjectServiceImpl implements ProjectService {
         dto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
         dto.setProcesses(processService.getAllProcessesByProjectId(project.getId()));
         dto.setConnectors(connectorConverter.fromListConnectorToConnectorDto(connectorRepository.findAllByProject(project.getId())));
+        dto.setLifeCycleBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
         return dto;
     }
 
