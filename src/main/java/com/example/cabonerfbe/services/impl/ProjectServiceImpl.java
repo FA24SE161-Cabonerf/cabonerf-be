@@ -154,8 +154,8 @@ public class ProjectServiceImpl implements ProjectService {
 
         Pageable pageable = PageRequest.of(pageCurrent - PAGE_INDEX_ADJUSTMENT, pageSize);
 
-//        UserOrganization uo = uoRepository.findByUserAndOrganization(organizationId, userId)
-//                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+        UserOrganization uo = uoRepository.findByUserAndOrganization(organizationId, userId)
+                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
         Page<Project> projects;
         if (methodId == null) {
@@ -207,8 +207,8 @@ public class ProjectServiceImpl implements ProjectService {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
-//        UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(), userId)
-//                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+        UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(), userId)
+                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
         return getProject(project);
     }
 
