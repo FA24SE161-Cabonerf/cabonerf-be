@@ -20,4 +20,6 @@ public class GetProjectByIdDto {
     private List<ProjectImpactDto> impacts;
     private List<ProcessDto> processes;
     private List<ConnectorDto> connectors;
+    private List<LifeCycleBreakdownPercentDto> lifeCycleBreakdown;
+
 }

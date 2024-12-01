@@ -184,7 +184,8 @@ public class ProjectServiceImpl implements ProjectService {
             ProjectDto projectDto = projectConverter.toDto(project);
 
             projectDto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
-            projectDto.setLifeCycleBreakdown(processImpactValueService.buildLifeCycleBreakdown(project.getId()));
+            projectDto.setLifeCycleBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
+
             list.add(projectDto);
         }
 
@@ -193,6 +194,7 @@ public class ProjectServiceImpl implements ProjectService {
         response.setPageSize(pageSize);
         response.setTotalPage(totalPage);
         response.setProjects(list);
+
         return response;
     }
 
@@ -222,6 +224,7 @@ public class ProjectServiceImpl implements ProjectService {
         dto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
         dto.setProcesses(processService.getAllProcessesByProjectId(project.getId()));
         dto.setConnectors(connectorConverter.fromListConnectorToConnectorDto(connectorRepository.findAllByProject(project.getId())));
+        dto.setLifeCycleBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
         return dto;
     }
 
