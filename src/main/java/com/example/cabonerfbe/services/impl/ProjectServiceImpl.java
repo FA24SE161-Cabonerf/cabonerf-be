@@ -184,7 +184,7 @@ public class ProjectServiceImpl implements ProjectService {
             ProjectDto projectDto = projectConverter.toDto(project);
 
             projectDto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
-
+            projectDto.setLifeCycleBreakdown(processImpactValueService.buildLifeCycleBreakdown(project.getId()));
             list.add(projectDto);
         }
 
