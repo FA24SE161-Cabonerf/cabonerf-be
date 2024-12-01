@@ -1,9 +1,6 @@
 package com.example.cabonerfbe.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,6 +25,7 @@ public class Users extends Base implements UserDetails {
     private String email;
     private String password;
     private String phone;
+    @Column(length = 9000)
     private String profilePictureUrl;
     private String bio;
 
