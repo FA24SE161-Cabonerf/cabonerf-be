@@ -121,7 +121,8 @@ public class MessageConstants {
     public static final String USER_NOT_BELONG_TO_ORGANIZATION = "User doesn't belong to organization.";
     public static final String USER_NOT_HAVE_INVITE_ORGANIZATION = "User have not invite to organization.";
     public static final String CONTRACT_NOT_FOUND = "Contract doesn't exist.";
-    public static final String NO_INDUSTRY_CODE_FOUNT = "Industry code doesn't exist.";
+    public static final String NO_INDUSTRY_CODE_FOUND = "Industry code doesn't exist.";
+    public static final String INDUSTRY_CODE_EXIST = "Industry code already exist.";
 
 
     public static final String INVALID_PDF = "Contract file is not in pdf format.";

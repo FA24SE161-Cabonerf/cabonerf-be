@@ -9,7 +9,6 @@ import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.*;
 import com.example.cabonerfbe.response.GetAllOrganizationResponse;
-import com.example.cabonerfbe.response.InviteMemberResponse;
 import com.example.cabonerfbe.response.LoginResponse;
 import com.example.cabonerfbe.response.UploadOrgLogoResponse;
 import com.example.cabonerfbe.services.*;
@@ -126,7 +125,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         List<IndustryCode> industryCodes = icRepository.findAllByIds(request.getIndustryCodeIds());
 
         if (industryCodes == null || industryCodes.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_INDUSTRY_CODE_FOUNT);
+            throw CustomExceptions.notFound(MessageConstants.NO_INDUSTRY_CODE_FOUND);
         }
 
         if (industryCodes.size() < request.getIndustryCodeIds().size()) {
@@ -352,7 +351,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                     uo.setOrganization(organization);
                     uo.setUser(user);
                     uo.setRole(roleRepository.findByName(Constants.LCA_STAFF).orElseThrow());
-                    uo.setHasJoined(false);
+                    uo.setHasJoined(true);
                     return uo;
                 }).collect(Collectors.toList());
 
