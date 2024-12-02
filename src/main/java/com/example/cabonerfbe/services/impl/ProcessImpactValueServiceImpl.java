@@ -187,10 +187,13 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         UUID methodId = project.getLifeCycleImpactAssessmentMethod().getId();
         List<Process> processList = processRepository.findAll(projectId);
         for (Process process : processList) {
+            // set process method to new one
+            process.setMethodId(methodId);
             // alter the old ones instead of generating new ones for that specific method.
             alterPrevImpactValueList(process, methodId);
             computeProcessImpactValueAllExchangeOfProcess(process);
         }
+        processRepository.saveAll(processList);
     }
 
     private void alterPrevImpactValueList(Process process, UUID methodId) {
@@ -215,6 +218,13 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
 
         processImpactValueRepository.saveAll(existingValues);
+    }
+
+    public ProcessNodeDto calculateProjectImpactValue(UUID projectId) {
+        ProcessNodeDto result = computeSystemLevelOfProject(projectId);
+        List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
+        updateProjectValue(processList, projectId);
+        return result;
     }
 
     public ProcessNodeDto computeSystemLevelOfProject(UUID projectId) {
@@ -265,9 +275,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             }
             findWay(connectors);
         }
-        ProcessNodeDto dto = processService.calculationFast(projectId);
-        updateProjectValue(processIds, projectId);
-        return dto;
+        return processService.calculationFast(projectId);
     }
 
     private void validateProcessWithOne(Process p) {
@@ -284,7 +292,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
     }
 
-    private void updateProjectValue(List<UUID> processIds, UUID projectId) {
+    private void updateProjectValue(List<Process> processList, UUID projectId) {
+
+        List<UUID> processIds = processList.stream()
+                .map(Process::getId)
+                .collect(Collectors.toList());
+
         Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow();
 
         List<ImpactMethodCategory> categories = impactMethodCategoryRepository

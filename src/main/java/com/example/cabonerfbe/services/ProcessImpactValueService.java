@@ -6,4 +6,5 @@ import java.util.UUID;
 
 public interface ProcessImpactValueService {
     ProcessNodeDto computeSystemLevelOfProject(UUID projectId);
+    ProcessNodeDto calculateProjectImpactValue(UUID projectId);
 }

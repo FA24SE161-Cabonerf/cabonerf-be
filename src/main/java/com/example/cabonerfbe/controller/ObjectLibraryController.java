@@ -41,7 +41,7 @@ public class ObjectLibraryController {
 
     @PostMapping(API_PARAMS.SAVE_PROCESS_TO_OBJECT_LIBRARY)
     public ResponseEntity<ResponseObject> saveToObjectLibrary(@RequestHeader(value = Constants.USER_ID_HEADER) UUID userId, @PathVariable UUID processId) {
-        log.info("Start addToObjectLibrary. processId: {}", processId);
+        log.info("Start saveToObjectLibrary. processId: {}", processId);
         return ResponseEntity.ok().body(new ResponseObject(
                         Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.SAVE_TO_OBJECT_LIBRARY_SUCCESS, objectLibraryService.saveToObjectLibrary(userId, processId)
                 )

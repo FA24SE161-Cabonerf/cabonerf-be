@@ -135,6 +135,10 @@ public class ProcessServiceImpl implements ProcessService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND, Collections.EMPTY_LIST)
         );
 
+        if (process.isLibrary()) {
+            throw CustomExceptions.badRequest(MessageConstants.CANNOT_EDIT_OBJECT_LIBRARY_PROCESS);
+        }
+
         LifeCycleStage lifeCycleStage = lifeCycleStageRepository.findByIdAndStatus(request.getLifeCycleStagesId(), Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND, Collections.EMPTY_LIST)
         );
@@ -294,10 +298,10 @@ public class ProcessServiceImpl implements ProcessService {
         exchangesRepository.saveAll(exchangesList);
 
 
-        ProcessNodeDto tree = buildTree(process.getId(), connectorRepository.findConnectorToProcess(process.getId()), BigDecimal.ONE);
-        List<ProcessImpactValue> processImpactValueList = calculateToDesignatedProcess(tree);
+//        ProcessNodeDto tree = buildTree(process.getId(), connectorRepository.findConnectorToProcess(process.getId()), BigDecimal.ONE);
+//        List<ProcessImpactValue> processImpactValueList = calculateToDesignatedProcess(tree);
 
-        processImpactValueList = processImpactValueList.stream()
+        List<ProcessImpactValue> processImpactValueList = processImpactValueRepository.findByProcessId(process.getId()).stream()
                 .map(oldValue -> {
                             ProcessImpactValue newImpactValue = new ProcessImpactValue();
                             newImpactValue.setImpactMethodCategory(oldValue.getImpactMethodCategory());

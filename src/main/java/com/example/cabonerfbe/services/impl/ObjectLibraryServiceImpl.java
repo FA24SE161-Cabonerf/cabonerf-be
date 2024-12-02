@@ -17,6 +17,7 @@ import com.example.cabonerfbe.request.PagingKeywordMethodRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.MessagePublisher;
 import com.example.cabonerfbe.services.ObjectLibraryService;
+import com.example.cabonerfbe.services.ProcessImpactValueService;
 import com.example.cabonerfbe.services.ProcessService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,8 +44,9 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
     private final UserOrganizationRepository userOrganizationRepository;
     private final ProjectRepository projectRepository;
     private final MessagePublisher messagePublisher;
+    private final ProcessImpactValueService processImpactValueService;
 
-    public ObjectLibraryServiceImpl(ProcessService processService, OrganizationRepository organizationRepository, ProcessRepository processRepository, LifeCycleImpactAssessmentMethodRepository methodRepository, ProcessConverter processConverter, ProcessImpactValueRepository processImpactValueRepository, ExchangesConverter exchangesConverter, ExchangesRepository exchangesRepository, ExchangesConverter exchangesConverter1, ExchangesRepository exchangesRepository1, UserOrganizationRepository userOrganizationRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, MessagePublisher messagePublisher) {
+    public ObjectLibraryServiceImpl(ProcessService processService, OrganizationRepository organizationRepository, ProcessRepository processRepository, LifeCycleImpactAssessmentMethodRepository methodRepository, ProcessConverter processConverter, ProcessImpactValueRepository processImpactValueRepository, ExchangesConverter exchangesConverter, ExchangesRepository exchangesRepository, ExchangesConverter exchangesConverter1, ExchangesRepository exchangesRepository1, UserOrganizationRepository userOrganizationRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, MessagePublisher messagePublisher, ProcessImpactValueService processImpactValueService) {
         this.organizationRepository = organizationRepository;
         this.processRepository = processRepository;
         this.methodRepository = methodRepository;
@@ -56,6 +58,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
         this.userOrganizationRepository = userOrganizationRepository;
         this.projectRepository = projectRepository;
         this.messagePublisher = messagePublisher;
+        this.processImpactValueService = processImpactValueService;
     }
 
     @Transactional
@@ -114,19 +117,23 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
 
     @Transactional
     @Override
-    public List<Process> saveToObjectLibrary(UUID userId, UUID processId) {
-        Process process = processRepository.findByProcessId(processId).orElseThrow(
-                () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND)
+    public List<Process> saveToObjectLibrary(UUID userId, UUID projectId) {
+        Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
         );
 
-        if (process.isLibrary()) {
+        if (processRepository.findRootProcess(projectId).get(0).isLibrary()) {
             throw CustomExceptions.badRequest(MessageConstants.PROCESS_ALREADY_IN_OBJECT_LIBRARY);
         }
 
-        UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(process.getProject().getOrganization().getId(), userId)
+        Process saveProcess = processRepository.findByProcessId(processImpactValueService.computeSystemLevelOfProject(projectId).getProcessId()).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND)
+        );
+
+        UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(saveProcess.getProject().getOrganization().getId(), userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
-        processService.convertProcessToObjectLibrary(process);
+        processService.convertProcessToObjectLibrary(saveProcess);
 
         return new ArrayList<>();
     }

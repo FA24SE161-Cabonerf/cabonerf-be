@@ -155,11 +155,14 @@ public class ExchangesServiceImpl implements ExchangesService {
         return list.stream().map(scConverter::modelToDto).collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public ImpactExchangeResponse removeElementaryExchange(UUID exchangeId) {
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
+
+        validateObjectLibrary(exchange.getProcess());
 
         BigDecimal initialValue = exchange.getValue();
 
@@ -181,6 +184,8 @@ public class ExchangesServiceImpl implements ExchangesService {
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
+
+        validateObjectLibrary(exchange.getProcess());
 
         exchange.setValue(DEFAULT_VALUE);
         exchange.setStatus(Constants.STATUS_FALSE);
@@ -208,9 +213,7 @@ public class ExchangesServiceImpl implements ExchangesService {
             throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_AND_PROCESS_DIFFERENT);
         }
 
-        Process process = processRepository.findByProcessId(processId).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
-        );
+        validateObjectLibrary(exchange.getProcess());
 
         BigDecimal initialValue = exchange.getValue();
         System.out.println("initial value before converted to " + exchange.getUnit().getName() + " unit: " + initialValue);
@@ -235,7 +238,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         exchangesRepository.save(exchange);
 
-        processImpactValueService.computeProcessImpactValueSingleExchange(process, exchange, initialValue);
+        processImpactValueService.computeProcessImpactValueSingleExchange(exchange.getProcess(), exchange, initialValue);
 
         return impactExchangeResponseBuilder(exchange);
     }
@@ -254,6 +257,8 @@ public class ExchangesServiceImpl implements ExchangesService {
         if (!exchange.getProcessId().equals(processId)) {
             throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_AND_PROCESS_DIFFERENT);
         }
+
+        validateObjectLibrary(exchange.getProcess());
 
         List<UUID> connectedExchangeIdList = new ArrayList<>();
         connectedExchangeIdList.add(exchangeId);
@@ -310,13 +315,21 @@ public class ExchangesServiceImpl implements ExchangesService {
     }
 
     private Process findProcess(UUID id) {
-        return processRepository.findByProcessId(id)
+        Process process = processRepository.findByProcessId(id)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND));
+        validateObjectLibrary(process);
+        return process;
     }
 
     private void validateMethod(UUID methodId) {
         methodRepository.findByIdAndStatus(methodId, true)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND, Collections.EMPTY_LIST));
+    }
+
+    private void validateObjectLibrary(Process process) {
+        if (process.isLibrary()) {
+            throw CustomExceptions.badRequest(MessageConstants.CANNOT_EDIT_OBJECT_LIBRARY_PROCESS);
+        }
     }
 
     private Exchanges createNewExchange(EmissionSubstance emissionSubstance, boolean isInput,

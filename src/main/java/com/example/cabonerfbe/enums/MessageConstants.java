@@ -137,6 +137,7 @@ public class MessageConstants {
     public static final String PROCESS_ALREADY_IN_OBJECT_LIBRARY = "Process is already in object library.";
     public static final String OBJECT_AND_PROJECT_METHOD_NOT_SIMILAR = "The process and project methods are not the same.";
     public static final String OBJECT_AND_PROJECT_ORGANIZATION_NOT_SIMILAR = "The process and project organizations are not the same.";
+    public static final String CANNOT_EDIT_OBJECT_LIBRARY_PROCESS = "Cannot edit the process in object library.";
 
 
     // CALCULATION ERROR MSG
