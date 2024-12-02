@@ -36,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -319,6 +320,7 @@ public class ProjectServiceImpl implements ProjectService {
                     () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND, Collections.EMPTY_LIST)
             );
             project.setLifeCycleImpactAssessmentMethod(method);
+            alterPrevProjectImpactValueList(project, methodId);
             processImpactValueService.computeProcessImpactValueOfProject(projectRepository.save(project));
         }
         return getProject(project);
@@ -337,6 +339,32 @@ public class ProjectServiceImpl implements ProjectService {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .contentLength(file.length)
                 .body(resource);
+    }
+
+    @NotNull
+    private void alterPrevProjectImpactValueList(Project project, UUID methodId) {
+        List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
+        List<ProjectImpactValue> existingValues = projectImpactValueRepository.findAllByProjectId(project.getId());
+
+        for (int i = 0; i < methodCategories.size(); i++) {
+            ImpactMethodCategory methodCategory = methodCategories.get(i);
+            if (i < existingValues.size()) {
+                existingValues.get(i).setImpactMethodCategory(methodCategory);
+                existingValues.get(i).setValue(BigDecimal.ZERO);
+            } else {
+                existingValues.add(new ProjectImpactValue(methodCategory, BigDecimal.ZERO, project));
+            }
+        }
+
+        if (existingValues.size() > methodCategories.size()) {
+            List<ProjectImpactValue> removeList = existingValues.subList(
+                    methodCategories.size(),
+                    existingValues.size());
+            projectImpactValueRepository.deleteAll(removeList);
+            existingValues = existingValues.subList(0, methodCategories.size());
+        }
+
+        projectImpactValueRepository.saveAll(existingValues);
     }
 
     public List<ProjectImpactDto> converterProject(List<ProjectImpactValue> list) {
