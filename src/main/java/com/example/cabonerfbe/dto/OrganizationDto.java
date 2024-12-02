@@ -2,6 +2,7 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -12,6 +13,10 @@ import java.util.UUID;
 public class OrganizationDto {
     UUID id;
     private String name;
+    private String description;
+    private String taxCode;
+    private List<IndustryCodeDto> industryCodes;
     private String logo;
     private ContractDto contract;
+
 }
