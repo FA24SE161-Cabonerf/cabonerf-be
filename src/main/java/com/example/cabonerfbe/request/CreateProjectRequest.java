@@ -25,4 +25,6 @@ public class CreateProjectRequest {
     private UUID methodId;
     @NotNull(message = "Organization is required")
     private UUID organizationId;
+    @NotNull(message = "Industry code is required.")
+    private UUID industryCodeId;
 }

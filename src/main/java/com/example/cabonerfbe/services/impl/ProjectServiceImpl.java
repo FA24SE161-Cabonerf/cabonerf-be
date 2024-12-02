@@ -94,6 +94,10 @@ public class ProjectServiceImpl implements ProjectService {
     private ImpactCategoryRepository icRepository;
     @Autowired
     private UserOrganizationRepository uoRepository;
+    @Autowired
+    private IndustryCodeRepository codeRepository;
+    @Autowired
+    private OrganizationIndustryCodeRepository oicRepository;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
@@ -121,6 +125,12 @@ public class ProjectServiceImpl implements ProjectService {
         Users user = userRepository.findByIdWithStatus(userId).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND, Collections.EMPTY_LIST)
         );
+
+        codeRepository.findByIdWithStatus(request.getIndustryCodeId())
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_INDUSTRY_CODE_FOUNT));
+
+        oicRepository.findByOrganizationAndIndustryCode(request.getOrganizationId(),request.getIndustryCodeId())
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.ORGANIZATION_DOES_NOT_TO_INDUSTRY_CODE));
 
         Organization organization = oRepository.findById(request.getOrganizationId()).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_ORGANIZATION_FOUND, Collections.EMPTY_LIST)
