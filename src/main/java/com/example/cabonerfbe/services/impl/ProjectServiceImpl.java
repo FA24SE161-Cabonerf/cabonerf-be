@@ -341,7 +341,6 @@ public class ProjectServiceImpl implements ProjectService {
                 .body(resource);
     }
 
-    @NotNull
     private void alterPrevProjectImpactValueList(Project project, UUID methodId) {
         List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
         List<ProjectImpactValue> existingValues = projectImpactValueRepository.findAllByProjectId(project.getId());

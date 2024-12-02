@@ -244,9 +244,9 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 .map(Process::getId)
                 .collect(Collectors.toList());
 
-        if(!checkObjectLibrary(project)){
-            throw CustomExceptions.badRequest(MessageConstants.PROCESS_NOT_SAME_METHOD_WITH_PROJECT);
-        }
+//        if(!checkObjectLibrary(project)){
+//            throw CustomExceptions.badRequest(MessageConstants.PROCESS_NOT_SAME_METHOD_WITH_PROJECT);
+//        }
 
         List<Exchanges> dataList = exchangesRepository.findAllByElementary(processIds);
 
