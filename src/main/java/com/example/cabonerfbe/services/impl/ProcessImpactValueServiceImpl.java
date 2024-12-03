@@ -199,66 +199,36 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
     public void alterPrevImpactValueList(List<Process> processes, UUID methodId) {
-        // Fetch method categories and process impact values in bulk to reduce database roundtrips
         List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
-        List<UUID> processIds = processes.stream().map(Process::getId).toList();
-
-        // Single database call for all process impact values
-        List<ProcessImpactValue> existingProcessImpactValues = processImpactValueRepository
-                .findAllByProcessIds(processIds);
-
-        // Group existing values more efficiently
-        Map<UUID, List<ProcessImpactValue>> groupedValues = existingProcessImpactValues.stream()
+        Map<UUID, List<ProcessImpactValue>> groupedValues = processImpactValueRepository
+                .findAllByProcessIds(processes.stream().map(Process::getId).toList())
+                .stream()
                 .collect(Collectors.groupingBy(ProcessImpactValue::getProcessId));
 
         List<ProcessImpactValue> valuesToSave = new ArrayList<>();
         List<ProcessImpactValue> valuesToDelete = new ArrayList<>();
 
         for (Process process : processes) {
-            UUID processId = process.getId();
-            List<ProcessImpactValue> existingValues = groupedValues.getOrDefault(processId, Collections.emptyList());
+            List<ProcessImpactValue> existingValues = groupedValues.getOrDefault(process.getId(), new ArrayList<>());
 
-            processOptimization(process, methodCategories, existingValues, valuesToSave, valuesToDelete);
+            for (int i = 0; i < methodCategories.size(); i++) {
+                if (i < existingValues.size()) {
+                    ProcessImpactValue value = existingValues.get(i);
+                    value.setImpactMethodCategory(methodCategories.get(i));
+                    value.setUnitLevel(BigDecimal.ZERO);
+                    valuesToSave.add(value);
+                } else {
+                    valuesToSave.add(getNewProcessImpactValue(methodCategories.get(i), process));
+                }
+            }
+
+            if (existingValues.size() > methodCategories.size()) {
+                valuesToDelete.addAll(existingValues.subList(methodCategories.size(), existingValues.size()));
+            }
         }
 
-        // Bulk delete and save operations
-        if (!valuesToDelete.isEmpty()) {
-            processImpactValueRepository.deleteAllInBatch(valuesToDelete);
-        }
-        if (!valuesToSave.isEmpty()) {
-            processImpactValueRepository.saveAllAndFlush(valuesToSave);
-        }
-    }
-
-    private void processOptimization(
-            Process process,
-            List<ImpactMethodCategory> methodCategories,
-            List<ProcessImpactValue> existingValues,
-            List<ProcessImpactValue> valuesToSave,
-            List<ProcessImpactValue> valuesToDelete
-    ) {
-        int existingIndex = 0;
-        for (ImpactMethodCategory methodCategory : methodCategories) {
-            ProcessImpactValue value = existingIndex < existingValues.size()
-                    ? updateExistingValue(existingValues.get(existingIndex++), methodCategory)
-                    : createNewValue(methodCategory, process);
-
-            valuesToSave.add(value);
-        }
-
-        if (existingIndex < existingValues.size()) {
-            valuesToDelete.addAll(existingValues.subList(existingIndex, existingValues.size()));
-        }
-    }
-
-    private ProcessImpactValue updateExistingValue(ProcessImpactValue value, ImpactMethodCategory methodCategory) {
-        value.setImpactMethodCategory(methodCategory);
-        value.setUnitLevel(BigDecimal.ZERO);
-        return value;
-    }
-
-    private ProcessImpactValue createNewValue(ImpactMethodCategory methodCategory, Process process) {
-        return getNewProcessImpactValue(methodCategory, process);
+        processImpactValueRepository.deleteAll(valuesToDelete);
+        processImpactValueRepository.saveAll(valuesToSave);
     }
 
 
