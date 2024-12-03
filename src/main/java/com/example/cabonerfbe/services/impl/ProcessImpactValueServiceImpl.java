@@ -186,39 +186,58 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         UUID projectId = project.getId();
         UUID methodId = project.getLifeCycleImpactAssessmentMethod().getId();
         List<Process> processList = processRepository.findAll(projectId);
+        long startTime = System.currentTimeMillis();
         for (Process process : processList) {
             // set process method to new one
             process.setMethodId(methodId);
-            // alter the old ones instead of generating new ones for that specific method.
-            alterPrevImpactValueList(process, methodId);
             computeProcessImpactValueAllExchangeOfProcess(process);
         }
+        long endTime = System.currentTimeMillis();
+        System.out.println("tính lại unit level nè: "+ (endTime - startTime));
+
         processRepository.saveAll(processList);
     }
 
-    private void alterPrevImpactValueList(Process process, UUID methodId) {
+    public void alterPrevImpactValueList(List<Process> processes, UUID methodId) {
         List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
-        List<ProcessImpactValue> existingValues = processImpactValueRepository.findByProcessId(process.getId());
 
-        for (int i = 0; i < methodCategories.size(); i++) {
-            if (i < existingValues.size()) {
-                existingValues.get(i).setImpactMethodCategory(methodCategories.get(i));
-                existingValues.get(i).setUnitLevel(BigDecimal.ZERO);
-            } else {
-                existingValues.add(getNewProcessImpactValue(methodCategories.get(i), process));
+        Map<UUID, List<ProcessImpactValue>> groupedValues = processImpactValueRepository
+                .findAllByProcessIds(processes.stream().map(Process::getId).toList())
+                .stream()
+                .collect(Collectors.groupingBy(ProcessImpactValue::getProcessId));
+        List<ProcessImpactValue> valuesToSave = new ArrayList<>();
+        List<ProcessImpactValue> valuesToDelete = new ArrayList<>();
+
+        for (Process process : processes) {
+            List<ProcessImpactValue> existingValues = groupedValues.getOrDefault(process.getId(), new ArrayList<>());
+
+            for (int i = 0; i < methodCategories.size(); i++) {
+                if (i < existingValues.size()) {
+                    ProcessImpactValue value = existingValues.get(i);
+                    value.setImpactMethodCategory(methodCategories.get(i));
+                    value.setUnitLevel(BigDecimal.ZERO);
+                    valuesToSave.add(value);
+                } else {
+                    valuesToSave.add(getNewProcessImpactValue(methodCategories.get(i), process));
+                }
+            }
+
+            if (existingValues.size() > methodCategories.size()) {
+                valuesToDelete.addAll(existingValues.subList(methodCategories.size(), existingValues.size()));
             }
         }
 
-        if (existingValues.size() > methodCategories.size()) {
-            List<ProcessImpactValue> removeList = existingValues.subList(
-                    methodCategories.size(),
-                    existingValues.size());
-            processImpactValueRepository.deleteAll(removeList);
-            existingValues = existingValues.subList(0, methodCategories.size());
+        if(!valuesToDelete.isEmpty()){
+            processImpactValueRepository.deleteAll(valuesToDelete);
+
+        }
+        if(!valuesToSave.isEmpty()){
+            processImpactValueRepository.saveAll(valuesToSave);
         }
 
-        processImpactValueRepository.saveAll(existingValues);
     }
+
+
 
     public ProcessNodeDto calculateProjectImpactValue(UUID projectId) {
         ProcessNodeDto result = computeSystemLevelOfProject(projectId);
@@ -367,6 +386,71 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         return methodIdMap.values().stream().allMatch(methodId -> methodId.equals(projectMethodId));
     }
 
+    public void computeProcessImpactValueOfProjectWhenChangeMethod(Project project) {
+        UUID projectId = project.getId();
+        UUID methodId = project.getLifeCycleImpactAssessmentMethod().getId();
+        List<Process> processList = processRepository.findAll(projectId);
+
+        // Lấy tất cả exchanges cùng với factors trong một lần
+        Map<UUID, List<MidpointImpactCharacterizationFactors>> factorsCache = new HashMap<>();
+        List<Exchanges> allExchanges = exchangesRepository.findAllByProcessIdsAndExchangesType(
+                processList.stream().map(Process::getId).collect(Collectors.toList()),
+                Constants.ELEMENTARY_EXCHANGE);
+
+        // Tạo danh sách processImpactValues để lưu sau
+        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
+
+        long startTime = System.currentTimeMillis();
+        for (Process process : processList) {
+            process.setMethodId(methodId);
+
+            // Lọc exchanges cho process hiện tại
+            List<Exchanges> exchangeList = allExchanges.stream()
+                    .filter(exchange -> exchange.getProcess().getId().equals(process.getId()))
+                    .collect(Collectors.toList());
+
+            // Cập nhật các impact values
+            for (Exchanges exchange : exchangeList) {
+                UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
+                List<MidpointImpactCharacterizationFactors> factorsList = factorsCache.computeIfAbsent(
+                        emissionSubstanceId,
+                        id -> midpointFactorsRepository.findByEmissionSubstanceId(id)
+                );
+
+                BigDecimal exchangeValue = exchange.getValue();
+                Unit exchangeUnit = exchange.getUnit();
+                Unit baseUnit = exchange.getEmissionSubstance().getUnit();
+
+                for (MidpointImpactCharacterizationFactors factors : factorsList) {
+                    Optional<ProcessImpactValue> processImpactValueOpt = processImpactValueRepository
+                            .findByProcessIdAndImpactMethodCategoryId(
+                                    process.getId(), factors.getImpactMethodCategory().getId());
+
+                    if (processImpactValueOpt.isPresent()) {
+                        ProcessImpactValue processImpactValue = processImpactValueOpt.get();
+                        BigDecimal unitLevel = processImpactValue.getUnitLevel();
+                        BigDecimal factorValue = factors.getDecimalValue();
+                        exchangeValue = unitService.convertValue(exchangeUnit, exchangeValue, baseUnit);
+                        unitLevel = unitLevel.add(exchangeValue.multiply(factorValue));
+
+                        processImpactValue.setUnitLevel(unitLevel);
+                        processImpactValueList.add(processImpactValue);
+                    }
+                }
+            }
+        }
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("tính lại unit level nè: " + (endTime - startTime));
+
+        // Lưu tất cả ProcessImpactValue một lần
+        long startSaveTime = System.currentTimeMillis();
+        processImpactValueRepository.saveAll(processImpactValueList);
+        long endSaveTime = System.currentTimeMillis();
+        System.out.println("save tính lại unit level nè: " + (endSaveTime - startSaveTime));
+
+
+    }
 
 
 }
