@@ -6,6 +6,7 @@ import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
+import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CalculateProjectRequest;
 import com.example.cabonerfbe.request.CreateProjectRequest;
@@ -309,7 +310,6 @@ public class ProjectServiceImpl implements ProjectService {
         return new ArrayList<>();
     }
 
-    @Transactional
     @Override
     public GetProjectByIdDto changeProjectMethod(UUID projectId, UUID methodId) {
         Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
@@ -362,6 +362,9 @@ public class ProjectServiceImpl implements ProjectService {
             projectImpactValueRepository.deleteAll(removeList);
             existingValues = existingValues.subList(0, methodCategories.size());
         }
+
+        List<Process> processes = processRepository.findAll(project.getId());
+        processImpactValueService.alterPrevImpactValueList(processes,methodId);
 
         projectImpactValueRepository.saveAll(existingValues);
     }
