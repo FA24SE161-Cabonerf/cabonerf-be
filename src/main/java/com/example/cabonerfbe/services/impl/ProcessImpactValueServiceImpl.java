@@ -200,6 +200,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
     public void alterPrevImpactValueList(List<Process> processes, UUID methodId) {
         List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
+
         Map<UUID, List<ProcessImpactValue>> groupedValues = processImpactValueRepository
                 .findAllByProcessIds(processes.stream().map(Process::getId).toList())
                 .stream()
@@ -209,26 +210,34 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         List<ProcessImpactValue> valuesToDelete = new ArrayList<>();
 
         for (Process process : processes) {
-            List<ProcessImpactValue> existingValues = groupedValues.getOrDefault(process.getId(), new ArrayList<>());
+            UUID processId = process.getId();
+            List<ProcessImpactValue> existingValues = groupedValues.getOrDefault(processId, Collections.emptyList());
 
-            for (int i = 0; i < methodCategories.size(); i++) {
-                if (i < existingValues.size()) {
-                    ProcessImpactValue value = existingValues.get(i);
-                    value.setImpactMethodCategory(methodCategories.get(i));
+            int existingIndex = 0;
+            for (ImpactMethodCategory methodCategory : methodCategories) {
+                ProcessImpactValue value;
+
+                if (existingIndex < existingValues.size()) {
+                    value = existingValues.get(existingIndex++);
+                    value.setImpactMethodCategory(methodCategory);
                     value.setUnitLevel(BigDecimal.ZERO);
-                    valuesToSave.add(value);
                 } else {
-                    valuesToSave.add(getNewProcessImpactValue(methodCategories.get(i), process));
+                    value = getNewProcessImpactValue(methodCategory, process);
                 }
+                valuesToSave.add(value);
             }
 
-            if (existingValues.size() > methodCategories.size()) {
-                valuesToDelete.addAll(existingValues.subList(methodCategories.size(), existingValues.size()));
+            if (existingIndex < existingValues.size()) {
+                valuesToDelete.addAll(existingValues.subList(existingIndex, existingValues.size()));
             }
         }
 
-        processImpactValueRepository.deleteAll(valuesToDelete);
-        processImpactValueRepository.saveAll(valuesToSave);
+        if (!valuesToDelete.isEmpty()) {
+            processImpactValueRepository.deleteAll(valuesToDelete);
+        }
+        if (!valuesToSave.isEmpty()) {
+            processImpactValueRepository.saveAll(valuesToSave);
+        }
     }
 
 
