@@ -324,7 +324,7 @@ public class ProjectServiceImpl implements ProjectService {
             alterPrevProjectImpactValueList(project, methodId);
             long endTime = System.currentTimeMillis();
             System.out.println("đổi của project nè: "+ (endTime - startTime));
-            processImpactValueService.computeProcessImpactValueOfProject(projectRepository.save(project));
+            processImpactValueService.computeProcessImpactValueOfProjectWhenChangeMethod(projectRepository.save(project));
         }
         return getProject(project);
     }
