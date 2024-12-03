@@ -199,19 +199,26 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
     public void alterPrevImpactValueList(List<Process> processes, UUID methodId) {
+        long startTime = System.currentTimeMillis();
         List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("lấy method từ db nè: "+ (endTime - startTime));
+        long startTimeProcess = System.currentTimeMillis();
+
         Map<UUID, List<ProcessImpactValue>> groupedValues = processImpactValueRepository
                 .findAllByProcessIds(processes.stream().map(Process::getId).toList())
                 .stream()
                 .collect(Collectors.groupingBy(ProcessImpactValue::getProcessId));
-
+        long endTimeProcess = System.currentTimeMillis();
+        System.out.println("lấy process impact value từ db nè: "+ (endTimeProcess - startTimeProcess));
         List<ProcessImpactValue> valuesToSave = new ArrayList<>();
         List<ProcessImpactValue> valuesToDelete = new ArrayList<>();
+
 
         for (Process process : processes) {
             List<ProcessImpactValue> existingValues = groupedValues.getOrDefault(process.getId(), new ArrayList<>());
 
-            long startTime = System.currentTimeMillis();
             for (int i = 0; i < methodCategories.size(); i++) {
                 if (i < existingValues.size()) {
                     ProcessImpactValue value = existingValues.get(i);
@@ -222,8 +229,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                     valuesToSave.add(getNewProcessImpactValue(methodCategories.get(i), process));
                 }
             }
-            long endTime = System.currentTimeMillis();
-            System.out.println("chạy để dổi method nè: "+ (endTime - startTime));
+
             if (existingValues.size() > methodCategories.size()) {
                 valuesToDelete.addAll(existingValues.subList(methodCategories.size(), existingValues.size()));
             }
