@@ -208,10 +208,10 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         List<ProcessImpactValue> valuesToSave = new ArrayList<>();
         List<ProcessImpactValue> valuesToDelete = new ArrayList<>();
 
-        long startTime = System.currentTimeMillis();
         for (Process process : processes) {
             List<ProcessImpactValue> existingValues = groupedValues.getOrDefault(process.getId(), new ArrayList<>());
 
+            long startTime = System.currentTimeMillis();
             for (int i = 0; i < methodCategories.size(); i++) {
                 if (i < existingValues.size()) {
                     ProcessImpactValue value = existingValues.get(i);
@@ -222,13 +222,13 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                     valuesToSave.add(getNewProcessImpactValue(methodCategories.get(i), process));
                 }
             }
-
+            long endTime = System.currentTimeMillis();
+            System.out.println("chạy để dổi method nè: "+ (endTime - startTime));
             if (existingValues.size() > methodCategories.size()) {
                 valuesToDelete.addAll(existingValues.subList(methodCategories.size(), existingValues.size()));
             }
         }
-        long endTime = System.currentTimeMillis();
-        System.out.println("chạy để dổi method nè: "+ (endTime - startTime));
+
         processImpactValueRepository.deleteAll(valuesToDelete);
         processImpactValueRepository.saveAll(valuesToSave);
     }
