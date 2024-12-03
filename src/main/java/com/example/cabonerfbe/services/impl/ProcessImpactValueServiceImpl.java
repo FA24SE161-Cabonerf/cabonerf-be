@@ -199,23 +199,14 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
     public void alterPrevImpactValueList(List<Process> processes, UUID methodId) {
-        long startTime = System.currentTimeMillis();
         List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
-
-        long endTime = System.currentTimeMillis();
-        System.out.println("lấy method từ db nè: "+ (endTime - startTime));
-        long startTimeProcess = System.currentTimeMillis();
 
         Map<UUID, List<ProcessImpactValue>> groupedValues = processImpactValueRepository
                 .findAllByProcessIds(processes.stream().map(Process::getId).toList())
                 .stream()
                 .collect(Collectors.groupingBy(ProcessImpactValue::getProcessId));
-        long endTimeProcess = System.currentTimeMillis();
-        System.out.println("lấy process impact value từ db nè: "+ (endTimeProcess - startTimeProcess));
         List<ProcessImpactValue> valuesToSave = new ArrayList<>();
         List<ProcessImpactValue> valuesToDelete = new ArrayList<>();
-//
-        long startTimeForProcess = System.currentTimeMillis();
 
         for (Process process : processes) {
             List<ProcessImpactValue> existingValues = groupedValues.getOrDefault(process.getId(), new ArrayList<>());
@@ -236,20 +227,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             }
         }
 
-
-        long endTimeForProcess = System.currentTimeMillis();
-        System.out.println("lấy process impact value từ db nè: "+ (endTimeForProcess - startTimeForProcess));
-
         if(!valuesToDelete.isEmpty()){
             processImpactValueRepository.deleteAll(valuesToDelete);
 
         }
         if(!valuesToSave.isEmpty()){
-            long startTimeSave = System.currentTimeMillis();
             processImpactValueRepository.saveAll(valuesToSave);
-
-            long endTimeSave = System.currentTimeMillis();
-            System.out.println("save nè: "+ (endTimeSave - startTimeSave));
         }
 
     }

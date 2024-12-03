@@ -99,6 +99,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
+
     @Override
     public List<Project> getProjectListByMethodId(UUID id) {
 //        return projectRepository.getProjectLevelDetail(id);
@@ -321,7 +322,9 @@ public class ProjectServiceImpl implements ProjectService {
             );
             project.setLifeCycleImpactAssessmentMethod(method);
             long startTime = System.currentTimeMillis();
+
             alterPrevProjectImpactValueList(project, methodId);
+
             long endTime = System.currentTimeMillis();
             System.out.println("đổi của project nè: "+ (endTime - startTime));
             processImpactValueService.computeProcessImpactValueOfProjectWhenChangeMethod(projectRepository.save(project));
@@ -347,41 +350,54 @@ public class ProjectServiceImpl implements ProjectService {
     private void alterPrevProjectImpactValueList(Project project, UUID methodId) {
         List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
 
-        Map<UUID, ProjectImpactValue> existingValuesMap = projectImpactValueRepository
+//        Map<UUID, ProjectImpactValue> existingValuesMap = projectImpactValueRepository
+//                .findAllByProjectId(project.getId())
+//                .stream()
+//                .collect(Collectors.toMap(
+//                        value -> value.getImpactMethodCategory().getId(),
+//                        value -> value
+//                ));
+
+        Map<UUID, List<ProjectImpactValue>> groupedValues = projectImpactValueRepository
                 .findAllByProjectId(project.getId())
                 .stream()
-                .collect(Collectors.toMap(
-                        value -> value.getImpactMethodCategory().getId(),
-                        value -> value
-                ));
+                .collect(Collectors.groupingBy(ProjectImpactValue::getId));
 
-        List<ProjectImpactValue> updatedValues = methodCategories.stream()
-                .map(methodCategory -> {
-                    ProjectImpactValue value = existingValuesMap.remove(methodCategory.getId());
-                    if (value == null) {
-                        value = new ProjectImpactValue(methodCategory, BigDecimal.ZERO, project);
-                    }
-                    value.setImpactMethodCategory(methodCategory);
-                    value.setValue(BigDecimal.ZERO);
-                    return value;
-                })
-                .toList();
+        List<ProjectImpactValue> valuesToSave = new ArrayList<>();
+        List<ProjectImpactValue> valuesToDelete = new ArrayList<>();
 
-        if (!existingValuesMap.isEmpty()) {
-            projectImpactValueRepository.deleteAll(existingValuesMap.values());
+        List<ProjectImpactValue> existingValues = groupedValues.getOrDefault(project.getId(), new ArrayList<>());
+
+
+        for (int i = 0; i < methodCategories.size(); i++) {
+            if (i < existingValues.size()) {
+                ProjectImpactValue value = existingValues.get(i);
+                value.setImpactMethodCategory(methodCategories.get(i));
+                value.setValue(BigDecimal.ZERO);
+                valuesToSave.add(value);
+            } else {
+                valuesToSave.add(getNewProjectImpactValue(methodCategories.get(i),project));
+            }
         }
 
-        if (!updatedValues.isEmpty()) {
-            long startTime = System.currentTimeMillis();
-            projectImpactValueRepository.saveAll(updatedValues);
-            long endTime = System.currentTimeMillis();
-            System.out.println("save của project  nè: "+ (endTime - startTime));
+        if (existingValues.size() > methodCategories.size()) {
+            valuesToDelete.addAll(existingValues.subList(methodCategories.size(), existingValues.size()));
+        }
 
+        if(!valuesToDelete.isEmpty()){
+            projectImpactValueRepository.deleteAll(valuesToDelete);
+
+        }
+        if(!valuesToSave.isEmpty()){
+            projectImpactValueRepository.saveAll(valuesToSave);
         }
 
         List<Process> processes = processRepository.findAll(project.getId());
+
         long startTime = System.currentTimeMillis();
+
         processImpactValueService.alterPrevImpactValueList(processes, methodId);
+
         long endTime = System.currentTimeMillis();
         System.out.println("đổi của process nè: "+ (endTime - startTime));
 
@@ -696,5 +712,14 @@ public class ProjectServiceImpl implements ProjectService {
             }
         }
         return new ArrayList<>(aggregatedMap.values());
+    }
+
+    @NotNull
+    private static ProjectImpactValue getNewProjectImpactValue(ImpactMethodCategory methodCategory, Project project) {
+        ProjectImpactValue projectImpactValue = new ProjectImpactValue();
+        projectImpactValue.setProject(project);
+        projectImpactValue.setImpactMethodCategory(methodCategory);
+        projectImpactValue.setValue(BigDecimal.ZERO);
+        return projectImpactValue;
     }
 }
