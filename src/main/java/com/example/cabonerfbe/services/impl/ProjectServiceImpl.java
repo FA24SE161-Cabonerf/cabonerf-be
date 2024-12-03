@@ -346,6 +346,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     private void alterPrevProjectImpactValueList(Project project, UUID methodId) {
         List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
+
         Map<UUID, ProjectImpactValue> existingValuesMap = projectImpactValueRepository
                 .findAllByProjectId(project.getId())
                 .stream()
@@ -354,22 +355,25 @@ public class ProjectServiceImpl implements ProjectService {
                         value -> value
                 ));
 
-        List<ProjectImpactValue> updatedValues = new ArrayList<>();
+        List<ProjectImpactValue> updatedValues = methodCategories.stream()
+                .map(methodCategory -> {
+                    ProjectImpactValue value = existingValuesMap.remove(methodCategory.getId());
+                    if (value == null) {
+                        value = new ProjectImpactValue(methodCategory, BigDecimal.ZERO, project);
+                    }
+                    value.setImpactMethodCategory(methodCategory);
+                    value.setValue(BigDecimal.ZERO);
+                    return value;
+                })
+                .toList();
 
-        for (ImpactMethodCategory methodCategory : methodCategories) {
-            ProjectImpactValue value = existingValuesMap.getOrDefault(
-                    methodCategory.getId(),
-                    new ProjectImpactValue(methodCategory, BigDecimal.ZERO, project)
-            );
-            value.setImpactMethodCategory(methodCategory);
-            value.setValue(BigDecimal.ZERO);
-            updatedValues.add(value);
+        if (!existingValuesMap.isEmpty()) {
+            projectImpactValueRepository.deleteAll(existingValuesMap.values());
         }
 
-        // Remove surplus values directly without sub-list
-        existingValuesMap.values().removeAll(updatedValues);
-        projectImpactValueRepository.deleteAll(existingValuesMap.values());
-        projectImpactValueRepository.saveAll(updatedValues);
+        if (!updatedValues.isEmpty()) {
+            projectImpactValueRepository.saveAll(updatedValues);
+        }
 
         List<Process> processes = processRepository.findAll(project.getId());
         long startTime = System.currentTimeMillis();
