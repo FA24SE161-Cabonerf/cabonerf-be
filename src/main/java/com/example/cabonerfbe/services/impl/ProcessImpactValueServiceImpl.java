@@ -214,7 +214,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         System.out.println("lấy process impact value từ db nè: "+ (endTimeProcess - startTimeProcess));
         List<ProcessImpactValue> valuesToSave = new ArrayList<>();
         List<ProcessImpactValue> valuesToDelete = new ArrayList<>();
-
+//
 
         for (Process process : processes) {
             List<ProcessImpactValue> existingValues = groupedValues.getOrDefault(process.getId(), new ArrayList<>());
