@@ -351,17 +351,15 @@ public class ProjectServiceImpl implements ProjectService {
         List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
 
         long startProjectImpact = System.currentTimeMillis();
-        Map<UUID, List<ProjectImpactValue>> groupedValues = projectImpactValueRepository
-                .findAllByProjectId(project.getId())
-                .stream()
-                .collect(Collectors.groupingBy(ProjectImpactValue::getId));
+        List<ProjectImpactValue> existingValues = projectImpactValueRepository
+                .findAllByProjectId(project.getId());
         long endProjectImpact = System.currentTimeMillis();
 
         System.out.println("lấy project impact ra nè: " + (endProjectImpact - startProjectImpact));
+
         List<ProjectImpactValue> valuesToSave = new ArrayList<>();
         List<ProjectImpactValue> valuesToDelete = new ArrayList<>();
 
-        List<ProjectImpactValue> existingValues = groupedValues.getOrDefault(project.getId(), new ArrayList<>());
 
         long startFor = System.currentTimeMillis();
         for (int i = 0; i < methodCategories.size(); i++) {
@@ -387,15 +385,21 @@ public class ProjectServiceImpl implements ProjectService {
 
         }
         if(!valuesToSave.isEmpty()){
+
             long startSave = System.currentTimeMillis();
+
             projectImpactValueRepository.saveAll(valuesToSave);
+
             long endSave = System.currentTimeMillis();
-
             System.out.println("save all project nè: " + (endSave - startSave));
-
         }
+        long startFind = System.currentTimeMillis();
 
         List<Process> processes = processRepository.findAll(project.getId());
+
+        long endFind = System.currentTimeMillis();
+        System.out.println("tìm all process nè: "+ (endFind - startFind));
+
 
         long startTime = System.currentTimeMillis();
 
