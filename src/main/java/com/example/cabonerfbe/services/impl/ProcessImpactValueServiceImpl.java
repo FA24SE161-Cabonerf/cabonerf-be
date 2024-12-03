@@ -186,53 +186,51 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         UUID projectId = project.getId();
         UUID methodId = project.getLifeCycleImpactAssessmentMethod().getId();
         List<Process> processList = processRepository.findAll(projectId);
+        long startTime = System.currentTimeMillis();
         for (Process process : processList) {
             // set process method to new one
             process.setMethodId(methodId);
-            // alter the old ones instead of generating new ones for that specific method.
-//            alterPrevImpactValueList(process, methodId);
             computeProcessImpactValueAllExchangeOfProcess(process);
         }
+        long endTime = System.currentTimeMillis();
+        System.out.println("tính lại unit level nè: "+ (endTime - startTime));
+
         processRepository.saveAll(processList);
     }
 
     public void alterPrevImpactValueList(List<Process> processes, UUID methodId) {
         List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
-
-        List<UUID> processIds = processes.stream()
-                .map(Process::getId)
-                .toList();
-
-        List<ProcessImpactValue> allExistingValues = processImpactValueRepository.findAllByProcessIds(processIds);
-
-        Map<UUID, List<ProcessImpactValue>> groupedValues = allExistingValues.stream()
+        Map<UUID, List<ProcessImpactValue>> groupedValues = processImpactValueRepository
+                .findAllByProcessIds(processes.stream().map(Process::getId).toList())
+                .stream()
                 .collect(Collectors.groupingBy(ProcessImpactValue::getProcessId));
 
-        // Xử lý từng process
+        List<ProcessImpactValue> valuesToSave = new ArrayList<>();
+        List<ProcessImpactValue> valuesToDelete = new ArrayList<>();
+
         for (Process process : processes) {
-            UUID processId = process.getId();
-            List<ProcessImpactValue> existingValues = groupedValues.getOrDefault(processId, new ArrayList<>());
+            List<ProcessImpactValue> existingValues = groupedValues.getOrDefault(process.getId(), new ArrayList<>());
 
             for (int i = 0; i < methodCategories.size(); i++) {
                 if (i < existingValues.size()) {
-                    existingValues.get(i).setImpactMethodCategory(methodCategories.get(i));
-                    existingValues.get(i).setUnitLevel(BigDecimal.ZERO);
+                    ProcessImpactValue value = existingValues.get(i);
+                    value.setImpactMethodCategory(methodCategories.get(i));
+                    value.setUnitLevel(BigDecimal.ZERO);
+                    valuesToSave.add(value);
                 } else {
-                    existingValues.add(getNewProcessImpactValue(methodCategories.get(i), process));
+                    valuesToSave.add(getNewProcessImpactValue(methodCategories.get(i), process));
                 }
             }
 
             if (existingValues.size() > methodCategories.size()) {
-                List<ProcessImpactValue> removeList = existingValues.subList(
-                        methodCategories.size(),
-                        existingValues.size());
-                processImpactValueRepository.deleteAll(removeList);
-                existingValues = existingValues.subList(0, methodCategories.size());
+                valuesToDelete.addAll(existingValues.subList(methodCategories.size(), existingValues.size()));
             }
-
-            processImpactValueRepository.saveAll(existingValues);
         }
+
+        processImpactValueRepository.deleteAll(valuesToDelete);
+        processImpactValueRepository.saveAll(valuesToSave);
     }
+
 
 
     public ProcessNodeDto calculateProjectImpactValue(UUID projectId) {
