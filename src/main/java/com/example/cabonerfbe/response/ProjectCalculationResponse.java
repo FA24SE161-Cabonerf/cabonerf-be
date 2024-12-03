@@ -22,5 +22,5 @@ public class ProjectCalculationResponse {
     private List<ProjectImpactDto> impacts;
     private List<ProcessDto> processes;
     private List<ConnectorDto> connectors;
-    private List<LifeCycleBreakdownPercentDto> lifeCycleBreakdown;
+    private List<LifeCycleBreakdownPercentDto> lifeCycleStageBreakdown;
 }
