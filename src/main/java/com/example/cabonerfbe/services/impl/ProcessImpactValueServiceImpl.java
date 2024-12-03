@@ -240,8 +240,18 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         long endTimeForProcess = System.currentTimeMillis();
         System.out.println("lấy process impact value từ db nè: "+ (endTimeForProcess - startTimeForProcess));
 
-        processImpactValueRepository.deleteAll(valuesToDelete);
-        processImpactValueRepository.saveAll(valuesToSave);
+        if(!valuesToDelete.isEmpty()){
+            processImpactValueRepository.deleteAll(valuesToDelete);
+
+        }
+        if(!valuesToSave.isEmpty()){
+            long startTimeSave = System.currentTimeMillis();
+            processImpactValueRepository.saveAll(valuesToSave);
+
+            long endTimeSave = System.currentTimeMillis();
+            System.out.println("save nè: "+ (endTimeSave - startTimeSave));
+        }
+
     }
 
 
