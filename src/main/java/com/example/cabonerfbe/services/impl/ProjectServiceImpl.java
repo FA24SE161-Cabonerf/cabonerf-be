@@ -372,7 +372,11 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         if (!updatedValues.isEmpty()) {
+            long startTime = System.currentTimeMillis();
             projectImpactValueRepository.saveAll(updatedValues);
+            long endTime = System.currentTimeMillis();
+            System.out.println("save của project  nè: "+ (endTime - startTime));
+
         }
 
         List<Process> processes = processRepository.findAll(project.getId());
