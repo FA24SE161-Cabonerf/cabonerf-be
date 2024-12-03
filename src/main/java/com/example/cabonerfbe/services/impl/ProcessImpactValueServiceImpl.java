@@ -199,11 +199,16 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
     public void alterPrevImpactValueList(List<Process> processes, UUID methodId) {
+        // Fetch method categories and process impact values in bulk to reduce database roundtrips
         List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
+        List<UUID> processIds = processes.stream().map(Process::getId).toList();
 
-        Map<UUID, List<ProcessImpactValue>> groupedValues = processImpactValueRepository
-                .findAllByProcessIds(processes.stream().map(Process::getId).toList())
-                .stream()
+        // Single database call for all process impact values
+        List<ProcessImpactValue> existingProcessImpactValues = processImpactValueRepository
+                .findAllByProcessIds(processIds);
+
+        // Group existing values more efficiently
+        Map<UUID, List<ProcessImpactValue>> groupedValues = existingProcessImpactValues.stream()
                 .collect(Collectors.groupingBy(ProcessImpactValue::getProcessId));
 
         List<ProcessImpactValue> valuesToSave = new ArrayList<>();
@@ -213,31 +218,47 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             UUID processId = process.getId();
             List<ProcessImpactValue> existingValues = groupedValues.getOrDefault(processId, Collections.emptyList());
 
-            int existingIndex = 0;
-            for (ImpactMethodCategory methodCategory : methodCategories) {
-                ProcessImpactValue value;
-
-                if (existingIndex < existingValues.size()) {
-                    value = existingValues.get(existingIndex++);
-                    value.setImpactMethodCategory(methodCategory);
-                    value.setUnitLevel(BigDecimal.ZERO);
-                } else {
-                    value = getNewProcessImpactValue(methodCategory, process);
-                }
-                valuesToSave.add(value);
-            }
-
-            if (existingIndex < existingValues.size()) {
-                valuesToDelete.addAll(existingValues.subList(existingIndex, existingValues.size()));
-            }
+            processOptimization(process, methodCategories, existingValues, valuesToSave, valuesToDelete);
         }
 
+        // Bulk delete and save operations
         if (!valuesToDelete.isEmpty()) {
-            processImpactValueRepository.deleteAll(valuesToDelete);
+            processImpactValueRepository.deleteAllInBatch(valuesToDelete);
         }
         if (!valuesToSave.isEmpty()) {
-            processImpactValueRepository.saveAll(valuesToSave);
+            processImpactValueRepository.saveAllAndFlush(valuesToSave);
         }
+    }
+
+    private void processOptimization(
+            Process process,
+            List<ImpactMethodCategory> methodCategories,
+            List<ProcessImpactValue> existingValues,
+            List<ProcessImpactValue> valuesToSave,
+            List<ProcessImpactValue> valuesToDelete
+    ) {
+        int existingIndex = 0;
+        for (ImpactMethodCategory methodCategory : methodCategories) {
+            ProcessImpactValue value = existingIndex < existingValues.size()
+                    ? updateExistingValue(existingValues.get(existingIndex++), methodCategory)
+                    : createNewValue(methodCategory, process);
+
+            valuesToSave.add(value);
+        }
+
+        if (existingIndex < existingValues.size()) {
+            valuesToDelete.addAll(existingValues.subList(existingIndex, existingValues.size()));
+        }
+    }
+
+    private ProcessImpactValue updateExistingValue(ProcessImpactValue value, ImpactMethodCategory methodCategory) {
+        value.setImpactMethodCategory(methodCategory);
+        value.setUnitLevel(BigDecimal.ZERO);
+        return value;
+    }
+
+    private ProcessImpactValue createNewValue(ImpactMethodCategory methodCategory, Process process) {
+        return getNewProcessImpactValue(methodCategory, process);
     }
 
 
