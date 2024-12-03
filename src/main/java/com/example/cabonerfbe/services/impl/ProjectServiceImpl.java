@@ -350,25 +350,20 @@ public class ProjectServiceImpl implements ProjectService {
     private void alterPrevProjectImpactValueList(Project project, UUID methodId) {
         List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
 
-//        Map<UUID, ProjectImpactValue> existingValuesMap = projectImpactValueRepository
-//                .findAllByProjectId(project.getId())
-//                .stream()
-//                .collect(Collectors.toMap(
-//                        value -> value.getImpactMethodCategory().getId(),
-//                        value -> value
-//                ));
-
+        long startProjectImpact = System.currentTimeMillis();
         Map<UUID, List<ProjectImpactValue>> groupedValues = projectImpactValueRepository
                 .findAllByProjectId(project.getId())
                 .stream()
                 .collect(Collectors.groupingBy(ProjectImpactValue::getId));
+        long endProjectImpact = System.currentTimeMillis();
 
+        System.out.println("lấy project impact ra nè: " + (endProjectImpact - startProjectImpact));
         List<ProjectImpactValue> valuesToSave = new ArrayList<>();
         List<ProjectImpactValue> valuesToDelete = new ArrayList<>();
 
         List<ProjectImpactValue> existingValues = groupedValues.getOrDefault(project.getId(), new ArrayList<>());
 
-
+        long startFor = System.currentTimeMillis();
         for (int i = 0; i < methodCategories.size(); i++) {
             if (i < existingValues.size()) {
                 ProjectImpactValue value = existingValues.get(i);
@@ -379,6 +374,9 @@ public class ProjectServiceImpl implements ProjectService {
                 valuesToSave.add(getNewProjectImpactValue(methodCategories.get(i),project));
             }
         }
+        long endFor = System.currentTimeMillis();
+
+        System.out.println("chạy for nè: " + (endProjectImpact - startProjectImpact));
 
         if (existingValues.size() > methodCategories.size()) {
             valuesToDelete.addAll(existingValues.subList(methodCategories.size(), existingValues.size()));
@@ -389,7 +387,12 @@ public class ProjectServiceImpl implements ProjectService {
 
         }
         if(!valuesToSave.isEmpty()){
+            long startSave = System.currentTimeMillis();
             projectImpactValueRepository.saveAll(valuesToSave);
+            long endSave = System.currentTimeMillis();
+
+            System.out.println("save all project nè: " + (endSave - startSave));
+
         }
 
         List<Process> processes = processRepository.findAll(project.getId());
