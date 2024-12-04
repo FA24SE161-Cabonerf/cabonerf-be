@@ -6,6 +6,7 @@ import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
+import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CalculateProjectRequest;
 import com.example.cabonerfbe.request.CreateProjectRequest;
@@ -187,6 +188,9 @@ public class ProjectServiceImpl implements ProjectService {
             projectDto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
             projectDto.setLifeCycleStageBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
             projectDto.setIntensity(this.getIntensity(project.getId()));
+            projectDto.setFunctionalUnit(this.getFunctionalUnit(project.getId()));
+
+
             list.add(projectDto);
         }
 
@@ -661,5 +665,17 @@ public class ProjectServiceImpl implements ProjectService {
             }
         }
         return new ArrayList<>(aggregatedMap.values());
+    }
+
+    private String getFunctionalUnit(UUID projectId){
+        if(projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()){
+            return "";
+        }
+        List<Process> root = processRepository.findRootProcess(projectId);
+        Optional<Exchanges> e = exchangesRepository.findProductOut(root.get(0).getId());
+        if(e.isEmpty()){
+            return "";
+        }
+        return e.get().getValue().setScale(2, RoundingMode.HALF_UP)+ " " + e.get().getUnit().getName()+ " " + e.get().getName();
     }
 }
