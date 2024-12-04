@@ -240,7 +240,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
         if (processList.size() == 1) {
             validateProcessWithOne(processList.get(0));
+        }else{
+            List<Process> root = processRepository.findRootProcess(projectId);
+            validateRootProcess(processList.get(0));
         }
+
+
         List<UUID> processIds = processList.stream()
                 .map(Process::getId)
                 .collect(Collectors.toList());
@@ -277,6 +282,20 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         return dto;
     }
 
+    private void validateRootProcess(Process process) {
+        List<Exchanges> elementary = exchangesRepository.findElementaryByProcess(process.getId());
+
+        Exchanges productOut = exchangesRepository.findProductOutWithOneProcess(process.getId());
+        if(productOut == null){
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
+                    "- Process output is empty.", Collections.EMPTY_LIST);
+        }
+        if (Objects.equals(productOut.getValue(), BigDecimal.ZERO)) {
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
+                    "- Process " + process.getName() + " should have 0 output.", Collections.EMPTY_LIST);
+        }
+    }
+
     private void validateProcessWithOne(Process p) {
         List<Exchanges> elementary = exchangesRepository.findElementaryByProcess(p.getId());
         if (elementary.isEmpty()) {
@@ -285,10 +304,15 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
         List<Exchanges> productIn = exchangesRepository.findProductIn(p.getId());
         Exchanges productOut = exchangesRepository.findProductOutWithOneProcess(p.getId());
-        if (!productIn.isEmpty() || productOut != null) {
+        if(productOut == null){
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
+                    "- Process output is empty.", Collections.EMPTY_LIST);
+        }
+        if (!productIn.isEmpty() || Objects.equals(productOut.getValue(), BigDecimal.ZERO)) {
             throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
                     "- Process " + p.getName() + " should have 0 input/output.", Collections.EMPTY_LIST);
         }
+
     }
 
     private void updateProjectValue(List<UUID> processIds, UUID projectId) {
