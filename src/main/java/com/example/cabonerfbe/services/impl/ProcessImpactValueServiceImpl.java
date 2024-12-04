@@ -143,25 +143,32 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 BigDecimal unitLevel = processImpactValue.getUnitLevel();
                 BigDecimal systemLevel = processImpactValue.getSystemLevel();
                 BigDecimal totalFlow = exchanges.map(value -> process.getOverAllProductFlowRequired()).orElse(BigDecimal.ONE);
-                System.out.println("Exchange name: " + exchanges.get().getName());
+                System.out.println("Exchange name: " + exchange.getName());
                 System.out.println("Processing impact category name: " + processImpactValueOpt.get().getImpactMethodCategory().getImpactCategory().getName());
-                System.out.println("Initial unit level: " + unitLevel);
-                System.out.println("base exchange value (before converted): " + exchange.getValue());
-                System.out.println("initial value: " + initialValue);
+                System.out.println("Initial unit level: " + unitLevel + " scale: " + unitLevel.scale());
+                System.out.println("base exchange value (before converted): " + exchange.getValue() + " scale: " + exchange.getValue().scale());
+                System.out.println("initial value: " + initialValue + " scale: " + initialValue.scale());
+                BigDecimal exchangeValue = exchange.getValue().subtract(initialValue);
+
                 // Convert the exchange value to the base unit and adjust based on initial value
-                BigDecimal exchangeValue = unitService.convertValue(
-                        exchange.getUnit(),
-                        exchange.getValue().subtract(initialValue),
-                        baseUnit);
-                System.out.println("Converted exchange value: " + exchangeValue);
+                if (!baseUnit.getId().equals(exchange.getUnit().getId())) {
+                    exchangeValue = unitService.convertValue(
+                            exchange.getUnit(),
+                            exchange.getValue().subtract(initialValue),
+                            baseUnit);
+                }
+
+                System.out.println("After exchange value: " + exchangeValue);
 
                 // Adjust unit level by adding the product of exchange value and factor
                 BigDecimal factorValue = factors.getDecimalValue();
+                System.out.println("Factor value: " + factorValue + " scale: " + factorValue.scale());
+
                 unitLevel = unitLevel.add(exchangeValue.multiply(factorValue));
+                System.out.println("exchangeValue.multiply(factorValue) value: " + exchangeValue.multiply(factorValue) + " scale: " + exchangeValue.multiply(factorValue).scale());
                 systemLevel = systemLevel.add(exchangeValue.multiply(factorValue.multiply(totalFlow)));
 
-                System.out.println("Factor value: " + factorValue);
-                System.out.println("Updated unit level = old unitLvl + fact*exVal = " + unitLevel);
+                System.out.println("Updated unit level = old unitLvl + fact * exVal = " + unitLevel + " scale: " + unitLevel.scale());
 
                 processImpactValue.setUnitLevel(unitLevel);
                 processImpactValue.setSystemLevel(systemLevel);

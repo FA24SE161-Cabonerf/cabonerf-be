@@ -165,7 +165,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         BigDecimal initialValue = exchange.getValue();
 
-        exchange.setValue(DEFAULT_VALUE);
+        exchange.setValue(BigDecimal.ZERO);
         exchange.setStatus(Constants.STATUS_FALSE);
 
         exchangesRepository.save(exchange);
