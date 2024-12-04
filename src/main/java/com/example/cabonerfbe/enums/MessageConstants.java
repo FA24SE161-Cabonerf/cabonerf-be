@@ -121,6 +121,8 @@ public class MessageConstants {
     public static final String USER_NOT_BELONG_TO_ORGANIZATION = "User doesn't belong to organization.";
     public static final String USER_NOT_HAVE_INVITE_ORGANIZATION = "User have not invite to organization.";
     public static final String CONTRACT_NOT_FOUND = "Contract doesn't exist.";
+    public static final String NO_INDUSTRY_CODE_FOUND = "Industry code doesn't exist.";
+    public static final String INDUSTRY_CODE_EXIST = "Industry code already exist.";
 
 
     public static final String INVALID_PDF = "Contract file is not in pdf format.";
@@ -128,6 +130,7 @@ public class MessageConstants {
     public static final String EMAIL_IS_USED_FOR_OTHER_ORGANIZATION = "Email is already used for other organization.";
     public static final String FAILED_TO_UPLOAD_CONTRACT = "Failed to upload contract. Please check again.";
     public static final String NO_AUTHORITY = "User doesn't have permission to do this action.";
+    public static final String ORGANIZATION_DOES_NOT_TO_INDUSTRY_CODE = "Organization doesn't have industry code.";
 
     // CALCULATION ERROR MSG
     public static final String FAILED_TO_PERFORM_CALCULATION = "Failed to perform calculation. ";
@@ -139,4 +142,5 @@ public class MessageConstants {
     public static final String MUST_BE_ONLY_ONE_FINAL_PROCESS = FAILED_TO_PERFORM_CALCULATION + "- There must be only one final process.";
     public static final String PROCESS_WITH_NO_CONNECTOR_ERROR = FAILED_TO_PERFORM_CALCULATION + "- There must be connectors between processes.";
     public static final String ELEMENTARY_CANNOT_BE_EMPTY = FAILED_TO_PERFORM_CALCULATION + "- Elementary exchanges are required.";
+
 }

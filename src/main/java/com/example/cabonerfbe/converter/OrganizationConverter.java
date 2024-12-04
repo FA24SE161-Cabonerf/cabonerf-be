@@ -12,6 +12,7 @@ public interface OrganizationConverter {
     OrganizationConverter INSTANCE = Mappers.getMapper(OrganizationConverter.class);
 
     OrganizationDto modelToDto(Organization organization);
+
     CreateOrganizationDto modelToCreateDto(Organization organization);
 
     GetOrganizationByUserDto modelToUser(Organization organization);

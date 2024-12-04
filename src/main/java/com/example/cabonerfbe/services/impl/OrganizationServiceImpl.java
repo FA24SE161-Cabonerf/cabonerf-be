@@ -71,6 +71,14 @@ public class OrganizationServiceImpl implements OrganizationService {
     private RoleConverter roleConverter;
     @Autowired
     private FileUtil fileUtil;
+    @Autowired
+    private IndustryCodeRepository icRepository;
+    @Autowired
+    private OrganizationIndustryCodeRepository oicRepository;
+    @Autowired
+    private OrganizationIndustryCodeConverter oicConverter;
+    @Autowired
+    private IndustryCodeConverter icConverter;
 
     @Override
     public GetAllOrganizationResponse getAll(int pageCurrent, int pageSize, String keyword) {
@@ -118,6 +126,28 @@ public class OrganizationServiceImpl implements OrganizationService {
         UserVerifyStatus pendingStatus = userVerifyStatusRepository.findByName(Constants.VERIFY_STATUS_PENDING).orElseGet(
                 () -> userVerifyStatusRepository.save(new UserVerifyStatus(Constants.VERIFY_STATUS_PENDING, Constants.VERIFY_STATUS_PENDING))
         );
+
+        List<IndustryCode> industryCodes = icRepository.findAllByIds(request.getIndustryCodeIds());
+
+        if (industryCodes == null || industryCodes.isEmpty()) {
+            throw CustomExceptions.notFound(MessageConstants.NO_INDUSTRY_CODE_FOUND);
+        }
+
+        if (industryCodes.size() < request.getIndustryCodeIds().size()) {
+            List<UUID> existingIndustryCodeIds = industryCodes.stream()
+                    .map(IndustryCode::getId)
+                    .toList();
+
+            List<UUID> missingIndustryCodeIds = request.getIndustryCodeIds().stream()
+                    .filter(codeId -> !existingIndustryCodeIds.contains(codeId))
+                    .toList();
+
+            if (!missingIndustryCodeIds.isEmpty()) {
+                throw CustomExceptions.notFound(
+                        String.format("Industry codes not found: %s", missingIndustryCodeIds)
+                );
+            }
+        }
 
         CreateOrganizationDto finalDto = dto;
         Users user = userRepository.findByEmail(request.getEmail()).orElseGet(
@@ -167,6 +197,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         Organization organization = new Organization();
         organization.setName(request.getName());
         organization.setLogo(logoUrl);
+        organization.setDescription(request.getDescription());
+        organization.setTaxCode(request.getTaxCode());
+
 
         organization = organizationRepository.save(organization);
 
@@ -185,10 +218,21 @@ public class OrganizationServiceImpl implements OrganizationService {
         organization.setContract(contract);
         organization = organizationRepository.save(organization);
 
-        dto = organizationConverter.modelToCreateDto(organization);
-        if(finalDto.getNewUserId() != null){
-            dto.setNewUserId(finalDto.getNewUserId());
+        List<OrganizationIndustryCode> oicList = new ArrayList<>();
 
+        for(IndustryCode x : industryCodes){
+            OrganizationIndustryCode oic = new OrganizationIndustryCode();
+            oic.setOrganization(organization);
+            oic.setIndustryCode(x);
+            oicList.add(oic);
+        }
+
+        oicList = oicRepository.saveAll(oicList);
+
+        dto = organizationConverter.modelToCreateDto(organization);
+        dto.setIndustryCodes(industryCodes.stream().map(icConverter::modelToDto).toList());
+        if (finalDto.getNewUserId() != null) {
+            dto.setNewUserId(finalDto.getNewUserId());
         }
         return dto;
     }
@@ -270,10 +314,25 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         List<Users> existingUsers = userRepository.findAllByEmail(request.getUserIds());
 
+        if (existingUsers == null || existingUsers.isEmpty()) {
+            throw CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND);
+        }
 
-        Set<String> existingEmails = existingUsers.stream()
-                .map(Users::getEmail)
-                .collect(Collectors.toSet());
+        if (existingUsers.size() < request.getUserIds().size()) {
+            List<UUID> existingUserIds = existingUsers.stream()
+                    .map(Users::getId)
+                    .toList();
+
+            List<UUID> missingUserIds = request.getUserIds().stream()
+                    .filter(uId -> !existingUserIds.contains(uId))
+                    .toList();
+
+            if (!missingUserIds.isEmpty()) {
+                throw CustomExceptions.notFound(
+                        String.format("Users not found: %s", missingUserIds)
+                );
+            }
+        }
 
         List<UUID> userIds = existingUsers.stream().map(Users::getId).collect(Collectors.toList());
 
@@ -285,7 +344,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                     .collect(Collectors.toSet());
             existingUsers = existingUsers.stream()
                     .filter(user -> !userHaveInvite.contains(user.getId()))
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         List<Users> allUsers = new ArrayList<>(existingUsers);
@@ -297,7 +356,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                     uo.setOrganization(organization);
                     uo.setUser(user);
                     uo.setRole(roleRepository.findByName(Constants.LCA_STAFF).orElseThrow());
-                    uo.setHasJoined(false);
+                    uo.setHasJoined(true);
                     return uo;
                 }).collect(Collectors.toList());
 
@@ -325,7 +384,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         Users u = userRepository.findById(userId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
-        if(!u.isStatus()){
+        if (!u.isStatus()) {
             throw CustomExceptions.unauthorized("Account is banned");
         }
 
@@ -418,7 +477,16 @@ public class OrganizationServiceImpl implements OrganizationService {
     public OrganizationDto getOrganizationById(UUID organizationId) {
         Organization o = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
-        return organizationConverter.modelToDto(o);
+
+        List<OrganizationIndustryCode> data = oicRepository.findByOrganization(organizationId);
+
+        List<IndustryCode> ic = oicRepository.findByOrganization(organizationId).stream()
+                .map(OrganizationIndustryCode::getIndustryCode)
+                .toList();
+
+        OrganizationDto dto = organizationConverter.modelToDto(o);
+        dto.setIndustryCodes(ic.stream().map(icConverter::modelToDto).toList());
+        return dto;
     }
 
     @Override
