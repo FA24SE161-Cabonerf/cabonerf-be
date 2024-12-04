@@ -194,4 +194,12 @@ public class API_PARAMS {
     public static final String UPDATE_EMISSION_COMPARTMENT = "/{emissionCompartmentId}";
     public static final String DELETE_EMISSION_COMPARTMENT = "/{emissionCompartmentId}";
 
+    /************************
+     *   INDUSTRY CODE APIs   *
+     ************************/
+    public static final String INDUSTRY_CODE = "/industry-code";
+    public static final String UPDATE_INDUSTRY_CODE = "/{industryCodeId}";
+    public static final String DELETE_INDUSTRY_CODE = "/{industryCodeId}";
+    public static final String GET_INDUSTRY_CODE_BY_ORGANIZATION = "/{organizationId}";
+
 }
