@@ -17,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -81,6 +80,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
     // this one will be used once the client is too tired to update one by one.
     // however this still needs to be optimized
+
     public void computeProcessImpactValueAllExchangeOfProcess(Process process) {
         UUID processId = process.getId();
         // the idea here is:
@@ -119,7 +119,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValueRepository.saveAll(processImpactValueList);
     }
 
-    @Transactional
     public void computeProcessImpactValueSingleExchange(Process process, Exchanges exchange, BigDecimal initialValue) {
         UUID processId = process.getId();
         log.info("Starting impact value computation for process ID: " + processId);
