@@ -676,6 +676,6 @@ public class ProjectServiceImpl implements ProjectService {
         if(e.isEmpty()){
             return "";
         }
-        return e.get().getValue() + e.get().getUnit().getName() + e.get().getName();
+        return e.get().getValue().setScale(2, RoundingMode.HALF_UP)+ " " + e.get().getUnit().getName()+ " " + e.get().getName();
     }
 }
