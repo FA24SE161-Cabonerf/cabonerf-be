@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -130,6 +131,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValueRepository.saveAll(processImpactValueList);
     }
 
+    @Transactional
     public void computeProcessImpactValueSingleExchange(Process process, Exchanges exchange, BigDecimal initialValue) {
         UUID processId = process.getId();
         log.info("Starting impact value computation for process ID: " + processId);
@@ -189,12 +191,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
 
         // Batch save processImpactValues in chunks
-//        int batchSize = 100;
-//        for (int i = 0; i < processImpactValueList.size(); i += batchSize) {
-//            List<ProcessImpactValue> batch = processImpactValueList.subList(i,
-//                    Math.min(i + batchSize, processImpactValueList.size()));
-//        }
-        processImpactValueRepository.saveAll(processImpactValueList);
+        int batchSize = 100;
+        for (int i = 0; i < processImpactValueList.size(); i += batchSize) {
+            List<ProcessImpactValue> batch = processImpactValueList.subList(i,
+                    Math.min(i + batchSize, processImpactValueList.size()));
+            processImpactValueRepository.saveAll(batch);
+        }
 
     }
 
