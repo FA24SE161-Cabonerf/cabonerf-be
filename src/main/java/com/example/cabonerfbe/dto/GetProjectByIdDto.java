@@ -21,6 +21,5 @@ public class GetProjectByIdDto {
     private List<ProcessDto> processes;
     private List<ConnectorDto> connectors;
     private List<LifeCycleBreakdownPercentDto> lifeCycleStageBreakdown;
-    private List<CarbonIntensityDto> intensity;
 
 }

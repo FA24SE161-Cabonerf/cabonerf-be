@@ -112,7 +112,6 @@ public class ProjectServiceImpl implements ProjectService {
         var response = projectConverter.fromGetProjectDtoToCalculateResponse(getProject(project));
         response.setContributionBreakdown(contributionBreakdown);
         response.setLifeCycleStageBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
-        response.setIntensity(this.getIntensity(projectId));
         return response;
 
     }
@@ -187,7 +186,7 @@ public class ProjectServiceImpl implements ProjectService {
 
             projectDto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
             projectDto.setLifeCycleStageBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
-
+            projectDto.setIntensity(this.getIntensity(project.getId()));
             list.add(projectDto);
         }
 
@@ -234,7 +233,13 @@ public class ProjectServiceImpl implements ProjectService {
     public List<CarbonIntensityDto> getIntensity(UUID projectId) {
         Project p = projectRepository.findByIdAndStatusTrue(projectId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
+
+        if(projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()){
+            return Collections.emptyList();
+        }
+
         ProjectImpactValue value = processImpactValueRepository.findCO2(projectId);
+
         List<CarbonIntensity> ci = ciRepository.findAll();
 
         ci.forEach(c ->
