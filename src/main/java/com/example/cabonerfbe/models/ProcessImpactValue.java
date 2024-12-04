@@ -33,7 +33,7 @@ public class ProcessImpactValue extends Base {
     private BigDecimal previousProcessValue;
 
     @Version
-    private int version;
+    private int version = 1;
 
     public UUID getProcessId() {
         return process != null ? process.getId() : null;
