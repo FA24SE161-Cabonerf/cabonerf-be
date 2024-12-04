@@ -415,6 +415,9 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
     public List<LifeCycleBreakdownPercentDto> buildLifeCycleBreakdownWhenGetAll(UUID projectId) {
+        if(projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()){
+            return Collections.emptyList();
+        }
         List<LifeCycleStage> lifeCycleStages = lcsRepository.findAll();
         List<ImpactCategory> categories = icRepository.findAllByStatus(true);
         List<LifeCycleBreakdownPercentDto> dto = categories.stream()
