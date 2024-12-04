@@ -13,5 +13,6 @@ import java.util.UUID;
 public class LifeCycleStagePercentDto {
     private UUID id;
     private String name;
+    private String iconUrl;
     private BigDecimal percent;
 }
