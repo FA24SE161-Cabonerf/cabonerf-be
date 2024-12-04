@@ -1,6 +1,7 @@
 package com.example.cabonerfbe.converter;
 
 import com.example.cabonerfbe.dto.ImpactCategoryDto;
+import com.example.cabonerfbe.dto.LifeCycleBreakdownPercentDto;
 import com.example.cabonerfbe.dto.ProjectImpactCategoryDto;
 import com.example.cabonerfbe.models.ImpactCategory;
 import org.mapstruct.Mapper;
@@ -17,4 +18,6 @@ public interface ImpactCategoryConverter {
     ImpactCategoryDto fromImpactCategoryToImpactCategoryDto(ImpactCategory emissionSubstances);
 
     ProjectImpactCategoryDto fromProjectToImpactCategoryDto(ImpactCategory impactCategory);
+
+    LifeCycleBreakdownPercentDto fromCategoryToBreakDown(ImpactCategory impactCategory);
 }

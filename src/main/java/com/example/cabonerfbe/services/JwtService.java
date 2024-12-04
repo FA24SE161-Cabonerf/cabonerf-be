@@ -5,7 +5,9 @@ import com.example.cabonerfbe.dto.UserVerifyStatusDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.EmailVerificationToken;
+import com.example.cabonerfbe.models.InviteOrganizationToken;
 import com.example.cabonerfbe.repositories.EmailVerificationTokenRepository;
+import com.example.cabonerfbe.repositories.InviteOrganizationTokenRepository;
 import com.example.cabonerfbe.repositories.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -34,12 +36,14 @@ public class JwtService {
     UserRepository userRepository;
     @Autowired
     EmailVerificationTokenRepository evtRepository;
+    @Autowired
+    InviteOrganizationTokenRepository invTokenRepository;
     @Value("${app.access_token_secret_key}")
     private String accessTokenSecretKey;
     @Value("${app.refresh_token_secret_key}")
     private String refreshTokenSecretKey;
 
-//    private final String gatewayTokenSecretKey = dotenv.get("CLIENT_GATEWAY_SECRET_KEY");
+    //    private final String gatewayTokenSecretKey = dotenv.get("CLIENT_GATEWAY_SECRET_KEY");
 //
 //    private final String mainIdServiceKey = dotenv.get("MAIN_SERVICE_ID_KEY");
 //
@@ -54,6 +58,8 @@ public class JwtService {
     private String forgotPasswordTokenSecretKey;
     @Value("${CLIENT_GATEWAY_SECRET_KEY}")
     private String clientGatewaySecretKey;
+    @Value("${app.invite_organization_token_secret_key}")
+    private String inviteOrganizationTokenSecretKey;
     @Value("${MAIN_SERVICE_ID_KEY}")
     private String mainServiceIdKey;
     @Value("${GATEWAY_SERVICE_SECRET_KEY}")
@@ -92,6 +98,10 @@ public class JwtService {
 
     public String generateEmailVerifyToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails, Constants.TOKEN_TYPE_EMAIL_VERIFY, EMAIL_VERIFY_TOKEN_EXPIRATION);
+    }
+
+    public String generateInviteOrganizationToken(UserDetails userDetails) {
+        return generateToken(new HashMap<>(), userDetails, Constants.TOKEN_TYPE_INVITE_ORGANIZATION, FORGOT_EXPIRATION);
     }
 
     public String generateForgotPasswordToken(UserDetails userDetails) {
@@ -160,6 +170,9 @@ public class JwtService {
             case Constants.TOKEN_TYPE_FORGOT_PASSWORD:
                 token_type_id = 4;
                 break;
+            case Constants.TOKEN_TYPE_INVITE_ORGANIZATION:
+                token_type_id = 5;
+                break;
             default:
                 throw new IllegalArgumentException("Unknown token type: " + tokenType);
         }
@@ -213,6 +226,9 @@ public class JwtService {
             case Constants.TOKEN_TYPE_SERVICE:
                 secretKey = gatewayServiceSecretKey;  // Key cho các dịch vụ khác
                 break;
+            case Constants.TOKEN_TYPE_INVITE_ORGANIZATION:
+                secretKey = inviteOrganizationTokenSecretKey;
+                break;
             default:
                 throw new IllegalArgumentException("Unknown token type: " + tokenType);
         }
@@ -250,6 +266,39 @@ public class JwtService {
         }
         if (!_token.isValid()) {
             throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("Email verify token", "Email verify token not valid"));
+        }
+        return _token;
+    }
+
+    public InviteOrganizationToken checkInviteToken(String token) {
+        if (!token.startsWith("Bearer ")) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("Invite organization token", "Invite organization token not valid"));
+        }
+
+        String inviteToken = token.substring(7);
+
+        try {
+            String userEmail = this.extractUsername(inviteToken, Constants.TOKEN_TYPE_INVITE_ORGANIZATION);
+            if (this.isTokenExpired(inviteToken, Constants.TOKEN_TYPE_INVITE_ORGANIZATION)) {
+                throw CustomExceptions.unauthorized(
+                        Constants.RESPONSE_STATUS_ERROR,
+                        Map.of("inviteOrganization", "Invite organization token is expired")
+                );
+            }
+        } catch (JwtException e) {
+            throw CustomExceptions.validator(
+                    Constants.RESPONSE_STATUS_ERROR,
+                    Map.of("inviteOrganization", "Invite organization token format is wrong")
+            );
+        }
+
+        InviteOrganizationToken _token = invTokenRepository.findByToken(inviteToken);
+
+        if (_token == null) {
+            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, Map.of("Invite organization token", "Invite organization token not exist"));
+        }
+        if (!_token.isValid()) {
+            throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("Invite organization token", "Invite organization token not valid"));
         }
         return _token;
     }

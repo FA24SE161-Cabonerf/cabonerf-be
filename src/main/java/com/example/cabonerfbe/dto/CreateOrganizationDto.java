@@ -10,13 +10,13 @@ import java.util.UUID;
 @Data
 @Getter
 @Setter
-public class OrganizationDto {
+public class CreateOrganizationDto {
     UUID id;
     private String name;
     private String description;
     private String taxCode;
-    private List<IndustryCodeDto> industryCodes;
     private String logo;
     private ContractDto contract;
-
+    private List<IndustryCodeDto> industryCodes;
+    private UUID newUserId;
 }

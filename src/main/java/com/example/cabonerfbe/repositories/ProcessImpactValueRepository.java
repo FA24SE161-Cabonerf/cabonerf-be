@@ -76,4 +76,16 @@ public interface ProcessImpactValueRepository extends JpaRepository<ProcessImpac
                         result -> (UUID) result[1]  // methodId
                 ));
     }
+
+    @Query("SELECT p " +
+            "FROM ProcessImpactValue p " +
+            "WHERE p.process.id IN :processIds " +
+            "AND p.impactMethodCategory.impactCategory.id = :categoryId " +
+            "AND p.process.lifeCycleStage.id = :lifeCycleStageId")
+    List<ProcessImpactValue> getPercent(@Param("categoryId") UUID categoryId,
+                                        @Param("lifeCycleStageId") UUID lifeCycleStageId,
+                                        @Param("processIds") List<UUID> processIds);
+
+    @Query("SELECT p FROM ProcessImpactValue p WHERE p.process.id IN :processIds AND p.impactMethodCategory.impactCategory.id = :categoryId AND p.status = true")
+    List<ProcessImpactValue> findAllByProcessIdsAndCategory(@Param("processIds") List<UUID> processIds,@Param("categoryId") UUID categoryId);
 }

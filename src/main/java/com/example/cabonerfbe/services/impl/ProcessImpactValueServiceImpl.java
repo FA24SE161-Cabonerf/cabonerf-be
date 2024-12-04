@@ -1,8 +1,9 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.config.RabbitMQConfig;
-import com.example.cabonerfbe.dto.ConnectorPercentDto;
-import com.example.cabonerfbe.dto.ProcessNodeDto;
+import com.example.cabonerfbe.converter.ImpactCategoryConverter;
+import com.example.cabonerfbe.converter.LifeCycleStageConverter;
+import com.example.cabonerfbe.dto.*;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -50,6 +52,15 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private String exchangeIdNext = null;
     @Autowired
     private ProcessService processService;
+
+    @Autowired
+    private LifeCycleStageRepository lcsRepository;
+    @Autowired
+    private LifeCycleStageConverter lcsConverter;
+    @Autowired
+    private ImpactCategoryRepository icRepository;
+    @Autowired
+    private ImpactCategoryConverter icConverter;
 
     @NotNull
     private static ProcessImpactValue getNewProcessImpactValue(ImpactMethodCategory methodCategory, Process process) {
@@ -463,5 +474,85 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
     }
 
+
+    public List<LifeCycleBreakdownDto> buildLifeCycleBreakdown(UUID projectId) {
+        List<LifeCycleStage> lifeCycleStages = lcsRepository.findAll();
+        List<LifeCycleBreakdownDto> dto = lifeCycleStages.stream().map(lcsConverter::toPercent).collect(Collectors.toList());
+
+        List<Process> processes = processRepository.findAll(projectId);
+
+        Map<UUID, List<Process>> lifeCycleStageToProcessesMap = new HashMap<>();
+
+        for (Process p : processes) {
+            UUID stageId = p.getLifeCycleStage().getId();
+            lifeCycleStageToProcessesMap
+                    .computeIfAbsent(stageId, k -> new ArrayList<>())
+                    .add(p);
+        }
+
+        for (LifeCycleBreakdownDto x : dto) {
+            List<ProcessLifeCycleBreakdownDto> process = new ArrayList<>();
+            List<Process> relatedProcesses = lifeCycleStageToProcessesMap.getOrDefault(x.getId(), Collections.emptyList());
+
+            for (Process p : relatedProcesses) {
+                ProcessLifeCycleBreakdownDto data = new ProcessLifeCycleBreakdownDto(p.getId(), p.getOverAllProductFlowRequired());
+                process.add(data);
+            }
+            x.setProcess(process);
+        }
+        return dto;
+    }
+
+    public List<LifeCycleBreakdownPercentDto> buildLifeCycleBreakdownWhenGetAll(UUID projectId) {
+        if(projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()){
+            return Collections.emptyList();
+        }
+        List<LifeCycleStage> lifeCycleStages = lcsRepository.findAll();
+        List<ImpactCategory> categories = icRepository.findAllByStatus(true);
+        List<LifeCycleBreakdownPercentDto> dto = categories.stream()
+                .map(icConverter::fromCategoryToBreakDown)
+                .toList();
+
+        List<Process> processes = processRepository.findAll(projectId);
+        List<UUID> processIds = processes.stream()
+                .map(Process::getId)
+                .toList();
+
+        // Load all data for calculations in one go
+        Map<UUID, List<ProcessImpactValue>> processImpactValuesByCategory = processImpactValueRepository
+                .findAllByProcessIds(processIds)
+                .stream()
+                .collect(Collectors.groupingBy(piv -> piv.getImpactMethodCategory().getImpactCategory().getId()));
+
+
+        for (LifeCycleBreakdownPercentDto breakdownDto : dto) {
+            UUID categoryId = breakdownDto.getId();
+            BigDecimal total = processImpactValuesByCategory.getOrDefault(categoryId, List.of())
+                    .stream()
+                    .map(piv -> piv.getUnitLevel().multiply(piv.getProcess().getOverAllProductFlowRequired()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            List<LifeCycleStagePercentDto> lcsDto = lifeCycleStages.stream()
+                    .map(lcsConverter::toPercentGetAll)
+                    .toList();
+
+            for (LifeCycleStagePercentDto stageDto : lcsDto) {
+                UUID stageId = stageDto.getId();
+                BigDecimal percent = processImpactValuesByCategory.getOrDefault(categoryId, List.of())
+                        .stream()
+                        .filter(piv -> piv.getProcess().getLifeCycleStage().getId().equals(stageId))
+                        .map(piv -> piv.getUnitLevel().multiply(piv.getProcess().getOverAllProductFlowRequired()))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                stageDto.setPercent(total.compareTo(BigDecimal.ZERO) == 0
+                        ? BigDecimal.ZERO
+                        : percent.divide(total, RoundingMode.HALF_UP));
+            }
+
+            breakdownDto.setLifeCycleStage(lcsDto);
+        }
+
+        return dto;
+    }
 
 }

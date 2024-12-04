@@ -25,4 +25,8 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
     @NotNull
     @Query("SELECT o FROM Organization o WHERE o.id = :organizationId AND o.status = true")
     Optional<Organization> findById(@NotNull @Param("organizationId") UUID id);
+
+    @NotNull
+    @Query("SELECT o FROM Organization o WHERE o.id = :organizationId")
+    Optional<Organization> findByIdWhenCreate(@NotNull @Param("organizationId") UUID id);
 }

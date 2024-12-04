@@ -1,23 +1,8 @@
--- -- Table: subscription_type
--- INSERT INTO subscription_type(id, subscription_name, description, project_limit, usage_limit, annual_cost, monthly_cost,
---                               can_create_organization, status)
--- VALUES ('123e4567-e89b-12d3-a456-426614174000', 'Basic', 'Người dùng cá nhân với hạn chế cơ bản', 5, 1000, 0, 0, false,
---         true),
---        ('223e4567-e89b-12d3-a456-426614174001', 'Pro', 'Người dùng chuyên nghiệp với nhiều tính năng hơn', 20, 10000,
---         199.99, 19.99, true, true),
---        ('323e4567-e89b-12d3-a456-426614174002', 'Enterprise', 'Doanh nghiệp với khả năng mở rộng tối đa', 100, 100000,
---         999.99, 99.99, true, true);
---
 -- -- Table: user_verify_status
 -- INSERT INTO user_verify_status(id, status_name, description, status)
 -- VALUES ('123e4567-e89b-12d3-a456-426614174000', 'Pending', 'Người dùng đã đăng ký nhưng chưa được xác minh', true),
 --        ('123e4567-e89b-12d3-a456-426614174001', 'Verified', 'Người dùng đã được xác minh thành công', true),
 --        ('123e4567-e89b-12d3-a456-426614174002', 'Suspended', 'Người dùng bị tạm ngừng xác minh', true);
---
--- -- Table: user_status
--- INSERT INTO user_status(id, status_name, description, status)
--- VALUES ('223e4567-e89b-12d3-a456-426614174000', 'Active', 'Người dùng đang hoạt động bình thường', true),
---        ('223e4567-e89b-12d3-a456-426614174001', 'Banned', 'Người dùng đã bị cấm truy cập hệ thống', true);
 --
 -- -- Table: role
 -- INSERT INTO role(id, name, status)
@@ -89,27 +74,15 @@
 --         '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-recycle"><path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5"/><path d="M11 19h8.203a1.83 1.83 0 0 0 1.556-.89 1.784 1.784 0 0 0 0-1.775l-1.226-2.12"/><path d="m14 16-3 3 3 3"/><path d="M8.293 13.596 7.196 9.5 3.1 10.598"/><path d="m9.344 5.811 1.093-1.892A1.83 1.83 0 0 1 11.985 3a1.784 1.784 0 0 1 1.546.888l3.943 6.843"/><path d="m13.378 9.633 4.096 1.098 1.097-4.096"/></svg>');
 --
 -- -- Table: users
--- INSERT INTO users(id, email, full_name, password, role_id, subscription_id, user_status_id, user_verify_status_id,
+-- INSERT INTO users(id, email, full_name, password, role_id, user_verify_status_id,
 --                   status)
 -- VALUES ('923e4567-e89b-12d3-a456-426614174000', 'company.admin.test@gmail.com', 'Organization Manager',
 --         '$2a$10$DmzY62bQ0jHOcWKg5aAuk.LLUrxHYX.7Y/e/psbjNo10427cZiaxK', '323e4567-e89b-12d3-a456-426614174002',
---         '123e4567-e89b-12d3-a456-426614174000', '223e4567-e89b-12d3-a456-426614174000',
 --         '123e4567-e89b-12d3-a456-426614174001', true),
---        ('923e4567-e89b-12d3-a456-426614174001', 'system.admin.test@gmail.com', 'Admin',
---         '$2a$10$1mBdYye1JJF49P7nfUy0.u7.oT9a7CsirV07UNaQBwFW7nOf.kplO', '323e4567-e89b-12d3-a456-426614174000',
---         '123e4567-e89b-12d3-a456-426614174000', '223e4567-e89b-12d3-a456-426614174000',
---         '123e4567-e89b-12d3-a456-426614174001', true),
---        ('923e4567-e89b-12d3-a456-426614174002', 'manager.test@gmail.com', 'Manager',
+--         ('923e4567-e89b-12d3-a456-426614174001', 'manager.test@gmail.com', 'Manager',
 --         '$2a$10$f7a6U4tgbd8mw4Z.bYFXIeSVM3vtyJIms9d8sZlcaX42LSQI9Z1Yq', '323e4567-e89b-12d3-a456-426614174001',
---         '123e4567-e89b-12d3-a456-426614174000', '223e4567-e89b-12d3-a456-426614174000',
---         '123e4567-e89b-12d3-a456-426614174001', true),
---        ('923e4567-e89b-12d3-a456-426614174003', 'qminh.workmode@gmail.com', 'Tran Quang Minh',
---         '$2a$10$XI2JxRZMsqk1aaNBMzflyunz76laG8wj0NBh6xwNa1IQG5o30wMFu', '323e4567-e89b-12d3-a456-426614174003',
---         '123e4567-e89b-12d3-a456-426614174000', '223e4567-e89b-12d3-a456-426614174000',
 --         '123e4567-e89b-12d3-a456-426614174001', true);
 --
--- insert into workspace(id, name, owner_id, status)
--- values ('6ccbff7f-9653-44c0-8ddb-e7728f12e5a0', 'Dev', '923e4567-e89b-12d3-a456-426614174003', true);
 --
 -- INSERT INTO life_cycle_impact_assessment_method (id, name, description, version, reference, perspective_id, status)
 -- VALUES ('923e4567-e89b-12d3-a456-426614174000', 'ReCiPe 2016 Midpoint', '', 'v1.03', '',
@@ -118,7 +91,6 @@
 --         '523e4567-e89b-12d3-a456-426614174001', true),
 --        ('923e4567-e89b-12d3-a456-426614174002', 'ReCiPe 2016 Midpoint', '', 'v1.03', '',
 --         '523e4567-e89b-12d3-a456-426614174002', true);
---
 --
 -- -- Insert into unit
 -- INSERT INTO unit (id, created_at, modified_at, status, conversion_factor, is_default, name, unit_group_id)
@@ -451,8 +423,6 @@
 --        ('e23e4567-e89b-12d3-a456-426614174030', '2024-11-04', '2024-11-04', true, 1, true, 'm2*year',
 --         '2f46a2c1-cec4-4044-88f2-5ec7c74475e1');
 --
---
---
 -- INSERT INTO midpoint_impact_category(id, name, description, abbr, unit_id, status)
 -- VALUES ('234e4567-e89b-12d3-a456-426614174000', 'Global Warming Potential', '', 'GWP',
 --         '723e4567-e89b-12d3-a456-426614174000', true),
@@ -677,5 +647,212 @@
 --         '123e4567-e89b-12d3-a456-426614174015', true),
 --        ('123e4567-e89b-12d3-a456-426614174150', '923e4567-e89b-12d3-a456-426614174002',
 --         '123e4567-e89b-12d3-a456-426614174016', true);
+--
+-- INSERT INTO industry_code(id, code, name, status)
+-- VALUES ('7e7bfd94-6967-49f0-96f5-f0be8d41877a', '01',
+--         'Crop and Animal Production, Agricultural Services and Post-Harvest Activities', true),
+--
+--        ('0678602c-a7e6-4895-97fb-ac25ece89b2b', '011', 'Annual Crop Cultivation', true),
+--
+--        ('51229af7-9046-45c8-a3bb-3bcb4cec723d', '012', 'Perennial Crop Cultivation', true),
+--
+--        ('7d7aa758-b1da-4449-9adf-46e9157bd95a', '013', 'Animal Husbandry', true),
+--
+--        ('5303c47a-78d4-417e-9279-0f93afe20411', '014', 'Agricultural Support Services and Post-Harvest Activities',
+--         true),
+--
+--        ('3a24011c-a1fc-419d-922b-7d3e497103e0', '02', 'Forestry and Related Service Activities', true),
+--
+--        ('c7f47f6e-3a86-4e77-8c85-88118898a3e5', '021', 'Forestry', true),
+--
+--        ('bdca94f9-c8cb-463c-94a6-767aca1e726b', '022', 'Logging and Forest Product Collection', true),
+--
+--        ('e69a4022-d2ae-4ea4-9720-1edae9a2e69e', '023', 'Forestry Support Services', true),
+--
+--        ('7d7e5fe4-df81-4fd3-b46f-4c9b0b084e11', '03', 'Fishing', true),
+--
+--        ('abcbc8b7-08e1-4839-b65a-a7e878352d4c', '031', 'Aquaculture', true),
+--
+--        ('72aedbea-bf75-40ac-9d1f-02ddb4854da1', '032', 'Fishing and Seafood Extraction', true),
+--
+--        ('e48eb039-7b62-4f1d-ac6b-11df12518513', '05', 'Mining and Quarrying', true),
+--
+--        ('5e212aec-07f6-4534-aa3d-f4432d270c70', '051', 'Coal Mining', true),
+--
+--        ('0e1c20e1-f639-40ab-a32d-d874b8d57bcc', '052', 'Crude Oil and Natural Gas Extraction', true),
+--
+--        ('3e36cfd7-ba12-467e-a79a-04e9cda89290', '053', 'Metal Ore Mining', true),
+--
+--        ('7c505efc-81d3-461e-9d0a-139dd6b97ce1', '054', 'Other Mining and Quarrying', true),
+--
+--        ('fbb7e229-9b16-42c8-b6bf-1289da4aa3c0', '055', 'Mining Support Services', true),
+--
+--        ('e66c675d-6504-4647-b532-6a9b963b0993', '10', 'Food Manufacturing and Processing', true),
+--
+--        ('049d0d3d-bcea-48eb-b9c5-f9b02cce72a3', '11', 'Beverage Production', true),
+--
+--        ('404e1928-b3db-4a80-be8f-528a5407e66d', '12', 'Tobacco Product Manufacturing', true),
+--
+--        ('864ef885-dcd4-4157-bcaa-1e17db286e9f', '13', 'Textile Manufacturing', true),
+--
+--        ('cbb4eeeb-0e88-4d23-8d85-4f6c5262770b', '14', 'Apparel Manufacturing', true),
+--
+--        ('0b20c527-c014-403e-bf9c-2a1631e45620', '15', 'Leather and Related Product Manufacturing', true),
+--
+--        ('2c87a679-38fa-40cf-a412-70816514dff8', '16', 'Wood, Bamboo, and Rattan Product Manufacturing', true),
+--
+--        ('c84744e5-ee4c-4659-9d8c-d09d1eaad103', '17', 'Paper and Paper Product Manufacturing', true),
+--
+--        ('a42e8290-1769-440f-8a76-f44ebb6afba8', '18', 'Printing and Reproduction of Recorded Media', true),
+--
+--        ('687778aa-0a28-47e8-b018-d5e170c27477', '19', 'Coke and Refined Petroleum Product Manufacturing', true),
+--
+--        ('481d7484-7d9a-434a-bc18-d9053dbab229', '20', 'Chemical and Chemical Product Manufacturing', true),
+--
+--        ('aff30cde-1353-4e29-b9da-9aead442a962', '21',
+--         'Pharmaceutical, Medicinal Chemical, and Botanical Product Manufacturing', true),
+--
+--        ('8f6f9fd0-077c-466e-84b2-cc3838f3d092', '22', 'Rubber and Plastic Product Manufacturing', true),
+--
+--        ('842b3858-d5af-4106-9822-956030aebe98', '23', 'Non-Metallic Mineral Product Manufacturing', true),
+--
+--        ('e52b2108-c952-4595-b01a-b93405f725e9', '24', 'Basic Metal Manufacturing', true),
+--
+--        ('85a1ef86-097a-48d1-b965-2ed71412fb3b', '25', 'Fabricated Metal Product Manufacturing', true),
+--
+--        ('0685c0ed-788e-481a-af22-f455d0d6de4f', '26', 'Electronic, Computer, and Optical Product Manufacturing', true),
+--
+--        ('7307b288-81a6-47d2-b595-95eb6f959501', '27', 'Electrical Equipment Manufacturing', true),
+--
+--        ('381c655f-f997-43b8-8614-62d13d356a33', '28',
+--         'Machinery and Equipment Manufacturing (Not Elsewhere Classified)', true),
+--
+--        ('2742389a-012c-4a83-8e0c-9a4c6c1b755f', '29', 'Motor Vehicle Manufacturing', true),
+--
+--        ('e5ba2377-cd13-412c-ac17-7731146af678', '30', 'Other Transport Equipment Manufacturing', true),
+--
+--        ('cbae42db-5104-420f-bca0-18b1cc2de296', '31', 'Furniture Manufacturing', true),
+--
+--        ('4c493313-e8e9-4564-94af-16f5decec6a4', '32', 'Other Manufacturing', true),
+--
+--        ('29dc5da4-086a-4e90-b40a-46bec0fab859', '35', 'Electricity, Gas, Steam, and Air Conditioning Supply', true),
+--
+--        ('fee5fc30-9791-44eb-b53b-b3a5a756f44a', '351', 'Electricity Generation, Transmission, and Distribution', true),
+--
+--        ('95dea2ca-7a50-48da-8ef1-7772d86b0f11', '352', 'Gas Production and Distribution', true),
+--
+--        ('f4bf9a17-2a7f-4903-8471-4235cc73f302', '353', 'Steam, Hot Water, and Air Conditioning Supply', true),
+--
+--        ('43d17c2b-b928-433d-876f-72df3dff4ee3', '36', 'Water Collection, Treatment, and Supply', true),
+--
+--        ('5af8f05c-1c03-4965-93c0-9d6e6fbee851', '37', 'Sewerage and Wastewater Treatment', true),
+--
+--        ('323fb01c-2e63-4b18-a1d3-ed5e2b090932', '38', 'Waste Collection, Treatment, and Disposal; Materials Recovery',
+--         true),
+--
+--        ('5eb9f01e-c03c-4402-95fb-aef3b0112559', '41', 'Construction of Buildings', true),
+--
+--        ('03c7f67a-31ef-4137-b8a6-738bfca8034f', '42', 'Civil Engineering', true),
+--
+--        ('ded1d22d-9744-41c0-861d-672a2a9a24ac', '43', 'Specialized Construction Activities', true),
+--
+--        ('d02977a7-100b-498f-adfc-6eb95ec5771c', '45', 'Motor Vehicle, Motorcycle, and Parts Sales and Repair', true),
+--
+--        ('c0706ef7-fc73-4d73-bd2d-a9e30ed4be33', '46', 'Wholesale Trade (Except Motor Vehicles and Motorcycles)', true),
+--
+--        ('8251d1d5-55e9-42ad-b1fd-b5bc0d5393f7', '47', 'Retail Trade (Except Motor Vehicles and Motorcycles)', true),
+--
+--        ('c8889b63-bf2b-4209-9f07-3b42276a7f6f', '49', 'Land Transportation', true),
+--
+--        ('bd9b4288-f744-4587-9a6d-3074ed2158db', '50', 'Water Transportation', true),
+--
+--        ('eab28aaf-9db1-44dd-881f-a61c6576ebe1', '51', 'Air Transportation', true),
+--
+--        ('1a1088c4-d9bb-4b81-98dd-3cb7277460f9', '52', 'Warehousing and Support Activities for Transportation', true),
+--
+--        ('eafaa12e-0376-4538-b5c4-fe47fd8d5e3a', '55', 'Accommodation Services', true),
+--
+--        ('1fccdcb2-fc08-48e1-96c3-7747ecfdc593', '56', 'Food and Beverage Service Activities', true),
+--
+--        ('698f96c5-85c1-439a-bdcb-c0c7762035ad', '58', 'Publishing Activities', true),
+--
+--        ('c9584710-fae2-417a-b0e6-8b6be15b88b7', '59',
+--         'Motion Picture, Video, Television, Sound Recording, and Music Publishing Activities', true),
+--
+--        ('80fb275a-71f6-400d-be89-9cc83d0b89fa', '60', 'Broadcasting Activities', true),
+--
+--        ('70f77a14-d2ef-4475-8132-10ee04a39e85', '61', 'Telecommunications', true),
+--
+--        ('5666cc8d-5678-4ef9-b5f3-d43d25558964', '62', 'Computer Programming, Consultancy, and Related Activities',
+--         true),
+--
+--        ('96df8446-f954-4c4c-9fb4-f13716633b06', '63', 'Information Service Activities', true),
+--
+--        ('b06bda54-af7f-4f13-ac66-f4a77158efab', '64', 'Financial Service Activities', true),
+--
+--        ('a44c6a97-025b-49b0-904e-5f18f22d9a7d', '65', 'Insurance, Reinsurance, and Pension Funding', true),
+--
+--        ('3c156aae-40a1-4259-8c99-aca0b0dd6101', '66', 'Other Financial Activities', true),
+--
+--        ('4127db29-bd8f-4425-9e3a-60dc4c584ecd', '68', 'Real Estate Activities', true),
+--
+--        ('71685277-9c6b-47f7-9396-ad7ab6433a25', '69', 'Legal and Accounting Activities', true),
+--
+--        ('019108bf-9246-4e94-8a85-aaa54266f5a7', '70', 'Activities of Head Offices; Management Consultancy Activities',
+--         true),
+--
+--        ('a454afe8-8fa4-4ab2-93f4-70f5102d98ef', '71',
+--         'Architectural and Engineering Activities; Technical Testing and Analysis', true),
+--
+--        ('5afacdd4-592b-4ffa-a6f6-a9d23ed6de4e', '72', 'Scientific Research and Development', true),
+--
+--        ('650a2a20-6e3b-416a-bd37-e753fc2ceab3', '73', 'Advertising and Market Research', true),
+--
+--        ('9419ae8a-8e3a-4103-bcac-4dc194433063', '74', 'Other Professional, Scientific, and Technical Activities', true),
+--
+--        ('4828442c-bf80-4abd-98a0-e10cabcafc31', '77', 'Rental and Leasing Activities', true),
+--
+--        ('602d77bd-628d-4163-847d-66e55bc29401', '78', 'Employment Activities', true),
+--
+--        ('f84cf943-0c9c-44d7-9294-2c27f30fcb65', '79',
+--         'Travel Agency, Tour Operator, and Reservation Service Activities', true),
+--
+--        ('84926d5a-f414-44d5-b0e6-c5a009520c65', '80', 'Security and Investigation Activities', true),
+--
+--        ('5ba19a84-7535-4c3c-83df-180a2c60e35b', '81', 'Landscaping and Facility Support Service Activities', true),
+--
+--        ('f492e4bf-8bae-4a57-a284-47b9b5d5e54f', '82',
+--         'Office Administrative, Office Support, and Other Business Support Activities', true),
+--
+--        ('f1af7756-bb25-4d4c-abfc-ca300af70eb8', '84', 'Public Administration and Defense; Compulsory Social Security',
+--         true),
+--
+--        ('9cd5e2c5-7d6a-465a-9bcd-716a8bd11d11', '85', 'Education', true),
+--
+--        ('70567e2b-4816-4676-b408-e63e6101bc77', '86', 'Human Health Activities', true),
+--
+--        ('e87b7d3b-4ba7-4e5e-802d-3d554ea61eae', '87', 'Residential Care and Social Work Activities', true),
+--
+--        ('d5a69d45-7346-4a72-928b-76208042b736', '90', 'Creative, Arts, and Entertainment Activities', true),
+--
+--        ('3dc8f047-42cb-495c-98b3-a590cf5dc9bd', '91', 'Libraries, Archives, Museums, and Other Cultural Activities',
+--         true),
+--
+--        ('652b936f-14bc-4272-ad0d-a41a315e2259', '92', 'Gambling and Betting Activities', true),
+--
+--        ('8e4d5ee3-5dd1-44b6-9f70-29dedd7196eb', '94', 'Activities of Membership Organizations', true),
+--
+--        ('1fcb7dd6-da73-4d81-b529-1e0606851b11', '95', 'Repair of Computers, Personal and Household Goods', true),
+--
+--        ('430e265d-473e-4c47-8f25-46b661edf4e3', '96', 'Other Personal Service Activities', true),
+--
+--        ('b11573b4-25d4-4e0d-8372-fe307ee777b6', '97', 'Activities of Households as Employers of Domestic Personnel',
+--         true),
+--
+--        ('d97660f6-8901-4113-9fae-73271b2da486', '98',
+--         'Undifferentiated Goods and Services Producing Activities of Households for Own Use', true),
+--
+--        ('ca2668a1-f20d-4a53-ac07-fe89d4eaccbd', '99', 'Activities of Extraterritorial Organizations and Bodies', true);
+--
 --
 --

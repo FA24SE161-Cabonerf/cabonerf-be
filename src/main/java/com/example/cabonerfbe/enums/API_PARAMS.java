@@ -173,6 +173,7 @@ public class API_PARAMS {
     public static final String GET_LIST_INVITE_BY_USER = "/invite-list";
     public static final String UPLOAD_LOGO = "/{organizationId}/upload-logo";
     public static final String GET_ORGANIZATION_BY_ID = "/{organizationId}";
+
     public static final String MANAGER = "/manager";
     public static final String ORGANIZATION_MANAGER = "/organization-manager";
 
@@ -201,4 +202,13 @@ public class API_PARAMS {
     public static final String REMOVE_PROCESS_FROM_OBJECT_LIBRARY = "/{processId}";
     public static final String SAVE_PROCESS_TO_OBJECT_LIBRARY = "/{processId}";
     public static final String ADD_FROM_OBJECT_LIBRARY_TO_PROJECT = "/{processId}/projects/{projectId}";
+
+    /************************
+     *   INDUSTRY CODE APIs   *
+     ************************/
+    public static final String INDUSTRY_CODE = "/industry-code";
+    public static final String UPDATE_INDUSTRY_CODE = "/{industryCodeId}";
+    public static final String DELETE_INDUSTRY_CODE = "/{industryCodeId}";
+    public static final String GET_INDUSTRY_CODE_BY_ORGANIZATION = "/{organizationId}";
+
 }

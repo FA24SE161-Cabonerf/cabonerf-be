@@ -114,6 +114,8 @@ public class ProjectServiceImpl implements ProjectService {
         var contributionBreakdown = processImpactValueService.calculateProjectImpactValue(projectId);
         var response = projectConverter.fromGetProjectDtoToCalculateResponse(getProject(project));
         response.setContributionBreakdown(contributionBreakdown);
+        response.setLifeCycleStageBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
+        response.setIntensity(this.getIntensity(projectId));
         return response;
 
     }
@@ -162,14 +164,14 @@ public class ProjectServiceImpl implements ProjectService {
 
         Page<Project> projects;
         if (methodId == null) {
-            projects = projectRepository.findAll(userId, organizationId, pageable);
+            projects = projectRepository.findAll( organizationId, pageable);
         } else {
-            projects = projectRepository.sortByMethod(userId, organizationId, methodId, pageable);
+            projects = projectRepository.sortByMethod(organizationId, methodId, pageable);
         }
 
         if (projects.isEmpty()) {
             GetAllProjectResponse response = new GetAllProjectResponse();
-            response.setPageCurrent(0);
+            response.setPageCurrent(1);
             response.setPageSize(0);
             response.setTotalPage(0);
             response.setProjects(Collections.EMPTY_LIST);
@@ -187,6 +189,7 @@ public class ProjectServiceImpl implements ProjectService {
             ProjectDto projectDto = projectConverter.toDto(project);
 
             projectDto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
+            projectDto.setLifeCycleStageBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
 
             list.add(projectDto);
         }
@@ -196,6 +199,7 @@ public class ProjectServiceImpl implements ProjectService {
         response.setPageSize(pageSize);
         response.setTotalPage(totalPage);
         response.setProjects(list);
+
         return response;
     }
 
@@ -225,6 +229,7 @@ public class ProjectServiceImpl implements ProjectService {
         dto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
         dto.setProcesses(processService.getAllProcessesByProjectId(project.getId()));
         dto.setConnectors(connectorConverter.fromListConnectorToConnectorDto(connectorRepository.findAllByProject(project.getId())));
+        dto.setLifeCycleStageBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
         return dto;
     }
 
@@ -303,9 +308,13 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findByIdAndStatusTrue(projectId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND));
 
+
+
         UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(), userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
-
+        if(!project.getUser().getId().equals(userId) || !Constants.ORGANIZATION_MANAGER.equals(uo.getRole().getName())){
+            throw CustomExceptions.unauthorized(MessageConstants.NO_AUTHORITY);
+        }
         project.setStatus(false);
         projectRepository.save(project);
         return new ArrayList<>();

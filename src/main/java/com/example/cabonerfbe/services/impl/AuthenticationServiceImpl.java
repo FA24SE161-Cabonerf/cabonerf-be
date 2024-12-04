@@ -113,7 +113,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .fullName(request.getFullName())
                 .profilePictureUrl(Constants.DEFAULT_USER_IMAGE)
                 .password(passwordEncoder.encode(request.getPassword()))
-                .userVerifyStatus(userVerifyStatusRepository.findByName("Verified").get())
+                .userVerifyStatus(userVerifyStatusRepository.findByName(Constants.VERIFY_STATUS_PENDING).get())
                 .role(roleRepository.findByName(Constants.LCA_STAFF).get())
                 .status(true)
                 .build();
@@ -122,7 +122,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         var accessToken = jwtService.generateToken(saved.get());
         var refreshToken = jwtService.generateRefreshToken(saved.get());
-
 
         saveRefreshToken(refreshToken, user);
         Organization o = new Organization();
