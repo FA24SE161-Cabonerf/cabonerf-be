@@ -13,12 +13,13 @@ import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
 import com.example.cabonerfbe.services.ProcessService;
+import jakarta.persistence.OptimisticLockException;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -131,6 +132,75 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValueRepository.saveAll(processImpactValueList);
     }
 
+//    @Transactional
+//    public void computeProcessImpactValueSingleExchange(Process process, Exchanges exchange, BigDecimal initialValue) {
+//        UUID processId = process.getId();
+//        log.info("Starting impact value computation for process ID: " + processId);
+//
+//        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
+//        UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
+//        Unit baseUnit = exchange.getEmissionSubstance().getUnit();
+//
+//        Optional<Exchanges> exchanges = exchangesRepository.findProductOut(processId);
+//
+//        List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository
+//                .findByEmissionSubstanceId(emissionSubstanceId);
+//        int index = 0;
+//        for (MidpointImpactCharacterizationFactors factors : list) {
+//            Optional<ProcessImpactValue> processImpactValueOpt = processImpactValueRepository
+//                    .findByProcessIdAndImpactMethodCategoryId(
+//                            processId, factors.getImpactMethodCategory().getId());
+//
+//            if (processImpactValueOpt.isPresent()) {
+//                System.out.println("start: " + index++);
+//                ProcessImpactValue processImpactValue = processImpactValueOpt.get();
+//                BigDecimal unitLevel = processImpactValue.getUnitLevel();
+//                BigDecimal systemLevel = processImpactValue.getSystemLevel();
+//                BigDecimal totalFlow = exchanges.map(value -> process.getOverAllProductFlowRequired()).orElse(BigDecimal.ONE);
+//                System.out.println("Exchange name: " + exchange.getName());
+//                System.out.println("Processing impact category name: " + processImpactValueOpt.get().getImpactMethodCategory().getImpactCategory().getName());
+//                System.out.println("Initial unit level: " + unitLevel + " scale: " + unitLevel.scale());
+//                System.out.println("base exchange value (before converted): " + exchange.getValue() + " scale: " + exchange.getValue().scale());
+//                System.out.println("initial value: " + initialValue + " scale: " + initialValue.scale());
+//                BigDecimal exchangeValue = exchange.getValue().subtract(initialValue);
+//
+//                // Convert the exchange value to the base unit and adjust based on initial value
+//                if (!baseUnit.getId().equals(exchange.getUnit().getId())) {
+//                    exchangeValue = unitService.convertValue(
+//                            exchange.getUnit(),
+//                            exchange.getValue().subtract(initialValue),
+//                            baseUnit);
+//                }
+//
+//                System.out.println("After exchange value: " + exchangeValue);
+//
+//                // Adjust unit level by adding the product of exchange value and factor
+//                BigDecimal factorValue = factors.getDecimalValue();
+//                System.out.println("Factor value: " + factorValue + " scale: " + factorValue.scale());
+//
+//                unitLevel = unitLevel.add(exchangeValue.multiply(factorValue));
+//                System.out.println("exchangeValue.multiply(factorValue) value: " + exchangeValue.multiply(factorValue) + " scale: " + exchangeValue.multiply(factorValue).scale());
+//                systemLevel = systemLevel.add(exchangeValue.multiply(factorValue.multiply(totalFlow)));
+//
+//                System.out.println("Updated unit level = old unitLvl + fact * exVal = " + unitLevel + " scale: " + unitLevel.scale());
+//
+//                processImpactValue.setUnitLevel(unitLevel);
+//                processImpactValue.setSystemLevel(systemLevel);
+//                processImpactValueList.add(processImpactValue);
+//                System.out.println("end.");
+//            }
+//        }
+//
+//        // Batch save processImpactValues in chunks
+//        int batchSize = 100;
+//        for (int i = 0; i < processImpactValueList.size(); i += batchSize) {
+//            List<ProcessImpactValue> batch = processImpactValueList.subList(i,
+//                    Math.min(i + batchSize, processImpactValueList.size()));
+//            processImpactValueRepository.saveAll(batch);
+//        }
+//
+//    }
+
     @Transactional
     public void computeProcessImpactValueSingleExchange(Process process, Exchanges exchange, BigDecimal initialValue) {
         UUID processId = process.getId();
@@ -141,64 +211,72 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         Unit baseUnit = exchange.getEmissionSubstance().getUnit();
 
         Optional<Exchanges> exchanges = exchangesRepository.findProductOut(processId);
+        BigDecimal totalFlow = exchanges.map(value -> process.getOverAllProductFlowRequired()).orElse(BigDecimal.ONE);
 
-        List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository
-                .findByEmissionSubstanceId(emissionSubstanceId);
+        List<MidpointImpactCharacterizationFactors> factorsList = midpointFactorsRepository.findByEmissionSubstanceId(emissionSubstanceId);
         int index = 0;
-        for (MidpointImpactCharacterizationFactors factors : list) {
-            Optional<ProcessImpactValue> processImpactValueOpt = processImpactValueRepository
-                    .findByProcessIdAndImpactMethodCategoryId(
-                            processId, factors.getImpactMethodCategory().getId());
 
-            if (processImpactValueOpt.isPresent()) {
-                System.out.println("start: " + index++);
-                ProcessImpactValue processImpactValue = processImpactValueOpt.get();
-                BigDecimal unitLevel = processImpactValue.getUnitLevel();
-                BigDecimal systemLevel = processImpactValue.getSystemLevel();
-                BigDecimal totalFlow = exchanges.map(value -> process.getOverAllProductFlowRequired()).orElse(BigDecimal.ONE);
-                System.out.println("Exchange name: " + exchange.getName());
-                System.out.println("Processing impact category name: " + processImpactValueOpt.get().getImpactMethodCategory().getImpactCategory().getName());
-                System.out.println("Initial unit level: " + unitLevel + " scale: " + unitLevel.scale());
-                System.out.println("base exchange value (before converted): " + exchange.getValue() + " scale: " + exchange.getValue().scale());
-                System.out.println("initial value: " + initialValue + " scale: " + initialValue.scale());
-                BigDecimal exchangeValue = exchange.getValue().subtract(initialValue);
+        for (MidpointImpactCharacterizationFactors factor : factorsList) {
+            boolean success = false;
+            int retryCount = 0;
+            int maxRetries = 3;
 
-                // Convert the exchange value to the base unit and adjust based on initial value
-                if (!baseUnit.getId().equals(exchange.getUnit().getId())) {
-                    exchangeValue = unitService.convertValue(
-                            exchange.getUnit(),
-                            exchange.getValue().subtract(initialValue),
-                            baseUnit);
+            while (!success && retryCount < maxRetries) {
+                try {
+                    Optional<ProcessImpactValue> processImpactValueOpt = processImpactValueRepository.findByProcessIdAndImpactMethodCategoryId(
+                            processId, factor.getImpactMethodCategory().getId());
+
+                    if (processImpactValueOpt.isPresent()) {
+                        log.info("Start processing index: " + index++);
+                        ProcessImpactValue processImpactValue = processImpactValueOpt.get();
+
+                        BigDecimal unitLevel = processImpactValue.getUnitLevel();
+                        BigDecimal systemLevel = processImpactValue.getSystemLevel();
+
+                        log.info("Exchange name: " + exchange.getName());
+                        log.info("Processing impact category name: " + processImpactValue.getImpactMethodCategory().getImpactCategory().getName());
+                        log.info("Initial unit level: " + unitLevel + ", scale: " + unitLevel.scale());
+                        log.info("Base exchange value (before converted): " + exchange.getValue() + ", scale: " + exchange.getValue().scale());
+                        log.info("Initial value: " + initialValue + ", scale: " + initialValue.scale());
+
+                        // Calculate exchange value and convert to base unit if needed
+                        BigDecimal exchangeValue = exchange.getValue().subtract(initialValue);
+                        if (!baseUnit.getId().equals(exchange.getUnit().getId())) {
+                            exchangeValue = unitService.convertValue(exchange.getUnit(), exchangeValue, baseUnit);
+                        }
+
+                        log.info("After conversion, exchange value: " + exchangeValue);
+                        BigDecimal factorValue = factor.getDecimalValue();
+                        log.info("Factor value: " + factorValue + ", scale: " + factorValue.scale());
+
+                        // Update unit level and system level
+                        unitLevel = unitLevel.add(exchangeValue.multiply(factorValue));
+                        systemLevel = systemLevel.add(exchangeValue.multiply(factorValue.multiply(totalFlow)));
+
+                        log.info("Updated unit level: " + unitLevel + ", scale: " + unitLevel.scale());
+
+                        processImpactValue.setUnitLevel(unitLevel);
+                        processImpactValue.setSystemLevel(systemLevel);
+
+                        // Save entity with optimistic locking (version check happens here)
+                        processImpactValueRepository.save(processImpactValue);
+                    }
+
+                    success = true; // Mark successful after saving
+                } catch (OptimisticLockException e) {
+                    retryCount++;
+                    log.warn("Optimistic lock exception encountered. Retrying... Attempt: " + retryCount);
+                    if (retryCount >= maxRetries) {
+                        throw CustomExceptions.badRequest("Failed to update ProcessImpactValue due to concurrent updates");
+                    }
                 }
-
-                System.out.println("After exchange value: " + exchangeValue);
-
-                // Adjust unit level by adding the product of exchange value and factor
-                BigDecimal factorValue = factors.getDecimalValue();
-                System.out.println("Factor value: " + factorValue + " scale: " + factorValue.scale());
-
-                unitLevel = unitLevel.add(exchangeValue.multiply(factorValue));
-                System.out.println("exchangeValue.multiply(factorValue) value: " + exchangeValue.multiply(factorValue) + " scale: " + exchangeValue.multiply(factorValue).scale());
-                systemLevel = systemLevel.add(exchangeValue.multiply(factorValue.multiply(totalFlow)));
-
-                System.out.println("Updated unit level = old unitLvl + fact * exVal = " + unitLevel + " scale: " + unitLevel.scale());
-
-                processImpactValue.setUnitLevel(unitLevel);
-                processImpactValue.setSystemLevel(systemLevel);
-                processImpactValueList.add(processImpactValue);
-                System.out.println("end.");
             }
         }
 
-        // Batch save processImpactValues in chunks
-        int batchSize = 100;
-        for (int i = 0; i < processImpactValueList.size(); i += batchSize) {
-            List<ProcessImpactValue> batch = processImpactValueList.subList(i,
-                    Math.min(i + batchSize, processImpactValueList.size()));
-            processImpactValueRepository.saveAll(batch);
-        }
-
+        // No need for batch save since entities are saved individually with optimistic locking
     }
+
+
 
     public void computeProcessImpactValueOfProject(Project project) {
         // the idea here is getting all the process impact value based on the project id
@@ -217,7 +295,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             computeProcessImpactValueAllExchangeOfProcess(process);
         }
         long endTime = System.currentTimeMillis();
-        System.out.println("tính lại unit level nè: "+ (endTime - startTime));
+        System.out.println("tính lại unit level nè: " + (endTime - startTime));
 
         processRepository.saveAll(processList);
     }
@@ -251,16 +329,15 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             }
         }
 
-        if(!valuesToDelete.isEmpty()){
+        if (!valuesToDelete.isEmpty()) {
             processImpactValueRepository.deleteAll(valuesToDelete);
 
         }
-        if(!valuesToSave.isEmpty()){
+        if (!valuesToSave.isEmpty()) {
             processImpactValueRepository.saveAll(valuesToSave);
         }
 
     }
-
 
 
     public ProcessNodeDto calculateProjectImpactValue(UUID projectId) {
@@ -506,7 +583,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
     public List<LifeCycleBreakdownPercentDto> buildLifeCycleBreakdownWhenGetAll(UUID projectId) {
-        if(projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()){
+        if (projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()) {
             return Collections.emptyList();
         }
         List<LifeCycleStage> lifeCycleStages = lcsRepository.findAll();
