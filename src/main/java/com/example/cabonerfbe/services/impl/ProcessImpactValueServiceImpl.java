@@ -242,7 +242,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             validateProcessWithOne(processList.get(0));
         }else{
             List<Process> root = processRepository.findRootProcess(projectId);
-            validateRootProcess(processList.get(0));
+            validateRootProcess(root.get(0));
         }
 
 
