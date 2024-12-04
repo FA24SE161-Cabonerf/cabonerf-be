@@ -34,34 +34,38 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ProcessServiceImpl implements ProcessService {
 
+    private final ProcessRepository processRepository;
+    private final ProcessImpactValueRepository processImpactValueRepository;
+    private final LifeCycleStageRepository lifeCycleStageRepository;
+    private final ProjectRepository projectRepository;
+    private final ProcessConverter processConverter;
+    private final ExchangesRepository exchangesRepository;
+    private final ExchangesConverter exchangesConverter;
+    private final LifeCycleImpactAssessmentMethodConverter methodConverter;
+    private final ImpactCategoryConverter categoryConverter;
+    private final MessagePublisher messagePublisher;
+    private final ConnectorServiceImpl connectorService;
+    private final ConnectorRepository connectorRepository;
+    private final UnitServiceImpl unitService;
+    private final UnitRepository unitRepository;
+
     @Autowired
-    ProcessRepository processRepository;
-    @Autowired
-    ProcessImpactValueRepository processImpactValueRepository;
-    @Autowired
-    LifeCycleStageRepository lifeCycleStageRepository;
-    @Autowired
-    ProjectRepository projectRepository;
-    @Autowired
-    ProcessConverter processConverter;
-    @Autowired
-    private ExchangesRepository exchangesRepository;
-    @Autowired
-    private ExchangesConverter exchangesConverter;
-    @Autowired
-    private LifeCycleImpactAssessmentMethodConverter methodConverter;
-    @Autowired
-    private ImpactCategoryConverter categoryConverter;
-    @Autowired
-    private MessagePublisher messagePublisher;
-    @Autowired
-    private ConnectorServiceImpl connectorService;
-    @Autowired
-    private ConnectorRepository connectorRepository;
-    @Autowired
-    private UnitServiceImpl unitService;
-    @Autowired
-    private UnitRepository unitRepository;
+    public ProcessServiceImpl(ProcessConverter processConverter, ProcessRepository processRepository, ProcessImpactValueRepository processImpactValueRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, ExchangesRepository exchangesRepository, ConnectorRepository connectorRepository, ExchangesConverter exchangesConverter, UnitServiceImpl unitService, LifeCycleImpactAssessmentMethodConverter methodConverter, UnitRepository unitRepository, ImpactCategoryConverter categoryConverter, MessagePublisher messagePublisher, ConnectorServiceImpl connectorService) {
+        this.processConverter = processConverter;
+        this.processRepository = processRepository;
+        this.processImpactValueRepository = processImpactValueRepository;
+        this.lifeCycleStageRepository = lifeCycleStageRepository;
+        this.projectRepository = projectRepository;
+        this.exchangesRepository = exchangesRepository;
+        this.connectorRepository = connectorRepository;
+        this.exchangesConverter = exchangesConverter;
+        this.unitService = unitService;
+        this.methodConverter = methodConverter;
+        this.unitRepository = unitRepository;
+        this.categoryConverter = categoryConverter;
+        this.messagePublisher = messagePublisher;
+        this.connectorService = connectorService;
+    }
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 

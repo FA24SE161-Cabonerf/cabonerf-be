@@ -18,6 +18,7 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -45,6 +46,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private final ImpactCategoryRepository icRepository;
     private final ImpactCategoryConverter icConverter;
 
+    @Autowired
     public ProcessImpactValueServiceImpl(ImpactMethodCategoryRepository impactMethodCategoryRepository, ProcessRepository processRepository, ProcessImpactValueRepository processImpactValueRepository, ExchangesRepository exchangesRepository, MidpointImpactCharacterizationFactorsRepository midpointFactorsRepository, UnitServiceImpl unitService, ImpactCategoryRepository icRepository, ImpactCategoryConverter icConverter, ProjectRepository projectRepository, ConnectorRepository connectorRepository, ProjectImpactValueRepository projectImpactValueRepository, ProcessService processService, LifeCycleStageConverter lcsConverter, LifeCycleStageRepository lcsRepository) {
         this.impactMethodCategoryRepository = impactMethodCategoryRepository;
         this.processRepository = processRepository;
