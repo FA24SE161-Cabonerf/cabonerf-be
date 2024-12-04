@@ -1,13 +1,18 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.*;
-import com.example.cabonerfbe.dto.*;
+import com.example.cabonerfbe.dto.CreateOrganizationDto;
+import com.example.cabonerfbe.dto.GetOrganizationByUserDto;
+import com.example.cabonerfbe.dto.InviteUserOrganizationDto;
+import com.example.cabonerfbe.dto.OrganizationDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
-import com.example.cabonerfbe.request.*;
+import com.example.cabonerfbe.request.CreateOrganizationRequest;
+import com.example.cabonerfbe.request.InviteUserToOrganizationRequest;
+import com.example.cabonerfbe.request.UpdateOrganizationRequest;
 import com.example.cabonerfbe.response.GetAllOrganizationResponse;
 import com.example.cabonerfbe.response.LoginResponse;
 import com.example.cabonerfbe.response.UploadOrgLogoResponse;
@@ -195,6 +200,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         organization.setDescription(request.getDescription());
         organization.setTaxCode(request.getTaxCode());
 
+
         organization = organizationRepository.save(organization);
 
         UserOrganization userOrganization = new UserOrganization();
@@ -204,7 +210,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         userOrganization.setRole(organizationManager);
         userOrganizationRepository.save(userOrganization);
 
-        // todo: send-mail
 
         Contract contract = new Contract();
         contract.setOrganization(organization);

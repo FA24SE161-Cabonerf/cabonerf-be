@@ -111,6 +111,7 @@ public class ProjectServiceImpl implements ProjectService {
         var contributionBreakdown = processImpactValueService.computeSystemLevelOfProject(projectId);
         var response = projectConverter.fromGetProjectDtoToCalculateResponse(getProject(project));
         response.setContributionBreakdown(contributionBreakdown);
+        response.setLifeCycleStageBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
         return response;
 
     }
