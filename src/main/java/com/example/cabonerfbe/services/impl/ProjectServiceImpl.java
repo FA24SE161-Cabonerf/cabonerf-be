@@ -672,6 +672,9 @@ public class ProjectServiceImpl implements ProjectService {
             return "";
         }
         List<Process> root = processRepository.findRootProcess(projectId);
+        if(root.isEmpty()){
+            return "";
+        }
         Optional<Exchanges> e = exchangesRepository.findProductOut(root.get(0).getId());
         if(e.isEmpty()){
             return "";
