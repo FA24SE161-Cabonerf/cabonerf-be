@@ -290,7 +290,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
                     "- Process output is empty.", Collections.EMPTY_LIST);
         }
-        if (Objects.equals(productOut.getValue(), BigDecimal.ZERO)) {
+        if (productOut.getValue().compareTo(BigDecimal.ZERO) == 0) {
             throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
                     "- Process " + process.getName() + " should have 0 output.", Collections.EMPTY_LIST);
         }
@@ -308,7 +308,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
                     "- Process output is empty.", Collections.EMPTY_LIST);
         }
-        if (!productIn.isEmpty() || Objects.equals(productOut.getValue(), BigDecimal.ZERO)) {
+        if (!productIn.isEmpty() || productOut.getValue().compareTo(BigDecimal.ZERO) == 0) {
             throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
                     "- Process " + p.getName() + " should have 0 input/output.", Collections.EMPTY_LIST);
         }
