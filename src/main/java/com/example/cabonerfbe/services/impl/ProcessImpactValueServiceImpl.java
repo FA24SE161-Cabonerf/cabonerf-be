@@ -18,7 +18,6 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -30,39 +29,38 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class ProcessImpactValueServiceImpl implements ProcessImpactValueService {
-    private final List<ConnectorPercentDto> connectorsResponse = new ArrayList<>();
-    private final ProjectImpactValue totalProject = new ProjectImpactValue();
-    private final List<Connector> _connectors = new ArrayList<>();
-    @Autowired
-    ProcessRepository processRepository;
-    @Autowired
-    ImpactMethodCategoryRepository impactMethodCategoryRepository;
-    @Autowired
-    ProcessImpactValueRepository processImpactValueRepository;
-    @Autowired
-    private ExchangesRepository exchangesRepository;
-    @Autowired
-    private MidpointImpactCharacterizationFactorsRepository midpointFactorsRepository;
-    @Autowired
-    private UnitServiceImpl unitService;
-    @Autowired
-    private ProjectRepository projectRepository;
-    @Autowired
-    private ConnectorRepository connectorRepository;
-    @Autowired
-    private ProjectImpactValueRepository projectImpactValueRepository;
-    private String exchangeIdNext = null;
-    @Autowired
-    private ProcessService processService;
 
-    @Autowired
-    private LifeCycleStageRepository lcsRepository;
-    @Autowired
-    private LifeCycleStageConverter lcsConverter;
-    @Autowired
-    private ImpactCategoryRepository icRepository;
-    @Autowired
-    private ImpactCategoryConverter icConverter;
+    private final ProcessRepository processRepository;
+    private final ImpactMethodCategoryRepository impactMethodCategoryRepository;
+    private final ProcessImpactValueRepository processImpactValueRepository;
+    private final ExchangesRepository exchangesRepository;
+    private final MidpointImpactCharacterizationFactorsRepository midpointFactorsRepository;
+    private final UnitServiceImpl unitService;
+    private final ProjectRepository projectRepository;
+    private final ConnectorRepository connectorRepository;
+    private final ProjectImpactValueRepository projectImpactValueRepository;
+    private final ProcessService processService;
+    private final LifeCycleStageRepository lcsRepository;
+    private final LifeCycleStageConverter lcsConverter;
+    private final ImpactCategoryRepository icRepository;
+    private final ImpactCategoryConverter icConverter;
+
+    public ProcessImpactValueServiceImpl(ImpactMethodCategoryRepository impactMethodCategoryRepository, ProcessRepository processRepository, ProcessImpactValueRepository processImpactValueRepository, ExchangesRepository exchangesRepository, MidpointImpactCharacterizationFactorsRepository midpointFactorsRepository, UnitServiceImpl unitService, ImpactCategoryRepository icRepository, ImpactCategoryConverter icConverter, ProjectRepository projectRepository, ConnectorRepository connectorRepository, ProjectImpactValueRepository projectImpactValueRepository, ProcessService processService, LifeCycleStageConverter lcsConverter, LifeCycleStageRepository lcsRepository) {
+        this.impactMethodCategoryRepository = impactMethodCategoryRepository;
+        this.processRepository = processRepository;
+        this.processImpactValueRepository = processImpactValueRepository;
+        this.exchangesRepository = exchangesRepository;
+        this.midpointFactorsRepository = midpointFactorsRepository;
+        this.unitService = unitService;
+        this.icRepository = icRepository;
+        this.icConverter = icConverter;
+        this.projectRepository = projectRepository;
+        this.connectorRepository = connectorRepository;
+        this.projectImpactValueRepository = projectImpactValueRepository;
+        this.processService = processService;
+        this.lcsConverter = lcsConverter;
+        this.lcsRepository = lcsRepository;
+    }
 
     @NotNull
     private static ProcessImpactValue getNewProcessImpactValue(ImpactMethodCategory methodCategory, Process process) {
@@ -276,7 +274,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
         // No need for batch save since entities are saved individually with optimistic locking
     }
-
 
 
     public void computeProcessImpactValueOfProject(Project project) {
