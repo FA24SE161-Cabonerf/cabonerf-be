@@ -144,7 +144,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 BigDecimal unitLevel = processImpactValue.getUnitLevel();
                 BigDecimal systemLevel = processImpactValue.getSystemLevel();
                 BigDecimal totalFlow = exchanges.map(value -> process.getOverAllProductFlowRequired()).orElse(BigDecimal.ONE);
-                System.out.println("Processing impact method name: " + factors.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod().getName());
+                System.out.println("Exchange name: " + exchanges.get().getName());
+                System.out.println("Processing impact category name: " + processImpactValueOpt.get().getImpactMethodCategory().getImpactCategory().getName());
                 System.out.println("Initial unit level: " + unitLevel);
                 System.out.println("base exchange value (before converted): " + exchange.getValue());
                 System.out.println("initial value: " + initialValue);
