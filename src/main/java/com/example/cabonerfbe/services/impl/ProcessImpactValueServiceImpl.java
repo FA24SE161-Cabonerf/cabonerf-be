@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -118,6 +119,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValueRepository.saveAll(processImpactValueList);
     }
 
+    @Transactional
     public void computeProcessImpactValueSingleExchange(Process process, Exchanges exchange, BigDecimal initialValue) {
         UUID processId = process.getId();
         log.info("Starting impact value computation for process ID: " + processId);
@@ -130,18 +132,19 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
         List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository
                 .findByEmissionSubstanceId(emissionSubstanceId);
-
+        int index = 0;
         for (MidpointImpactCharacterizationFactors factors : list) {
             Optional<ProcessImpactValue> processImpactValueOpt = processImpactValueRepository
                     .findByProcessIdAndImpactMethodCategoryId(
                             processId, factors.getImpactMethodCategory().getId());
 
             if (processImpactValueOpt.isPresent()) {
+                System.out.println("start: " + index++);
                 ProcessImpactValue processImpactValue = processImpactValueOpt.get();
                 BigDecimal unitLevel = processImpactValue.getUnitLevel();
                 BigDecimal systemLevel = processImpactValue.getSystemLevel();
                 BigDecimal totalFlow = exchanges.map(value -> process.getOverAllProductFlowRequired()).orElse(BigDecimal.ONE);
-                System.out.println("Processing impact method category ID: " + factors.getImpactMethodCategory().getId());
+                System.out.println("Processing impact method name: " + factors.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod().getName());
                 System.out.println("Initial unit level: " + unitLevel);
                 System.out.println("base exchange value (before converted): " + exchange.getValue());
                 System.out.println("initial value: " + initialValue);
@@ -158,11 +161,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 systemLevel = systemLevel.add(exchangeValue.multiply(factorValue.multiply(totalFlow)));
 
                 System.out.println("Factor value: " + factorValue);
-                System.out.println("Updated unit level: " + unitLevel);
+                System.out.println("Updated unit level = old unitLvl + fact*exVal = " + unitLevel);
 
                 processImpactValue.setUnitLevel(unitLevel);
                 processImpactValue.setSystemLevel(systemLevel);
                 processImpactValueList.add(processImpactValue);
+                System.out.println("end.");
             }
         }
 

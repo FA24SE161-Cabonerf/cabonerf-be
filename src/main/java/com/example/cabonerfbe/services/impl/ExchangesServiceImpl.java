@@ -155,7 +155,6 @@ public class ExchangesServiceImpl implements ExchangesService {
         return list.stream().map(scConverter::modelToDto).collect(Collectors.toList());
     }
 
-    @Transactional
     @Override
     public ImpactExchangeResponse removeElementaryExchange(UUID exchangeId) {
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
