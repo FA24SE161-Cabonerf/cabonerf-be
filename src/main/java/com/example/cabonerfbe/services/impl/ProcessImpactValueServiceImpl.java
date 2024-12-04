@@ -73,6 +73,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
         processImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
         processImpactValue.setUnitLevel(Constants.BASE_UNIT_LEVEL);
+        processImpactValue.setVersion(Constants.VERSION_ONE);
         return processImpactValue;
     }
 

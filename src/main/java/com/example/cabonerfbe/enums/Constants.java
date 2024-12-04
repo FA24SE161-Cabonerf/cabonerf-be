@@ -46,5 +46,6 @@ public class Constants {
 
     public static final boolean IS_LIB_TRUE = true;
     public static final boolean IS_LIB_FALSE = false;
+    public static final int VERSION_ONE = 1;
 
 }
