@@ -189,12 +189,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
 
         // Batch save processImpactValues in chunks
-        int batchSize = 100;
-        for (int i = 0; i < processImpactValueList.size(); i += batchSize) {
-            List<ProcessImpactValue> batch = processImpactValueList.subList(i,
-                    Math.min(i + batchSize, processImpactValueList.size()));
-            processImpactValueRepository.saveAll(batch);
-        }
+//        int batchSize = 100;
+//        for (int i = 0; i < processImpactValueList.size(); i += batchSize) {
+//            List<ProcessImpactValue> batch = processImpactValueList.subList(i,
+//                    Math.min(i + batchSize, processImpactValueList.size()));
+//        }
+        processImpactValueRepository.saveAll(processImpactValueList);
 
     }
 
