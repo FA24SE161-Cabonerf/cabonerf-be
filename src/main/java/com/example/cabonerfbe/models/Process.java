@@ -21,6 +21,7 @@ public class Process extends Base {
 
     private String name;
     private String description;
+    @Column(nullable = true)
     private UUID methodId;
     private boolean library;
 
