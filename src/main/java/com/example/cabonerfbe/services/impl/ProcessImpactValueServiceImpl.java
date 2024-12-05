@@ -84,6 +84,11 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
         UUID processId = request.getProcessId();
         UUID methodId = request.getMethodId();
+
+        if(processRepository == null){
+            System.out.println("null rồi nè");
+        }
+
         Process process = processRepository.findByProcessId(processId).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
         List<ImpactMethodCategory> methodCategoryList = impactMethodCategoryRepository.findByMethod(methodId);

@@ -94,6 +94,7 @@ public class ProcessServiceImpl implements ProcessService {
         process.setLibrary(false);
         process = processRepository.save(process);
 
+
         // generate process impact value
         messagePublisher.publishCreateProcessImpactValue(RabbitMQConfig.CREATE_PROCESS_EXCHANGE, RabbitMQConfig.CREATE_PROCESS_ROUTING_KEY, process.getId(), project.getLifeCycleImpactAssessmentMethod().getId());
 
