@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 @Service
 public class ProcessImpactValueServiceImpl implements ProcessImpactValueService {
 
+    private final List<String> toGraveList = Arrays.asList("End-of-life", "Use");
+    private final SystemBoundaryRepository systemBoundaryRepository;
     private final ProcessRepository processRepository;
     private final ImpactMethodCategoryRepository impactMethodCategoryRepository;
     private final ProcessImpactValueRepository processImpactValueRepository;
@@ -46,8 +48,9 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
     @Autowired
     public ProcessImpactValueServiceImpl(ImpactMethodCategoryRepository impactMethodCategoryRepository,
-                                         ProcessRepository processRepository,
+                                         ProcessRepository processRepository, SystemBoundaryRepository systemBoundaryRepository,
                                          ProcessImpactValueRepository processImpactValueRepository, ExchangesRepository exchangesRepository, MidpointImpactCharacterizationFactorsRepository midpointFactorsRepository, UnitServiceImpl unitService, ImpactCategoryRepository icRepository, ImpactCategoryConverter icConverter, ProjectRepository projectRepository, ConnectorRepository connectorRepository, ProjectImpactValueRepository projectImpactValueRepository, ProcessService processService, LifeCycleStageConverter lcsConverter, LifeCycleStageRepository lcsRepository) {
+        this.systemBoundaryRepository = systemBoundaryRepository;
         this.impactMethodCategoryRepository = impactMethodCategoryRepository;
         this.processRepository = processRepository;
         this.processImpactValueRepository = processImpactValueRepository;
@@ -319,6 +322,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
     public ProcessNodeDto computeSystemLevelOfProject(UUID projectId) {
+        String sysBoundaryFrom = Constants.BOUNDARY_CRADLE;
+        String sysBoundaryTo = Constants.BOUNDARY_GATE;
 
         Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
@@ -328,9 +333,20 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         if (processList.isEmpty()) {
             throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT, Collections.EMPTY_LIST);
         }
+
         if (processList.size() == 1) {
-            validateProcessWithOne(processList.get(0));
+            Map<String, String> boundaryMap = validateProcessWithOne(processList.get(0));
+            sysBoundaryFrom = boundaryMap.get("from");
+            sysBoundaryTo = boundaryMap.get("to");
+        } else {
+            List<Process> root = processRepository.findRootProcess(projectId);
+            validateRootProcess(root.get(0));
+            String rootStage = root.get(0).getLifeCycleStage().getName();
+            if (toGraveList.contains(rootStage)) {
+                sysBoundaryTo = Constants.BOUNDARY_GRAVE;
+            }
         }
+
         List<UUID> processIds = processList.stream()
                 .map(Process::getId)
                 .collect(Collectors.toList());
@@ -366,10 +382,29 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             }
             findWay(connectors);
         }
+        SystemBoundary systemBoundary = systemBoundaryRepository.findByFromAndTo(sysBoundaryFrom, sysBoundaryTo).orElse(null);
+        project.setSystemBoundary(systemBoundary);
+        projectRepository.save(project);
         return processService.calculationFast(projectId);
     }
 
-    private void validateProcessWithOne(Process p) {
+    private void validateRootProcess(Process process) {
+        List<Exchanges> elementary = exchangesRepository.findElementaryByProcess(process.getId());
+
+        Exchanges productOut = exchangesRepository.findProductOutWithOneProcess(process.getId());
+        if (productOut == null) {
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
+                    "- Process output is empty.", Collections.EMPTY_LIST);
+        }
+
+        if (productOut.getValue().compareTo(BigDecimal.ZERO) == 0) {
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
+                    "- Process " + process.getName() + " should have 0 output.", Collections.EMPTY_LIST);
+        }
+    }
+
+    private Map<String, String> validateProcessWithOne(Process p) {
+        Map<String, String> boundaryMap = new HashMap<>();
         List<Exchanges> elementary = exchangesRepository.findElementaryByProcess(p.getId());
         if (elementary.isEmpty()) {
             throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
@@ -377,10 +412,23 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
         List<Exchanges> productIn = exchangesRepository.findProductIn(p.getId());
         Exchanges productOut = exchangesRepository.findProductOutWithOneProcess(p.getId());
-        if (!productIn.isEmpty() || productOut != null) {
+        if (productOut == null) {
+            throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
+                    "- Process output is empty.", Collections.EMPTY_LIST);
+        }
+        if (productOut.getValue().compareTo(BigDecimal.ZERO) == 0) {
             throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
                     "- Process " + p.getName() + " should have 0 input/output.", Collections.EMPTY_LIST);
         }
+        // only output
+        if (productIn.isEmpty()) {
+            boundaryMap.put("from", Constants.BOUNDARY_CRADLE);
+            boundaryMap.put("to", Constants.BOUNDARY_GATE);
+        } else {
+            boundaryMap.put("from", Constants.BOUNDARY_GATE);
+            boundaryMap.put("to", Constants.BOUNDARY_GATE);
+        }
+        return boundaryMap;
     }
 
     private void updateProjectValue(List<Process> processList, UUID projectId) {

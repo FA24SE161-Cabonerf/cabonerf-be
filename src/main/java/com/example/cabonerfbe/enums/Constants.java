@@ -48,4 +48,9 @@ public class Constants {
     public static final boolean IS_LIB_FALSE = false;
     public static final int VERSION_ONE = 1;
 
+
+    public static final String BOUNDARY_GATE = "Gate";
+    public static final String BOUNDARY_CRADLE = "Cradle";
+    public static final String BOUNDARY_GRAVE = "Grave";
+
 }

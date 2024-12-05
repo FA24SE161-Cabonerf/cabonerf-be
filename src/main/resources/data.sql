@@ -854,5 +854,9 @@
 --
 --        ('ca2668a1-f20d-4a53-ac07-fe89d4eaccbd', '99', 'Activities of Extraterritorial Organizations and Bodies', true);
 --
---
---
+-- insert into system_boundary(id, boundary_from, boundary_to, description, status)
+-- values ('ca2668a1-f20d-4a53-ac07-fe89d4eaccb1','Cradle','Grave','Includes all emissions from raw material extraction to product end of life',true),
+--        ('ca2668a1-f20d-4a53-ac07-fe89d4eaccb2','Cradle','Gate','Includes all emissions from raw material extraction to an intermediate production step.',true),
+--        ('ca2668a1-f20d-4a53-ac07-fe89d4eaccb3','Gate','Grave','Includes all emissions from an intermediate production step to product end of life.',true),
+--        ('ca2668a1-f20d-4a53-ac07-fe89d4eaccb4','Gate','Gate','Includes all emissions from one intermediate production step to another.',true);
+

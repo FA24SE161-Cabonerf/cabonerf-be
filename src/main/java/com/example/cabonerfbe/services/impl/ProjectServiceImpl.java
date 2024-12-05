@@ -96,6 +96,8 @@ public class ProjectServiceImpl implements ProjectService {
     private ImpactCategoryRepository icRepository;
     @Autowired
     private UserOrganizationRepository uoRepository;
+    @Autowired
+    private SystemBoundaryConverter systemBoundaryConverter;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
@@ -225,6 +227,8 @@ public class ProjectServiceImpl implements ProjectService {
         dto.setName(project.getName());
         dto.setDescription(project.getDescription());
         dto.setLocation(project.getLocation());
+        dto.setFavorite(project.getFavorite());
+        dto.setSystemBoundary(systemBoundaryConverter.fromEntityToDto(project.getSystemBoundary()));
         dto.setMethod(methodConverter.fromMethodToMethodDto(project.getLifeCycleImpactAssessmentMethod()));
         dto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
         dto.setProcesses(processService.getAllProcessesByProjectId(project.getId()));
@@ -237,7 +241,13 @@ public class ProjectServiceImpl implements ProjectService {
     public List<CarbonIntensityDto> getIntensity(UUID projectId) {
         Project p = projectRepository.findByIdAndStatusTrue(projectId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
+
+        if(projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()){
+            return Collections.emptyList();
+        }
+
         ProjectImpactValue value = processImpactValueRepository.findCO2(projectId);
+
         List<CarbonIntensity> ci = ciRepository.findAll();
 
         ci.forEach(c ->
@@ -320,6 +330,7 @@ public class ProjectServiceImpl implements ProjectService {
         return new ArrayList<>();
     }
 
+    @Transactional
     @Override
     public GetProjectByIdDto changeProjectMethod(UUID projectId, UUID methodId) {
         Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
@@ -737,5 +748,20 @@ public class ProjectServiceImpl implements ProjectService {
         projectImpactValue.setImpactMethodCategory(methodCategory);
         projectImpactValue.setValue(BigDecimal.ZERO);
         return projectImpactValue;
+    }
+
+    private String getFunctionalUnit(UUID projectId){
+        if(projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()){
+            return "";
+        }
+        List<Process> root = processRepository.findRootProcess(projectId);
+        if(root.isEmpty()){
+            return "";
+        }
+        Optional<Exchanges> e = exchangesRepository.findProductOut(root.get(0).getId());
+        if(e.isEmpty()){
+            return "";
+        }
+        return e.get().getValue().setScale(2, RoundingMode.HALF_UP)+ " " + e.get().getUnit().getName()+ " " + e.get().getName();
     }
 }
