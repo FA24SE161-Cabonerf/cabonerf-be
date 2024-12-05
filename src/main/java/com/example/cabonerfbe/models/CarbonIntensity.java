@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.models;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -20,5 +21,6 @@ public class CarbonIntensity extends Base {
     private BigDecimal value;
     private String unit;
     private String description;
+    @Column(length = 10485760)
     private String icon;
 }

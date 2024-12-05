@@ -118,7 +118,7 @@ public class ProcessServiceImpl implements ProcessService {
         try{
             process = processRepository.findByProcessId(processId).orElseThrow(
                     () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
-        }catch (Exception e){
+        }catch (NullPointerException e){
             System.out.println("Error ở đây nè: "+ e.getMessage());
         }
 
