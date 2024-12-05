@@ -21,6 +21,7 @@ import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.MessagePublisher;
 import com.example.cabonerfbe.services.ProcessService;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,6 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@DependsOn({"processRepository", "impactMethodCategoryRepository"})
 public class ProcessServiceImpl implements ProcessService {
 
     private final ProcessRepository processRepository;
@@ -118,8 +118,17 @@ public class ProcessServiceImpl implements ProcessService {
         return processDto;
     }
 
+    @PostConstruct
+    public void validateInjection() {
+        if (processRepository == null || impactMethodCategoryRepository == null) {
+            System.out.println("lỗi repo nè: Dependency injection failed!");
+        }
+    }
+
+
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
-    private void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
+    @Transactional
+    protected void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
         UUID processId = request.getProcessId();
 
         System.out.println("dô tạo list impact nè với process id nè: " + processId);
@@ -146,6 +155,8 @@ public class ProcessServiceImpl implements ProcessService {
 //        }
 //        processImpactValueRepository.saveAll(processImpactValueList);
     }
+
+
 
     @Override
     public ProcessImpactValue createNewProcessImpactValue(Process process, ImpactMethodCategory methodCategory) {
