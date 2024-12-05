@@ -21,10 +21,13 @@ import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.MessagePublisher;
 import com.example.cabonerfbe.services.ProcessService;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +38,6 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@DependsOn({"processRepository", "impactMethodCategoryRepository"})
 public class ProcessServiceImpl implements ProcessService {
 
     private final ProcessRepository processRepository;
@@ -100,6 +102,12 @@ public class ProcessServiceImpl implements ProcessService {
         process.setLibrary(false);
         process = processRepository.save(process);
 
+        System.out.println("process id nè: " + process.getId());
+
+        Process p = processRepository.findByProcessId(process.getId()).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
+
+        System.out.println("lấy lúc tạo nè: " + p);
         // generate process impact value
         messagePublisher.publishCreateProcessImpactValue(RabbitMQConfig.CREATE_PROCESS_EXCHANGE, RabbitMQConfig.CREATE_PROCESS_ROUTING_KEY, process.getId(), project.getLifeCycleImpactAssessmentMethod().getId());
 
@@ -112,6 +120,8 @@ public class ProcessServiceImpl implements ProcessService {
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     private void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
         UUID processId = request.getProcessId();
+
+        System.out.println("dô tạo list impact nè với process id nè: " + processId);
         UUID methodId = request.getMethodId();
         Process process = processRepository.findByProcessId(processId).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
@@ -123,6 +133,8 @@ public class ProcessServiceImpl implements ProcessService {
         }
         processImpactValueRepository.saveAll(processImpactValueList);
     }
+
+
 
     @Override
     public ProcessImpactValue createNewProcessImpactValue(Process process, ImpactMethodCategory methodCategory) {
