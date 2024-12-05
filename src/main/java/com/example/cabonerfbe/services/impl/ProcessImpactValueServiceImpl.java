@@ -333,9 +333,10 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         if (productIn.isEmpty()) {
             boundaryMap.put("from", Constants.BOUNDARY_CRADLE);
             boundaryMap.put("to", Constants.BOUNDARY_GATE);
+        } else {
+            boundaryMap.put("from", Constants.BOUNDARY_GATE);
+            boundaryMap.put("to", Constants.BOUNDARY_GATE);
         }
-        boundaryMap.put("from", Constants.BOUNDARY_GATE);
-        boundaryMap.put("to", Constants.BOUNDARY_GATE);
         return boundaryMap;
     }
 
