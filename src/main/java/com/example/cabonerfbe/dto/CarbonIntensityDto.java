@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.dto;
 
+import jakarta.persistence.Column;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -17,4 +18,6 @@ public class CarbonIntensityDto {
     private String unit;
     private String description;
     private String icon;
+    private String ref;
+    private String ref_description;
 }
