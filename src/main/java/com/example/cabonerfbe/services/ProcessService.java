@@ -4,6 +4,7 @@ import com.example.cabonerfbe.dto.ProcessDetailDto;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.dto.ProcessImpactValueDto;
 import com.example.cabonerfbe.dto.ProcessNodeDto;
+import com.example.cabonerfbe.models.ImpactMethodCategory;
 import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.models.ProcessImpactValue;
 import com.example.cabonerfbe.models.Project;
@@ -34,5 +35,7 @@ public interface ProcessService {
     void convertProcessToObjectLibrary(Process process);
 
     ProcessDto convertObjectLibraryToProcessDto(Process process, Project project);
+
+    ProcessImpactValue createNewProcessImpactValue(Process process, ImpactMethodCategory methodCategory);
 
 }

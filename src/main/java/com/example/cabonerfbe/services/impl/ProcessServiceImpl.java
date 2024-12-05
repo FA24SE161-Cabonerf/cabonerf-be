@@ -15,13 +15,16 @@ import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
+import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
 import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.MessagePublisher;
 import com.example.cabonerfbe.services.ProcessService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +35,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@DependsOn({"processRepository", "impactMethodCategoryRepository"})
 public class ProcessServiceImpl implements ProcessService {
 
     private final ProcessRepository processRepository;
@@ -48,9 +52,10 @@ public class ProcessServiceImpl implements ProcessService {
     private final ConnectorRepository connectorRepository;
     private final UnitServiceImpl unitService;
     private final UnitRepository unitRepository;
+    private final ImpactMethodCategoryRepository impactMethodCategoryRepository;
 
     @Autowired
-    public ProcessServiceImpl(ProcessConverter processConverter, ProcessRepository processRepository, ProcessImpactValueRepository processImpactValueRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, ExchangesRepository exchangesRepository, ConnectorRepository connectorRepository, ExchangesConverter exchangesConverter, UnitServiceImpl unitService, LifeCycleImpactAssessmentMethodConverter methodConverter, UnitRepository unitRepository, ImpactCategoryConverter categoryConverter, MessagePublisher messagePublisher, ConnectorServiceImpl connectorService) {
+    public ProcessServiceImpl(ProcessConverter processConverter, ProcessRepository processRepository, ProcessImpactValueRepository processImpactValueRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, ExchangesRepository exchangesRepository, ConnectorRepository connectorRepository, ExchangesConverter exchangesConverter, UnitServiceImpl unitService, LifeCycleImpactAssessmentMethodConverter methodConverter, UnitRepository unitRepository, ImpactCategoryConverter categoryConverter, MessagePublisher messagePublisher, ConnectorServiceImpl connectorService, ImpactMethodCategoryRepository impactMethodCategoryRepository) {
         this.processConverter = processConverter;
         this.processRepository = processRepository;
         this.processImpactValueRepository = processImpactValueRepository;
@@ -65,6 +70,7 @@ public class ProcessServiceImpl implements ProcessService {
         this.categoryConverter = categoryConverter;
         this.messagePublisher = messagePublisher;
         this.connectorService = connectorService;
+        this.impactMethodCategoryRepository = impactMethodCategoryRepository;
     }
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
@@ -101,6 +107,34 @@ public class ProcessServiceImpl implements ProcessService {
         processDto.setImpacts(new ArrayList<>());
         processDto.setExchanges(new ArrayList<>());
         return processDto;
+    }
+
+    @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
+    private void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
+        UUID processId = request.getProcessId();
+        UUID methodId = request.getMethodId();
+        Process process = processRepository.findByProcessId(processId).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
+        List<ImpactMethodCategory> methodCategoryList = impactMethodCategoryRepository.findByMethod(methodId);
+        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
+        for (ImpactMethodCategory methodCategory : methodCategoryList) {
+            ProcessImpactValue processImpactValue = createNewProcessImpactValue(process, methodCategory);
+            processImpactValueList.add(processImpactValue);
+        }
+        processImpactValueRepository.saveAll(processImpactValueList);
+    }
+
+    @Override
+    public ProcessImpactValue createNewProcessImpactValue(Process process, ImpactMethodCategory methodCategory) {
+        ProcessImpactValue processImpactValue = new ProcessImpactValue();
+        processImpactValue.setProcess(process);
+        processImpactValue.setImpactMethodCategory(methodCategory);
+        processImpactValue.setOverallImpactContribution(Constants.DEFAULT_OVERALL_IMPACT_CONTRIBUTION);
+        processImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
+        processImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
+        processImpactValue.setUnitLevel(Constants.BASE_UNIT_LEVEL);
+        processImpactValue.setVersion(Constants.VERSION_ONE);
+        return processImpactValue;
     }
 
     @Override
