@@ -118,7 +118,7 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
-    protected void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
+    private void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
         UUID processId = request.getProcessId();
 
         System.out.println("dô tạo list impact nè với process id nè: " + processId);
