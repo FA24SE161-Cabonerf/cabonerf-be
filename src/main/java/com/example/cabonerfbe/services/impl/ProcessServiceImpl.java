@@ -117,23 +117,23 @@ public class ProcessServiceImpl implements ProcessService {
 
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     private void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
-        UUID processId = request.getProcessId();
-        UUID methodId = request.getMethodId();
-        Process process = new Process();
-        try{
-            process = processRepository.findByProcessId(processId).orElseThrow(
-                    () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
-        }catch (NullPointerException e){
-            System.out.println("Error ở đây nè: "+ e.getMessage());
-        }
-
-        List<ImpactMethodCategory> methodCategoryList = impactMethodCategoryRepository.findByMethod(methodId);
-        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
-        for (ImpactMethodCategory methodCategory : methodCategoryList) {
-            ProcessImpactValue processImpactValue = createNewProcessImpactValue(process, methodCategory);
-            processImpactValueList.add(processImpactValue);
-        }
-        processImpactValueRepository.saveAll(processImpactValueList);
+//        UUID processId = request.getProcessId();
+//        UUID methodId = request.getMethodId();
+//        Process process = new Process();
+//        try{
+//            process = processRepository.findByProcessId(processId).orElseThrow(
+//                    () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
+//        }catch (NullPointerException e){
+//            System.out.println("Error ở đây nè: "+ e.getMessage());
+//        }
+//
+//        List<ImpactMethodCategory> methodCategoryList = impactMethodCategoryRepository.findByMethod(methodId);
+//        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
+//        for (ImpactMethodCategory methodCategory : methodCategoryList) {
+//            ProcessImpactValue processImpactValue = createNewProcessImpactValue(process, methodCategory);
+//            processImpactValueList.add(processImpactValue);
+//        }
+//        processImpactValueRepository.saveAll(processImpactValueList);
     }
 
     @Override
