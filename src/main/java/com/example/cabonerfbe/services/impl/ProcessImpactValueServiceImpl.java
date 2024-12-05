@@ -31,7 +31,8 @@ import java.util.stream.Collectors;
 @Service
 public class ProcessImpactValueServiceImpl implements ProcessImpactValueService {
 
-    private final ProcessRepository processRepository;
+    @Autowired
+    private ProcessRepository processRepository;
     private final ImpactMethodCategoryRepository impactMethodCategoryRepository;
     private final ProcessImpactValueRepository processImpactValueRepository;
     private final ExchangesRepository exchangesRepository;
@@ -47,9 +48,11 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private final ImpactCategoryConverter icConverter;
 
     @Autowired
-    public ProcessImpactValueServiceImpl(ImpactMethodCategoryRepository impactMethodCategoryRepository, ProcessRepository processRepository, ProcessImpactValueRepository processImpactValueRepository, ExchangesRepository exchangesRepository, MidpointImpactCharacterizationFactorsRepository midpointFactorsRepository, UnitServiceImpl unitService, ImpactCategoryRepository icRepository, ImpactCategoryConverter icConverter, ProjectRepository projectRepository, ConnectorRepository connectorRepository, ProjectImpactValueRepository projectImpactValueRepository, ProcessService processService, LifeCycleStageConverter lcsConverter, LifeCycleStageRepository lcsRepository) {
+    public ProcessImpactValueServiceImpl(ImpactMethodCategoryRepository impactMethodCategoryRepository,
+//                                         ProcessRepository processRepository,
+                                         ProcessImpactValueRepository processImpactValueRepository, ExchangesRepository exchangesRepository, MidpointImpactCharacterizationFactorsRepository midpointFactorsRepository, UnitServiceImpl unitService, ImpactCategoryRepository icRepository, ImpactCategoryConverter icConverter, ProjectRepository projectRepository, ConnectorRepository connectorRepository, ProjectImpactValueRepository projectImpactValueRepository, ProcessService processService, LifeCycleStageConverter lcsConverter, LifeCycleStageRepository lcsRepository) {
         this.impactMethodCategoryRepository = impactMethodCategoryRepository;
-        this.processRepository = processRepository;
+//        this.processRepository = processRepository;
         this.processImpactValueRepository = processImpactValueRepository;
         this.exchangesRepository = exchangesRepository;
         this.midpointFactorsRepository = midpointFactorsRepository;
