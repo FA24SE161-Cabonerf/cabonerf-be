@@ -181,7 +181,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         UUID processId = process.getId();
         log.info("Starting impact value computation for process ID: " + processId);
 
-        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
         UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
         Unit baseUnit = exchange.getEmissionSubstance().getUnit();
 
@@ -194,7 +193,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         for (MidpointImpactCharacterizationFactors factor : factorsList) {
             boolean success = false;
             int retryCount = 0;
-            int maxRetries = 3;
+            int maxRetries = 5;
 
             while (!success && retryCount < maxRetries) {
                 try {
