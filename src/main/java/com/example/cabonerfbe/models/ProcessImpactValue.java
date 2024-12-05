@@ -33,6 +33,7 @@ public class ProcessImpactValue extends Base {
     private BigDecimal previousProcessValue;
 
     @Version
+    @Column
     private int version = 1;
 
     public UUID getProcessId() {
