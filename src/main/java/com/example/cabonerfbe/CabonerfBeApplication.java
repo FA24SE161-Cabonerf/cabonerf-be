@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-@SpringBootApplication(scanBasePackages = "com.example.cabonerfbe")
+@SpringBootApplication
 @EnableJpaAuditing
 public class CabonerfBeApplication {
 
