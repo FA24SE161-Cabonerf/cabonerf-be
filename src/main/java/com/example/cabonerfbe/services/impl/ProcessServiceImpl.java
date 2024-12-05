@@ -95,7 +95,7 @@ public class ProcessServiceImpl implements ProcessService {
         process.setName(request.getName());
         process.setLifeCycleStage(lifeCycleStage);
         process.setProject(project);
-        process.setMethodId(project.getLifeCycleImpactAssessmentMethod().getId());
+//        process.setMethodId(project.getLifeCycleImpactAssessmentMethod().getId());
         process.setOverAllProductFlowRequired(Constants.NEW_OVERALL_FLOW);
         process.setLibrary(false);
         process = processRepository.save(process);
