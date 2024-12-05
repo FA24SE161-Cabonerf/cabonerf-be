@@ -97,7 +97,6 @@ public class ProcessServiceImpl implements ProcessService {
         process.setProject(project);
         process.setMethodId(project.getLifeCycleImpactAssessmentMethod().getId());
         process.setOverAllProductFlowRequired(Constants.NEW_OVERALL_FLOW);
-        process.setOrganization(process.getProject().getOrganization());
         process.setLibrary(false);
         process = processRepository.save(process);
 
@@ -115,8 +114,14 @@ public class ProcessServiceImpl implements ProcessService {
     private void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
         UUID processId = request.getProcessId();
         UUID methodId = request.getMethodId();
-        Process process = processRepository.findByProcessId(processId).orElseThrow(
-                () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
+        Process process = new Process();
+        try{
+            process = processRepository.findByProcessId(processId).orElseThrow(
+                    () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
+        }catch (Exception e){
+            System.out.println("Error ở đây nè: "+ e.getMessage());
+        }
+
         List<ImpactMethodCategory> methodCategoryList = impactMethodCategoryRepository.findByMethod(methodId);
         List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
         for (ImpactMethodCategory methodCategory : methodCategoryList) {

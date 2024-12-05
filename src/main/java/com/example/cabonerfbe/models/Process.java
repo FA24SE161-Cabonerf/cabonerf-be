@@ -38,8 +38,4 @@ public class Process extends Base {
     @JoinColumn(name = "organization_id", nullable = true)
     private Organization organization;
 
-    public UUID getMethod() {
-        return this.project.getLifeCycleImpactAssessmentMethod().getId();
-    }
-
 }
