@@ -40,4 +40,9 @@ public class Constants {
     public static final String ORGANIZATION_MANAGER = "Organization Manager";
 
     public static final String VERIFY_STATUS_PENDING = "Pending";
+
+    public static final String BOUNDARY_GATE = "Gate";
+    public static final String BOUNDARY_CRADLE = "Cradle";
+    public static final String BOUNDARY_GRAVE = "Grave";
+
 }

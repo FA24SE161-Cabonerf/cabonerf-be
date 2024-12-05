@@ -16,6 +16,7 @@ public class GetProjectByIdDto {
     private String description;
     private String location;
     private boolean favorite;
+    private SystemBoundaryDto systemBoundary;
     private MethodDto method;
     private List<ProjectImpactDto> impacts;
     private List<ProcessDto> processes;
