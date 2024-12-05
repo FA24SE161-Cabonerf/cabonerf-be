@@ -22,7 +22,7 @@ public class Process extends Base {
     private String name;
     private String description;
     private UUID methodId;
-    private boolean library = false;
+    private boolean library;
 
     @ManyToOne
     @JoinColumn(name = "lifecycle_stage_id")
