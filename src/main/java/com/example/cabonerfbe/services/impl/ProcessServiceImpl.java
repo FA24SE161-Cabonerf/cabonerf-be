@@ -25,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,6 +78,7 @@ public class ProcessServiceImpl implements ProcessService {
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
     @Override
+    @Transactional
     public ProcessDto createProcess(CreateProcessRequest request) {
         LifeCycleStage lifeCycleStage = lifeCycleStageRepository.findByIdAndStatus(request.getLifeCycleStageId(), Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND, Collections.EMPTY_LIST)
@@ -120,22 +123,28 @@ public class ProcessServiceImpl implements ProcessService {
         UUID processId = request.getProcessId();
 
         System.out.println("dô tạo list impact nè với process id nè: " + processId);
-//        UUID methodId = request.getMethodId();
-//        Process process = new Process();
-//        try{
-//            process = processRepository.findByProcessId(processId).orElseThrow(
-//                    () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
-//        }catch (NullPointerException e){
-//            System.out.println("Error ở đây nè: "+ e.getMessage());
-//        }
-//
-//        List<ImpactMethodCategory> methodCategoryList = impactMethodCategoryRepository.findByMethod(methodId);
-//        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
-//        for (ImpactMethodCategory methodCategory : methodCategoryList) {
-//            ProcessImpactValue processImpactValue = createNewProcessImpactValue(process, methodCategory);
-//            processImpactValueList.add(processImpactValue);
-//        }
-//        processImpactValueRepository.saveAll(processImpactValueList);
+        UUID methodId = request.getMethodId();
+        Process process = new Process();
+        List<ImpactMethodCategory> methodCategoryList = new ArrayList<>();
+        try {
+            methodCategoryList = impactMethodCategoryRepository.findByMethod(methodId);
+        }catch (Exception e){
+            System.out.println("Error find method ở đây nè: "+ e.getMessage());
+        }
+
+        try{
+            process = processRepository.findByProcessId(processId).orElseThrow(
+                    () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
+        }catch (Exception e){
+            System.out.println("Error find process ở đây nè: "+ e.getMessage());
+        }
+
+        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
+        for (ImpactMethodCategory methodCategory : methodCategoryList) {
+            ProcessImpactValue processImpactValue = createNewProcessImpactValue(process, methodCategory);
+            processImpactValueList.add(processImpactValue);
+        }
+        processImpactValueRepository.saveAll(processImpactValueList);
     }
 
     @Override
