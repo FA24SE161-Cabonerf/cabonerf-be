@@ -14,7 +14,7 @@ import lombok.Setter;
 @Entity
 @Table
 public class SystemBoundary extends Base{
-    private String from;
-    private String to;
+    private String boundaryFrom;
+    private String boundaryTo;
     private String description;
 }

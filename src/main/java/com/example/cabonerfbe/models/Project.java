@@ -23,7 +23,7 @@ public class Project extends Base {
     private Boolean favorite;
 
     @ManyToOne
-    @JoinColumn(name = "systemBoundary_id", nullable = true)
+    @JoinColumn(name = "system_boundary_id", nullable = true)
     private SystemBoundary systemBoundary;
 
     @ManyToOne
