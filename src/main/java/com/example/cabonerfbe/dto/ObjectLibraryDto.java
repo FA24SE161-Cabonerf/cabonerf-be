@@ -14,8 +14,9 @@ public class ObjectLibraryDto {
     private UUID id;
     private String name;
     private String description;
-    private LifeCycleStageDto lifeCycleStage;
     private boolean library;
+    private SystemBoundaryDto systemBoundary;
+    private LifeCycleStageDto lifeCycleStage;
     private List<ProcessImpactValueDto> impacts;
     private List<ExchangesDto> exchanges;
 }

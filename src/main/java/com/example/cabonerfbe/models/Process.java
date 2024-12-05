@@ -26,6 +26,10 @@ public class Process extends Base {
     private boolean library;
 
     @ManyToOne
+    @JoinColumn(name = "system_boundary_id", nullable = true)
+    private SystemBoundary systemBoundary;
+
+    @ManyToOne
     @JoinColumn(name = "lifecycle_stage_id")
     private LifeCycleStage lifeCycleStage;
     @Column(precision = 100, scale = 60)

@@ -21,13 +21,9 @@ import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.MessagePublisher;
 import com.example.cabonerfbe.services.ProcessService;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -326,6 +322,7 @@ public class ProcessServiceImpl implements ProcessService {
         newProcess.setDescription(process.getDescription());
         newProcess.setProject(null);
         newProcess.setMethodId(process.getMethodId());
+        newProcess.setSystemBoundary(process.getProject().getSystemBoundary());
         newProcess.setLifeCycleStage(process.getLifeCycleStage());
         newProcess.setOrganization(process.getProject().getOrganization());
         newProcess.setOverAllProductFlowRequired(Constants.DEFAULT_OVERALL_PRODUCT_FLOW_REQUIRED);

@@ -143,6 +143,7 @@ public class MessageConstants {
 
     public static final String NO_AUTHORITY = "User doesn't have permission to do this action.";
     public static final String ORGANIZATION_DOES_NOT_TO_INDUSTRY_CODE = "Organization doesn't have industry code.";
+    public static final String CANNOT_CREATE_CONNECTOR_TO_OBJECT_LIBRARY_PROCESS = "Cannot create connector to object library.";
 
     // CALCULATION ERROR MSG
     public static final String FAILED_TO_PERFORM_CALCULATION = "Failed to perform calculation. ";
