@@ -105,7 +105,7 @@ public class ProcessServiceImpl implements ProcessService {
         Process p = processRepository.findByProcessId(process.getId()).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
 
-        System.out.println("lấy lúc tại nè: " + p);
+        System.out.println("lấy lúc tạo nè: " + p);
         // generate process impact value
         messagePublisher.publishCreateProcessImpactValue(RabbitMQConfig.CREATE_PROCESS_EXCHANGE, RabbitMQConfig.CREATE_PROCESS_ROUTING_KEY, process.getId(), project.getLifeCycleImpactAssessmentMethod().getId());
 
@@ -117,7 +117,9 @@ public class ProcessServiceImpl implements ProcessService {
 
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     private void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
-//        UUID processId = request.getProcessId();
+        UUID processId = request.getProcessId();
+
+        System.out.println("dô tạo list impact nè với process id nè: " + processId);
 //        UUID methodId = request.getMethodId();
 //        Process process = new Process();
 //        try{
