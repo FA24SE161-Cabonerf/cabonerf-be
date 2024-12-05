@@ -132,12 +132,12 @@ public class ProcessServiceImpl implements ProcessService {
             System.out.println("Error find method ở đây nè: "+ e.getMessage());
         }
 
-//        try{
-//            process = processRepository.findByProcessId(processId).orElseThrow(
-//                    () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
-//        }catch (Exception e){
-//            System.out.println("Error find process ở đây nè: "+ e.getMessage());
-//        }
+        try{
+            process = processRepository.findByProcessId(processId).orElseThrow(
+                    () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
+        }catch (Exception e){
+            System.out.println("Error find process ở đây nè: "+ e.getMessage());
+        }
 //
 //        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
 //        for (ImpactMethodCategory methodCategory : methodCategoryList) {
