@@ -16,4 +16,5 @@ import lombok.Setter;
 public class SystemBoundary extends Base{
     private String from;
     private String to;
+    private String description;
 }
