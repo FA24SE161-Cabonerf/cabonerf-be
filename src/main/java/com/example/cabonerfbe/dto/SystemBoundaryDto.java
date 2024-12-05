@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SystemBoundaryDto {
-    private String from;
-    private String to;
+    private String boundaryFrom;
+    private String boundaryTo;
     private String description;
 }
