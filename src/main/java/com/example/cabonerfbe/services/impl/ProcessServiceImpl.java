@@ -95,12 +95,17 @@ public class ProcessServiceImpl implements ProcessService {
         process.setName(request.getName());
         process.setLifeCycleStage(lifeCycleStage);
         process.setProject(project);
-//        process.setMethodId(project.getLifeCycleImpactAssessmentMethod().getId());
+        process.setMethodId(project.getLifeCycleImpactAssessmentMethod().getId());
         process.setOverAllProductFlowRequired(Constants.NEW_OVERALL_FLOW);
         process.setLibrary(false);
         process = processRepository.save(process);
 
+        System.out.println("process id nè: " + process.getId());
 
+        Process p = processRepository.findByProcessId(process.getId()).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
+
+        System.out.println("lấy lúc tại nè: " + p);
         // generate process impact value
         messagePublisher.publishCreateProcessImpactValue(RabbitMQConfig.CREATE_PROCESS_EXCHANGE, RabbitMQConfig.CREATE_PROCESS_ROUTING_KEY, process.getId(), project.getLifeCycleImpactAssessmentMethod().getId());
 
