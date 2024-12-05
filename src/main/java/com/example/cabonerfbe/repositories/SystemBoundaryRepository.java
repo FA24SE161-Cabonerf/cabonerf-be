@@ -9,6 +9,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface SystemBoundaryRepository extends JpaRepository<SystemBoundary, UUID> {
-  @Query("SELECT s from SystemBoundary s WHERE s.from = :from AND s.to = :to AND s.status = true")
+  @Query("SELECT s from SystemBoundary s WHERE s.boundaryFrom = :from AND s.boundaryTo = :to AND s.status = true")
   Optional<SystemBoundary> findByFromAndTo(@Param("from") String sysBoundaryFrom, @Param("to") String sysBoundaryTo);
 }
