@@ -78,7 +78,6 @@ public class ProcessServiceImpl implements ProcessService {
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
     @Override
-    @Transactional
     public ProcessDto createProcess(CreateProcessRequest request) {
         LifeCycleStage lifeCycleStage = lifeCycleStageRepository.findByIdAndStatus(request.getLifeCycleStageId(), Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND, Collections.EMPTY_LIST)
@@ -119,7 +118,6 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
-    @Transactional
     protected void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
         UUID processId = request.getProcessId();
 
