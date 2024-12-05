@@ -23,6 +23,10 @@ public class Project extends Base {
     private Boolean favorite;
 
     @ManyToOne
+    @JoinColumn(name = "systemBoundary_id", nullable = true)
+    private SystemBoundary systemBoundary;
+
+    @ManyToOne
     @JoinColumn(name = "method_id")
     private LifeCycleImpactAssessmentMethod lifeCycleImpactAssessmentMethod;
 
