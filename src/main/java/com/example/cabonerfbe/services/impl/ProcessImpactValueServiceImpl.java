@@ -32,7 +32,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private final List<ConnectorPercentDto> connectorsResponse = new ArrayList<>();
     private final ProjectImpactValue totalProject = new ProjectImpactValue();
     private final List<Connector> _connectors = new ArrayList<>();
-    private final List<String> toGateList = Arrays.asList("End-of-life", "Use");
+    private final List<String> toGraveList = Arrays.asList("End-of-life", "Use");
 
     @Autowired
     ProcessRepository processRepository;
@@ -253,7 +253,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             List<Process> root = processRepository.findRootProcess(projectId);
             validateRootProcess(root.get(0));
             String rootStage = root.get(0).getLifeCycleStage().getName();
-            if (!toGateList.contains(rootStage)) {
+            if (toGraveList.contains(rootStage)) {
                 sysBoundaryTo = Constants.BOUNDARY_GRAVE;
             }
         }
