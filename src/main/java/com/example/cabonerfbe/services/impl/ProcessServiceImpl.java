@@ -118,14 +118,6 @@ public class ProcessServiceImpl implements ProcessService {
         return processDto;
     }
 
-    @PostConstruct
-    public void validateInjection() {
-        if (processRepository == null || impactMethodCategoryRepository == null) {
-            System.out.println("lỗi repo nè: Dependency injection failed!");
-        }
-    }
-
-
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     @Transactional
     protected void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
@@ -133,27 +125,15 @@ public class ProcessServiceImpl implements ProcessService {
 
         System.out.println("dô tạo list impact nè với process id nè: " + processId);
         UUID methodId = request.getMethodId();
-        Process process = new Process();
-        List<ImpactMethodCategory> methodCategoryList = new ArrayList<>();
-        try {
-            methodCategoryList = impactMethodCategoryRepository.findByMethod(methodId);
-        }catch (Exception e){
-            System.out.println("Error find method ở đây nè: "+ e.getMessage());
+        Process process = processRepository.findByProcessId(processId).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
+        List<ImpactMethodCategory> methodCategoryList = impactMethodCategoryRepository.findByMethod(methodId);
+        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
+        for (ImpactMethodCategory methodCategory : methodCategoryList) {
+            ProcessImpactValue processImpactValue = createNewProcessImpactValue(process, methodCategory);
+            processImpactValueList.add(processImpactValue);
         }
-
-        try{
-            process = processRepository.findByProcessId(processId).orElseThrow(
-                    () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
-        }catch (Exception e){
-            System.out.println("Error find process ở đây nè: "+ e.getMessage());
-        }
-//
-//        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
-//        for (ImpactMethodCategory methodCategory : methodCategoryList) {
-//            ProcessImpactValue processImpactValue = createNewProcessImpactValue(process, methodCategory);
-//            processImpactValueList.add(processImpactValue);
-//        }
-//        processImpactValueRepository.saveAll(processImpactValueList);
+        processImpactValueRepository.saveAll(processImpactValueList);
     }
 
 
