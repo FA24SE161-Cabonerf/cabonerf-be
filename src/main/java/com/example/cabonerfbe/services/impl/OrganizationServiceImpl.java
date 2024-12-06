@@ -512,19 +512,21 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public List<String> outOrganization(UUID userId, UUID organizationId) {
+    public List<String> outOrganization(UUID userId, UUID userOrganizationId) {
         Users users = userRepository.findById(userId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
-        Organization o = organizationRepository.findById(organizationId)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
-
-        UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(organizationId,userId)
+        UserOrganization uo = userOrganizationRepository.findById(userOrganizationId)
                 .orElseThrow(() -> CustomExceptions.notFound("Member do not belong to this organization"));
+
+        if(!uo.getUser().getId().equals(userId)){
+            throw CustomExceptions.unauthorized("User not equals to out organization");
+        }
 
         if(Objects.equals(uo.getRole().getName(), Constants.ORGANIZATION_MANAGER)){
             throw CustomExceptions.unauthorized("Organization Manager cannot out organization");
         }
+
 
         uo.setStatus(false);
         userOrganizationRepository.save(uo);
