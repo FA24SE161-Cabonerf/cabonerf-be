@@ -318,14 +318,14 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public void convertProcessToObjectLibrary(Process process) {
+    public void convertProcessToObjectLibrary(Process process, List<ProjectImpactValue> projectImpactValueList) {
         Process newProcess = createLibraryProcess(process);
         processRepository.save(newProcess);
 
         List<Exchanges> exchangesList = copyExchanges(process.getId(), newProcess, true);
         exchangesRepository.saveAll(exchangesList);
 
-        List<ProcessImpactValue> impactValues = copyProjectImpactValues(process.getProject().getId(), newProcess);
+        List<ProcessImpactValue> impactValues = copyProjectImpactValues(projectImpactValueList, newProcess);
         processImpactValueRepository.saveAll(impactValues);
     }
 
@@ -373,8 +373,7 @@ public class ProcessServiceImpl implements ProcessService {
                 .toList();
     }
 
-    private List<ProcessImpactValue> copyProjectImpactValues(UUID projectId, Process newProcess) {
-        List<ProjectImpactValue> projectImpactValueList = projectImpactValueRepository.findAllByProjectId(projectId);
+    private List<ProcessImpactValue> copyProjectImpactValues(List<ProjectImpactValue> projectImpactValueList, Process newProcess) {
         return projectImpactValueList.stream()
                 .map(projectValue -> mapToNewProcessImpactValue(projectValue, newProcess))
                 .toList();

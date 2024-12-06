@@ -4,10 +4,8 @@ import com.example.cabonerfbe.dto.ProcessDetailDto;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.dto.ProcessImpactValueDto;
 import com.example.cabonerfbe.dto.ProcessNodeDto;
-import com.example.cabonerfbe.models.ImpactMethodCategory;
+import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.models.Process;
-import com.example.cabonerfbe.models.ProcessImpactValue;
-import com.example.cabonerfbe.models.Project;
 import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
@@ -32,7 +30,7 @@ public interface ProcessService {
 
     ProcessNodeDto calculationFast(UUID projectId);
 
-    void convertProcessToObjectLibrary(Process process);
+    void convertProcessToObjectLibrary(Process process, List<ProjectImpactValue> projectImpactValueList);
 
     ProcessDto convertObjectLibraryToProcessDto(Process process, Project project);
 

@@ -8,10 +8,8 @@ import com.example.cabonerfbe.dto.SearchObjectLibraryDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.Organization;
+import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.models.Process;
-import com.example.cabonerfbe.models.Project;
-import com.example.cabonerfbe.models.UserOrganization;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.AddObjectLibraryRequest;
 import com.example.cabonerfbe.request.PagingKeywordMethodRequest;
@@ -125,7 +123,8 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
         );
 
-        if (projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()) {
+        List<ProjectImpactValue> projectImpactValueList = projectImpactValueRepository.findAllByProjectId(projectId);
+        if (projectImpactValueList.isEmpty()) {
             throw CustomExceptions.badRequest(MessageConstants.CALCULATION_REQUIRED_TO_SAVE_OBJECT_LIBRARY);
         }
 
@@ -143,7 +142,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
         UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(saveProcess.getProject().getOrganization().getId(), userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
-        processService.convertProcessToObjectLibrary(saveProcess);
+        processService.convertProcessToObjectLibrary(saveProcess, projectImpactValueList);
 
         return new ArrayList<>();
     }
