@@ -28,6 +28,8 @@ public interface OrganizationService {
 
     InviteUserOrganizationDto removeMember(UUID userId, UUID userOrganizationId);
 
+    InviteUserOrganizationDto outOrganization(UUID userId, UUID organizationId);
+
     List<InviteUserOrganizationDto> getMemberInOrganization(UUID organizationId);
 
     UploadOrgLogoResponse uploadLogo(UUID organizationId, MultipartFile logo);

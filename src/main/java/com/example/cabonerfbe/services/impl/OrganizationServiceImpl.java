@@ -504,5 +504,24 @@ public class OrganizationServiceImpl implements OrganizationService {
         return uoConverter.modelToDto(uo);
     }
 
+    @Override
+    public InviteUserOrganizationDto outOrganization(UUID userId, UUID organizationId) {
+        Users users = userRepository.findById(userId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
+
+        Organization o = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
+
+        UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(organizationId,userId)
+                .orElseThrow(() -> CustomExceptions.notFound("Member do not belong to this organization"));
+
+        if(Objects.equals(uo.getRole().getName(), Constants.ORGANIZATION_MANAGER)){
+            throw CustomExceptions.unauthorized("Organization Manager cannot out organization");
+        }
+
+        uo.setStatus(false);
+        return uoConverter.modelToDto(uo);
+    }
+
 
 }
