@@ -29,9 +29,17 @@ public class IndustryCodeController {
     public ResponseEntity<ResponseObject> get(@RequestParam(defaultValue = "1") int pageCurrent,
                                                @RequestParam(defaultValue = "5") int pageSize,
                                                @RequestParam(required = false) String keyword){
+        log.info("Start getPageIndustryCode");
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get page industry code success",service.getAll(pageCurrent, pageSize, keyword))
+        );
+    }
+
+    @GetMapping(API_PARAMS.MANAGER + API_PARAMS.GET_INDUSTRY_CODE_TO_CREATE)
+    public ResponseEntity<ResponseObject> getAll(@RequestParam(required = false) String keyword){
         log.info("Start getAllIndustryCode");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get all industry code success",service.getAll(pageCurrent, pageSize, keyword))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get all industry code success",service.getAllToCreateOrganization(keyword))
         );
     }
 

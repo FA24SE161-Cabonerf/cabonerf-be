@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public interface IndustryCodeService {
     GetAllIndustryCodeResponse getAll(int pageCurrent, int pageSize, String keyword);
+    List<IndustryCodeDto> getAllToCreateOrganization(String keyword);
     IndustryCodeDto create(IndustryCodeRequest request);
     IndustryCodeDto update(UUID id, IndustryCodeRequest request);
     IndustryCodeDto delete(UUID id);
