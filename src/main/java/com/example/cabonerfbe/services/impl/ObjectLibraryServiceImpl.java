@@ -123,10 +123,6 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
         );
 
-        if (processRepository.findRootProcess(projectId).get(0).isLibrary()) {
-            throw CustomExceptions.badRequest(MessageConstants.PROCESS_ALREADY_IN_OBJECT_LIBRARY);
-        }
-
         Process saveProcess = processRepository.findByProcessId(processImpactValueService.computeSystemLevelOfProject(projectId).getProcessId()).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND)
         );
