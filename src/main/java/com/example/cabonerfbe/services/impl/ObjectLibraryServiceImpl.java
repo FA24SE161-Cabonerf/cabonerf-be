@@ -74,7 +74,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
         UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(organizationId, userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
-        validateMethod(request.getSystemBoundaryId());
+//        validateMethod(request.getSystemBoundaryId());
 
         Pageable pageable = PageRequest.of(request.getCurrentPage() - 1, request.getPageSize());
 
