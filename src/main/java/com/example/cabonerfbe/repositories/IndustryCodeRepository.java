@@ -30,4 +30,10 @@ public interface IndustryCodeRepository extends JpaRepository<IndustryCode, UUID
     Optional<IndustryCode> findByCode(@Param("code") String code);
 
     boolean existsByCodeAndIdNot(String code, UUID id);
+
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true")
+    List<IndustryCode> findByStatus();
+
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true AND ic.name ILIKE CONCAT('%', :keyword ,'%')")
+    List<IndustryCode> findByKeyword(@Param("keyword") String keyword);
 }

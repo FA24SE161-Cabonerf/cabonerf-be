@@ -62,6 +62,12 @@ public class IndustryCodeServiceImpl implements IndustryCodeService {
     }
 
     @Override
+    public List<IndustryCodeDto> getAllToCreateOrganization(String keyword) {
+        List<IndustryCode> icList = keyword == null ? icRepository.findByStatus() : icRepository.findByKeyword(keyword);
+        return icList.isEmpty() ? Collections.emptyList() : icList.stream().map(icConverter::modelToDto).toList();
+    }
+
+    @Override
     public IndustryCodeDto create(IndustryCodeRequest request) {
 
         if(icRepository.findByCode(request.getCode()).isPresent()){
