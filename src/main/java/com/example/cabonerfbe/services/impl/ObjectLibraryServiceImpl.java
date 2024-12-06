@@ -13,6 +13,7 @@ import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.models.Project;
 import com.example.cabonerfbe.models.UserOrganization;
 import com.example.cabonerfbe.repositories.*;
+import com.example.cabonerfbe.request.AddObjectLibraryRequest;
 import com.example.cabonerfbe.request.PagingKeywordMethodRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.MessagePublisher;
@@ -139,7 +140,11 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
     }
 
     @Override
-    public ProcessDto addFromObjectLibraryToProject(UUID userId, UUID objectLibId, UUID projectId) {
+    public ProcessDto addFromObjectLibraryToProject(AddObjectLibraryRequest request) {
+        UUID userId = request.getUserId();
+        UUID projectId = request.getProjectId();
+        UUID objectLibId = request.getObjectLibId();
+
         Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
         );

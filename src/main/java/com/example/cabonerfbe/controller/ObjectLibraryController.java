@@ -3,6 +3,7 @@ package com.example.cabonerfbe.controller;
 import com.example.cabonerfbe.enums.API_PARAMS;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
+import com.example.cabonerfbe.request.AddObjectLibraryRequest;
 import com.example.cabonerfbe.request.PagingKeywordMethodRequest;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.ObjectLibraryService;
@@ -60,8 +61,9 @@ public class ObjectLibraryController {
     @PostMapping(API_PARAMS.ADD_FROM_OBJECT_LIBRARY_TO_PROJECT)
     public ResponseEntity<ResponseObject> addFromObjectLibraryToProject(@RequestHeader(value = Constants.USER_ID_HEADER) UUID userId, @PathVariable UUID processId, @PathVariable UUID projectId) {
         log.info("Start addFromObjectLibraryToProject. processId: {}", processId);
+        AddObjectLibraryRequest request = new AddObjectLibraryRequest(userId, processId, projectId);
         return ResponseEntity.ok().body(new ResponseObject(
-                        Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.ADD_FROM_LIBRARY_TO_PROJECT_SUCCESS, objectLibraryService.addFromObjectLibraryToProject(userId, processId, projectId)
+                        Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.ADD_FROM_LIBRARY_TO_PROJECT_SUCCESS, objectLibraryService.addFromObjectLibraryToProject(request)
                 )
         );
     }

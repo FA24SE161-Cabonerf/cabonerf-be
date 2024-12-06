@@ -3,6 +3,7 @@ package com.example.cabonerfbe.services;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.dto.SearchObjectLibraryDto;
 import com.example.cabonerfbe.models.Process;
+import com.example.cabonerfbe.request.AddObjectLibraryRequest;
 import com.example.cabonerfbe.request.PagingKeywordMethodRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
 
@@ -15,5 +16,5 @@ public interface ObjectLibraryService {
     DeleteProcessResponse removeFromObjectLibrary(UUID userId, UUID id);
     List<Process> saveToObjectLibrary(UUID userId, UUID processId);
 
-    ProcessDto addFromObjectLibraryToProject(UUID userId, UUID processId, UUID projectId);
+    ProcessDto addFromObjectLibraryToProject(AddObjectLibraryRequest request);
 }

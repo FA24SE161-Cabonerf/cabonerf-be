@@ -317,103 +317,106 @@ public class ProcessServiceImpl implements ProcessService {
 
     @Override
     public void convertProcessToObjectLibrary(Process process) {
+        Process newProcess = createLibraryProcess(process);
+        processRepository.save(newProcess);
+
+        List<Exchanges> exchangesList = copyExchanges(process.getId(), newProcess, true);
+        exchangesRepository.saveAll(exchangesList);
+
+        List<ProcessImpactValue> impactValues = copyProcessImpactValues(process.getId(), newProcess);
+        processImpactValueRepository.saveAll(impactValues);
+    }
+
+    private Process createLibraryProcess(Process process) {
         Process newProcess = new Process();
         newProcess.setLibrary(true);
         newProcess.setName(process.getName());
         newProcess.setDescription(process.getDescription());
-        newProcess.setProject(null);
+        newProcess.setProject(null); // Set to library, no project association
         newProcess.setMethodId(process.getMethodId());
         newProcess.setSystemBoundary(process.getProject().getSystemBoundary());
         newProcess.setLifeCycleStage(process.getLifeCycleStage());
         newProcess.setOrganization(process.getProject().getOrganization());
         newProcess.setOverAllProductFlowRequired(Constants.DEFAULT_OVERALL_PRODUCT_FLOW_REQUIRED);
-        processRepository.save(newProcess);
+        return newProcess;
+    }
 
-        List<Exchanges> exchangesList = exchangesRepository.findAllByProcess(process.getId()).stream()
-                .filter(x -> !(Constants.PRODUCT_EXCHANGE.equals(x.getExchangesType().getName()) && x.isInput())).map(
-                        oldExchange -> {
-                            Exchanges newExchanges = new Exchanges();
-                            newExchanges.setName(oldExchange.getName());
-                            newExchanges.setDescription(oldExchange.getDescription());
-                            newExchanges.setValue(oldExchange.getValue());
-                            newExchanges.setExchangesType(oldExchange.getExchangesType());
-                            newExchanges.setProcess(newProcess);
-                            newExchanges.setUnit(oldExchange.getUnit());
-                            newExchanges.setInput(oldExchange.isInput());
-                            newExchanges.setEmissionSubstance(oldExchange.getEmissionSubstance());
-                            return newExchanges;
-                        }
-                ).toList();
-        exchangesRepository.saveAll(exchangesList);
+    private List<Exchanges> copyExchanges(UUID processId, Process newProcess, boolean filterProductInputs) {
+        return exchangesRepository.findAllByProcess(processId).stream()
+                .filter(exchange -> !filterProductInputs || isNonProductInput(exchange))
+                .map(exchange -> mapToNewExchange(exchange, newProcess))
+                .toList();
+    }
 
+    private boolean isNonProductInput(Exchanges exchange) {
+        return !(Constants.PRODUCT_EXCHANGE.equals(exchange.getExchangesType().getName()) && exchange.isInput());
+    }
 
-//        ProcessNodeDto tree = buildTree(process.getId(), connectorRepository.findConnectorToProcess(process.getId()), BigDecimal.ONE);
-//        List<ProcessImpactValue> processImpactValueList = calculateToDesignatedProcess(tree);
+    private Exchanges mapToNewExchange(Exchanges oldExchange, Process newProcess) {
+        Exchanges newExchange = new Exchanges();
+        newExchange.setName(oldExchange.getName());
+        newExchange.setDescription(oldExchange.getDescription());
+        newExchange.setValue(oldExchange.getValue());
+        newExchange.setExchangesType(oldExchange.getExchangesType());
+        newExchange.setProcess(newProcess);
+        newExchange.setUnit(oldExchange.getUnit());
+        newExchange.setInput(oldExchange.isInput());
+        newExchange.setEmissionSubstance(oldExchange.getEmissionSubstance());
+        return newExchange;
+    }
 
-        List<ProcessImpactValue> processImpactValueList = processImpactValueRepository.findByProcessId(process.getId()).stream()
-                .map(oldValue -> {
-                            ProcessImpactValue newImpactValue = new ProcessImpactValue();
-                            newImpactValue.setImpactMethodCategory(oldValue.getImpactMethodCategory());
-                            newImpactValue.setProcess(newProcess);
-                            newImpactValue.setUnitLevel(oldValue.getSystemLevel());
-                            newImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
-                            newImpactValue.setOverallImpactContribution(Constants.DEFAULT_OVERALL_IMPACT_CONTRIBUTION);
-                            newImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
-                            return newImpactValue;
-                        }
-                ).toList();
+    private List<ProcessImpactValue> copyProcessImpactValues(UUID processId, Process newProcess) {
+        return processImpactValueRepository.findByProcessId(processId).stream()
+                .map(oldValue -> mapToNewProcessImpactValue(oldValue, newProcess))
+                .toList();
+    }
 
-        processImpactValueRepository.saveAll(processImpactValueList);
+    private ProcessImpactValue mapToNewProcessImpactValue(ProcessImpactValue oldValue, Process newProcess) {
+        ProcessImpactValue newImpactValue = new ProcessImpactValue();
+        newImpactValue.setImpactMethodCategory(oldValue.getImpactMethodCategory());
+        newImpactValue.setProcess(newProcess);
+        newImpactValue.setUnitLevel(oldValue.getSystemLevel());
+        newImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
+        newImpactValue.setOverallImpactContribution(Constants.DEFAULT_OVERALL_IMPACT_CONTRIBUTION);
+        newImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
+        return newImpactValue;
     }
 
     @Transactional
     @Override
     public ProcessDto convertObjectLibraryToProcessDto(Process object, Project project) {
+        Process newProcess = createProcessFromLibrary(object, project);
+        processRepository.save(newProcess);
+
+        List<Exchanges> exchangesList = copyExchanges(object.getId(), newProcess, false);
+        exchangesRepository.saveAll(exchangesList);
+
+        List<ProcessImpactValue> impactValues = copyProcessImpactValues(object.getId(), newProcess);
+        processImpactValueRepository.saveAll(impactValues);
+
+        return buildProcessDto(newProcess, exchangesList, impactValues);
+    }
+
+    private Process createProcessFromLibrary(Process object, Project project) {
         Process newProcess = new Process();
         newProcess.setName(object.getName());
         newProcess.setDescription(object.getDescription());
         newProcess.setMethodId(object.getMethodId());
-        newProcess.setLibrary(true);
+        newProcess.setLibrary(false); // Not a library, belongs to a project
         newProcess.setLifeCycleStage(object.getLifeCycleStage());
         newProcess.setOverAllProductFlowRequired(Constants.NEW_OVERALL_FLOW);
         newProcess.setProject(project);
         newProcess.setOrganization(project.getOrganization());
-        newProcess = processRepository.save(newProcess);
+        return newProcess;
+    }
 
+    private ProcessDto buildProcessDto(Process newProcess, List<Exchanges> exchangesList, List<ProcessImpactValue> impactValues) {
         ProcessDto processDto = processConverter.fromProcessToProcessDto(newProcess);
-        Process finalNewProcess = newProcess;
-        List<Exchanges> exchangesList = exchangesRepository.findAllByProcess(object.getId()).stream()
-                .map(objectExchange -> {
-                            Exchanges newExchanges = new Exchanges();
-                            newExchanges.setName(objectExchange.getName());
-                            newExchanges.setDescription(objectExchange.getDescription());
-                            newExchanges.setValue(objectExchange.getValue());
-                            newExchanges.setExchangesType(objectExchange.getExchangesType());
-                            newExchanges.setProcess(finalNewProcess);
-                            newExchanges.setUnit(objectExchange.getUnit());
-                            newExchanges.setInput(objectExchange.isInput());
-                            newExchanges.setEmissionSubstance(objectExchange.getEmissionSubstance());
-                            return newExchanges;
-                        }
-                ).toList();
-
-        List<ProcessImpactValue> processImpactValueList = processImpactValueRepository.findByProcessId(object.getId()).stream()
-                .map(objectValue -> {
-                            ProcessImpactValue newImpactValue = new ProcessImpactValue();
-                            newImpactValue.setImpactMethodCategory(objectValue.getImpactMethodCategory());
-                            newImpactValue.setProcess(finalNewProcess);
-                            newImpactValue.setUnitLevel(objectValue.getUnitLevel());
-                            newImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
-                            newImpactValue.setOverallImpactContribution(Constants.DEFAULT_OVERALL_IMPACT_CONTRIBUTION);
-                            newImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
-                            return newImpactValue;
-                        }
-                ).toList();
-        processDto.setImpacts(converterProcess(processImpactValueRepository.saveAll(processImpactValueList)));
-        processDto.setExchanges(exchangesConverter.fromExchangesToExchangesDto(exchangesRepository.saveAll(exchangesList)));
-
+        processDto.setExchanges(exchangesConverter.fromExchangesToExchangesDto(exchangesList));
+        processDto.setImpacts(converterProcess(impactValues));
         return processDto;
     }
+
 
     @Override
     public ProcessNodeDto calculationFast(UUID projectId) {
