@@ -137,7 +137,7 @@ public class OrganizationController {
     }
 
     @DeleteMapping(API_PARAMS.OUT_ORGANIZATION)
-    public ResponseEntity<ResponseObject> outOrganization(@RequestHeader("x-user-id") UUID userId, @RequestParam UUID organizationId){
+    public ResponseEntity<ResponseObject> outOrganization(@RequestHeader("x-user-id") UUID userId, @PathVariable UUID organizationId){
         log.info("Start outOrganization. userId: {}, organizationId: {}", userId,organizationId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Out organization success",organizationService.outOrganization(userId,organizationId))
