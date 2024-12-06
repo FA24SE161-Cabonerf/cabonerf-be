@@ -74,11 +74,11 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
         UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(organizationId, userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
-        validateMethod(request.getMethodId());
+        validateMethod(request.getSystemBoundaryId());
 
         Pageable pageable = PageRequest.of(request.getCurrentPage() - 1, request.getPageSize());
 
-        Page<Process> processPage = processRepository.findObjectLibrary(organizationId, request.getMethodId(), request.getKeyword(), pageable);
+        Page<Process> processPage = processRepository.findObjectLibrary(organizationId, request.getSystemBoundaryId(), request.getKeyword(), pageable);
 
         List<ObjectLibraryDto> objectLibraryList = processPage.getContent().stream().map(
                 process -> {

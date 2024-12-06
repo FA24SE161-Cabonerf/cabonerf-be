@@ -30,11 +30,11 @@ public class ObjectLibraryController {
     public ResponseEntity<ResponseObject> searchObjectLibraryOfOrganization(@PathVariable UUID organizationId,
                                                                             @RequestParam(defaultValue = "1") int pageCurrent,
                                                                             @RequestParam(defaultValue = "5") int pageSize,
-                                                                            @RequestParam UUID methodId,
+                                                                            @RequestParam(required = false) UUID systemBoundaryId,
                                                                             @RequestParam(required = false) String keyword,
                                                                             @RequestHeader(value = Constants.USER_ID_HEADER) UUID userId) {
-        log.info("Start searchObjectLibraryOfOrganization methodId: {}, keyword: {}, orgId: {}", methodId, keyword, organizationId);
-        PagingKeywordMethodRequest request = new PagingKeywordMethodRequest(pageCurrent, pageSize, methodId, keyword);
+        log.info("Start searchObjectLibraryOfOrganization methodId: {}, keyword: {}, orgId: {}", systemBoundaryId, keyword, organizationId);
+        PagingKeywordMethodRequest request = new PagingKeywordMethodRequest(pageCurrent, pageSize, systemBoundaryId, keyword);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.SEARCH_OBJECT_LIBRARY_OF_ORGANIZATION_SUCCESS, objectLibraryService.searchObjectLibraryOfOrganization(userId, organizationId, request))
         );

@@ -12,12 +12,12 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PagingKeywordMethodRequest extends PaginationRequest {
     String keyword;
-    UUID methodId;
+    UUID systemBoundaryId;
 
-    public PagingKeywordMethodRequest(int pageCurrent, int pageSize, UUID methodId, String keyword) {
+    public PagingKeywordMethodRequest(int pageCurrent, int pageSize, UUID systemBoundaryId, String keyword) {
         this.setPageSize(pageSize);
         this.setKeyword(keyword);
-        this.setMethodId(methodId);
+        this.setSystemBoundaryId(systemBoundaryId);
         this.setCurrentPage(pageCurrent);
     }
 }
