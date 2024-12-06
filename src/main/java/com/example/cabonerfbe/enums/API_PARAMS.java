@@ -211,4 +211,8 @@ public class API_PARAMS {
     public static final String DELETE_INDUSTRY_CODE = "/{industryCodeId}";
     public static final String GET_INDUSTRY_CODE_BY_ORGANIZATION = "/{organizationId}";
 
+    /************************
+     *   SYSTEM BOUNDARY APIs *
+     ************************/
+    public static final String SYSTEM_BOUNDARY = "/system-boundary";
 }

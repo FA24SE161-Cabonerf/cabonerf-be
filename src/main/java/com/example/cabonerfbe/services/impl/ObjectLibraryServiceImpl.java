@@ -46,8 +46,9 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
     private final ProjectRepository projectRepository;
     private final MessagePublisher messagePublisher;
     private final ProcessImpactValueService processImpactValueService;
+    private final ProjectImpactValueRepository projectImpactValueRepository;
 
-    public ObjectLibraryServiceImpl(ProcessService processService, OrganizationRepository organizationRepository, ProcessRepository processRepository, LifeCycleImpactAssessmentMethodRepository methodRepository, ProcessConverter processConverter, ProcessImpactValueRepository processImpactValueRepository, ExchangesConverter exchangesConverter, ExchangesRepository exchangesRepository, ExchangesConverter exchangesConverter1, ExchangesRepository exchangesRepository1, UserOrganizationRepository userOrganizationRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, MessagePublisher messagePublisher, ProcessImpactValueService processImpactValueService) {
+    public ObjectLibraryServiceImpl(ProcessService processService, OrganizationRepository organizationRepository, ProcessRepository processRepository, LifeCycleImpactAssessmentMethodRepository methodRepository, ProcessConverter processConverter, ProcessImpactValueRepository processImpactValueRepository, ExchangesConverter exchangesConverter, ExchangesRepository exchangesRepository, ExchangesConverter exchangesConverter1, ExchangesRepository exchangesRepository1, UserOrganizationRepository userOrganizationRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, MessagePublisher messagePublisher, ProcessImpactValueService processImpactValueService, ProjectImpactValueRepository projectImpactValueRepository) {
         this.organizationRepository = organizationRepository;
         this.processRepository = processRepository;
         this.methodRepository = methodRepository;
@@ -60,6 +61,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
         this.projectRepository = projectRepository;
         this.messagePublisher = messagePublisher;
         this.processImpactValueService = processImpactValueService;
+        this.projectImpactValueRepository = projectImpactValueRepository;
     }
 
     @Transactional
@@ -123,9 +125,20 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
         );
 
-        Process saveProcess = processRepository.findByProcessId(processImpactValueService.computeSystemLevelOfProject(projectId).getProcessId()).orElseThrow(
-                () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND)
-        );
+        if (projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()) {
+            throw CustomExceptions.badRequest(MessageConstants.CALCULATION_REQUIRED_TO_SAVE_OBJECT_LIBRARY);
+        }
+
+        List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
+        if (processList.isEmpty()) {
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT, Collections.EMPTY_LIST);
+        }
+
+        Process saveProcess = processList.get(0);
+
+        if (processList.size() > 1) {
+            saveProcess = processRepository.findRootProcess(projectId).get(0);
+        }
 
         UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(saveProcess.getProject().getOrganization().getId(), userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));

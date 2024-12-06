@@ -51,9 +51,10 @@ public class ProcessServiceImpl implements ProcessService {
     private final UnitServiceImpl unitService;
     private final UnitRepository unitRepository;
     private final ImpactMethodCategoryRepository impactMethodCategoryRepository;
+    private final ProjectImpactValueRepository projectImpactValueRepository;
 
     @Autowired
-    public ProcessServiceImpl(ProcessConverter processConverter, ProcessRepository processRepository, ProcessImpactValueRepository processImpactValueRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, ExchangesRepository exchangesRepository, ConnectorRepository connectorRepository, ExchangesConverter exchangesConverter, UnitServiceImpl unitService, LifeCycleImpactAssessmentMethodConverter methodConverter, UnitRepository unitRepository, ImpactCategoryConverter categoryConverter, MessagePublisher messagePublisher, ConnectorServiceImpl connectorService, ImpactMethodCategoryRepository impactMethodCategoryRepository) {
+    public ProcessServiceImpl(ProcessConverter processConverter, ProcessRepository processRepository, ProcessImpactValueRepository processImpactValueRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, ExchangesRepository exchangesRepository, ConnectorRepository connectorRepository, ExchangesConverter exchangesConverter, UnitServiceImpl unitService, LifeCycleImpactAssessmentMethodConverter methodConverter, UnitRepository unitRepository, ImpactCategoryConverter categoryConverter, MessagePublisher messagePublisher, ConnectorServiceImpl connectorService, ImpactMethodCategoryRepository impactMethodCategoryRepository, ProjectImpactValueRepository projectImpactValueRepository) {
         this.processConverter = processConverter;
         this.processRepository = processRepository;
         this.processImpactValueRepository = processImpactValueRepository;
@@ -69,6 +70,7 @@ public class ProcessServiceImpl implements ProcessService {
         this.messagePublisher = messagePublisher;
         this.connectorService = connectorService;
         this.impactMethodCategoryRepository = impactMethodCategoryRepository;
+        this.projectImpactValueRepository = projectImpactValueRepository;
     }
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
@@ -323,7 +325,7 @@ public class ProcessServiceImpl implements ProcessService {
         List<Exchanges> exchangesList = copyExchanges(process.getId(), newProcess, true);
         exchangesRepository.saveAll(exchangesList);
 
-        List<ProcessImpactValue> impactValues = copyProcessImpactValues(process.getId(), newProcess);
+        List<ProcessImpactValue> impactValues = copyProjectImpactValues(process.getProject().getId(), newProcess);
         processImpactValueRepository.saveAll(impactValues);
     }
 
@@ -371,6 +373,13 @@ public class ProcessServiceImpl implements ProcessService {
                 .toList();
     }
 
+    private List<ProcessImpactValue> copyProjectImpactValues(UUID projectId, Process newProcess) {
+        List<ProjectImpactValue> projectImpactValueList = projectImpactValueRepository.findAllByProjectId(projectId);
+        return projectImpactValueList.stream()
+                .map(projectValue -> mapToNewProcessImpactValue(projectValue, newProcess))
+                .toList();
+    }
+
     private ProcessImpactValue mapToNewProcessImpactValue(ProcessImpactValue oldValue, Process newProcess) {
         ProcessImpactValue newImpactValue = new ProcessImpactValue();
         newImpactValue.setImpactMethodCategory(oldValue.getImpactMethodCategory());
@@ -381,6 +390,18 @@ public class ProcessServiceImpl implements ProcessService {
         newImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
         return newImpactValue;
     }
+
+    private ProcessImpactValue mapToNewProcessImpactValue(ProjectImpactValue projectImpactValue, Process newProcess) {
+        ProcessImpactValue newImpactValue = new ProcessImpactValue();
+        newImpactValue.setImpactMethodCategory(projectImpactValue.getImpactMethodCategory());
+        newImpactValue.setProcess(newProcess);
+        newImpactValue.setUnitLevel(projectImpactValue.getValue());
+        newImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
+        newImpactValue.setOverallImpactContribution(Constants.DEFAULT_OVERALL_IMPACT_CONTRIBUTION);
+        newImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
+        return newImpactValue;
+    }
+
 
     @Transactional
     @Override
