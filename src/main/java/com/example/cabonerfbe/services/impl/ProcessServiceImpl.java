@@ -114,10 +114,13 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
-    private void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
-        UUID processId = request.getProcessId();
+    public void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
+        System.out.println("dô tạo list impact nè với process id nè: " + request.getProcessId());
+        handleImpactValueCreation(request);
+    }
 
-        System.out.println("dô tạo list impact nè với process id nè: " + processId);
+    public void handleImpactValueCreation(CreateProcessImpactValueRequest request) {
+        UUID processId = request.getProcessId();
         UUID methodId = request.getMethodId();
         Process process = processRepository.findByProcessId(processId).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
@@ -129,8 +132,6 @@ public class ProcessServiceImpl implements ProcessService {
         }
         processImpactValueRepository.saveAll(processImpactValueList);
     }
-
-
 
     @Override
     public ProcessImpactValue createNewProcessImpactValue(Process process, ImpactMethodCategory methodCategory) {
