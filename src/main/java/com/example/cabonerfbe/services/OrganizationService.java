@@ -28,7 +28,7 @@ public interface OrganizationService {
 
     InviteUserOrganizationDto removeMember(UUID userId, UUID userOrganizationId);
 
-    InviteUserOrganizationDto outOrganization(UUID userId, UUID organizationId);
+    List<String> outOrganization(UUID userId, UUID organizationId);
 
     List<InviteUserOrganizationDto> getMemberInOrganization(UUID organizationId);
 
