@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -62,7 +63,8 @@ public class IndustryCodeServiceImpl implements IndustryCodeService {
 
     @Override
     public IndustryCodeDto create(IndustryCodeRequest request) {
-        if(icRepository.findByCode(request.getCode()).isEmpty()){
+
+        if(icRepository.findByCode(request.getCode()).isPresent()){
             throw CustomExceptions.validator(MessageConstants.INDUSTRY_CODE_EXIST);
         }
 
@@ -84,7 +86,7 @@ public class IndustryCodeServiceImpl implements IndustryCodeService {
         }
 
         ic.setName(request.getName());
-        ic.setName(request.getCode());
+        ic.setCode(request.getCode());
 
         return icConverter.modelToDto(icRepository.save(ic));
     }

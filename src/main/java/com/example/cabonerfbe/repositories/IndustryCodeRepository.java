@@ -26,7 +26,7 @@ public interface IndustryCodeRepository extends JpaRepository<IndustryCode, UUID
     @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true AND ic.name ILIKE CONCAT('%', :keyword ,'%')")
     Page<IndustryCode> findAllByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
-    @Query("SELECT ic FROM IndustryCode ic WHERE ic.code like :code")
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.code like :code AND ic.status = true")
     Optional<IndustryCode> findByCode(@Param("code") String code);
 
     boolean existsByCodeAndIdNot(String code, UUID id);
