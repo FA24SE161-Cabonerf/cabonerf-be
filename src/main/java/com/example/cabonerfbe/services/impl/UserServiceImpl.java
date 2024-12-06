@@ -190,6 +190,8 @@ public class UserServiceImpl implements UserService {
                 .filter(s -> !s.isEmpty())
                 .orElse(user.getProfilePictureUrl()));
 
+        
+
         return userConverter.fromUserToUserProfileDto(userRepository.save(user));
     }
 

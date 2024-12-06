@@ -124,8 +124,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var refreshToken = jwtService.generateRefreshToken(saved.get());
 
         saveRefreshToken(refreshToken, user);
+        String[] name = request.getFullName().split(" ");
+        String lastName = name[name.length - 1];
         Organization o = new Organization();
-        o.setName(Constants.DEFAULT_ORGANIZATION);
+        o.setName(lastName + "'s Organization");
         o.setContract(null);
         o.setLogo(Constants.DEFAULT_USER_IMAGE);
         o = oRepository.save(o);
