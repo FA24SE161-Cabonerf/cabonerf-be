@@ -27,9 +27,13 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class ProcessImpactValueServiceImpl implements ProcessImpactValueService {
+    @Autowired
+    private SystemBoundaryRepository systemBoundaryRepository;
     private final List<ConnectorPercentDto> connectorsResponse = new ArrayList<>();
     private final ProjectImpactValue totalProject = new ProjectImpactValue();
     private final List<Connector> _connectors = new ArrayList<>();
+    private final List<String> toGraveList = Arrays.asList("End-of-life", "Use");
+
     @Autowired
     ProcessRepository processRepository;
     @Autowired
@@ -229,6 +233,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
     public ProcessNodeDto computeSystemLevelOfProject(UUID projectId) {
+        String sysBoundaryFrom = Constants.BOUNDARY_CRADLE;
+        String sysBoundaryTo = Constants.BOUNDARY_GATE;
 
         Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
@@ -238,13 +244,19 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         if (processList.isEmpty()) {
             throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT, Collections.EMPTY_LIST);
         }
+
         if (processList.size() == 1) {
-            validateProcessWithOne(processList.get(0));
-        }else{
+            Map<String, String> boundaryMap = validateProcessWithOne(processList.get(0));
+            sysBoundaryFrom = boundaryMap.get("from");
+            sysBoundaryTo = boundaryMap.get("to");
+        } else {
             List<Process> root = processRepository.findRootProcess(projectId);
             validateRootProcess(root.get(0));
+            String rootStage = root.get(0).getLifeCycleStage().getName();
+            if (toGraveList.contains(rootStage)) {
+                sysBoundaryTo = Constants.BOUNDARY_GRAVE;
+            }
         }
-
 
         List<UUID> processIds = processList.stream()
                 .map(Process::getId)
@@ -279,6 +291,9 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
         ProcessNodeDto dto = calculationFast(projectId);
         updateProjectValue(processIds, projectId);
+        SystemBoundary systemBoundary = systemBoundaryRepository.findByFromAndTo(sysBoundaryFrom, sysBoundaryTo).orElse(null);
+        project.setSystemBoundary(systemBoundary);
+        projectRepository.save(project);
         return dto;
     }
 
@@ -286,17 +301,19 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         List<Exchanges> elementary = exchangesRepository.findElementaryByProcess(process.getId());
 
         Exchanges productOut = exchangesRepository.findProductOutWithOneProcess(process.getId());
-        if(productOut == null){
+        if (productOut == null) {
             throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
                     "- Process output is empty.", Collections.EMPTY_LIST);
         }
+
         if (productOut.getValue().compareTo(BigDecimal.ZERO) == 0) {
             throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
                     "- Process " + process.getName() + " should have 0 output.", Collections.EMPTY_LIST);
         }
     }
 
-    private void validateProcessWithOne(Process p) {
+    private Map<String, String> validateProcessWithOne(Process p) {
+        Map<String, String> boundaryMap = new HashMap<>();
         List<Exchanges> elementary = exchangesRepository.findElementaryByProcess(p.getId());
         if (elementary.isEmpty()) {
             throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
@@ -304,15 +321,23 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         }
         List<Exchanges> productIn = exchangesRepository.findProductIn(p.getId());
         Exchanges productOut = exchangesRepository.findProductOutWithOneProcess(p.getId());
-        if(productOut == null){
+        if (productOut == null) {
             throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
                     "- Process output is empty.", Collections.EMPTY_LIST);
         }
-        if (!productIn.isEmpty() || productOut.getValue().compareTo(BigDecimal.ZERO) == 0) {
+        if (productOut.getValue().compareTo(BigDecimal.ZERO) == 0) {
             throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
                     "- Process " + p.getName() + " should have 0 input/output.", Collections.EMPTY_LIST);
         }
-
+        // only output
+        if (productIn.isEmpty()) {
+            boundaryMap.put("from", Constants.BOUNDARY_CRADLE);
+            boundaryMap.put("to", Constants.BOUNDARY_GATE);
+        } else {
+            boundaryMap.put("from", Constants.BOUNDARY_GATE);
+            boundaryMap.put("to", Constants.BOUNDARY_GATE);
+        }
+        return boundaryMap;
     }
 
     private void updateProjectValue(List<UUID> processIds, UUID projectId) {
@@ -439,7 +464,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
     public List<LifeCycleBreakdownPercentDto> buildLifeCycleBreakdownWhenGetAll(UUID projectId) {
-        if(projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()){
+        if (projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()) {
             return Collections.emptyList();
         }
         List<LifeCycleStage> lifeCycleStages = lcsRepository.findAll();

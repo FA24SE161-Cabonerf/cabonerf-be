@@ -95,6 +95,8 @@ public class ProjectServiceImpl implements ProjectService {
     private ImpactCategoryRepository icRepository;
     @Autowired
     private UserOrganizationRepository uoRepository;
+    @Autowired
+    private SystemBoundaryConverter systemBoundaryConverter;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
@@ -225,6 +227,8 @@ public class ProjectServiceImpl implements ProjectService {
         dto.setName(project.getName());
         dto.setDescription(project.getDescription());
         dto.setLocation(project.getLocation());
+        dto.setFavorite(project.getFavorite());
+        dto.setSystemBoundary(systemBoundaryConverter.fromEntityToDto(project.getSystemBoundary()));
         dto.setMethod(methodConverter.fromMethodToMethodDto(project.getLifeCycleImpactAssessmentMethod()));
         dto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
         dto.setProcesses(processService.getAllProcessesByProjectId(project.getId()));
