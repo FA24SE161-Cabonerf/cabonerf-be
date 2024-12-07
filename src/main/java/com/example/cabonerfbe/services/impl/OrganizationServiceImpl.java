@@ -527,9 +527,7 @@ public class OrganizationServiceImpl implements OrganizationService {
             throw CustomExceptions.unauthorized("Organization Manager cannot out organization");
         }
 
-
-        uo.setStatus(false);
-        userOrganizationRepository.save(uo);
+        userOrganizationRepository.delete(uo);
         return Collections.emptyList();
     }
 }
