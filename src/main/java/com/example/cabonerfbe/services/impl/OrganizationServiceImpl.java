@@ -512,7 +512,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public List<String> outOrganization(UUID userId, UUID userOrganizationId) {
+    public List<String> leaveOrganization(UUID userId, UUID userOrganizationId) {
         Users users = userRepository.findById(userId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
@@ -532,6 +532,4 @@ public class OrganizationServiceImpl implements OrganizationService {
         userOrganizationRepository.save(uo);
         return Collections.emptyList();
     }
-
-
 }
