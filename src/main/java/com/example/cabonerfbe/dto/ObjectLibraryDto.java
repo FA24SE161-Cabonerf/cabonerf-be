@@ -15,6 +15,7 @@ public class ObjectLibraryDto {
     private String name;
     private String description;
     private boolean library;
+    private String location;
     private SystemBoundaryDto systemBoundary;
     private LifeCycleStageDto lifeCycleStage;
     private List<ProcessImpactValueDto> impacts;
