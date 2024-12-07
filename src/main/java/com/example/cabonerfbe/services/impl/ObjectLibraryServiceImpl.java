@@ -81,7 +81,6 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
         List<ObjectLibraryDto> objectLibraryList = processPage.getContent().stream().map(
                 process -> {
                     ObjectLibraryDto object = processConverter.fromProcessToObjectLibraryDto(process);
-                    object.setLocation(process.getProject().getLocation());
                     object.setImpacts(processService.converterProcess(
                             processImpactValueRepository.findByProcessId(process.getId())));
                     object.setExchanges(exchangesConverter.fromExchangesToExchangesDto(
