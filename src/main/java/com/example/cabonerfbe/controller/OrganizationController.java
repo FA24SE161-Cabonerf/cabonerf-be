@@ -137,10 +137,10 @@ public class OrganizationController {
     }
 
     @DeleteMapping(API_PARAMS.OUT_ORGANIZATION)
-    public ResponseEntity<ResponseObject> outOrganization(@RequestHeader("x-user-id") UUID userId, @PathVariable UUID userOrganizationId){
-        log.info("Start outOrganization. userId: {}", userId);
+    public ResponseEntity<ResponseObject> leaveOrganization(@RequestHeader("x-user-id") UUID userId, @PathVariable UUID userOrganizationId){
+        log.info("Start leaveOrganization. userId: {}", userId);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Out organization success",organizationService.outOrganization(userId,userOrganizationId))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Leave organization success",organizationService.leaveOrganization(userId,userOrganizationId))
         );
     }
 }

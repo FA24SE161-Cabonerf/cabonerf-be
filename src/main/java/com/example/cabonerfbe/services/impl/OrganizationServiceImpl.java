@@ -512,7 +512,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public List<String> outOrganization(UUID userId, UUID userOrganizationId) {
+    public List<String> leaveOrganization(UUID userId, UUID userOrganizationId) {
         Users users = userRepository.findById(userId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
@@ -527,11 +527,7 @@ public class OrganizationServiceImpl implements OrganizationService {
             throw CustomExceptions.unauthorized("Organization Manager cannot out organization");
         }
 
-
-        uo.setStatus(false);
-        userOrganizationRepository.save(uo);
+        userOrganizationRepository.delete(uo);
         return Collections.emptyList();
     }
-
-
 }
