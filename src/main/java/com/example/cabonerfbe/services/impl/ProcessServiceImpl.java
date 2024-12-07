@@ -380,7 +380,7 @@ public class ProcessServiceImpl implements ProcessService {
         ProcessImpactValue newImpactValue = new ProcessImpactValue();
         newImpactValue.setImpactMethodCategory(oldValue.getImpactMethodCategory());
         newImpactValue.setProcess(newProcess);
-        newImpactValue.setUnitLevel(oldValue.getSystemLevel());
+        newImpactValue.setUnitLevel(oldValue.getUnitLevel());
         newImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
         newImpactValue.setOverallImpactContribution(Constants.DEFAULT_OVERALL_IMPACT_CONTRIBUTION);
         newImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
