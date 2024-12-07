@@ -419,7 +419,7 @@ public class ProcessServiceImpl implements ProcessService {
         newProcess.setName(object.getName());
         newProcess.setDescription(object.getDescription());
         newProcess.setMethodId(object.getMethodId());
-        newProcess.setLibrary(false); // Not a library, belongs to a project
+        newProcess.setLibrary(object.isLibrary());
         newProcess.setLifeCycleStage(object.getLifeCycleStage());
         newProcess.setOverAllProductFlowRequired(Constants.NEW_OVERALL_FLOW);
         newProcess.setProject(project);
