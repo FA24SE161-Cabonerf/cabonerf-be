@@ -322,7 +322,7 @@ public class ProcessServiceImpl implements ProcessService {
         Process newProcess = createLibraryProcess(process);
         processRepository.save(newProcess);
 
-        List<Exchanges> exchangesList = copyExchanges(process.getId(), newProcess, true);
+        List<Exchanges> exchangesList = copyExchanges(process.getId(), newProcess);
         exchangesRepository.saveAll(exchangesList);
 
         List<ProcessImpactValue> impactValues = copyProjectImpactValues(projectImpactValueList, newProcess);
@@ -343,11 +343,8 @@ public class ProcessServiceImpl implements ProcessService {
         return newProcess;
     }
 
-    private List<Exchanges> copyExchanges(UUID processId, Process newProcess, boolean filterProductInputs) {
-        return exchangesRepository.findAllByProcess(processId).stream()
-                .filter(exchange -> !filterProductInputs || isNonProductInput(exchange))
-                .map(exchange -> mapToNewExchange(exchange, newProcess))
-                .toList();
+    private List<Exchanges> copyExchanges(UUID processId, Process newProcess) {
+        return exchangesRepository.findProductOut(processId).stream().map(e -> mapToNewExchange(e, newProcess)).toList();
     }
 
     private boolean isNonProductInput(Exchanges exchange) {
@@ -408,7 +405,7 @@ public class ProcessServiceImpl implements ProcessService {
         Process newProcess = createProcessFromLibrary(object, project);
         processRepository.save(newProcess);
 
-        List<Exchanges> exchangesList = copyExchanges(object.getId(), newProcess, false);
+        List<Exchanges> exchangesList = copyExchanges(object.getId(), newProcess);
         exchangesRepository.saveAll(exchangesList);
 
         List<ProcessImpactValue> impactValues = copyProcessImpactValues(object.getId(), newProcess);
