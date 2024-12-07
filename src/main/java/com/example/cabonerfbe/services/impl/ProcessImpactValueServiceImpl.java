@@ -339,7 +339,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             sysBoundaryTo = boundaryMap.get("to");
         } else {
             List<Process> root = processRepository.findRootProcess(projectId);
-            if (root.size() > 1) {
+            if (root.size() != 1) {
                 throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE);
             }
             validateRootProcess(root.get(0));
