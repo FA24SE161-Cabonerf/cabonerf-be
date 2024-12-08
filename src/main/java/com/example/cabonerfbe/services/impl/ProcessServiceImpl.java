@@ -344,7 +344,10 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     private List<Exchanges> copyExchanges(UUID processId, Process newProcess) {
-        return exchangesRepository.findProductOut(processId).stream().map(e -> mapToNewExchange(e, newProcess)).toList();
+        return exchangesRepository.findAllByProcess(processId)
+                .stream()
+                .map(e -> mapToNewExchange(e, newProcess))
+                .toList();
     }
 
     private boolean isNonProductInput(Exchanges exchange) {
@@ -407,6 +410,10 @@ public class ProcessServiceImpl implements ProcessService {
 
         List<Exchanges> exchangesList = copyExchanges(object.getId(), newProcess);
         exchangesRepository.saveAll(exchangesList);
+        exchangesList = exchangesList.stream()
+                .filter(e -> e.getExchangesType().getName()
+                        .equals(Constants.PRODUCT_EXCHANGE) && !e.isInput())
+                .toList();
 
         List<ProcessImpactValue> impactValues = copyProcessImpactValues(object.getId(), newProcess);
         processImpactValueRepository.saveAll(impactValues);
