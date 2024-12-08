@@ -175,11 +175,11 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
             throw CustomExceptions.badRequest(MessageConstants.OBJECT_AND_PROJECT_ORGANIZATION_NOT_SIMILAR);
         }
 
-        UUID projectMethodId = project.getLifeCycleImpactAssessmentMethod().getId();
+//        UUID projectMethodId = project.getLifeCycleImpactAssessmentMethod().getId();
 
-        if (!object.getMethodId().equals(projectMethodId)) {
-            throw CustomExceptions.badRequest(MessageConstants.OBJECT_AND_PROJECT_METHOD_NOT_SIMILAR);
-        }
+//        if (!object.getMethodId().equals(projectMethodId)) {
+//            throw CustomExceptions.badRequest(MessageConstants.OBJECT_AND_PROJECT_METHOD_NOT_SIMILAR);
+//        }
 
         // duplicate from object lib to a new processDto
         return processService.convertObjectLibraryToProcessDto(object, project);
