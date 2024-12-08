@@ -141,7 +141,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
 
         UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(saveProcess.getProject().getOrganization().getId(), userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
-
+        saveProcess.setMethodId(project.getLifeCycleImpactAssessmentMethod().getId());
         processService.convertProcessToObjectLibrary(saveProcess, projectImpactValueList);
 
         return new ArrayList<>();
