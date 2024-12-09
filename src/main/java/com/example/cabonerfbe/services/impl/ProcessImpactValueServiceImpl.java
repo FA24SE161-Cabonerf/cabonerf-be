@@ -452,7 +452,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 .findAllByProcessIds(processIds)
                 .stream()
                 .collect(Collectors.groupingBy(
-                        x -> x.getImpactMethodCategory().getId(),
+                        x -> x.getImpactMethodCategory().getImpactCategory().getId(),
                         Collectors.mapping(ProcessImpactValue::getSystemLevel,
                                 Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))));
 
@@ -461,13 +461,14 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 ProjectImpactValue value = new ProjectImpactValue();
                 value.setProject(project);
                 value.setImpactMethodCategory(category);
-                value.setValue(processImpactSums.getOrDefault(category.getId(), BigDecimal.ZERO));
+                value.setValue(processImpactSums.getOrDefault(category.getImpactCategory().getId(), BigDecimal.ZERO));
                 return value;
             }).toList();
             projectImpactValueRepository.saveAll(newValues);
         } else {
             existingValues.forEach(value -> {
-                BigDecimal sum = processImpactSums.getOrDefault(value.getImpactMethodCategory().getId(),
+                BigDecimal sum = processImpactSums.getOrDefault(
+                        value.getImpactMethodCategory().getImpactCategory().getId(),
                         BigDecimal.ZERO);
                 value.setValue(sum);
             });
