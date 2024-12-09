@@ -262,39 +262,48 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         List<UUID> connectedExchangeIdList = new ArrayList<>();
         connectedExchangeIdList.add(exchangeId);
-        if (unitId != null || name != null) {
-            List<Connector> connectorList = connectorRepository.findConnectorToExchangeNotLibrary(exchangeId);
-            for (Connector connector : connectorList) {
+        boolean isLibraryConnected = false;
+        List<Connector> connectorList = connectorRepository.findConnectorToExchange(exchangeId);
+        if (connectorList.size() == 1) {
+            Connector connector = connectorList.get(0);
+            // validate if connected to an object library process => cannot change its unit group
+            if (connector.getEndProcess().isLibrary() || connector.getStartProcess().isLibrary()) {
+                isLibraryConnected = true;
+            }
+        }
 
-                connectedExchangeIdList.add(connector.getStartExchanges().getId().equals(exchangeId)
-                        ? connector.getEndExchanges().getId()
-                        : connector.getStartExchanges().getId());
-            }
-            if (unitId != null && !unitId.equals(exchange.getUnit().getId())) {
-                Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
-                        () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
-                );
-                UnitGroup initialUnitGroup = exchange.getUnit().getUnitGroup();
-                if (!unit.getUnitGroup().equals(initialUnitGroup)) {
-                    for (UUID connectorId : connectedExchangeIdList) {
-                        Exchanges connectedExchange = exchangesRepository.findByIdAndStatus(connectorId, Constants.STATUS_TRUE).orElseThrow(
-                                () -> CustomExceptions.badRequest(MessageConstants.NO_EXCHANGE_FOUND)
-                        );
-                        connectedExchange.setUnit(unit);
-                        exchangesRepository.save(connectedExchange);
-                    }
-                } else {
-                    exchange.setUnit(unit);
+        for (Connector connector : connectorList) {
+            connectedExchangeIdList.add(connector.getStartExchanges().getId().equals(exchangeId)
+                    ? connector.getEndExchanges().getId()
+                    : connector.getStartExchanges().getId());
+        }
+        if (unitId != null && !unitId.equals(exchange.getUnit().getId())) {
+            Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
+                    () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
+            );
+            UnitGroup initialUnitGroup = exchange.getUnit().getUnitGroup();
+            if (!unit.getUnitGroup().equals(initialUnitGroup)) {
+                if (isLibraryConnected) {
+                    throw CustomExceptions.badRequest(MessageConstants.CANNOT_UPDATE_UNIT_GROUP_OF_LIBRARY_CONNECTED_PROCESS);
                 }
-            }
-            if (name != null && !name.equals(exchange.getName())) {
                 for (UUID connectorId : connectedExchangeIdList) {
                     Exchanges connectedExchange = exchangesRepository.findByIdAndStatus(connectorId, Constants.STATUS_TRUE).orElseThrow(
                             () -> CustomExceptions.badRequest(MessageConstants.NO_EXCHANGE_FOUND)
                     );
-                    connectedExchange.setName(name);
+                    connectedExchange.setUnit(unit);
                     exchangesRepository.save(connectedExchange);
                 }
+            } else {
+                exchange.setUnit(unit);
+            }
+        }
+        if (!name.equals(exchange.getName())) {
+            for (UUID connectorId : connectedExchangeIdList) {
+                Exchanges connectedExchange = exchangesRepository.findByIdAndStatus(connectorId, Constants.STATUS_TRUE).orElseThrow(
+                        () -> CustomExceptions.badRequest(MessageConstants.NO_EXCHANGE_FOUND)
+                );
+                connectedExchange.setName(name);
+                exchangesRepository.save(connectedExchange);
             }
         }
 
