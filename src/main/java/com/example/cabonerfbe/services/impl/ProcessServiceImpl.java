@@ -15,55 +15,63 @@ import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
+import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
 import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.MessagePublisher;
 import com.example.cabonerfbe.services.ProcessService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class ProcessServiceImpl implements ProcessService {
 
+    private final ProcessRepository processRepository;
+    private final ProcessImpactValueRepository processImpactValueRepository;
+    private final LifeCycleStageRepository lifeCycleStageRepository;
+    private final ProjectRepository projectRepository;
+    private final ProcessConverter processConverter;
+    private final ExchangesRepository exchangesRepository;
+    private final ExchangesConverter exchangesConverter;
+    private final LifeCycleImpactAssessmentMethodConverter methodConverter;
+    private final ImpactCategoryConverter categoryConverter;
+    private final MessagePublisher messagePublisher;
+    private final ConnectorServiceImpl connectorService;
+    private final ConnectorRepository connectorRepository;
+    private final UnitServiceImpl unitService;
+    private final UnitRepository unitRepository;
+    private final ImpactMethodCategoryRepository impactMethodCategoryRepository;
+    private final ProjectImpactValueRepository projectImpactValueRepository;
+
     @Autowired
-    ProcessRepository processRepository;
-    @Autowired
-    ProcessImpactValueRepository processImpactValueRepository;
-    @Autowired
-    LifeCycleStageRepository lifeCycleStageRepository;
-    @Autowired
-    ProjectRepository projectRepository;
-    @Autowired
-    ProcessConverter processConverter;
-    @Autowired
-    private ExchangesRepository exchangesRepository;
-    @Autowired
-    private ExchangesConverter exchangesConverter;
-    @Autowired
-    private LifeCycleImpactAssessmentMethodConverter methodConverter;
-    @Autowired
-    private ImpactCategoryConverter categoryConverter;
-    @Autowired
-    private MessagePublisher messagePublisher;
-    @Autowired
-    private ConnectorServiceImpl connectorService;
-    @Autowired
-    private ConnectorRepository connectorRepository;
-    @Autowired
-    private UnitServiceImpl unitService;
-    @Autowired
-    private UnitRepository unitRepository;
+    public ProcessServiceImpl(ProcessConverter processConverter, ProcessRepository processRepository, ProcessImpactValueRepository processImpactValueRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, ExchangesRepository exchangesRepository, ConnectorRepository connectorRepository, ExchangesConverter exchangesConverter, UnitServiceImpl unitService, LifeCycleImpactAssessmentMethodConverter methodConverter, UnitRepository unitRepository, ImpactCategoryConverter categoryConverter, MessagePublisher messagePublisher, ConnectorServiceImpl connectorService, ImpactMethodCategoryRepository impactMethodCategoryRepository, ProjectImpactValueRepository projectImpactValueRepository) {
+        this.processConverter = processConverter;
+        this.processRepository = processRepository;
+        this.processImpactValueRepository = processImpactValueRepository;
+        this.lifeCycleStageRepository = lifeCycleStageRepository;
+        this.projectRepository = projectRepository;
+        this.exchangesRepository = exchangesRepository;
+        this.connectorRepository = connectorRepository;
+        this.exchangesConverter = exchangesConverter;
+        this.unitService = unitService;
+        this.methodConverter = methodConverter;
+        this.unitRepository = unitRepository;
+        this.categoryConverter = categoryConverter;
+        this.messagePublisher = messagePublisher;
+        this.connectorService = connectorService;
+        this.impactMethodCategoryRepository = impactMethodCategoryRepository;
+        this.projectImpactValueRepository = projectImpactValueRepository;
+    }
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
@@ -73,17 +81,31 @@ public class ProcessServiceImpl implements ProcessService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND, Collections.EMPTY_LIST)
         );
 
+
         Project project = projectRepository.findByIdAndStatusTrue(request.getProjectId()).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST)
         );
+
+        // limit 20 processes in 1 project
+        if (processRepository.countAllByProject_Id(project.getId())) {
+            throw CustomExceptions.badRequest(MessageConstants.MAX_PROCESS_EXCEEDED);
+        }
 
         Process process = new Process();
         process.setName(request.getName());
         process.setLifeCycleStage(lifeCycleStage);
         process.setProject(project);
+        process.setMethodId(project.getLifeCycleImpactAssessmentMethod().getId());
         process.setOverAllProductFlowRequired(Constants.NEW_OVERALL_FLOW);
+        process.setLibrary(false);
         process = processRepository.save(process);
 
+        System.out.println("process id nè: " + process.getId());
+
+        Process p = processRepository.findByProcessId(process.getId()).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
+
+        System.out.println("lấy lúc tạo nè: " + p);
         // generate process impact value
         messagePublisher.publishCreateProcessImpactValue(RabbitMQConfig.CREATE_PROCESS_EXCHANGE, RabbitMQConfig.CREATE_PROCESS_ROUTING_KEY, process.getId(), project.getLifeCycleImpactAssessmentMethod().getId());
 
@@ -91,6 +113,39 @@ public class ProcessServiceImpl implements ProcessService {
         processDto.setImpacts(new ArrayList<>());
         processDto.setExchanges(new ArrayList<>());
         return processDto;
+    }
+
+    @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
+    public void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
+        System.out.println("dô tạo list impact nè với process id nè: " + request.getProcessId());
+        handleImpactValueCreation(request);
+    }
+
+    public void handleImpactValueCreation(CreateProcessImpactValueRequest request) {
+        UUID processId = request.getProcessId();
+        UUID methodId = request.getMethodId();
+        Process process = processRepository.findByProcessId(processId).orElseThrow(
+                () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
+        List<ImpactMethodCategory> methodCategoryList = impactMethodCategoryRepository.findByMethod(methodId);
+        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
+        for (ImpactMethodCategory methodCategory : methodCategoryList) {
+            ProcessImpactValue processImpactValue = createNewProcessImpactValue(process, methodCategory);
+            processImpactValueList.add(processImpactValue);
+        }
+        processImpactValueRepository.saveAll(processImpactValueList);
+    }
+
+    @Override
+    public ProcessImpactValue createNewProcessImpactValue(Process process, ImpactMethodCategory methodCategory) {
+        ProcessImpactValue processImpactValue = new ProcessImpactValue();
+        processImpactValue.setProcess(process);
+        processImpactValue.setImpactMethodCategory(methodCategory);
+        processImpactValue.setOverallImpactContribution(Constants.DEFAULT_OVERALL_IMPACT_CONTRIBUTION);
+        processImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
+        processImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
+        processImpactValue.setUnitLevel(Constants.BASE_UNIT_LEVEL);
+        processImpactValue.setVersion(Constants.VERSION_ONE);
+        return processImpactValue;
     }
 
     @Override
@@ -130,6 +185,10 @@ public class ProcessServiceImpl implements ProcessService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND, Collections.EMPTY_LIST)
         );
 
+        if (process.isLibrary()) {
+            throw CustomExceptions.badRequest(MessageConstants.CANNOT_EDIT_OBJECT_LIBRARY_PROCESS);
+        }
+
         LifeCycleStage lifeCycleStage = lifeCycleStageRepository.findByIdAndStatus(request.getLifeCycleStagesId(), Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND, Collections.EMPTY_LIST)
         );
@@ -154,6 +213,7 @@ public class ProcessServiceImpl implements ProcessService {
         return new DeleteProcessResponse(process.getId());
     }
 
+    @Override
     public List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list) {
         return list.stream()
                 .map(x -> {
@@ -177,6 +237,7 @@ public class ProcessServiceImpl implements ProcessService {
         messagePublisher.publishCreateProcess(RabbitMQConfig.CREATED_PROCESS_EXCHANGE, RabbitMQConfig.CREATED_PROCESS_ROUTING_KEY, processDto);
     }
 
+    @Override
     public ProcessNodeDto constructListProcessNodeDto(UUID projectId) {
         log.info("constructing contribution breakdown data");
 
@@ -256,4 +317,182 @@ public class ProcessServiceImpl implements ProcessService {
         return baseNet;
     }
 
+    @Override
+    public void convertProcessToObjectLibrary(Process process, List<ProjectImpactValue> projectImpactValueList) {
+        Process newProcess = createLibraryProcess(process);
+        processRepository.save(newProcess);
+
+        List<Exchanges> exchangesList = copyExchanges(process.getId(), newProcess);
+        exchangesRepository.saveAll(exchangesList);
+
+        List<ProcessImpactValue> impactValues = copyProjectImpactValues(projectImpactValueList, newProcess);
+        processImpactValueRepository.saveAll(impactValues);
+    }
+
+    private Process createLibraryProcess(Process process) {
+        Process newProcess = new Process();
+        newProcess.setLibrary(true);
+        newProcess.setName(process.getName());
+        newProcess.setDescription(process.getDescription());
+        newProcess.setProject(null); // Set to library, no project association
+        newProcess.setMethodId(process.getMethodId());
+        newProcess.setSystemBoundary(process.getProject().getSystemBoundary());
+        newProcess.setLifeCycleStage(process.getLifeCycleStage());
+        newProcess.setOrganization(process.getProject().getOrganization());
+        newProcess.setOverAllProductFlowRequired(Constants.DEFAULT_OVERALL_PRODUCT_FLOW_REQUIRED);
+        return newProcess;
+    }
+
+    private List<Exchanges> copyExchanges(UUID processId, Process newProcess) {
+        return exchangesRepository.findAllByProcess(processId)
+                .stream()
+                .map(e -> mapToNewExchange(e, newProcess))
+                .toList();
+    }
+
+    private boolean isNonProductInput(Exchanges exchange) {
+        return !(Constants.PRODUCT_EXCHANGE.equals(exchange.getExchangesType().getName()) && exchange.isInput());
+    }
+
+    private Exchanges mapToNewExchange(Exchanges oldExchange, Process newProcess) {
+        Exchanges newExchange = new Exchanges();
+        newExchange.setName(oldExchange.getName());
+        newExchange.setDescription(oldExchange.getDescription());
+        newExchange.setValue(oldExchange.getValue());
+        newExchange.setExchangesType(oldExchange.getExchangesType());
+        newExchange.setProcess(newProcess);
+        newExchange.setUnit(oldExchange.getUnit());
+        newExchange.setInput(oldExchange.isInput());
+        newExchange.setEmissionSubstance(oldExchange.getEmissionSubstance());
+        return newExchange;
+    }
+
+    private List<ProcessImpactValue> copyProcessImpactValues(UUID processId, Process newProcess) {
+        return processImpactValueRepository.findByProcessId(processId).stream()
+                .map(oldValue -> mapToNewProcessImpactValue(oldValue, newProcess))
+                .toList();
+    }
+
+    private List<ProcessImpactValue> copyProjectImpactValues(List<ProjectImpactValue> projectImpactValueList, Process newProcess) {
+        return projectImpactValueList.stream()
+                .map(projectValue -> mapToNewProcessImpactValue(projectValue, newProcess))
+                .toList();
+    }
+
+    private ProcessImpactValue mapToNewProcessImpactValue(ProcessImpactValue oldValue, Process newProcess) {
+        ProcessImpactValue newImpactValue = new ProcessImpactValue();
+        newImpactValue.setImpactMethodCategory(oldValue.getImpactMethodCategory());
+        newImpactValue.setProcess(newProcess);
+        newImpactValue.setUnitLevel(oldValue.getUnitLevel());
+        newImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
+        newImpactValue.setOverallImpactContribution(Constants.DEFAULT_OVERALL_IMPACT_CONTRIBUTION);
+        newImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
+        return newImpactValue;
+    }
+
+    private ProcessImpactValue mapToNewProcessImpactValue(ProjectImpactValue projectImpactValue, Process newProcess) {
+        ProcessImpactValue newImpactValue = new ProcessImpactValue();
+        newImpactValue.setImpactMethodCategory(projectImpactValue.getImpactMethodCategory());
+        newImpactValue.setProcess(newProcess);
+        newImpactValue.setUnitLevel(projectImpactValue.getValue());
+        newImpactValue.setSystemLevel(Constants.DEFAULT_SYSTEM_LEVEL);
+        newImpactValue.setOverallImpactContribution(Constants.DEFAULT_OVERALL_IMPACT_CONTRIBUTION);
+        newImpactValue.setPreviousProcessValue(Constants.DEFAULT_PREVIOUS_PROCESS_VALUE);
+        return newImpactValue;
+    }
+
+
+    @Transactional
+    @Override
+    public ProcessDto convertObjectLibraryToProcessDto(Process object, Project project) {
+        Process newProcess = createProcessFromLibrary(object, project);
+        processRepository.save(newProcess);
+
+        List<Exchanges> exchangesList = copyExchanges(object.getId(), newProcess);
+        exchangesRepository.saveAll(exchangesList);
+        exchangesList = exchangesList.stream()
+                .filter(e -> e.getExchangesType().getName()
+                        .equals(Constants.PRODUCT_EXCHANGE) && !e.isInput())
+                .toList();
+
+        List<ProcessImpactValue> impactValues = copyProcessImpactValues(object.getId(), newProcess);
+        processImpactValueRepository.saveAll(impactValues);
+
+        return buildProcessDto(newProcess, exchangesList, impactValues);
+    }
+
+    private Process createProcessFromLibrary(Process object, Project project) {
+        Process newProcess = new Process();
+        newProcess.setName(object.getName());
+        newProcess.setDescription(object.getDescription());
+        newProcess.setMethodId(object.getMethodId());
+        newProcess.setLibrary(object.isLibrary());
+        newProcess.setLifeCycleStage(object.getLifeCycleStage());
+        newProcess.setOverAllProductFlowRequired(Constants.NEW_OVERALL_FLOW);
+        newProcess.setProject(project);
+        newProcess.setOrganization(project.getOrganization());
+        return newProcess;
+    }
+
+    private ProcessDto buildProcessDto(Process newProcess, List<Exchanges> exchangesList, List<ProcessImpactValue> impactValues) {
+        ProcessDto processDto = processConverter.fromProcessToProcessDto(newProcess);
+        processDto.setExchanges(exchangesConverter.fromExchangesToExchangesDto(exchangesList));
+        processDto.setImpacts(converterProcess(impactValues));
+        return processDto;
+    }
+
+
+    @Override
+    public ProcessNodeDto calculationFast(UUID projectId) {
+        ProcessNodeDto dto = constructListProcessNodeDto(projectId);
+        Map<UUID, BigDecimal> totalNet = aggregateNet(dto);
+
+        List<ProcessImpactValue> updatedImpactValues = totalNet.keySet().stream()
+                .flatMap(processId -> processImpactValueRepository.findByProcessId(processId).stream()
+                        .peek(x -> x.setSystemLevel(totalNet.get(processId).multiply(x.getUnitLevel()))))
+                .toList();
+        processImpactValueRepository.saveAll(updatedImpactValues);
+
+        totalNet.forEach((processId, net) ->
+                processRepository.findByProcessId(processId).ifPresent(data -> {
+                    data.setOverAllProductFlowRequired(net);
+                    processRepository.save(data);
+                })
+        );
+
+        return dto;
+    }
+
+    public List<ProcessImpactValue> calculateToDesignatedProcess(ProcessNodeDto node) {
+        Map<UUID, BigDecimal> totalNet = aggregateNet(node);
+
+        List<ProcessImpactValue> updatedImpactValues = totalNet.keySet().stream()
+                .flatMap(processId -> processImpactValueRepository.findByProcessId(processId).stream()
+                        .peek(x -> x.setSystemLevel(totalNet.get(processId).multiply(x.getUnitLevel()))))
+                .toList();
+
+//        processImpactValueRepository.saveAll(updatedImpactValues);
+
+        return updatedImpactValues.stream().filter(x -> x.getProcessId().equals(node.getProcessId())).collect(Collectors.toList());
+    }
+
+
+    private static Map<UUID, BigDecimal> aggregateNet(ProcessNodeDto root) {
+        Map<UUID, BigDecimal> result = new HashMap<>();
+        aggregateNetRecursive(root, result);
+        return result;
+    }
+
+    private static void aggregateNetRecursive(ProcessNodeDto node, Map<UUID, BigDecimal> result) {
+        if (node == null) return;
+
+        result.put(
+                node.getProcessId(),
+                result.getOrDefault(node.getProcessId(), BigDecimal.ZERO).add(node.getNet())
+        );
+
+        for (ProcessNodeDto subProcess : node.getSubProcesses()) {
+            aggregateNetRecursive(subProcess, result);
+        }
+    }
 }

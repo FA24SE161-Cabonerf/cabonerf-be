@@ -491,18 +491,43 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public InviteUserOrganizationDto removeMember(UUID userId, UUID userOrganizationId) {
-//        UserOrganization organizationManager = userOrganizationRepository.findByUserAndOrganization(request.getOrganizationId(), userId)
-//                .orElseThrow(() -> CustomExceptions.unauthorized("You do not belong to this organization."));
-//
-//        if(!Objects.equals(organizationManager.getRole().getName(), "Organization Manager")){
-//            throw CustomExceptions.unauthorized("Your role not support this action");
-//        }
         UserOrganization uo = userOrganizationRepository.findById(userOrganizationId)
                 .orElseThrow(() -> CustomExceptions.notFound("Member do not belong to this organization"));
 
+        UserOrganization organizationManager = userOrganizationRepository.findByUserAndOrganization(uo.getOrganization().getId(), userId)
+                .orElseThrow(() -> CustomExceptions.unauthorized("You do not belong to this organization."));
+
+        if(!Objects.equals(organizationManager.getRole().getName(), Constants.ORGANIZATION_MANAGER)){
+            throw CustomExceptions.unauthorized("Your role not support this action");
+        }
+
+
+        if(Objects.equals(uo.getRole().getName(), Constants.ORGANIZATION_MANAGER)){
+            throw CustomExceptions.unauthorized("Organization Manager cannot out organization");
+        }
+
         uo.setStatus(false);
+        userOrganizationRepository.save(uo);
         return uoConverter.modelToDto(uo);
     }
 
+    @Override
+    public List<String> leaveOrganization(UUID userId, UUID userOrganizationId) {
+        Users users = userRepository.findById(userId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
+        UserOrganization uo = userOrganizationRepository.findById(userOrganizationId)
+                .orElseThrow(() -> CustomExceptions.notFound("Member do not belong to this organization"));
+
+        if(!uo.getUser().getId().equals(userId)){
+            throw CustomExceptions.unauthorized("User not equals to out organization");
+        }
+
+        if(Objects.equals(uo.getRole().getName(), Constants.ORGANIZATION_MANAGER)){
+            throw CustomExceptions.unauthorized("Organization Manager cannot out organization");
+        }
+
+        userOrganizationRepository.delete(uo);
+        return Collections.emptyList();
+    }
 }

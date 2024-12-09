@@ -51,6 +51,11 @@ public class MessageConstants {
     public static final String GET_LIFE_STAGE_BY_ID_SUCCESS = "Get life cycle stage by success.";
     public static final String CHANGE_PASSWORD_SUCCESS = "Change password success.";
     public static final String UPDATE_USER_PROFILE_SUCCESS = "Update user profile success.";
+    public static final String SAVE_TO_OBJECT_LIBRARY_SUCCESS = "Save process to object library success.";
+    public static final String SEARCH_OBJECT_LIBRARY_OF_ORGANIZATION_SUCCESS = "Search object library of organization success.";
+    public static final String REMOVE_FROM_OBJECT_LIBRARY_SUCCESS = "Remove process from object library success.";
+    public static final String ADD_FROM_LIBRARY_TO_PROJECT_SUCCESS = "Add process from object library to project success.";
+    public static final String GET_ALL_SYSTEM_BOUNDARY_SUCCESS = "Get all system boundary success.";
 
 
 
@@ -129,8 +134,19 @@ public class MessageConstants {
     public static final String INVALID_IMAGE = "The image is not in the right format.";
     public static final String EMAIL_IS_USED_FOR_OTHER_ORGANIZATION = "Email is already used for other organization.";
     public static final String FAILED_TO_UPLOAD_CONTRACT = "Failed to upload contract. Please check again.";
+    public static final String MAX_PROCESS_EXCEEDED = "Maximum number of processes in one project is 20.";
+
+    public static final String PROCESS_NOT_FOUND_IN_OBJECT_LIBRARY = "Cannot find the process in object library.";
+    public static final String PROCESS_ALREADY_IN_OBJECT_LIBRARY = "Process is already in object library.";
+    public static final String OBJECT_AND_PROJECT_METHOD_NOT_SIMILAR = "The process and project methods are not the same.";
+    public static final String OBJECT_AND_PROJECT_ORGANIZATION_NOT_SIMILAR = "The process and project organizations are not the same.";
+    public static final String CANNOT_EDIT_OBJECT_LIBRARY_PROCESS = "Cannot edit the process in object library.";
+
     public static final String NO_AUTHORITY = "User doesn't have permission to do this action.";
     public static final String ORGANIZATION_DOES_NOT_TO_INDUSTRY_CODE = "Organization doesn't have industry code.";
+    public static final String CANNOT_CREATE_CONNECTOR_TO_OBJECT_LIBRARY_PROCESS = "Cannot create connector to object library.";
+    public static final String CALCULATION_REQUIRED_TO_SAVE_OBJECT_LIBRARY = "Project is not calculated. Cannot save to object library.";
+
 
     // CALCULATION ERROR MSG
     public static final String FAILED_TO_PERFORM_CALCULATION = "Failed to perform calculation. ";
@@ -142,5 +158,6 @@ public class MessageConstants {
     public static final String MUST_BE_ONLY_ONE_FINAL_PROCESS = FAILED_TO_PERFORM_CALCULATION + "- There must be only one final process.";
     public static final String PROCESS_WITH_NO_CONNECTOR_ERROR = FAILED_TO_PERFORM_CALCULATION + "- There must be connectors between processes.";
     public static final String ELEMENTARY_CANNOT_BE_EMPTY = FAILED_TO_PERFORM_CALCULATION + "- Elementary exchanges are required.";
+    public static final String PROCESS_NOT_SAME_METHOD_WITH_PROJECT = FAILED_TO_PERFORM_CALCULATION + "- Has process using different method than project.";
 
 }

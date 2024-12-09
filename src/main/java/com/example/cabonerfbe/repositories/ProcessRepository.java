@@ -1,6 +1,8 @@
 package com.example.cabonerfbe.repositories;
 
 import com.example.cabonerfbe.models.Process;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -41,4 +43,19 @@ public interface ProcessRepository extends JpaRepository<Process, UUID> {
             "AND p.id NOT IN (SELECT c.startProcess.id FROM Connector c WHERE c.startProcess.project.id = :projectId AND c.status = true)" +
             "AND p.status = true")
     List<Process> findRootProcess(@Param("projectId") UUID projectId);
+
+    @Query("SELECT p FROM Process p " +
+            "WHERE p.organization.id = :organizationId AND p.status = true AND p.project is NULL " +
+            "AND (:systemBoundaryId IS NULL OR p.systemBoundary.id = :systemBoundaryId) " +
+            "AND (COALESCE(:keyword, '') = '' OR p.name ILIKE CONCAT('%', :keyword, '%'))")
+    Page<Process> findObjectLibrary(@Param("organizationId") UUID organizationId, @Param("systemBoundaryId") UUID systemBoundaryId, @Param("keyword") String keyword, Pageable pageable);
+
+    @Query("select count(*)>20 from Process p where p.project.id = ?1 and p.status = true")
+    boolean countAllByProject_Id(UUID id);
+
+    @Query("SELECT p FROM Process p WHERE p.id = :id AND p.status = true AND p.library = :is_library")
+    Optional<Process> findByProcessIdAndLibrary(@Param("id") UUID id, @Param("is_library") boolean library);
+
+    @Query("SELECT p FROM Process p WHERE p.library = true AND p.status = true")
+    List<Process> findAllObjectLibrary(UUID projectId);
 }

@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.converter;
 
+import com.example.cabonerfbe.dto.ObjectLibraryDto;
 import com.example.cabonerfbe.dto.ProcessDetailDto;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.models.Process;
@@ -23,4 +24,7 @@ public interface ProcessConverter {
 
     List<ProcessDto> fromListToListDto(List<Process> process);
 
+    @Mapping(target = "impacts", ignore = true)
+    @Mapping(target = "exchanges", ignore = true)
+    ObjectLibraryDto fromProcessToObjectLibraryDto(Process process);
 }

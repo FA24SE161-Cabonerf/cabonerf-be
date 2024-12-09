@@ -32,6 +32,10 @@ public class ProcessImpactValue extends Base {
     @Column(precision = 100, scale = 60)
     private BigDecimal previousProcessValue;
 
+    @Version
+    @Column
+    private int version = 1;
+
     public UUID getProcessId() {
         return process != null ? process.getId() : null;
     }

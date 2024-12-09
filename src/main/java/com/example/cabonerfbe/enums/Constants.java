@@ -27,6 +27,7 @@ public class Constants {
     public static final BigDecimal DEFAULT_OVERALL_IMPACT_CONTRIBUTION = BigDecimal.ZERO;
     public static final BigDecimal DEFAULT_SYSTEM_LEVEL = BigDecimal.ZERO;
     public static final BigDecimal DEFAULT_PREVIOUS_PROCESS_VALUE = BigDecimal.ZERO;
+    public static final BigDecimal DEFAULT_OVERALL_PRODUCT_FLOW_REQUIRED = BigDecimal.ZERO;
     public static final BigDecimal BASE_UNIT_LEVEL = BigDecimal.ZERO;
 
     public static final int BIG_DECIMAL_DEFAULT_SCALE = 60;
@@ -40,6 +41,13 @@ public class Constants {
     public static final String ORGANIZATION_MANAGER = "Organization Manager";
 
     public static final String VERIFY_STATUS_PENDING = "Pending";
+
+    public static final String USER_ID_HEADER = "x-user-id";
+
+    public static final boolean IS_LIB_TRUE = true;
+    public static final boolean IS_LIB_FALSE = false;
+    public static final int VERSION_ONE = 1;
+
 
     public static final String BOUNDARY_GATE = "Gate";
     public static final String BOUNDARY_CRADLE = "Cradle";

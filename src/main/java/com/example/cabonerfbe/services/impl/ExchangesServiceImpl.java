@@ -18,6 +18,7 @@ import com.example.cabonerfbe.response.ImpactExchangeResponse;
 import com.example.cabonerfbe.response.SearchElementaryResponse;
 import com.example.cabonerfbe.response.UpdateProductExchangeResponse;
 import com.example.cabonerfbe.services.ExchangesService;
+import com.example.cabonerfbe.services.ProcessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -69,7 +70,7 @@ public class ExchangesServiceImpl implements ExchangesService {
     @Autowired
     private ProcessImpactValueConverter pivConverter;
     @Autowired
-    private ProcessServiceImpl processService;
+    private ProcessService processService;
     @Autowired
     private UnitServiceImpl unitService;
     @Autowired
@@ -160,9 +161,11 @@ public class ExchangesServiceImpl implements ExchangesService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
 
+        validateObjectLibrary(exchange.getProcess());
+
         BigDecimal initialValue = exchange.getValue();
 
-        exchange.setValue(DEFAULT_VALUE);
+        exchange.setValue(BigDecimal.ZERO);
         exchange.setStatus(Constants.STATUS_FALSE);
 
         exchangesRepository.save(exchange);
@@ -180,6 +183,8 @@ public class ExchangesServiceImpl implements ExchangesService {
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
+
+        validateObjectLibrary(exchange.getProcess());
 
         exchange.setValue(DEFAULT_VALUE);
         exchange.setStatus(Constants.STATUS_FALSE);
@@ -207,9 +212,7 @@ public class ExchangesServiceImpl implements ExchangesService {
             throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_AND_PROCESS_DIFFERENT);
         }
 
-        Process process = processRepository.findByProcessId(processId).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
-        );
+        validateObjectLibrary(exchange.getProcess());
 
         BigDecimal initialValue = exchange.getValue();
         System.out.println("initial value before converted to " + exchange.getUnit().getName() + " unit: " + initialValue);
@@ -234,7 +237,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         exchangesRepository.save(exchange);
 
-        processImpactValueService.computeProcessImpactValueSingleExchange(process, exchange, initialValue);
+        processImpactValueService.computeProcessImpactValueSingleExchange(exchange.getProcess(), exchange, initialValue);
 
         return impactExchangeResponseBuilder(exchange);
     }
@@ -253,6 +256,8 @@ public class ExchangesServiceImpl implements ExchangesService {
         if (!exchange.getProcessId().equals(processId)) {
             throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_AND_PROCESS_DIFFERENT);
         }
+
+        validateObjectLibrary(exchange.getProcess());
 
         List<UUID> connectedExchangeIdList = new ArrayList<>();
         connectedExchangeIdList.add(exchangeId);
@@ -309,13 +314,21 @@ public class ExchangesServiceImpl implements ExchangesService {
     }
 
     private Process findProcess(UUID id) {
-        return processRepository.findByProcessId(id)
+        Process process = processRepository.findByProcessId(id)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND));
+        validateObjectLibrary(process);
+        return process;
     }
 
     private void validateMethod(UUID methodId) {
         methodRepository.findByIdAndStatus(methodId, true)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND, Collections.EMPTY_LIST));
+    }
+
+    private void validateObjectLibrary(Process process) {
+        if (process.isLibrary()) {
+            throw CustomExceptions.badRequest(MessageConstants.CANNOT_EDIT_OBJECT_LIBRARY_PROCESS);
+        }
     }
 
     private Exchanges createNewExchange(EmissionSubstance emissionSubstance, boolean isInput,

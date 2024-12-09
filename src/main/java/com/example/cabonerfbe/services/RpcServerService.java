@@ -3,6 +3,7 @@ package com.example.cabonerfbe.services;
 import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.exception.CustomExceptions;
+import com.example.cabonerfbe.request.AddObjectLibraryRequest;
 import com.example.cabonerfbe.request.CreateConnectorRequest;
 import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.response.CreateConnectorResponse;
@@ -32,13 +33,15 @@ public class RpcServerService {
     private final ProcessServiceImpl processService;
     private final ConnectorServiceImpl connectorService;
     private final ObjectMapper objectMapper;
+    private final ObjectLibraryService objectLibraryService;
 
     @Autowired
-    public RpcServerService(RabbitTemplate rabbitTemplate, ProcessServiceImpl processService, ConnectorServiceImpl connectorService, ObjectMapper objectMapper) {
+    public RpcServerService(RabbitTemplate rabbitTemplate, ProcessServiceImpl processService, ConnectorServiceImpl connectorService, ObjectMapper objectMapper, ObjectLibraryService objectLibraryService) {
         this.rabbitTemplate = rabbitTemplate;
         this.processService = processService;
         this.connectorService = connectorService;
         this.objectMapper = objectMapper;
+        this.objectLibraryService = objectLibraryService;
     }
 
     @RabbitListener(queues = RabbitMQConfig.RPC_QUEUE)
@@ -73,6 +76,13 @@ public class RpcServerService {
                     sendUnknownTaskResponse(replyTo, correlationId, taskType, queueType);
                 }
             }
+            case "addObjectLibrary" -> {
+                if (PROCESS_QUEUE_TYPE.equals(queueType)) {
+                    handleAddObjectLibrary(requestMessage, correlationId, replyTo);
+                } else {
+                    sendUnknownTaskResponse(replyTo, correlationId, taskType, queueType);
+                }
+            }
             case "createConnector" -> {
                 if (CONNECTOR_QUEUE_TYPE.equals(queueType)) {
                     handleCreateConnector(requestMessage, correlationId, replyTo);
@@ -88,6 +98,18 @@ public class RpcServerService {
                 }
             }
             default -> sendUnknownTaskResponse(replyTo, correlationId, taskType, queueType);
+        }
+    }
+
+    private void handleAddObjectLibrary(String requestMessage, String correlationId, String replyTo) {
+        try {
+            AddObjectLibraryRequest request = extractRequest(requestMessage, AddObjectLibraryRequest.class);
+            ProcessDto processDto = objectLibraryService.addFromObjectLibraryToProject(request);
+            sendResponse(replyTo, correlationId, objectMapper.writeValueAsString(processDto), true);
+        } catch (CustomExceptions e) { // Catch the custom exception
+            logAndSendCustomError(replyTo, correlationId, "Business error: " + e.getError().getMessage(), e);
+        } catch (Exception e) {
+            logAndSendError(replyTo, correlationId, "Error processing create process request", e);
         }
     }
 
