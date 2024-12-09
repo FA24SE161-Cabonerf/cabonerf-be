@@ -346,6 +346,7 @@ public class ProcessServiceImpl implements ProcessService {
     private List<Exchanges> copyExchanges(UUID processId, Process newProcess) {
         return exchangesRepository.findAllByProcess(processId)
                 .stream()
+                .filter(this::isNonProductInput)
                 .map(e -> mapToNewExchange(e, newProcess))
                 .toList();
     }
