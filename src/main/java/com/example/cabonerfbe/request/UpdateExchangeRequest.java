@@ -16,7 +16,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateExchangeRequest {
-    @NotBlank
     private String name;
     @Min(value = 0)
     private BigDecimal value;

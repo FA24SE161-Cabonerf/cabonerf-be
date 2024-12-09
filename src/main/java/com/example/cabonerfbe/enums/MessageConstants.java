@@ -148,6 +148,7 @@ public class MessageConstants {
     public static final String CANNOT_CREATE_CONNECTOR_TO_OBJECT_LIBRARY_PROCESS = "Cannot create connector to object library.";
     public static final String CALCULATION_REQUIRED_TO_SAVE_OBJECT_LIBRARY = "Project is not calculated. Cannot save to object library.";
     public static final String USER_IS_NOT_OWNER_OF_PROJECT = "User is not the owner of the project.";
+    public static final String PRODUCT_NAME_CANNOT_BE_BLANK = "Product exchange name cannot be blank.";
 
 
     // CALCULATION ERROR MSG

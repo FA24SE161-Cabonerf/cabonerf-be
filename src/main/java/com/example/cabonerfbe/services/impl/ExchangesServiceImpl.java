@@ -28,10 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -249,6 +246,9 @@ public class ExchangesServiceImpl implements ExchangesService {
         UUID processId = request.getProcessId();
         BigDecimal value = request.getValue();
 
+        if (name.isBlank()) {
+            throw CustomExceptions.validator(MessageConstants.PRODUCT_NAME_CANNOT_BE_BLANK, Map.of("name", MessageConstants.PRODUCT_NAME_CANNOT_BE_BLANK));
+        }
 
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
