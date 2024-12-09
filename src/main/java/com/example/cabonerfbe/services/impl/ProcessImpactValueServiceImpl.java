@@ -452,7 +452,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
                 .findAllByProcessIds(processIds)
                 .stream()
                 .collect(Collectors.groupingBy(
-                        x -> x.getImpactMethodCategory().getImpactCategory().getId(),
+                        x -> x.getImpactMethodCategory().getId(),
                         Collectors.mapping(ProcessImpactValue::getSystemLevel,
                                 Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))));
 
