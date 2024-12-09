@@ -249,6 +249,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         UUID processId = request.getProcessId();
         BigDecimal value = request.getValue();
 
+
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
@@ -262,8 +263,9 @@ public class ExchangesServiceImpl implements ExchangesService {
         List<UUID> connectedExchangeIdList = new ArrayList<>();
         connectedExchangeIdList.add(exchangeId);
         if (unitId != null || name != null) {
-            List<Connector> connectorList = connectorRepository.findConnectorToExchange(exchangeId);
+            List<Connector> connectorList = connectorRepository.findConnectorToExchangeNotLibrary(exchangeId);
             for (Connector connector : connectorList) {
+
                 connectedExchangeIdList.add(connector.getStartExchanges().getId().equals(exchangeId)
                         ? connector.getEndExchanges().getId()
                         : connector.getStartExchanges().getId());
