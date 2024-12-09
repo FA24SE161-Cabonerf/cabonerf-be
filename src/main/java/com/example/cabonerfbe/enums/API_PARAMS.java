@@ -217,4 +217,9 @@ public class API_PARAMS {
      *   SYSTEM BOUNDARY APIs *
      ************************/
     public static final String SYSTEM_BOUNDARY = "/system-boundary";
+
+    /************************
+     *   DATASET APIs       *
+     ************************/
+    public static final String DATASET = "/datasets";
 }
