@@ -126,10 +126,10 @@ public class ProjectServiceImpl implements ProjectService {
                 () -> CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND, Collections.EMPTY_LIST)
         );
 
-        codeRepository.findByIdWithStatus(request.getIndustryCodeId())
+        IndustryCode ic = codeRepository.findByIdWithStatus(request.getIndustryCodeId())
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_INDUSTRY_CODE_FOUNT));
 
-        oicRepository.findByOrganizationAndIndustryCode(request.getOrganizationId(),request.getIndustryCodeId())
+        OrganizationIndustryCode icOrganization = oicRepository.findByOrganizationAndIndustryCode(request.getOrganizationId(),ic.getId())
                 .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.ORGANIZATION_DOES_NOT_TO_INDUSTRY_CODE));
 
         Organization organization = oRepository.findById(request.getOrganizationId()).orElseThrow(
@@ -151,6 +151,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setFavorite(false);
         project.setOrganization(organization);
         project.setLifeCycleImpactAssessmentMethod(method);
+        project.setIndustryCode(ic);
 
         project = projectRepository.save(project);
 
