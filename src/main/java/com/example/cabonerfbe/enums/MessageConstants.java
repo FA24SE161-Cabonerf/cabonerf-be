@@ -149,7 +149,8 @@ public class MessageConstants {
     public static final String CALCULATION_REQUIRED_TO_SAVE_OBJECT_LIBRARY = "Project is not calculated. Cannot save to object library.";
     public static final String USER_IS_NOT_OWNER_OF_PROJECT = "User is not the owner of the project.";
     public static final String PRODUCT_NAME_CANNOT_BE_BLANK = "Product exchange name cannot be blank.";
-    public static final String CANNOT_UPDATE_UNIT_GROUP_OF_LIBRARY_CONNECTED_PROCESS = "Cannot change unit group of library connected process.";
+    public static final String CANNOT_UPDATE_UNIT_GROUP_OF_LIBRARY_CONNECTED_PROCESS = "Cannot change product exchange unit group of library connected process.";
+    public static final String CANNOT_UPDATE_NAME_OF_LIBRARY_CONNECTED_PROCESS = "Cannot change product exchange name of library connected process.";
 
 
     // CALCULATION ERROR MSG

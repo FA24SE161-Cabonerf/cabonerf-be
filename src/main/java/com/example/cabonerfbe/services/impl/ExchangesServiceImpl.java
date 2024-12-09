@@ -284,7 +284,8 @@ public class ExchangesServiceImpl implements ExchangesService {
             UnitGroup initialUnitGroup = exchange.getUnit().getUnitGroup();
             if (!unit.getUnitGroup().equals(initialUnitGroup)) {
                 if (isLibraryConnected) {
-                    throw CustomExceptions.validator(MessageConstants.CANNOT_UPDATE_UNIT_GROUP_OF_LIBRARY_CONNECTED_PROCESS, Map.of("unit", MessageConstants.CANNOT_UPDATE_UNIT_GROUP_OF_LIBRARY_CONNECTED_PROCESS));
+                    throw CustomExceptions.validator(MessageConstants.CANNOT_UPDATE_UNIT_GROUP_OF_LIBRARY_CONNECTED_PROCESS,
+                            Map.of("unit", MessageConstants.CANNOT_UPDATE_UNIT_GROUP_OF_LIBRARY_CONNECTED_PROCESS));
                 }
                 for (UUID connectorId : connectedExchangeIdList) {
                     Exchanges connectedExchange = exchangesRepository.findByIdAndStatus(connectorId, Constants.STATUS_TRUE).orElseThrow(
@@ -297,7 +298,11 @@ public class ExchangesServiceImpl implements ExchangesService {
                 exchange.setUnit(unit);
             }
         }
-        if (!name.equals(exchange.getName()) && !isLibraryConnected) {
+        if (!name.equals(exchange.getName())) {
+            if (isLibraryConnected) {
+                throw CustomExceptions.validator(MessageConstants.CANNOT_UPDATE_NAME_OF_LIBRARY_CONNECTED_PROCESS,
+                        Map.of("name", MessageConstants.CANNOT_UPDATE_NAME_OF_LIBRARY_CONNECTED_PROCESS));
+            }
             for (UUID connectorId : connectedExchangeIdList) {
                 Exchanges connectedExchange = exchangesRepository.findByIdAndStatus(connectorId, Constants.STATUS_TRUE).orElseThrow(
                         () -> CustomExceptions.badRequest(MessageConstants.NO_EXCHANGE_FOUND)
