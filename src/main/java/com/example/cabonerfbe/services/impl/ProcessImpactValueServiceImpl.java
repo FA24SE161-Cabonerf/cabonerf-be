@@ -315,8 +315,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 
     public ProcessNodeDto calculateProjectImpactValue(UUID projectId) {
         ProcessNodeDto result = computeSystemLevelOfProject(projectId);
-        List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
-        updateProjectValue(processList, projectId);
+//        List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
+        updateProjectValue(projectId);
         return result;
     }
 
@@ -436,8 +436,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         return boundaryMap;
     }
 
-    private void updateProjectValue(List<Process> processList, UUID projectId) {
-
+    private void updateProjectValue(UUID projectId) {
+        List<Process> processList = processRepository.findAll(projectId);
         List<UUID> processIds = processList.stream()
                 .map(Process::getId)
                 .collect(Collectors.toList());
