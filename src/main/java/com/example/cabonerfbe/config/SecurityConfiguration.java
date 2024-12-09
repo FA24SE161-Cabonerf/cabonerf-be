@@ -1,6 +1,6 @@
 package com.example.cabonerfbe.config;
 
-import lombok.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,12 +27,14 @@ public class SecurityConfiguration {
             "/swagger-resources/**",
             "/swagger-resources",
             "/ws/**",
-            "/**"
+            "/**",
+            "localhost:9092"
     };
     @Autowired
     private JwtAuthenticationFilter jwtAuthFilter;
     @Autowired
     private AuthenticationProvider authenticationProvider;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

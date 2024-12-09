@@ -11,11 +11,9 @@ import com.example.cabonerfbe.models.ImpactCategory;
 import com.example.cabonerfbe.models.ImpactMethodCategory;
 import com.example.cabonerfbe.models.LifeCycleImpactAssessmentMethod;
 import com.example.cabonerfbe.models.Perspective;
-import com.example.cabonerfbe.repositories.ImpactCategoryRepository;
-import com.example.cabonerfbe.repositories.ImpactMethodCategoryRepository;
-import com.example.cabonerfbe.repositories.ImpactMethodRepository;
-import com.example.cabonerfbe.repositories.PerspectiveRepository;
+import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.BaseImpactMethodRequest;
+import com.example.cabonerfbe.response.GetNameMethodResponse;
 import com.example.cabonerfbe.response.ImpactMethodCategoryResponse;
 import com.example.cabonerfbe.response.ImpactMethodResponse;
 import com.example.cabonerfbe.services.ImpactMethodService;
@@ -24,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ImpactMethodServiceImpl implements ImpactMethodService {
@@ -44,6 +43,9 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
 
     @Autowired
     private ImpactCategoryConverter impactCategoryConverter;
+
+    @Autowired
+    private LifeCycleImpactAssessmentMethodRepository methodRepository;
 
     @Override
     public List<LifeCycleImpactAssessmentMethodDto> getAllImpactMethods() {
@@ -98,7 +100,7 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND + " id: " + methodId));
         ImpactCategory impactCategory = impactCategoryRepository.findByIdAndStatus(categoryId, Constants.STATUS_TRUE)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND + " id: " + categoryId));
-        if (impactMethodCategoryRepository.existsByImpactCategoryAndLifeCycleImpactAssessmentMethod(impactCategory, impactMethod)) {
+        if (impactMethodCategoryRepository.existsByImpactCategoryAndLifeCycleImpactAssessmentMethodAndStatus(impactCategory, impactMethod, true)) {
             throw CustomExceptions.badRequest(MessageConstants.IMPACT_CATEGORY_ALREADY_IN_METHOD);
         }
         impactMethodCategoryRepository.save(new ImpactMethodCategory(impactMethod, impactCategory));
@@ -106,6 +108,12 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
         response.setImpactMethod(impactMethodConverter.fromImpactMethodToImpactMethodResponse(impactMethod));
         response.setImpactCategory(impactCategoryConverter.fromImpactCategoryToImpactCategoryDto(impactCategory));
         return response;
+    }
+
+    @Override
+    public List<GetNameMethodResponse> getNameAllMethod() {
+        List<String> list = methodRepository.getAllWithName();
+        return list.stream().map(impactMethodConverter::fromModelToName).collect(Collectors.toList());
     }
 
     private LifeCycleImpactAssessmentMethod mapRequestToImpactMethod(LifeCycleImpactAssessmentMethod impactMethod, BaseImpactMethodRequest request) {

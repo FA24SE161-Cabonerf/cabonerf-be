@@ -1,6 +1,5 @@
 package com.example.cabonerfbe.request;
 
-import com.example.cabonerfbe.models.LifeCycleImpactAssessmentMethod;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -24,6 +23,6 @@ public class CreateProjectRequest {
     private String location;
     @NotNull(message = "Method is required")
     private UUID methodId;
-    @NotNull(message = "Workspace is required")
-    private UUID workspaceId;
+    @NotNull(message = "Organization is required")
+    private UUID organizationId;
 }

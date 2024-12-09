@@ -16,6 +16,7 @@ import java.util.UUID;
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, UUID> {
     ProjectDetailResponseDto dto = new ProjectDetailResponseDto();
+
     @Query("SELECT dto(" +
             "p.name, p.modifiedAt, lciam.name, ic.name, mic.name, mic.abbr, piv.value, mic.unit.name) " +
             "FROM Project p " +
@@ -30,12 +31,15 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
 
     Project findByNameAndStatus(String name, boolean status);
 
-    @Query("SELECT p FROM Project p WHERE p.user.id = ?1 AND p.status = true")
-    Page<Project> findAll(UUID userId, Pageable pageable);
+    @Query("SELECT p FROM Project p WHERE p.organization.id = :organizationId AND p.status = true")
+    Page<Project> findAll(@Param("organizationId") UUID organizationId, Pageable pageable);
 
-    @Query("SELECT p FROM Project p WHERE p.user.id = ?1 AND p.status = true AND p.lifeCycleImpactAssessmentMethod.id = ?2")
-    Page<Project> sortByMethod(UUID userId, UUID methodId, Pageable pageable);
+    @Query("SELECT p FROM Project p WHERE p.organization.id = :organizationId AND p.status = true AND p.lifeCycleImpactAssessmentMethod.id = :methodId")
+    Page<Project> sortByMethod(@Param("organizationId") UUID organizationId,@Param("methodId") UUID methodId, Pageable pageable);
 
     @Query("SELECT p FROM Project p WHERE p.id = ?1 AND p.status = true")
-    Optional<Project> findById(UUID id);
+    Optional<Project> findByIdAndStatusTrue(UUID id);
+
+    @Query("SELECT count(p) FROM Project p WHERE p.status = true")
+    int findAllByStatus();
 }

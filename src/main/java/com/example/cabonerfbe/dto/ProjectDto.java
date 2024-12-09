@@ -16,9 +16,12 @@ public class ProjectDto {
     private String name;
     private String description;
     private String location;
+    private boolean favorite;
     private MethodDto method;
     private LocalDate modifiedAt;
     private OwnerDto owner;
-    private WorkspaceDto workspace;
     private List<ProjectImpactDto> impacts;
+    private List<LifeCycleBreakdownPercentDto> lifeCycleStageBreakdown;
+    private List<CarbonIntensityDto> intensity;
+    private String functionalUnit;
 }

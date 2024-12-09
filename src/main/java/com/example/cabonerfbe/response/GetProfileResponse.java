@@ -1,6 +1,7 @@
 package com.example.cabonerfbe.response;
 
-import com.example.cabonerfbe.dto.*;
+import com.example.cabonerfbe.dto.RoleDto;
+import com.example.cabonerfbe.dto.UserVerifyStatusDto;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,6 +25,4 @@ public class GetProfileResponse {
     String bio;
     RoleDto role;
     UserVerifyStatusDto userVerifyStatus;
-    SubscriptionTypeDto subscription;
-    UserStatusDto userStatus;
 }

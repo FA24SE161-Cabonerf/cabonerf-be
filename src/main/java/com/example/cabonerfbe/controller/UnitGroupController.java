@@ -3,7 +3,6 @@ package com.example.cabonerfbe.controller;
 import com.example.cabonerfbe.enums.API_PARAMS;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
-import com.example.cabonerfbe.models.UnitGroup;
 import com.example.cabonerfbe.request.CreateUnitGroupRequest;
 import com.example.cabonerfbe.request.UpdateUnitGroupRequest;
 import com.example.cabonerfbe.response.ResponseObject;

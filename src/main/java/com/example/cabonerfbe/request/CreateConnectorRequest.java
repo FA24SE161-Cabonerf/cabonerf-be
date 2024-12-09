@@ -1,6 +1,5 @@
 package com.example.cabonerfbe.request;
 
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,7 +20,6 @@ public class CreateConnectorRequest {
     private UUID startProcessId;
     @NotNull(message = "End process id is required.")
     private UUID endProcessId;
-    @NotNull(message = "Start exchange id is required.")
     private UUID startExchangesId;
     private UUID endExchangesId;
 }

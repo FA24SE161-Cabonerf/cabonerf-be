@@ -1,7 +1,12 @@
 package com.example.cabonerfbe.models;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -9,13 +14,13 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table
-public class ProjectImpactValue extends Base{
+public class ProjectImpactValue extends Base {
 
     @ManyToOne
     @JoinColumn(name = "impact_method_category_id")
     private ImpactMethodCategory impactMethodCategory;
-
-    private double value;
+    @Column(precision = 100, scale = 60)
+    private BigDecimal value;
 
     @ManyToOne
     @JoinColumn(name = "project_id")

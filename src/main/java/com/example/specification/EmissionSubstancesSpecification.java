@@ -1,6 +1,6 @@
 package com.example.specification;
 
-import com.example.cabonerfbe.models.EmissionSubstances;
+import com.example.cabonerfbe.models.Substance;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EmissionSubstancesSpecification {
-    public static Specification<EmissionSubstances> containsKeywordInAllFields(String keyword) {
+    public static Specification<Substance> containsKeywordInAllFields(String keyword) {
         return (root, query, criteriaBuilder) -> {
             if (keyword == null || keyword.isEmpty()) {
                 return criteriaBuilder.conjunction();

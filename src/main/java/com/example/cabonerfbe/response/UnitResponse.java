@@ -3,6 +3,7 @@ package com.example.cabonerfbe.response;
 import com.example.cabonerfbe.dto.UnitGroupDto;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -13,7 +14,7 @@ import java.util.UUID;
 public class UnitResponse {
     private UUID id;
     private String name;
-    private double conversionFactor;
+    private BigDecimal conversionFactor;
     private Boolean isDefault;
     private UnitGroupDto unitGroup;
 }

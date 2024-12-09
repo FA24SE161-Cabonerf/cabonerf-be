@@ -2,6 +2,7 @@ package com.example.cabonerfbe.response;
 
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter
@@ -18,7 +19,23 @@ public class MidpointSubstanceFactorsResponse {
     private String compartmentName;
     private String molecularFormula;
     private String alternativeFormula;
-    private Double individualist;
-    private Double hierarchist;
-    private Double egalitarian;
+    private BigDecimal individualist;
+    private BigDecimal hierarchist;
+    private BigDecimal egalitarian;
+
+    public void setMethodValue(String methodName, BigDecimal value) {
+        switch (methodName) {
+            case "Individualist":
+                this.individualist = value;
+                break;
+            case "Hierarchist":
+                this.hierarchist = value;
+                break;
+            case "Egalitarian":
+                this.egalitarian = value;
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid method name: " + methodName);
+        }
+    }
 }

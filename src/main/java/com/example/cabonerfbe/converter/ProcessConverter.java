@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.converter;
 
+import com.example.cabonerfbe.dto.ObjectLibraryDto;
 import com.example.cabonerfbe.dto.ProcessDetailDto;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.models.Process;
@@ -13,14 +14,17 @@ import java.util.List;
 public interface ProcessConverter {
     ProcessConverter INSTANCE = Mappers.getMapper(ProcessConverter.class);
 
-
-    @Mapping(source = "lifeCycleStage",target = "lifeCycleStages")
+    @Mapping(source = "project.id", target = "projectId")
+    @Mapping(source = "overAllProductFlowRequired", target = "overallProductFlowRequired")
+    @Mapping(target = "exchanges", ignore = true)
+    @Mapping(target = "impacts", ignore = true)
     ProcessDto fromProcessToProcessDto(Process process);
 
-    @Mapping(source = "lifeCycleStage",target = "lifeCycleStages")
     ProcessDetailDto fromProcessDetailToProcessDto(Process process);
 
-    @Mapping(source = "lifeCycleStage",target = "lifeCycleStages")
     List<ProcessDto> fromListToListDto(List<Process> process);
 
+    @Mapping(target = "impacts", ignore = true)
+    @Mapping(target = "exchanges", ignore = true)
+    ObjectLibraryDto fromProcessToObjectLibraryDto(Process process);
 }

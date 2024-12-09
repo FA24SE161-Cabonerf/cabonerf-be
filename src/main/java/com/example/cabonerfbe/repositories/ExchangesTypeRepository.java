@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface ExchangesTypeRepository extends JpaRepository<ExchangesType, UUID> {
+    ExchangesType findByName(String name);
 }

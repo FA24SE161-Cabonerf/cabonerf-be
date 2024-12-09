@@ -7,11 +7,10 @@ import com.example.cabonerfbe.dto.PageList;
 import com.example.cabonerfbe.models.MidpointImpactCharacterizationFactors;
 import com.example.cabonerfbe.response.MidpointImpactCharacterizationFactorsResponse;
 import com.example.cabonerfbe.response.MidpointSubstanceFactorsResponse;
-import com.example.cabonerfbe.util.UUIDUtil;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,16 +35,18 @@ public interface MidpointImpactCharacterizationFactorConverter {
         dto.setMolecularFormula((String) result[4]);
         dto.setAlternativeFormula((String) result[5]);
         dto.setCompartmentName((String) result[6]);
-        dto.setIndividualist((Double) result[7]);
-        dto.setHierarchist((Double) result[8]);
-        dto.setEgalitarian((Double) result[9]);
+        dto.setIndividualist((BigDecimal) result[7]);
+        dto.setHierarchist((BigDecimal) result[8]);
+        dto.setEgalitarian((BigDecimal) result[9]);
         return dto;
     }
+
 
     PageList<MidpointSubstanceFactorsResponse> fromMidpointSubstanceFactorPageListDtoToMidpointSubstanceFactorPageListResponse(PageList<MidpointSubstanceFactorsDto> midpointSubstanceFactorsDtoPageList);
 
     List<MidpointImpactCharacterizationFactorsResponse> fromMidpointListToMidpointResponseList(List<MidpointImpactCharacterizationFactors> factors);
 
     MidpointImpactCharacterizationFactorsResponse fromMidpointToMidpointResponse(MidpointImpactCharacterizationFactors factor);
+
     FactorDto fromMidpointToFactor(MidpointImpactCharacterizationFactors factor);
 }

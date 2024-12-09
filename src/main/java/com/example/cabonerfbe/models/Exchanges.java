@@ -1,7 +1,13 @@
 package com.example.cabonerfbe.models;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -9,11 +15,12 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table
-public class Exchanges extends Base{
+public class Exchanges extends Base {
 
     private String name;
     private String description;
-    private double value;
+    @Column(precision = 100, scale = 60)
+    private BigDecimal value;
 
     @ManyToOne
     @JoinColumn(name = "exchanges_type_id")
@@ -30,6 +37,10 @@ public class Exchanges extends Base{
     private boolean input;
 
     @ManyToOne
-    @JoinColumn(name = "substances_compartments_id")
-    private SubstancesCompartments substancesCompartments;
+    @JoinColumn(name = "emission_substance_id")
+    private EmissionSubstance emissionSubstance;
+
+    public UUID getProcessId() {
+        return process != null ? process.getId() : null;
+    }
 }

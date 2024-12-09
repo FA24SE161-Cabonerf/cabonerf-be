@@ -2,6 +2,7 @@ package com.example.cabonerfbe.controller;
 
 import com.example.cabonerfbe.enums.API_PARAMS;
 import com.example.cabonerfbe.enums.Constants;
+import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.request.*;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.AuthenticationService;
@@ -58,9 +59,19 @@ public class AuthenticateController {
     }
 
     @PostMapping(API_PARAMS.EMAIL_VERIFY)
-    public ResponseEntity<ResponseObject> verify(@Valid @RequestBody(required = true) VerifyEmailRequest verifyEmailRequest) {
+    public ResponseEntity<ResponseObject> verify(@RequestParam("token") String token) {
+        VerifyEmailRequest request = new VerifyEmailRequest(token);
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Verify email successfully.", authenticationService.verifyEmail(verifyEmailRequest))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Verify email successfully.", authenticationService.verifyEmail(request))
+        );
+    }
+
+    @PutMapping(API_PARAMS.CHANGE_PASSWORD)
+    public ResponseEntity<ResponseObject> changePassword(@RequestHeader(value = "x-user-id", required = true) UUID userId,
+                                                         @Valid @RequestBody ChangePasswordRequest request) {
+        log.info("Start changePassword. userId: {}, request: {}", userId, request);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CHANGE_PASSWORD_SUCCESS, authenticationService.changePassword(userId, request))
         );
     }
 

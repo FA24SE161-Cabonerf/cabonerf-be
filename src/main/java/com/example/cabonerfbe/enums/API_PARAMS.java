@@ -16,11 +16,13 @@ public class API_PARAMS {
     public static final String EMAIL_VERIFY = "/email-verify";
     public static final String MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR = "/midpoint-impact-characterization-factors";
     public static final String IMPORT_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR = "/import";
-    public static final String EXCHANGE = "/exchanges";
-    public static final String CREATE_ELEMENTARY_EXCHANGE = "/create-elementary-exchange";
-    public static final String CREATE_PRODUCT_EXCHANGE = "/create-product-exchange";
-    public static final String CONNECTOR = "/connectors";
-
+    public static final String BAN_UNBAN_USER = "/ban-unban-user/{userId}";
+    public static final String UPDATE_AVATAR_USER = "/avatar";
+    public static final String GET_USER_TO_INVITE = "/invite";
+    public static final String GET_USER_TO_DASHBOARD = "/count-user-new";
+    public static final String GET_ALL_USER_TO_DASHBOARD = "/count-all-user";
+    public static final String CHANGE_PASSWORD = "/password";
+    public static final String UPDATE_PROFILE = "/profile";
 
     /************************
      *      IMPACTS APIs     *
@@ -32,9 +34,11 @@ public class API_PARAMS {
     public static final String CREATE_IMPACT_CATEGORY = "/impact-categories";
     public static final String ADD_IMPACT_CATEGORY_TO_IMPACT_METHOD = "/impact-methods/{methodId}/impact-categories/{categoryId}";
     public static final String GET_CATEGORY_BY_METHOD_ID = "/impact-methods/{methodId}/impact-categories";
+    public static final String GET_ALL_METHOD_NAME = "/impact-methods/name";
     public static final String UPDATE_IMPACT_CATEGORY_BY_ID = "/impact-categories/{categoryId}";
     public static final String DELETE_IMPACT_CATEGORY_BY_ID = "/impact-categories/{categoryId}";
-
+    public static final String GET_METHOD_BY_IMPACT_CATEGORY_ID = "/impact-categories/{categoryId}/impact-methods";
+    public static final String DELETE_IMPACT_CATEGORY_IN_METHOD = "/impact-categories/{categoryId}/impact-methods/{methodId}";
 
     public static final String GET_ALL_IMPACT_METHODS = "/impact-methods";
     public static final String GET_IMPACT_METHOD_BY_ID = "/impact-methods/{methodId}";
@@ -45,10 +49,17 @@ public class API_PARAMS {
 
     public static final String GET_ALL_MIDPOINT_FACTORS = "/midpoint-factors";
     public static final String GET_MIDPOINT_FACTOR_BY_ID = "/midpoint-factors/{id}";
+    public static final String DELETE_MIDPOINT_FACTOR_BY_ID = "/midpoint-factors/{id}";
+    public static final String IMPORT_MIDPOINT_FACTOR_BY_ID = "/midpoint-factors/import";
+    public static final String DOWNLOAD_ERROR_LOG_MIDPOINT_FACTOR_BY_ID = "/midpoint-factors/download";
+    public static final String DOWNLOAD_TEMPLATE_MIDPOINT_FACTOR = "/midpoint-factors/factor-template";
+    public static final String EXPORT_MIDPOINT_FACTOR = "/midpoint-factors/export";
 
     public static final String GET_ALL_MIDPOINT_IMPACT_CATEGORY = "/midpoint-categories";
     public static final String GET_MIDPOINT_IMPACT_CATEGORY_BY_ID = "/midpoint-categories";
-
+    public static final String CREATE_MIDPOINT_IMPACT_CATEGORY = "/midpoint-categories";
+    public static final String UPDATE_MIDPOINT_IMPACT_CATEGORY = "/midpoint-categories/{id}";
+    public static final String DELETE_MIDPOINT_IMPACT_CATEGORY = "/midpoint-categories/{id}";
 
 
     /************************
@@ -56,9 +67,16 @@ public class API_PARAMS {
      ************************/
 
     public static final String PROJECT = "/projects";
-    public static final String GET_PROJECT_BY_ID = "/{id}";
-    public static final String UPDATE_DETAIL_PROJECT_BY_ID = "/{id}";
-    public static final String DELETE_PROJECT = "/{id}";
+    public static final String GET_PROJECT_BY_ID = "/{projectId}";
+    public static final String UPDATE_DETAIL_PROJECT_BY_ID = "/{projectId}";
+    public static final String DELETE_PROJECT = "/{projectId}";
+    public static final String CHANGE_PROJECT_METHOD = "/{projectId}/impact-methods/{methodId}";
+    public static final String CALCULATION_PROJECT = "/calculation";
+    public static final String EXPORT_PROJECT = "/{projectId}/export";
+    public static final String INTENSITY_PROJECT = "/{projectId}/intensity";
+    public static final String COUNT_PROJECT = "/count-project";
+    public static final String SUM_IMPACT = "/sum-impact";
+    public static final String SET_FAVORITE_PROJECT = "/{projectId}/favorite";
 
     /************************
      *      PROCESS APIs     *
@@ -94,6 +112,8 @@ public class API_PARAMS {
      ************************/
     public static final String LIFE_STAGE = "/life-cycle-stages";
     public static final String LIFE_STAGE_BY_ID = "/{id}";
+    public static final String LIFE_CYCLE_STAGE_UPDATE = "/{id}";
+    public static final String LIFE_CYCLE_STAGE_DELETE = "/{id}";
 
     /************************
      *      UNIT APIs     *
@@ -120,4 +140,86 @@ public class API_PARAMS {
     public static final String GET_ALL_EMISSION_COMPARTMENTS = "/emission-compartments";
     public static final String GET_EMISSION_COMPARTMENTS_BY_ID = "/emission-compartments/{id}";
     public static final String EMISSION_SUBSTANCE = "/emission-substance";
+    public static final String EMISSION_SUBSTANCE_COUNT = "/count-emission-substance";
+
+    /************************
+     *   EXCHANGE APIs   *
+     ************************/
+    public static final String EXCHANGE = "/exchanges";
+    public static final String ELEMENTARY_EXCHANGE = "/elementary-exchange";
+    public static final String PRODUCT_EXCHANGE = "/product-exchange";
+    public static final String REMOVE_EXCHANGE = "/{exchangeId}";
+    public static final String UPDATE_EXCHANGE = "/{exchangeId}";
+
+    /************************
+     *   CONNECTORS APIs   *
+     ************************/
+    public static final String CONNECTOR = "/connectors";
+    public static final String DELETE_CONNECTOR = "/{id}";
+
+
+    /************************
+     *   ORGANIZATIONS APIs   *
+     ************************/
+    public static final String ORGANIZATION = "/organizations";
+    public static final String UPDATE_ORGANIZATION = "/{organizationId}";
+    public static final String DELETE_ORGANIZATION = "/{organizationId}";
+    public static final String CONFIRM_CREATE_ORGANIZATION = "/confirm";
+    public static final String INVITE_MEMBER_ORGANIZATION = "/invite";
+    public static final String ACCEPT_INVITE_ORGANIZATION = "/accept";
+    public static final String DENY_INVITE_ORGANIZATION = "/deny";
+    public static final String GET_MEMBER_IN_ORGANIZATION = "/{organizationId}/members";
+    public static final String REMOVE_MEMBER_IN_ORGANIZATION = "/remove-member/{userOrganizationId}";
+    public static final String GET_LIST_INVITE_BY_USER = "/invite-list";
+    public static final String UPLOAD_LOGO = "/{organizationId}/upload-logo";
+    public static final String GET_ORGANIZATION_BY_ID = "/{organizationId}";
+    public static final String OUT_ORGANIZATION = "/leave-organization/{userOrganizationId}";
+
+    public static final String MANAGER = "/manager";
+    public static final String ORGANIZATION_MANAGER = "/organization-manager";
+
+    /************************
+     *   WORKSPACE APIs   *
+     ************************/
+    public static final String WORKSPACE = "/workspaces";
+
+    /************************
+     *   CONTRACT APIs *
+     ************************/
+    public static final String CONTRACT = "/contracts";
+    public static final String DOWNLOAD_CONTRACT = "/{contractId}";
+
+    /************************
+     *   EMISSIONS COMPARTMENT APIs   *
+     ************************/
+    public static final String UPDATE_EMISSION_COMPARTMENT = "/{emissionCompartmentId}";
+    public static final String DELETE_EMISSION_COMPARTMENT = "/{emissionCompartmentId}";
+
+    /******************
+     * OBJECT LIBRARY *
+     *****************/
+    public static final String OBJECT_LIBRARY = "/object-library";
+    public static final String SEARCH_OBJECT_LIBRARY_OF_ORGANIZATION = "/organizations/{organizationId}";
+    public static final String REMOVE_PROCESS_FROM_OBJECT_LIBRARY = "/{processId}";
+    public static final String SAVE_PROCESS_TO_OBJECT_LIBRARY = "/{processId}";
+    public static final String ADD_FROM_OBJECT_LIBRARY_TO_PROJECT = "/{processId}/projects/{projectId}";
+
+    /************************
+     *   INDUSTRY CODE APIs   *
+     ************************/
+    public static final String INDUSTRY_CODE = "/industry-code";
+    public static final String UPDATE_INDUSTRY_CODE = "/{industryCodeId}";
+    public static final String DELETE_INDUSTRY_CODE = "/{industryCodeId}";
+    public static final String GET_INDUSTRY_CODE_BY_ORGANIZATION = "/{organizationId}";
+    public static final String GET_INDUSTRY_CODE_TO_CREATE = "/get-create";
+
+    /************************
+     *   SYSTEM BOUNDARY APIs *
+     ************************/
+    public static final String SYSTEM_BOUNDARY = "/system-boundary";
+
+    /************************
+     *   DATASET APIs       *
+     ************************/
+    public static final String DATASET = "/datasets";
 }

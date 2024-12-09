@@ -2,6 +2,7 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -11,9 +12,9 @@ import java.util.UUID;
 @Setter
 public class ProcessImpactValueDto {
     private UUID id;
-    private double unitLevel;
-    private double systemLevel;
-    private double overallImpactContribution;
+    private BigDecimal unitLevel;
+    private BigDecimal systemLevel;
+    private BigDecimal overallImpactContribution;
     private MethodDto method;
     private ProjectImpactCategoryDto impactCategory;
 }

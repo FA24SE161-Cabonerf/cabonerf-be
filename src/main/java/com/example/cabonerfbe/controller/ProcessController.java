@@ -3,7 +3,6 @@ package com.example.cabonerfbe.controller;
 import com.example.cabonerfbe.enums.API_PARAMS;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.request.CreateProcessRequest;
-import com.example.cabonerfbe.request.GetAllProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.ProcessService;
@@ -71,6 +70,5 @@ public class ProcessController {
                 )
         );
     }
-
 
 }

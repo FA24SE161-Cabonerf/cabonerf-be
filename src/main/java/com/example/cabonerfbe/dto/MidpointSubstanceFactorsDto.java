@@ -2,6 +2,7 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter
@@ -18,7 +19,7 @@ public class MidpointSubstanceFactorsDto {
     private String compartmentName;
     private String molecularFormula;
     private String alternativeFormula;
-    private Double individualist;
-    private Double hierarchist;
-    private Double egalitarian;
+    private BigDecimal individualist;
+    private BigDecimal hierarchist;
+    private BigDecimal egalitarian;
 }

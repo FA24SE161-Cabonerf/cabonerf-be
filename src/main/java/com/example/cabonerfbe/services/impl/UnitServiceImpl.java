@@ -21,6 +21,8 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,7 +54,7 @@ public class UnitServiceImpl implements UnitService {
     @Override
     public UnitResponse getUnitById(UUID unitId) {
         Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
-                () ->CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
+                () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
         );
 
         return unitConverter.fromUnitToUnitResponse(unit);
@@ -118,6 +120,16 @@ public class UnitServiceImpl implements UnitService {
         unitRepository.save(unit);
 
         return unitConverter.fromUnitToUnitResponse(unit);
+    }
+
+    //    public double convertValue(Unit originalUnit, double originalValue, Unit targetUnit) {
+//        return originalValue * originalUnit.getConversionFactor() / targetUnit.getConversionFactor();
+//    }
+    public BigDecimal convertValue(Unit originalUnit, BigDecimal originalValue, Unit targetUnit) {
+//        System.out.println("inside convert value function! original value= " + originalValue);
+//        System.out.println(originalValue + " * " + originalUnit.getConversionFactor() + " / " + targetUnit.getConversionFactor());
+        return originalValue.multiply(originalUnit.getConversionFactor())
+                .divide(targetUnit.getConversionFactor(), MathContext.DECIMAL128);
     }
 
 }

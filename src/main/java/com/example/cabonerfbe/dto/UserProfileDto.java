@@ -18,6 +18,4 @@ public class UserProfileDto {
     String bio;
     RoleDto role;
     UserVerifyStatusDto userVerifyStatus;
-    SubscriptionTypeDto subscription;
-    UserStatusDto userStatus;
 }
