@@ -32,6 +32,9 @@ public interface ConnectorRepository extends JpaRepository<Connector, UUID> {
     @Query("SELECT c FROM Connector c WHERE c.endExchanges.id = ?1 OR c.startExchanges.id = ?1 and c.status = true")
     List<Connector> findConnectorToExchange(UUID exchangeId);
 
+    @Query("SELECT c FROM Connector c WHERE (c.endExchanges.id = ?1 OR c.startExchanges.id = ?1) and c.startProcess.library = false and c.endProcess.library = false and c.status = true")
+    List<Connector> findConnectorToExchangeNotLibrary(UUID exchangeId);
+
     @Query("SELECT c FROM Connector c WHERE c.endProcess.id = ?1 OR c.startProcess.id = ?1 and c.status = true")
     List<Connector> findConnectorToProcess(UUID processId);
 

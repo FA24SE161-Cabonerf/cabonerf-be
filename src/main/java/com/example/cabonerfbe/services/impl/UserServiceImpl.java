@@ -6,7 +6,11 @@ import com.example.cabonerfbe.dto.UserProfileDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
+import com.example.cabonerfbe.models.Organization;
+import com.example.cabonerfbe.models.UserOrganization;
 import com.example.cabonerfbe.models.Users;
+import com.example.cabonerfbe.repositories.OrganizationRepository;
+import com.example.cabonerfbe.repositories.UserOrganizationRepository;
 import com.example.cabonerfbe.repositories.UserRepository;
 import com.example.cabonerfbe.request.UpdateUserInfoRequest;
 import com.example.cabonerfbe.response.*;
@@ -30,10 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,6 +60,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     FileUtil fileUtil;
+
+    @Autowired
+    UserOrganizationRepository uoRepository;
+
+    @Autowired
+    OrganizationRepository oRepository;
 
     @Override
     public GetProfileResponse getMe(UUID userId) {
@@ -189,6 +196,16 @@ public class UserServiceImpl implements UserService {
         user.setProfilePictureUrl(Optional.ofNullable(request.getProfilePictureUrl())
                 .filter(s -> !s.isEmpty())
                 .orElse(user.getProfilePictureUrl()));
+
+        List<UserOrganization> uo = uoRepository.getByUser(userId);
+        Organization o = new Organization();
+        for(UserOrganization x: uo){
+            if(x.getOrganization().getContract() == null && Objects.equals(x.getRole().getName(), Constants.ORGANIZATION_MANAGER)){
+                o = x.getOrganization();
+            }
+        }
+        String[] _name = user.getFullName().split(" ");
+        o.setName(_name[_name.length-1] + "'s Organization");
 
         return userConverter.fromUserToUserProfileDto(userRepository.save(user));
     }

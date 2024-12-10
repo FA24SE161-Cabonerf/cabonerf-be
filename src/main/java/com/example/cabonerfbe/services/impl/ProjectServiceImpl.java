@@ -6,6 +6,7 @@ import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
+import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CalculateProjectRequest;
 import com.example.cabonerfbe.request.CreateProjectRequest;
@@ -36,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -98,8 +100,11 @@ public class ProjectServiceImpl implements ProjectService {
     private IndustryCodeRepository codeRepository;
     @Autowired
     private OrganizationIndustryCodeRepository oicRepository;
+    @Autowired
+    private SystemBoundaryConverter systemBoundaryConverter;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
+
 
     @Override
     public List<Project> getProjectListByMethodId(UUID id) {
@@ -112,9 +117,10 @@ public class ProjectServiceImpl implements ProjectService {
         UUID projectId = request.getProjectId();
         Project project = projectRepository.findByIdAndStatusTrue(projectId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
-        var contributionBreakdown = processImpactValueService.computeSystemLevelOfProject(projectId);
+        var contributionBreakdown = processImpactValueService.calculateProjectImpactValue(projectId);
         var response = projectConverter.fromGetProjectDtoToCalculateResponse(getProject(project));
         response.setContributionBreakdown(contributionBreakdown);
+        response.setLifeCycleStageBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
         return response;
 
     }
@@ -196,7 +202,7 @@ public class ProjectServiceImpl implements ProjectService {
 
             projectDto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
             projectDto.setLifeCycleStageBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
-
+            projectDto.setFunctionalUnit(this.getFunctionalUnit(project.getId()));
             list.add(projectDto);
         }
 
@@ -231,6 +237,8 @@ public class ProjectServiceImpl implements ProjectService {
         dto.setName(project.getName());
         dto.setDescription(project.getDescription());
         dto.setLocation(project.getLocation());
+        dto.setFavorite(project.getFavorite());
+        dto.setSystemBoundary(systemBoundaryConverter.fromEntityToDto(project.getSystemBoundary()));
         dto.setMethod(methodConverter.fromMethodToMethodDto(project.getLifeCycleImpactAssessmentMethod()));
         dto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
         dto.setProcesses(processService.getAllProcessesByProjectId(project.getId()));
@@ -243,7 +251,13 @@ public class ProjectServiceImpl implements ProjectService {
     public List<CarbonIntensityDto> getIntensity(UUID projectId) {
         Project p = projectRepository.findByIdAndStatusTrue(projectId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
+
+        if(projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()){
+            return Collections.emptyList();
+        }
+
         ProjectImpactValue value = processImpactValueRepository.findCO2(projectId);
+
         List<CarbonIntensity> ci = ciRepository.findAll();
 
         ci.forEach(c ->
@@ -313,18 +327,21 @@ public class ProjectServiceImpl implements ProjectService {
     public List<Project> deleteProject(UUID userId, UUID projectId) {
         Project project = projectRepository.findByIdAndStatusTrue(projectId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND));
-
-
-
         UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(), userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
-        if(!project.getUser().getId().equals(userId) || !Constants.ORGANIZATION_MANAGER.equals(uo.getRole().getName())){
-            throw CustomExceptions.unauthorized(MessageConstants.NO_AUTHORITY);
+
+        if (!project.getUser().getId().equals(userId)) {
+            if (!Constants.ORGANIZATION_MANAGER.equals(uo.getRole().getName())) {
+                throw CustomExceptions.unauthorized(MessageConstants.NO_AUTHORITY);
+            }
         }
+
         project.setStatus(false);
         projectRepository.save(project);
+
         return new ArrayList<>();
     }
+
 
     @Transactional
     @Override
@@ -337,7 +354,13 @@ public class ProjectServiceImpl implements ProjectService {
                     () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND, Collections.EMPTY_LIST)
             );
             project.setLifeCycleImpactAssessmentMethod(method);
-            processImpactValueService.computeProcessImpactValueOfProject(projectRepository.save(project));
+            long startTime = System.currentTimeMillis();
+
+            alterPrevProjectImpactValueList(project, methodId);
+
+            long endTime = System.currentTimeMillis();
+            System.out.println("đổi của project nè: "+ (endTime - startTime));
+            processImpactValueService.computeProcessImpactValueOfProjectWhenChangeMethod(projectRepository.save(project));
         }
         return getProject(project);
     }
@@ -356,6 +379,70 @@ public class ProjectServiceImpl implements ProjectService {
                 .contentLength(file.length)
                 .body(resource);
     }
+
+    private void alterPrevProjectImpactValueList(Project project, UUID methodId) {
+        List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
+
+        long startProjectImpact = System.currentTimeMillis();
+        List<ProjectImpactValue> existingValues = projectImpactValueRepository
+                .findAllByProjectId(project.getId());
+        long endProjectImpact = System.currentTimeMillis();
+
+        System.out.println("lấy project impact ra nè: " + (endProjectImpact - startProjectImpact));
+
+        List<ProjectImpactValue> valuesToSave = new ArrayList<>();
+        List<ProjectImpactValue> valuesToDelete = new ArrayList<>();
+
+
+        long startFor = System.currentTimeMillis();
+        for (int i = 0; i < methodCategories.size(); i++) {
+            if (i < existingValues.size()) {
+                ProjectImpactValue value = existingValues.get(i);
+                value.setImpactMethodCategory(methodCategories.get(i));
+                value.setValue(BigDecimal.ZERO);
+                valuesToSave.add(value);
+            } else {
+                valuesToSave.add(getNewProjectImpactValue(methodCategories.get(i),project));
+            }
+        }
+        long endFor = System.currentTimeMillis();
+
+        System.out.println("chạy for nè: " + (endProjectImpact - startProjectImpact));
+
+        if (existingValues.size() > methodCategories.size()) {
+            valuesToDelete.addAll(existingValues.subList(methodCategories.size(), existingValues.size()));
+        }
+
+        if(!valuesToDelete.isEmpty()){
+            projectImpactValueRepository.deleteAll(valuesToDelete);
+
+        }
+        if(!valuesToSave.isEmpty()){
+
+            long startSave = System.currentTimeMillis();
+
+            projectImpactValueRepository.saveAll(valuesToSave);
+
+            long endSave = System.currentTimeMillis();
+            System.out.println("save all project nè: " + (endSave - startSave));
+        }
+        long startFind = System.currentTimeMillis();
+
+        List<Process> processes = processRepository.findAll(project.getId());
+
+        long endFind = System.currentTimeMillis();
+        System.out.println("tìm all process nè: "+ (endFind - startFind));
+
+
+        long startTime = System.currentTimeMillis();
+
+        processImpactValueService.alterPrevImpactValueList(processes, methodId);
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("đổi của process nè: "+ (endTime - startTime));
+
+    }
+
 
     public List<ProjectImpactDto> converterProject(List<ProjectImpactValue> list) {
         return list.stream()
@@ -665,5 +752,29 @@ public class ProjectServiceImpl implements ProjectService {
             }
         }
         return new ArrayList<>(aggregatedMap.values());
+    }
+
+    @NotNull
+    private static ProjectImpactValue getNewProjectImpactValue(ImpactMethodCategory methodCategory, Project project) {
+        ProjectImpactValue projectImpactValue = new ProjectImpactValue();
+        projectImpactValue.setProject(project);
+        projectImpactValue.setImpactMethodCategory(methodCategory);
+        projectImpactValue.setValue(BigDecimal.ZERO);
+        return projectImpactValue;
+    }
+
+    private String getFunctionalUnit(UUID projectId){
+        if(projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()){
+            return "";
+        }
+        List<Process> root = processRepository.findRootProcess(projectId);
+        if(root.isEmpty()){
+            return "";
+        }
+        Optional<Exchanges> e = exchangesRepository.findProductOut(root.get(0).getId());
+        if(e.isEmpty()){
+            return "";
+        }
+        return e.get().getValue().setScale(2, RoundingMode.HALF_UP)+ " " + e.get().getUnit().getName()+ " " + e.get().getName();
     }
 }

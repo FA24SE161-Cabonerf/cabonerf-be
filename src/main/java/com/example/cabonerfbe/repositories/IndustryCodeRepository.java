@@ -1,6 +1,8 @@
 package com.example.cabonerfbe.repositories;
 
 import com.example.cabonerfbe.models.IndustryCode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,4 +19,21 @@ public interface IndustryCodeRepository extends JpaRepository<IndustryCode, UUID
 
     @Query("SELECT ic FROM IndustryCode ic WHERE ic.id in :industryCodeIds AND ic.status = true")
     List<IndustryCode> findAllByIds(@Param("industryCodeIds") List<UUID> industryCodeIds);
+
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true ")
+    Page<IndustryCode> findAll(Pageable pageable);
+
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true AND ic.name ILIKE CONCAT('%', :keyword ,'%')")
+    Page<IndustryCode> findAllByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.code like :code AND ic.status = true")
+    Optional<IndustryCode> findByCode(@Param("code") String code);
+
+    boolean existsByCodeAndIdNot(String code, UUID id);
+
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true")
+    List<IndustryCode> findByStatus();
+
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true AND ic.name ILIKE CONCAT('%', :keyword ,'%')")
+    List<IndustryCode> findByKeyword(@Param("keyword") String keyword);
 }

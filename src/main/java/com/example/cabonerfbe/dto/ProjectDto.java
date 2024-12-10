@@ -23,4 +23,6 @@ public class ProjectDto {
     private OwnerDto owner;
     private List<ProjectImpactDto> impacts;
     private List<LifeCycleBreakdownPercentDto> lifeCycleStageBreakdown;
+    private List<CarbonIntensityDto> intensity;
+    private String functionalUnit;
 }

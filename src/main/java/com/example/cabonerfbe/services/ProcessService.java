@@ -2,6 +2,10 @@ package com.example.cabonerfbe.services;
 
 import com.example.cabonerfbe.dto.ProcessDetailDto;
 import com.example.cabonerfbe.dto.ProcessDto;
+import com.example.cabonerfbe.dto.ProcessImpactValueDto;
+import com.example.cabonerfbe.dto.ProcessNodeDto;
+import com.example.cabonerfbe.models.*;
+import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.request.CreateProcessRequest;
 import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
@@ -19,4 +23,17 @@ public interface ProcessService {
     ProcessDetailDto updateProcess(UUID id, UpdateProcessRequest request);
 
     DeleteProcessResponse deleteProcess(UUID id);
+
+    ProcessNodeDto constructListProcessNodeDto(UUID projectId);
+
+    List<ProcessImpactValueDto> converterProcess(List<ProcessImpactValue> list);
+
+    ProcessNodeDto calculationFast(UUID projectId);
+
+    void convertProcessToObjectLibrary(Process process, List<ProjectImpactValue> projectImpactValueList);
+
+    ProcessDto convertObjectLibraryToProcessDto(Process process, Project project);
+
+    ProcessImpactValue createNewProcessImpactValue(Process process, ImpactMethodCategory methodCategory);
+
 }

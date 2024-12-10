@@ -1,15 +1,19 @@
 package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.*;
-import com.example.cabonerfbe.dto.*;
+import com.example.cabonerfbe.dto.CreateOrganizationDto;
+import com.example.cabonerfbe.dto.GetOrganizationByUserDto;
+import com.example.cabonerfbe.dto.InviteUserOrganizationDto;
+import com.example.cabonerfbe.dto.OrganizationDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
-import com.example.cabonerfbe.request.*;
+import com.example.cabonerfbe.request.CreateOrganizationRequest;
+import com.example.cabonerfbe.request.InviteUserToOrganizationRequest;
+import com.example.cabonerfbe.request.UpdateOrganizationRequest;
 import com.example.cabonerfbe.response.GetAllOrganizationResponse;
-import com.example.cabonerfbe.response.InviteMemberResponse;
 import com.example.cabonerfbe.response.LoginResponse;
 import com.example.cabonerfbe.response.UploadOrgLogoResponse;
 import com.example.cabonerfbe.services.*;
@@ -126,7 +130,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         List<IndustryCode> industryCodes = icRepository.findAllByIds(request.getIndustryCodeIds());
 
         if (industryCodes == null || industryCodes.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_INDUSTRY_CODE_FOUNT);
+            throw CustomExceptions.notFound(MessageConstants.NO_INDUSTRY_CODE_FOUND);
         }
 
         if (industryCodes.size() < request.getIndustryCodeIds().size()) {
@@ -196,6 +200,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         organization.setDescription(request.getDescription());
         organization.setTaxCode(request.getTaxCode());
 
+
         organization = organizationRepository.save(organization);
 
         UserOrganization userOrganization = new UserOrganization();
@@ -205,7 +210,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         userOrganization.setRole(organizationManager);
         userOrganizationRepository.save(userOrganization);
 
-        // todo: send-mail
 
         Contract contract = new Contract();
         contract.setOrganization(organization);
@@ -352,7 +356,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                     uo.setOrganization(organization);
                     uo.setUser(user);
                     uo.setRole(roleRepository.findByName(Constants.LCA_STAFF).orElseThrow());
-                    uo.setHasJoined(false);
+                    uo.setHasJoined(true);
                     return uo;
                 }).collect(Collectors.toList());
 
@@ -487,18 +491,43 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public InviteUserOrganizationDto removeMember(UUID userId, UUID userOrganizationId) {
-//        UserOrganization organizationManager = userOrganizationRepository.findByUserAndOrganization(request.getOrganizationId(), userId)
-//                .orElseThrow(() -> CustomExceptions.unauthorized("You do not belong to this organization."));
-//
-//        if(!Objects.equals(organizationManager.getRole().getName(), "Organization Manager")){
-//            throw CustomExceptions.unauthorized("Your role not support this action");
-//        }
         UserOrganization uo = userOrganizationRepository.findById(userOrganizationId)
                 .orElseThrow(() -> CustomExceptions.notFound("Member do not belong to this organization"));
 
+        UserOrganization organizationManager = userOrganizationRepository.findByUserAndOrganization(uo.getOrganization().getId(), userId)
+                .orElseThrow(() -> CustomExceptions.unauthorized("You do not belong to this organization."));
+
+        if(!Objects.equals(organizationManager.getRole().getName(), Constants.ORGANIZATION_MANAGER)){
+            throw CustomExceptions.unauthorized("Your role not support this action");
+        }
+
+
+        if(Objects.equals(uo.getRole().getName(), Constants.ORGANIZATION_MANAGER)){
+            throw CustomExceptions.unauthorized("Organization Manager cannot out organization");
+        }
+
         uo.setStatus(false);
+        userOrganizationRepository.save(uo);
         return uoConverter.modelToDto(uo);
     }
 
+    @Override
+    public List<String> leaveOrganization(UUID userId, UUID userOrganizationId) {
+        Users users = userRepository.findById(userId)
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
+        UserOrganization uo = userOrganizationRepository.findById(userOrganizationId)
+                .orElseThrow(() -> CustomExceptions.notFound("Member do not belong to this organization"));
+
+        if(!uo.getUser().getId().equals(userId)){
+            throw CustomExceptions.unauthorized("User not equals to out organization");
+        }
+
+        if(Objects.equals(uo.getRole().getName(), Constants.ORGANIZATION_MANAGER)){
+            throw CustomExceptions.unauthorized("Organization Manager cannot out organization");
+        }
+
+        userOrganizationRepository.delete(uo);
+        return Collections.emptyList();
+    }
 }

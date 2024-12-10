@@ -18,6 +18,7 @@ import com.example.cabonerfbe.response.ImpactExchangeResponse;
 import com.example.cabonerfbe.response.SearchElementaryResponse;
 import com.example.cabonerfbe.response.UpdateProductExchangeResponse;
 import com.example.cabonerfbe.services.ExchangesService;
+import com.example.cabonerfbe.services.ProcessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,10 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -68,7 +67,7 @@ public class ExchangesServiceImpl implements ExchangesService {
     @Autowired
     private ProcessImpactValueConverter pivConverter;
     @Autowired
-    private ProcessServiceImpl processService;
+    private ProcessService processService;
     @Autowired
     private UnitServiceImpl unitService;
     @Autowired
@@ -159,9 +158,11 @@ public class ExchangesServiceImpl implements ExchangesService {
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
 
+        validateObjectLibrary(exchange.getProcess());
+
         BigDecimal initialValue = exchange.getValue();
 
-        exchange.setValue(DEFAULT_VALUE);
+        exchange.setValue(BigDecimal.ZERO);
         exchange.setStatus(Constants.STATUS_FALSE);
 
         exchangesRepository.save(exchange);
@@ -179,6 +180,8 @@ public class ExchangesServiceImpl implements ExchangesService {
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
+
+        validateObjectLibrary(exchange.getProcess());
 
         exchange.setValue(DEFAULT_VALUE);
         exchange.setStatus(Constants.STATUS_FALSE);
@@ -206,9 +209,7 @@ public class ExchangesServiceImpl implements ExchangesService {
             throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_AND_PROCESS_DIFFERENT);
         }
 
-        Process process = processRepository.findByProcessId(processId).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND)
-        );
+        validateObjectLibrary(exchange.getProcess());
 
         BigDecimal initialValue = exchange.getValue();
         System.out.println("initial value before converted to " + exchange.getUnit().getName() + " unit: " + initialValue);
@@ -233,7 +234,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         exchangesRepository.save(exchange);
 
-        processImpactValueService.computeProcessImpactValueSingleExchange(process, exchange, initialValue);
+        processImpactValueService.computeProcessImpactValueSingleExchange(exchange.getProcess(), exchange, initialValue);
 
         return impactExchangeResponseBuilder(exchange);
     }
@@ -245,6 +246,10 @@ public class ExchangesServiceImpl implements ExchangesService {
         UUID processId = request.getProcessId();
         BigDecimal value = request.getValue();
 
+        if (name.isBlank()) {
+            throw CustomExceptions.validator(MessageConstants.PRODUCT_NAME_CANNOT_BE_BLANK, Map.of("name", MessageConstants.PRODUCT_NAME_CANNOT_BE_BLANK));
+        }
+
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
         );
@@ -253,40 +258,57 @@ public class ExchangesServiceImpl implements ExchangesService {
             throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_AND_PROCESS_DIFFERENT);
         }
 
+        validateObjectLibrary(exchange.getProcess());
+
         List<UUID> connectedExchangeIdList = new ArrayList<>();
         connectedExchangeIdList.add(exchangeId);
-        if (unitId != null || name != null) {
-            List<Connector> connectorList = connectorRepository.findConnectorToExchange(exchangeId);
-            for (Connector connector : connectorList) {
-                connectedExchangeIdList.add(connector.getStartExchanges().getId().equals(exchangeId)
-                        ? connector.getEndExchanges().getId()
-                        : connector.getStartExchanges().getId());
+        boolean isLibraryConnected = false;
+        List<Connector> connectorList = connectorRepository.findConnectorToExchange(exchangeId);
+        if (connectorList.size() == 1) {
+            Connector connector = connectorList.get(0);
+            // validate if connected to an object library process => cannot change its unit group
+            if (connector.getEndProcess().isLibrary() || connector.getStartProcess().isLibrary()) {
+                isLibraryConnected = true;
             }
-            if (unitId != null && !unitId.equals(exchange.getUnit().getId())) {
-                Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
-                        () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
-                );
-                UnitGroup initialUnitGroup = exchange.getUnit().getUnitGroup();
-                if (!unit.getUnitGroup().equals(initialUnitGroup)) {
-                    for (UUID connectorId : connectedExchangeIdList) {
-                        Exchanges connectedExchange = exchangesRepository.findByIdAndStatus(connectorId, Constants.STATUS_TRUE).orElseThrow(
-                                () -> CustomExceptions.badRequest(MessageConstants.NO_EXCHANGE_FOUND)
-                        );
-                        connectedExchange.setUnit(unit);
-                        exchangesRepository.save(connectedExchange);
-                    }
-                } else {
-                    exchange.setUnit(unit);
+        }
+
+        for (Connector connector : connectorList) {
+            connectedExchangeIdList.add(connector.getStartExchanges().getId().equals(exchangeId)
+                    ? connector.getEndExchanges().getId()
+                    : connector.getStartExchanges().getId());
+        }
+        if (unitId != null && !unitId.equals(exchange.getUnit().getId())) {
+            Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
+                    () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
+            );
+            UnitGroup initialUnitGroup = exchange.getUnit().getUnitGroup();
+            if (!unit.getUnitGroup().equals(initialUnitGroup)) {
+                if (isLibraryConnected) {
+                    throw CustomExceptions.validator(MessageConstants.CANNOT_UPDATE_UNIT_GROUP_OF_LIBRARY_CONNECTED_PROCESS,
+                            Map.of("unit", MessageConstants.CANNOT_UPDATE_UNIT_GROUP_OF_LIBRARY_CONNECTED_PROCESS));
                 }
-            }
-            if (name != null && !name.equals(exchange.getName())) {
                 for (UUID connectorId : connectedExchangeIdList) {
                     Exchanges connectedExchange = exchangesRepository.findByIdAndStatus(connectorId, Constants.STATUS_TRUE).orElseThrow(
                             () -> CustomExceptions.badRequest(MessageConstants.NO_EXCHANGE_FOUND)
                     );
-                    connectedExchange.setName(name);
+                    connectedExchange.setUnit(unit);
                     exchangesRepository.save(connectedExchange);
                 }
+            } else {
+                exchange.setUnit(unit);
+            }
+        }
+        if (!name.equals(exchange.getName())) {
+            if (isLibraryConnected) {
+                throw CustomExceptions.validator(MessageConstants.CANNOT_UPDATE_NAME_OF_LIBRARY_CONNECTED_PROCESS,
+                        Map.of("name", MessageConstants.CANNOT_UPDATE_NAME_OF_LIBRARY_CONNECTED_PROCESS));
+            }
+            for (UUID connectorId : connectedExchangeIdList) {
+                Exchanges connectedExchange = exchangesRepository.findByIdAndStatus(connectorId, Constants.STATUS_TRUE).orElseThrow(
+                        () -> CustomExceptions.badRequest(MessageConstants.NO_EXCHANGE_FOUND)
+                );
+                connectedExchange.setName(name);
+                exchangesRepository.save(connectedExchange);
             }
         }
 
@@ -308,13 +330,21 @@ public class ExchangesServiceImpl implements ExchangesService {
     }
 
     private Process findProcess(UUID id) {
-        return processRepository.findByProcessId(id)
+        Process process = processRepository.findByProcessId(id)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND));
+        validateObjectLibrary(process);
+        return process;
     }
 
     private void validateMethod(UUID methodId) {
         methodRepository.findByIdAndStatus(methodId, true)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND, Collections.EMPTY_LIST));
+    }
+
+    private void validateObjectLibrary(Process process) {
+        if (process.isLibrary()) {
+            throw CustomExceptions.badRequest(MessageConstants.CANNOT_EDIT_OBJECT_LIBRARY_PROCESS);
+        }
     }
 
     private Exchanges createNewExchange(EmissionSubstance emissionSubstance, boolean isInput,

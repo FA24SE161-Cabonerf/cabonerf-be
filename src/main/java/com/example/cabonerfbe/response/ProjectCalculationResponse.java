@@ -18,9 +18,10 @@ public class ProjectCalculationResponse {
     private String description;
     private String location;
     private boolean favorite;
+    private SystemBoundaryDto systemBoundary;
     private MethodDto method;
     private List<ProjectImpactDto> impacts;
     private List<ProcessDto> processes;
     private List<ConnectorDto> connectors;
-    private List<LifeCycleBreakdownPercentDto> lifeCycleBreakdown;
+    private List<LifeCycleBreakdownPercentDto> lifeCycleStageBreakdown;
 }
