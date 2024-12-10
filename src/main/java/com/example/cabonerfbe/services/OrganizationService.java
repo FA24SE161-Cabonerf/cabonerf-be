@@ -26,7 +26,7 @@ public interface OrganizationService {
 
     LoginResponse acceptInvite(UUID organizationId, String token);
 
-    InviteUserOrganizationDto removeMember(UUID userId, UUID userOrganizationId);
+    List<String> removeMember(UUID userId, UUID userOrganizationId);
 
     List<String> leaveOrganization(UUID userId, UUID userOrganizationId);
 

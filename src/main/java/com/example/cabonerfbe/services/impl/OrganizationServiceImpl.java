@@ -490,7 +490,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public InviteUserOrganizationDto removeMember(UUID userId, UUID userOrganizationId) {
+    public List<String> removeMember(UUID userId, UUID userOrganizationId) {
         UserOrganization uo = userOrganizationRepository.findById(userOrganizationId)
                 .orElseThrow(() -> CustomExceptions.notFound("Member do not belong to this organization"));
 
@@ -508,7 +508,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         uo.setStatus(false);
         userOrganizationRepository.save(uo);
-        return uoConverter.modelToDto(uo);
+        return Collections.emptyList();
     }
 
     @Override
