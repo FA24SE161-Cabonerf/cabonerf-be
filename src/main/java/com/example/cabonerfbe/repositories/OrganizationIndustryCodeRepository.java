@@ -21,4 +21,7 @@ public interface OrganizationIndustryCodeRepository extends JpaRepository<Organi
 
     @Query("SELECT oic FROM OrganizationIndustryCode oic WHERE oic.organization.id = :organizationId AND oic.status = true ")
     List<OrganizationIndustryCode> findByOrganization(@Param("organizationId") UUID organizationId);
+
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true")
+    List<OrganizationIndustryCode> findAllByStatus();
 }
