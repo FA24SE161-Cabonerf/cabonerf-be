@@ -113,10 +113,11 @@ public class IndustryCodeServiceImpl implements IndustryCodeService {
         Organization o = oRepository.findById(organizationId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
+        if(oicRepository.findByOrganization(organizationId).isEmpty()){
+            return icRepository.findAll().stream().map(icConverter::modelToDto).toList();
+        }
 
-        return Optional.ofNullable(oicRepository.findByOrganization(organizationId))
-                .filter(list -> !list.isEmpty())
-                .orElseGet(() -> oicRepository.findAllByStatus())
+        return oicRepository.findByOrganization(organizationId)
                 .stream()
                 .map(OrganizationIndustryCode::getIndustryCode)
                 .map(icConverter::modelToDto)
