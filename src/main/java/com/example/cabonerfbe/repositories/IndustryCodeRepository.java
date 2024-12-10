@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,4 +37,7 @@ public interface IndustryCodeRepository extends JpaRepository<IndustryCode, UUID
 
     @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true AND ic.name ILIKE CONCAT('%', :keyword ,'%')")
     List<IndustryCode> findByKeyword(@Param("keyword") String keyword);
+
+
+    List<IndustryCode> findAllByStatus();
 }
