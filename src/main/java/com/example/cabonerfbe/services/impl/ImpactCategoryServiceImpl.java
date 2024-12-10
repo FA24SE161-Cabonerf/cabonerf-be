@@ -107,13 +107,21 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
     private ImpactCategoryDto mapRequestToImpactCategory(BaseImpactCategoryRequest request, UUID updateId) {
         MidpointImpactCategory midpointImpactCategory = midpointImpactCategoryRepository.findByIdAndStatus(request.getMidpointImpactCategoryId(), Constants.STATUS_TRUE)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_MIDPOINT_IMPACT_CATEGORY_FOUND));
-        EmissionCompartment emissionCompartment = emissionCompartmentRepository.findByIdAndStatus(request.getEmissionCompartmentId(), Constants.STATUS_TRUE)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_EMISSION_COMPARTMENT_FOUND));
+        EmissionCompartment emissionCompartment = new EmissionCompartment();
         ImpactCategory impactCategory = new ImpactCategory();
         if (updateId != null) {
             impactCategory = impactCategoryRepository.findByIdAndStatus(updateId, Constants.STATUS_TRUE).orElseThrow(
                     () -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND)
             );
+        }
+        if(request.getEmissionCompartmentId() == null){
+            if(impactCategory.getEmissionCompartment() == null){
+                emissionCompartment = null;
+            }else{
+                request.setEmissionCompartmentId(impactCategory.getEmissionCompartment().getId());
+                emissionCompartment = emissionCompartmentRepository.findByIdAndStatus(request.getEmissionCompartmentId(), Constants.STATUS_TRUE)
+                        .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_EMISSION_COMPARTMENT_FOUND));
+            }
         }
         impactCategory.setName(request.getName());
         impactCategory.setIndicator(request.getIndicator());
