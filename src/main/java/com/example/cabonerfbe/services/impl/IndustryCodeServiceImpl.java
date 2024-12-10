@@ -114,7 +114,7 @@ public class IndustryCodeServiceImpl implements IndustryCodeService {
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
         if(oicRepository.findByOrganization(organizationId).isEmpty()){
-            return icRepository.findAll().stream().map(icConverter::modelToDto).toList();
+            return icRepository.findAllByStatus().stream().map(icConverter::modelToDto).toList();
         }
 
         return oicRepository.findByOrganization(organizationId)
