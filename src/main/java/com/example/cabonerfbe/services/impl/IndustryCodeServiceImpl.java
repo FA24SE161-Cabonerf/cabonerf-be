@@ -114,7 +114,7 @@ public class IndustryCodeServiceImpl implements IndustryCodeService {
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
 
-        List<IndustryCodeDto> result = Optional.ofNullable(oicRepository.findByOrganization(organizationId))
+        return Optional.ofNullable(oicRepository.findByOrganization(organizationId))
                 .filter(list -> !list.isEmpty())
                 .orElseGet(() -> oicRepository.findAllByStatus())
                 .stream()
