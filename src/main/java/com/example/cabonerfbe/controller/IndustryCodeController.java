@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.INDUSTRY_CODE)
+@RequestMapping(API_PARAMS.API_VERSION)
 @NoArgsConstructor
 @AllArgsConstructor
 @RestController
@@ -25,7 +25,7 @@ public class IndustryCodeController {
     @Autowired
     private IndustryCodeService service;
 
-    @GetMapping(API_PARAMS.MANAGER)
+    @GetMapping(API_PARAMS.MANAGER + API_PARAMS.INDUSTRY_CODE)
     public ResponseEntity<ResponseObject> get(@RequestParam(defaultValue = "1") int pageCurrent,
                                                @RequestParam(defaultValue = "5") int pageSize,
                                                @RequestParam(required = false) String keyword){
@@ -35,7 +35,7 @@ public class IndustryCodeController {
         );
     }
 
-    @GetMapping(API_PARAMS.MANAGER + API_PARAMS.GET_INDUSTRY_CODE_TO_CREATE)
+    @GetMapping(API_PARAMS.MANAGER + API_PARAMS.INDUSTRY_CODE + API_PARAMS.GET_INDUSTRY_CODE_TO_CREATE)
     public ResponseEntity<ResponseObject> getAll(@RequestParam(required = false) String keyword){
         log.info("Start getAllIndustryCode");
         return ResponseEntity.ok().body(
@@ -43,7 +43,7 @@ public class IndustryCodeController {
         );
     }
 
-    @PostMapping(API_PARAMS.MANAGER)
+    @PostMapping(API_PARAMS.MANAGER + API_PARAMS.INDUSTRY_CODE)
     public ResponseEntity<ResponseObject> create(@Valid @RequestBody IndustryCodeRequest request){
         log.info("Start createIndustryCode. request: {}",request);
         return ResponseEntity.ok().body(
@@ -51,7 +51,7 @@ public class IndustryCodeController {
         );
     }
 
-    @PutMapping(API_PARAMS.MANAGER + API_PARAMS.UPDATE_INDUSTRY_CODE)
+    @PutMapping(API_PARAMS.MANAGER + API_PARAMS.INDUSTRY_CODE + API_PARAMS.UPDATE_INDUSTRY_CODE)
     public ResponseEntity<ResponseObject> update(@PathVariable UUID industryCodeId, @Valid @RequestBody IndustryCodeRequest request){
         log.info("Start updateIndustryCode. id: {}, request: {}", industryCodeId, request);
         return ResponseEntity.ok().body(
@@ -59,7 +59,7 @@ public class IndustryCodeController {
         );
     }
 
-    @DeleteMapping(API_PARAMS.MANAGER + API_PARAMS.DELETE_INDUSTRY_CODE)
+    @DeleteMapping(API_PARAMS.MANAGER + API_PARAMS.INDUSTRY_CODE + API_PARAMS.DELETE_INDUSTRY_CODE)
     public ResponseEntity<ResponseObject> delete(@PathVariable UUID industryCodeId){
         log.info("Start deleteIndustryCode. id: {}", industryCodeId);
         return ResponseEntity.ok().body(
@@ -67,7 +67,7 @@ public class IndustryCodeController {
         );
     }
 
-    @GetMapping(API_PARAMS.GET_INDUSTRY_CODE_BY_ORGANIZATION)
+    @GetMapping(API_PARAMS.INDUSTRY_CODE + API_PARAMS.GET_INDUSTRY_CODE_BY_ORGANIZATION)
     public ResponseEntity<ResponseObject> getByOrganization(@PathVariable UUID organizationId){
         log.info("Start getIndustryCodeByOrganization. organizationId: {}",organizationId);
         return ResponseEntity.ok().body(
