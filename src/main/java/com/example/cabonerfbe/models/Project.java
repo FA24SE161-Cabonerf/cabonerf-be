@@ -38,4 +38,8 @@ public class Project extends Base {
     @JoinColumn(name = "user_id")
     private Users user;
 
+    @ManyToOne
+    @JoinColumn(name = "industry_code_id")
+    private IndustryCode industryCode;
+
 }

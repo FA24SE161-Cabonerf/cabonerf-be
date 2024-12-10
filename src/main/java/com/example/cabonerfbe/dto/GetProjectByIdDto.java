@@ -18,6 +18,7 @@ public class GetProjectByIdDto {
     private boolean favorite;
     private SystemBoundaryDto systemBoundary;
     private MethodDto method;
+    private IndustryCodeDto industryCode;
     private List<ProjectImpactDto> impacts;
     private List<ProcessDto> processes;
     private List<ConnectorDto> connectors;

@@ -17,6 +17,7 @@ public class ProjectDto {
     private String description;
     private String location;
     private boolean favorite;
+    private IndustryCodeDto industryCode;
     private MethodDto method;
     private LocalDate modifiedAt;
     private OwnerDto owner;
