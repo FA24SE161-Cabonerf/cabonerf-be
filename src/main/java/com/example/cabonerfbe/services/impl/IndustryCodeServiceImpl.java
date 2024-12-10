@@ -54,7 +54,7 @@ public class IndustryCodeServiceImpl implements IndustryCodeService {
         }
 
         return GetAllIndustryCodeResponse.builder()
-                .pageCurrent(1)
+                .pageCurrent(pageCurrent)
                 .pageSize(pageSize)
                 .totalPage(totalPage)
                 .industryCodes(industryCodePage.getContent().stream().map(icConverter::modelToDto).toList())
