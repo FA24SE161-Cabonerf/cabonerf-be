@@ -39,5 +39,4 @@ public interface IndustryCodeRepository extends JpaRepository<IndustryCode, UUID
     List<IndustryCode> findByKeyword(@Param("keyword") String keyword);
 
 
-    List<IndustryCode> findAllByStatus();
 }
