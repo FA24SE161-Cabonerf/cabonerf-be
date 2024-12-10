@@ -38,5 +38,6 @@ public interface IndustryCodeRepository extends JpaRepository<IndustryCode, UUID
     @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true AND ic.name ILIKE CONCAT('%', :keyword ,'%')")
     List<IndustryCode> findByKeyword(@Param("keyword") String keyword);
 
-
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true ")
+    List<IndustryCode> findAllByStatus();
 }
