@@ -97,6 +97,10 @@ public class ProjectServiceImpl implements ProjectService {
     @Autowired
     private UserOrganizationRepository uoRepository;
     @Autowired
+    private IndustryCodeRepository codeRepository;
+    @Autowired
+    private OrganizationIndustryCodeRepository oicRepository;
+    @Autowired
     private SystemBoundaryConverter systemBoundaryConverter;
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
@@ -128,6 +132,12 @@ public class ProjectServiceImpl implements ProjectService {
                 () -> CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND, Collections.EMPTY_LIST)
         );
 
+        IndustryCode ic = codeRepository.findByIdWithStatus(request.getIndustryCodeId())
+                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_INDUSTRY_CODE_FOUNT));
+
+        OrganizationIndustryCode icOrganization = oicRepository.findByOrganizationAndIndustryCode(request.getOrganizationId(),ic.getId())
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.ORGANIZATION_DOES_NOT_TO_INDUSTRY_CODE));
+
         Organization organization = oRepository.findById(request.getOrganizationId()).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_ORGANIZATION_FOUND, Collections.EMPTY_LIST)
         );
@@ -147,6 +157,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setFavorite(false);
         project.setOrganization(organization);
         project.setLifeCycleImpactAssessmentMethod(method);
+        project.setIndustryCode(ic);
 
         project = projectRepository.save(project);
 
