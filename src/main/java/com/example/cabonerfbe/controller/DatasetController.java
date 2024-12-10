@@ -31,4 +31,14 @@ public class DatasetController {
         );
     }
 
+    @GetMapping(API_PARAMS.ADMIN)
+    public ResponseEntity<ResponseObject> getAllByAdmin(@RequestParam(defaultValue = "1") int pageCurrent,
+                                                        @RequestParam(defaultValue = "5") int pageSize,
+                                                        @RequestParam(required = false) String keyword){
+        log.info("Start getAllDataByAdmin");
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get all data set by admin success",datasetService.get(pageCurrent, pageSize, keyword))
+        );
+    }
+
 }

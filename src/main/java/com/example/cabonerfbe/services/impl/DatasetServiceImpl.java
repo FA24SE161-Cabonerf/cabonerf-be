@@ -1,30 +1,46 @@
 package com.example.cabonerfbe.services.impl;
 
+import com.example.cabonerfbe.converter.ProcessConverter;
+import com.example.cabonerfbe.dto.DatasetDto;
+import com.example.cabonerfbe.dto.ObjectLibraryDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.Organization;
+import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.models.Project;
 import com.example.cabonerfbe.repositories.OrganizationRepository;
+import com.example.cabonerfbe.repositories.ProcessImpactValueRepository;
+import com.example.cabonerfbe.repositories.ProcessRepository;
 import com.example.cabonerfbe.repositories.ProjectRepository;
+import com.example.cabonerfbe.response.DatasetAdminResponse;
 import com.example.cabonerfbe.response.DatasetResponse;
 import com.example.cabonerfbe.services.DatasetService;
+import com.example.cabonerfbe.services.ProcessService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class DatasetServiceImpl implements DatasetService {
     private final ProjectRepository projectRepository;
     private final OrganizationRepository organizationRepository;
+    private final ProcessRepository processRepository;
+    private final ProcessConverter processConverter;
+    private final ProcessService processService;
+    private final ProcessImpactValueRepository pivRepository;
 
-    public DatasetServiceImpl(ProjectRepository projectRepository, OrganizationRepository organizationRepository, OrganizationRepository organizationRepository1) {
+    public DatasetServiceImpl(ProjectRepository projectRepository, OrganizationRepository organizationRepository, OrganizationRepository organizationRepository1, ProcessRepository processRepository1, ProcessConverter processConverter, ProcessService processService, ProcessImpactValueRepository pivRepository) {
         this.projectRepository = projectRepository;
         this.organizationRepository = organizationRepository1;
+        this.processRepository = processRepository1;
+        this.processConverter = processConverter;
+        this.processService = processService;
+        this.pivRepository = pivRepository;
     }
 
     @Override
@@ -52,5 +68,40 @@ public class DatasetServiceImpl implements DatasetService {
                     return datasetResponse;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public DatasetAdminResponse get(int pageCurrent, int pageSize, String keyword) {
+        Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
+
+        Page<Process> processPage = keyword == null
+                ? processRepository.findDataset(Constants.DATASET_LIST,pageable)
+                : processRepository.findDatasetByKeword(Constants.DATASET_LIST,keyword,pageable);
+
+        int totalPage = processPage.getTotalPages();
+
+        List<DatasetDto> dataset = processPage.getContent().stream().map(
+                process -> {
+                    DatasetDto object = processConverter.fromProcessToDataset(process);
+                    object.setImpacts(processService.converterProcess(
+                            pivRepository.findByProcessId(process.getId())));
+                    return object;
+                }
+        ).toList();
+        if(totalPage < pageCurrent){
+           return DatasetAdminResponse.builder()
+                   .pageCurrent(1)
+                   .pageSize(0)
+                   .totalPage(0)
+                   .data(Collections.EMPTY_LIST)
+                   .build();
+        }
+
+        return DatasetAdminResponse.builder()
+                .pageCurrent(pageCurrent)
+                .pageSize(pageSize)
+                .totalPage(totalPage)
+                .data(dataset)
+                .build();
     }
 }
