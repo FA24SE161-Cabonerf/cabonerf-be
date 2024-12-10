@@ -24,6 +24,5 @@ public class BaseImpactCategoryRequest {
     private String unit;
     @NotNull(message = "Midpoint impact category id is required.")
     private UUID midpointImpactCategoryId;
-    @NotNull(message = "Emission compartment id is required.")
     private UUID emissionCompartmentId;
 }
