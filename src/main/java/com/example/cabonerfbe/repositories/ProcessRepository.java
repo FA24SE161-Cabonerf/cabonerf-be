@@ -58,4 +58,10 @@ public interface ProcessRepository extends JpaRepository<Process, UUID> {
 
     @Query("SELECT p FROM Process p WHERE p.library = true AND p.status = true")
     List<Process> findAllObjectLibrary(UUID projectId);
+
+    @Query("SELECT p FROM Process p WHERE p.organization.id IN :dataIds AND p.status = true")
+    Page<Process> findDataset(@Param("dataIds") List<UUID> datasetList, Pageable pageable);
+
+    @Query("SELECT p FROM Process p WHERE p.organization.id IN :dataIds AND p.name ILIKE CONCAT('%', :keyword, '%') AND p.status = true")
+    Page<Process> findDatasetByKeword(@Param("dataIds") List<UUID> datasetList,@Param("keyword") String keyword, Pageable pageable);
 }
