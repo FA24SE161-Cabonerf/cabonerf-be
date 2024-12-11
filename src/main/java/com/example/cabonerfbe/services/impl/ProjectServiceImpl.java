@@ -135,12 +135,14 @@ public class ProjectServiceImpl implements ProjectService {
         IndustryCode ic = codeRepository.findByIdWithStatus(request.getIndustryCodeId())
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_INDUSTRY_CODE_FOUND));
 
-        OrganizationIndustryCode icOrganization = oicRepository.findByOrganizationAndIndustryCode(request.getOrganizationId(),ic.getId())
-                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.ORGANIZATION_DOES_NOT_TO_INDUSTRY_CODE));
-
         Organization organization = oRepository.findById(request.getOrganizationId()).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_ORGANIZATION_FOUND, Collections.EMPTY_LIST)
         );
+
+        if(organization.getContract() != null){
+            OrganizationIndustryCode icOrganization = oicRepository.findByOrganizationAndIndustryCode(request.getOrganizationId(),ic.getId())
+                    .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.ORGANIZATION_DOES_NOT_TO_INDUSTRY_CODE));
+        }
 
         UserOrganization uo = uoRepository.findByUserAndOrganization(request.getOrganizationId(), userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
