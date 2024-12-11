@@ -5,6 +5,11 @@ import lombok.*;
 
 import java.util.UUID;
 
+/**
+ * The class Update product exchange response.
+ *
+ * @author SonPHH.
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

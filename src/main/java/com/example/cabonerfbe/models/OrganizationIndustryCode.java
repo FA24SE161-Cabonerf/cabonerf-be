@@ -9,13 +9,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * The class Organization industry code.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table
-public class OrganizationIndustryCode extends Base{
+public class OrganizationIndustryCode extends Base {
 
     @ManyToOne
     @JoinColumn(name = "industry_code_id")

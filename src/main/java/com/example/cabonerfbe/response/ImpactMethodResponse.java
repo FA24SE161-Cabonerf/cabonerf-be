@@ -5,6 +5,11 @@ import lombok.*;
 
 import java.util.UUID;
 
+/**
+ * The class Impact method response.
+ *
+ * @author SonPHH.
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

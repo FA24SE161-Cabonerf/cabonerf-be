@@ -28,6 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * The class Connector service.
+ *
+ * @author SonPHH.
+ */
 @Service
 @Slf4j
 public class ConnectorServiceImpl implements ConnectorService {
@@ -58,7 +63,6 @@ public class ConnectorServiceImpl implements ConnectorService {
         Process endProcess = validateAndFetchProcess(request.getEndProcessId(), END_PROCESS);
 
         if (startProcess.equals(endProcess)) {
-            System.out.println("loi start = end process");
             throw CustomExceptions.badRequest(MessageConstants.START_END_PROCESS_SAME_ERROR);
         }
 
@@ -77,10 +81,8 @@ public class ConnectorServiceImpl implements ConnectorService {
         } else if (request.getEndExchangesId() != null) {
             response = createConnectorWithEndExchangeOnly(request, startProcess, endProcess);
         } else {
-            System.out.println("loi: " + MessageConstants.INVALID_EXCHANGE);
             throw CustomExceptions.badRequest(MessageConstants.INVALID_EXCHANGE);
         }
-        System.out.println("den duoc day la chuan bi tra response ve");
         return response;
     }
 
@@ -98,16 +100,20 @@ public class ConnectorServiceImpl implements ConnectorService {
     private Process validateAndFetchProcess(UUID processId, String processType) {
         Process process = processRepository.findByProcessId(processId)
                 .orElseThrow(() -> {
-                    System.out.println("loi validate (khong tim thay process): " + processId + " type: " + processType);
                     return CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND, Map.of(processType, processId));
                 });
         if (process.isLibrary() && END_PROCESS.equals(processType)) {
-            System.out.println("loi tao connector den object library");
             throw CustomExceptions.badRequest(MessageConstants.CANNOT_CREATE_CONNECTOR_TO_OBJECT_LIBRARY_PROCESS);
         }
         return process;
     }
 
+    /**
+     * Delete associated connectors method.
+     *
+     * @param id         the id
+     * @param actionType the action type
+     */
     public void deleteAssociatedConnectors(UUID id, String actionType) {
         List<UUID> idList = new ArrayList<>();
         if (Constants.DELETE_CONNECTOR_TYPE_EXCHANGE.equals(actionType)) {
@@ -135,14 +141,12 @@ public class ConnectorServiceImpl implements ConnectorService {
 
     private void validateProcessesBelongToSameProject(Process startProcess, Process endProcess) {
         if (!startProcess.getProject().getId().equals(endProcess.getProject().getId())) {
-            System.out.println("loi 2 process khong cung project");
             throw CustomExceptions.badRequest(MessageConstants.PROCESS_IN_DIFFERENT_PROJECTS);
         }
     }
 
     private void validateNoExistingConnector(UUID startProcessId, UUID endProcessId) {
         if (connectorRepository.existsByStartProcess_IdAndEndProcess_Id(startProcessId, endProcessId)) {
-            System.out.println("loi da co connection roi");
             throw CustomExceptions.badRequest(MessageConstants.CONNECTOR_ALREADY_EXIST);
         }
     }
@@ -159,7 +163,6 @@ public class ConnectorServiceImpl implements ConnectorService {
                 .updatedProcess(null)
                 .build();
     }
-
 
 
     private CreateConnectorResponse createConnectorWithStartExchangeOnly(CreateConnectorRequest request, Process startProcess, Process endProcess) {
@@ -195,25 +198,21 @@ public class ConnectorServiceImpl implements ConnectorService {
 
     private void validateExchangeBelongsToProcess(Exchanges exchange, Process process, String exchangeType) {
         if (!exchange.getProcessId().equals(process.getId())) {
-            System.out.println("loi exchange khong thuoc ve process");
             throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_AND_PROCESS_DIFFERENT);
         }
     }
 
     private void validateExchangeCompatibility(Exchanges startExchange, Exchanges endExchange) {
         if (!startExchange.getUnit().getUnitGroup().getId().equals(endExchange.getUnit().getUnitGroup().getId())) {
-            System.out.println("loi unit group ko giong nhau");
             throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_UNIT_GROUP_DIFFERENT);
         }
         if (!startExchange.getName().equals(endExchange.getName())) {
-            System.out.println("loi ten ko giong nhau");
             throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_NAME_DIFFERENT);
         }
     }
 
     private void validateEndExchangeAlreadyHadConnection(Exchanges endExchange) {
         if (connectorRepository.existsByEndExchanges_Id(endExchange.getId())) {
-            System.out.println("loi end exchange da co connection");
             throw CustomExceptions.badRequest(MessageConstants.EXCHANGE_ALREADY_HAD_CONNECTION);
         }
     }
@@ -226,14 +225,12 @@ public class ConnectorServiceImpl implements ConnectorService {
     }
 
     private ConnectorDto convertAndSaveConnector(Exchanges startExchange, Exchanges endExchange, Process startProcess, Process endProcess) {
-        System.out.println("den duoc day la dang chuan bi save connector");
         Connector connector = new Connector();
         connector.setStartProcess(startProcess);
         connector.setEndProcess(endProcess);
         connector.setStartExchanges(startExchange);
         connector.setEndExchanges(endExchange);
-        ConnectorDto dto = connectorConverter.fromConnectorToConnectorDto(connectorRepository.save(connector));
 
-        return dto;
+        return connectorConverter.fromConnectorToConnectorDto(connectorRepository.save(connector));
     }
 }

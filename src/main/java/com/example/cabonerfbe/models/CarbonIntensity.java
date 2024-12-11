@@ -10,6 +10,11 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
+/**
+ * The class Carbon intensity.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

@@ -27,15 +27,29 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * The class Jwt service.
+ *
+ * @author SonPHH.
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtService {
 //    private final Dotenv dotenv = Dotenv.load();
 
+    /**
+     * The User repository.
+     */
     @Autowired
     UserRepository userRepository;
+    /**
+     * The Evt repository.
+     */
     @Autowired
     EmailVerificationTokenRepository evtRepository;
+    /**
+     * The Inv token repository.
+     */
     @Autowired
     InviteOrganizationTokenRepository invTokenRepository;
     @Value("${app.access_token_secret_key}")
@@ -75,39 +89,96 @@ public class JwtService {
     @Value("${GATEWAY_TOKEN_EXPIRATION}")
     private long GATEWAY_TOKEN_EXPIRATION;
 
+    /**
+     * Extract username method.
+     *
+     * @param token     the token
+     * @param tokenType the token type
+     * @return the string
+     */
     public String extractUsername(String token, String tokenType) {
         return extractClaim(token, tokenType, Claims::getSubject);
     }
 
+    /**
+     * Extract service id method.
+     *
+     * @param token the token
+     * @return the string
+     */
     public String extractServiceId(String token) {
         return extractAllClaims(token, Constants.TOKEN_TYPE_SERVICE).get("id", String.class);
     }
 
+    /**
+     * Extract claim method.
+     *
+     * @param <T>            the type parameter
+     * @param token          the token
+     * @param tokenType      the token type
+     * @param claimsResolver the claims resolver
+     * @return the t
+     */
     public <T> T extractClaim(String token, String tokenType, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token, tokenType);
         return claimsResolver.apply(claims);
     }
 
+    /**
+     * Generate token method.
+     *
+     * @param userDetails the user details
+     * @return the string
+     */
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails, Constants.TOKEN_TYPE_ACCESS, ACCESS_TOKEN_EXPIRATION);
     }
 
+    /**
+     * Generate refresh token method.
+     *
+     * @param userDetails the user details
+     * @return the string
+     */
     public String generateRefreshToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails, Constants.TOKEN_TYPE_REFRESH, REFRESH_TOKEN_EXPIRATION);
     }
 
+    /**
+     * Generate email verify token method.
+     *
+     * @param userDetails the user details
+     * @return the string
+     */
     public String generateEmailVerifyToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails, Constants.TOKEN_TYPE_EMAIL_VERIFY, EMAIL_VERIFY_TOKEN_EXPIRATION);
     }
 
+    /**
+     * Generate invite organization token method.
+     *
+     * @param userDetails the user details
+     * @return the string
+     */
     public String generateInviteOrganizationToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails, Constants.TOKEN_TYPE_INVITE_ORGANIZATION, FORGOT_EXPIRATION);
     }
 
+    /**
+     * Generate forgot password token method.
+     *
+     * @param userDetails the user details
+     * @return the string
+     */
     public String generateForgotPasswordToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails, Constants.TOKEN_TYPE_FORGOT_PASSWORD, FORGOT_EXPIRATION);
     }
 
+    /**
+     * Generate gateway token method.
+     *
+     * @return the string
+     */
     public String generateGatewayToken() {
         return generateGatewayToken(clientGatewaySecretKey, GATEWAY_TOKEN_EXPIRATION);
     }
@@ -124,16 +195,38 @@ public class JwtService {
                 .compact();
     }
 
+    /**
+     * Is token valid method.
+     *
+     * @param token       the token
+     * @param userDetails the user details
+     * @param tokenType   the token type
+     * @return the boolean
+     */
     public boolean isTokenValid(String token, UserDetails userDetails, String tokenType) {
         final String username = extractUsername(token, tokenType);
         return username.equals(userDetails.getUsername());
     }
 
+    /**
+     * Is gateway token valid method.
+     *
+     * @param token     the token
+     * @param tokenType the token type
+     * @return the boolean
+     */
     public boolean isGatewayTokenValid(String token, String tokenType) {
         final String service_id = extractServiceId(token).trim();
         return service_id.equals(mainServiceIdKey);
     }
 
+    /**
+     * Is token expired method.
+     *
+     * @param token     the token
+     * @param tokenType the token type
+     * @return the boolean
+     */
     public boolean isTokenExpired(String token, String tokenType) {
         return extractExpiration(token, tokenType).before(new Date());
     }
@@ -237,6 +330,12 @@ public class JwtService {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
+    /**
+     * Check token method.
+     *
+     * @param token the token
+     * @return the email verification token
+     */
     public EmailVerificationToken checkToken(String token) {
         if (!token.startsWith("Bearer ")) {
             throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("Email verify token", "Email verify token not valid"));
@@ -270,6 +369,12 @@ public class JwtService {
         return _token;
     }
 
+    /**
+     * Check invite token method.
+     *
+     * @param token the token
+     * @return the invite organization token
+     */
     public InviteOrganizationToken checkInviteToken(String token) {
         if (!token.startsWith("Bearer ")) {
             throw CustomExceptions.unauthorized(Constants.RESPONSE_STATUS_ERROR, Map.of("Invite organization token", "Invite organization token not valid"));

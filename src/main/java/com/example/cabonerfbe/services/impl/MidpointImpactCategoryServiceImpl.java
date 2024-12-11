@@ -20,12 +20,26 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * The class Midpoint impact category service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class MidpointImpactCategoryServiceImpl implements MidpointImpactCategoryService {
+    /**
+     * The Midpoint impact category repository.
+     */
     @Autowired
     MidpointImpactCategoryRepository midpointImpactCategoryRepository;
+    /**
+     * The Midpoint impact category converter.
+     */
     @Autowired
     MidpointImpactCategoryConverter midpointImpactCategoryConverter;
+    /**
+     * The U repository.
+     */
     @Autowired
     UnitRepository uRepository;
 

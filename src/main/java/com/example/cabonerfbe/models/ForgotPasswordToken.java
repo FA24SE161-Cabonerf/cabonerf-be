@@ -8,6 +8,11 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/**
+ * The class Forgot password token.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

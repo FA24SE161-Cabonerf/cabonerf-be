@@ -15,6 +15,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * The class Life cycle stage service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class LifeCycleStageServiceImpl implements LifeCycleStageService {
     @Autowired
@@ -24,7 +29,7 @@ public class LifeCycleStageServiceImpl implements LifeCycleStageService {
 
     @Override
     public List<LifeCycleStageDto> getAll() {
-        return converter.INSTANCE.fromListLifecycleStageToLifecycleStageDto(repository.findAll());
+        return LifeCycleStageConverter.INSTANCE.fromListLifecycleStageToLifecycleStageDto(repository.findAll());
     }
 
     @Override

@@ -6,6 +6,11 @@ import lombok.*;
 
 import java.util.List;
 
+/**
+ * The class Impact exchange response.
+ *
+ * @author SonPHH.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

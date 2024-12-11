@@ -7,7 +7,18 @@ import org.springframework.data.jpa.domain.Specification;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The class Emission substances specification.
+ *
+ * @author SonPHH.
+ */
 public class EmissionSubstancesSpecification {
+    /**
+     * Contains keyword in all fields method.
+     *
+     * @param keyword the keyword
+     * @return the specification
+     */
     public static Specification<Substance> containsKeywordInAllFields(String keyword) {
         return (root, query, criteriaBuilder) -> {
             if (keyword == null || keyword.isEmpty()) {

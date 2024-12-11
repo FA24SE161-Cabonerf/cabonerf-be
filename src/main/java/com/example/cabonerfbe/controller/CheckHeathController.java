@@ -10,6 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * The class Check heath controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION)
 @NoArgsConstructor(force = true)
 @RestController
@@ -20,12 +25,23 @@ public class CheckHeathController {
     @Autowired
     private MessagePublisher messagePublisher;
 
+    /**
+     * Health method.
+     *
+     * @return the response entity
+     */
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         log.info("Start health.");
         return ResponseEntity.ok().body("OK");
     }
 
+    /**
+     * Send message method.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @GetMapping("/send-message")
     public ResponseEntity<String> sendMessage(@RequestBody RabbitMqJsonRequest request) {
         log.info("Start send message to rabbitmq. request: {}", request);
@@ -35,6 +51,12 @@ public class CheckHeathController {
         return ResponseEntity.ok().body("Test send message - queued by rabbitMQ");
     }
 
+    /**
+     * Test create process queue method.
+     *
+     * @param string the string
+     * @return the response entity
+     */
     @PostMapping("/test-create-process-queue")
     public ResponseEntity<String> testCreateProcessQueue(@RequestBody String string) {
         log.info("Start send message to rabbitmq with create process queue. request: {}", string);

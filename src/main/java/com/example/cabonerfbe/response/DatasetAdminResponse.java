@@ -1,7 +1,6 @@
 package com.example.cabonerfbe.response;
 
 import com.example.cabonerfbe.dto.DatasetDto;
-import com.example.cabonerfbe.dto.ProcessDetailDto;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +10,11 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
+/**
+ * The class Dataset admin response.
+ *
+ * @author SonPHH.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

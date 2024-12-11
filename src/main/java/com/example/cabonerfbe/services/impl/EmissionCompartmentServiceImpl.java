@@ -16,10 +16,21 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * The class Emission compartment service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class EmissionCompartmentServiceImpl implements EmissionCompartmentService {
+    /**
+     * The Emission compartment repository.
+     */
     @Autowired
     EmissionCompartmentRepository emissionCompartmentRepository;
+    /**
+     * The Emission compartment converter.
+     */
     @Autowired
     EmissionCompartmentConverter emissionCompartmentConverter;
 

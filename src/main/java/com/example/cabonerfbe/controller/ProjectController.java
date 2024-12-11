@@ -21,6 +21,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 
+/**
+ * The class Project controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.PROJECT)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,6 +38,16 @@ public class ProjectController {
     @Autowired
     private ProcessImpactValueService service;
 
+    /**
+     * Gets project list by method id.
+     *
+     * @param userId         the user id
+     * @param pageCurrent    the page current
+     * @param pageSize       the page size
+     * @param methodId       the method id
+     * @param organizationId the organization id
+     * @return the project list by method id
+     */
     @GetMapping()
     public ResponseEntity<ResponseObject> getProjectListByMethodId(
             @RequestHeader("x-user-id") UUID userId,
@@ -47,6 +62,13 @@ public class ProjectController {
                 ));
     }
 
+    /**
+     * Create project method.
+     *
+     * @param userId  the user id
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping()
     public ResponseEntity<ResponseObject> createProject(@RequestHeader("x-user-id") UUID userId, @Valid @RequestBody CreateProjectRequest request) {
         log.info("Start createProject. request: {}", request);
@@ -55,6 +77,13 @@ public class ProjectController {
                 ));
     }
 
+    /**
+     * Gets project by id.
+     *
+     * @param userId    the user id
+     * @param projectId the project id
+     * @return the project by id
+     */
     @GetMapping(API_PARAMS.GET_PROJECT_BY_ID)
     public ResponseEntity<ResponseObject> getProjectById(@RequestHeader("x-user-id") UUID userId, @PathVariable UUID projectId) {
         log.info("Start getProjectById, id: {}", projectId);
@@ -63,6 +92,14 @@ public class ProjectController {
                 ));
     }
 
+    /**
+     * Update method.
+     *
+     * @param projectId the project id
+     * @param request   the request
+     * @param userId    the user id
+     * @return the response entity
+     */
     @PutMapping(API_PARAMS.UPDATE_DETAIL_PROJECT_BY_ID)
     public ResponseEntity<ResponseObject> update(@PathVariable UUID projectId, @Valid @RequestBody UpdateProjectDetailRequest request, @RequestHeader("x-user-id") UUID userId) {
         log.info("Start updateDetailProject. request: {}", request);
@@ -71,6 +108,13 @@ public class ProjectController {
                 ));
     }
 
+    /**
+     * Delete method.
+     *
+     * @param userId    the user id
+     * @param projectId the project id
+     * @return the response entity
+     */
     @DeleteMapping(API_PARAMS.DELETE_PROJECT)
     public ResponseEntity<ResponseObject> delete(@RequestHeader("x-user-id") UUID userId, @PathVariable UUID projectId) {
         log.info("Start deleteProject with projectId: {}", projectId);
@@ -79,6 +123,13 @@ public class ProjectController {
                 ));
     }
 
+    /**
+     * Change project method method.
+     *
+     * @param projectId the project id
+     * @param methodId  the method id
+     * @return the response entity
+     */
     @PatchMapping(API_PARAMS.CHANGE_PROJECT_METHOD)
     public ResponseEntity<ResponseObject> changeProjectMethod(@PathVariable UUID projectId, @PathVariable UUID methodId) {
         log.info("Start changeProjectMethod. projectId: {}, method id: {}", projectId, methodId);
@@ -87,6 +138,12 @@ public class ProjectController {
         );
     }
 
+    /**
+     * Calculation method.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping(API_PARAMS.CALCULATION_PROJECT)
     public ResponseEntity<ResponseObject> calculation(@RequestBody CalculateProjectRequest request) {
         log.info("Start calculationProject. request: {}", request);
@@ -95,12 +152,24 @@ public class ProjectController {
         );
     }
 
+    /**
+     * Export method.
+     *
+     * @param projectId the project id
+     * @return the response entity
+     */
     @GetMapping(API_PARAMS.EXPORT_PROJECT)
     public ResponseEntity<Resource> export(@PathVariable("projectId") UUID projectId) {
         log.info("Start exportProject. Id: {}", projectId);
         return projectService.exportProject(projectId);
     }
 
+    /**
+     * Intensity method.
+     *
+     * @param projectId the project id
+     * @return the response entity
+     */
     @GetMapping(API_PARAMS.INTENSITY_PROJECT)
     public ResponseEntity<ResponseObject> intensity(@PathVariable("projectId") UUID projectId) {
         log.info("Start intensity. id: {}", projectId);
@@ -109,6 +178,11 @@ public class ProjectController {
         );
     }
 
+    /**
+     * Count all project method.
+     *
+     * @return the response entity
+     */
     @GetMapping(API_PARAMS.ADMIN + API_PARAMS.COUNT_PROJECT)
     public ResponseEntity<ResponseObject> countAllProject() {
         log.info("Start countAllProject");
@@ -117,6 +191,11 @@ public class ProjectController {
         );
     }
 
+    /**
+     * Gets sum impact.
+     *
+     * @return the sum impact
+     */
     @GetMapping(API_PARAMS.ADMIN + API_PARAMS.SUM_IMPACT)
     public ResponseEntity<ResponseObject> getSumImpact() {
         log.info("Start getImpactSum");
@@ -125,6 +204,12 @@ public class ProjectController {
         );
     }
 
+    /**
+     * Favorite method.
+     *
+     * @param projectId the project id
+     * @return the response entity
+     */
     @PutMapping(API_PARAMS.SET_FAVORITE_PROJECT)
     public ResponseEntity<ResponseObject> favorite(@PathVariable UUID projectId) {
         log.info("Start updateFavorite. projectId: {}", projectId);

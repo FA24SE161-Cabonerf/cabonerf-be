@@ -7,10 +7,18 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * The class Midpoint impact category response.
+ *
+ * @author SonPHH.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class MidpointImpactCategoryResponse {
+    /**
+     * The Unit.
+     */
     UnitDto unit;
     private UUID id;
     private String name;

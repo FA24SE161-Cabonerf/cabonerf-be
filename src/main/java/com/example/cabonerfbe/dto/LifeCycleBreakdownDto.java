@@ -5,6 +5,11 @@ import lombok.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * The class Life cycle breakdown dto.
+ *
+ * @author SonPHH.
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

@@ -11,6 +11,11 @@ import lombok.experimental.SuperBuilder;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The class Import emission substance response.
+ *
+ * @author SonPHH.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

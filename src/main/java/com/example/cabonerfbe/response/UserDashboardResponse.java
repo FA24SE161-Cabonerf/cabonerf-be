@@ -2,8 +2,11 @@ package com.example.cabonerfbe.response;
 
 import lombok.*;
 
-import java.math.BigDecimal;
-
+/**
+ * The class User dashboard response.
+ *
+ * @author SonPHH.
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

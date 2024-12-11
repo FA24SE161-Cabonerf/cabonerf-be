@@ -12,6 +12,11 @@ import lombok.experimental.SuperBuilder;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * The class Create organization request.
+ *
+ * @author SonPHH.
+ */
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data

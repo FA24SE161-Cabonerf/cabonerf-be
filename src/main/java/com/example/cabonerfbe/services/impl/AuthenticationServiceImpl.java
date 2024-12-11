@@ -32,6 +32,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * The class Authentication service.
+ *
+ * @author SonPHH.
+ */
 @Service
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -39,7 +44,13 @@ import java.util.UUID;
 @SuperBuilder
 @AllArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
+    /**
+     * The constant PASSWORD_FIELD.
+     */
     public static final String PASSWORD_FIELD = "password";
+    /**
+     * The constant EMAIL_FIELD.
+     */
     public static final String EMAIL_FIELD = "email";
     @Autowired
     UserRepository userRepository;
@@ -232,7 +243,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         userRepository.save(user);
 
 
-
         return LoginResponse.builder()
                 .access_token(access_token)
                 .refresh_token(refresh_token)
@@ -250,20 +260,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,Map.of("oldPassword",MessageConstants.PASSWORD_WRONG));
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("oldPassword", MessageConstants.PASSWORD_WRONG));
         }
 
         if (request.getOldPassword().equals(request.getNewPassword())) {
-            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,Map.of("newPassword",MessageConstants.NEW_PASSWORD_SAME_AS_OLD));
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("newPassword", MessageConstants.NEW_PASSWORD_SAME_AS_OLD));
         }
         if (!request.getNewPassword().equals(request.getNewPasswordConfirm())) {
-            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR,Map.of("newPasswordConfirm",MessageConstants.CONFIRM_PASSWORD_NOT_MATCH));
+            throw CustomExceptions.validator(Constants.RESPONSE_STATUS_ERROR, Map.of("newPasswordConfirm", MessageConstants.CONFIRM_PASSWORD_NOT_MATCH));
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         return UserConverter.INSTANCE.fromUserToUserDto(userRepository.save(user));
     }
 
+    /**
+     * Rotate refresh token method.
+     *
+     * @param oldRefreshTokenString the old refresh token string
+     * @param user                  the user
+     * @return the string
+     */
     public String rotateRefreshToken(String oldRefreshTokenString, Users user) {
         // invalidate token cũ
         refreshTokenRepository.findByToken(oldRefreshTokenString).get().setValid(false);

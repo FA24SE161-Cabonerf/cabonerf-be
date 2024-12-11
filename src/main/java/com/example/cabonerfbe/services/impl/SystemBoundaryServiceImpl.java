@@ -9,11 +9,22 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * The class System boundary service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class SystemBoundaryServiceImpl implements SystemBoundaryService {
     private final SystemBoundaryRepository systemBoundaryRepository;
     private final SystemBoundaryConverter systemBoundaryConverter;
 
+    /**
+     * Instantiates a new System boundary service.
+     *
+     * @param systemBoundaryRepository the system boundary repository
+     * @param systemBoundaryConverter  the system boundary converter
+     */
     @Autowired
     public SystemBoundaryServiceImpl(SystemBoundaryRepository systemBoundaryRepository, SystemBoundaryConverter systemBoundaryConverter) {
         this.systemBoundaryRepository = systemBoundaryRepository;

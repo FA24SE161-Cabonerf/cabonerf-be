@@ -32,6 +32,11 @@ import java.math.MathContext;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * The class Process service.
+ *
+ * @author SonPHH.
+ */
 @Service
 @Slf4j
 public class ProcessServiceImpl implements ProcessService {
@@ -53,6 +58,26 @@ public class ProcessServiceImpl implements ProcessService {
     private final ImpactMethodCategoryRepository impactMethodCategoryRepository;
     private final ProjectImpactValueRepository projectImpactValueRepository;
 
+    /**
+     * Instantiates a new Process service.
+     *
+     * @param processConverter               the process converter
+     * @param processRepository              the process repository
+     * @param processImpactValueRepository   the process impact value repository
+     * @param lifeCycleStageRepository       the life cycle stage repository
+     * @param projectRepository              the project repository
+     * @param exchangesRepository            the exchanges repository
+     * @param connectorRepository            the connector repository
+     * @param exchangesConverter             the exchanges converter
+     * @param unitService                    the unit service
+     * @param methodConverter                the method converter
+     * @param unitRepository                 the unit repository
+     * @param categoryConverter              the category converter
+     * @param messagePublisher               the message publisher
+     * @param connectorService               the connector service
+     * @param impactMethodCategoryRepository the impact method category repository
+     * @param projectImpactValueRepository   the project impact value repository
+     */
     @Autowired
     public ProcessServiceImpl(ProcessConverter processConverter, ProcessRepository processRepository, ProcessImpactValueRepository processImpactValueRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, ExchangesRepository exchangesRepository, ConnectorRepository connectorRepository, ExchangesConverter exchangesConverter, UnitServiceImpl unitService, LifeCycleImpactAssessmentMethodConverter methodConverter, UnitRepository unitRepository, ImpactCategoryConverter categoryConverter, MessagePublisher messagePublisher, ConnectorServiceImpl connectorService, ImpactMethodCategoryRepository impactMethodCategoryRepository, ProjectImpactValueRepository projectImpactValueRepository) {
         this.processConverter = processConverter;
@@ -74,6 +99,25 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
+
+    private static Map<UUID, BigDecimal> aggregateNet(ProcessNodeDto root) {
+        Map<UUID, BigDecimal> result = new HashMap<>();
+        aggregateNetRecursive(root, result);
+        return result;
+    }
+
+    private static void aggregateNetRecursive(ProcessNodeDto node, Map<UUID, BigDecimal> result) {
+        if (node == null) return;
+
+        result.put(
+                node.getProcessId(),
+                result.getOrDefault(node.getProcessId(), BigDecimal.ZERO).add(node.getNet())
+        );
+
+        for (ProcessNodeDto subProcess : node.getSubProcesses()) {
+            aggregateNetRecursive(subProcess, result);
+        }
+    }
 
     @Override
     public ProcessDto createProcess(CreateProcessRequest request) {
@@ -100,12 +144,10 @@ public class ProcessServiceImpl implements ProcessService {
         process.setLibrary(false);
         process = processRepository.save(process);
 
-        System.out.println("process id nè: " + process.getId());
 
         Process p = processRepository.findByProcessId(process.getId()).orElseThrow(
                 () -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
 
-        System.out.println("lấy lúc tạo nè: " + p);
         // generate process impact value
         messagePublisher.publishCreateProcessImpactValue(RabbitMQConfig.CREATE_PROCESS_EXCHANGE, RabbitMQConfig.CREATE_PROCESS_ROUTING_KEY, process.getId(), project.getLifeCycleImpactAssessmentMethod().getId());
 
@@ -115,12 +157,21 @@ public class ProcessServiceImpl implements ProcessService {
         return processDto;
     }
 
+    /**
+     * Process impact value generate upon create process method.
+     *
+     * @param request the request
+     */
     @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     public void processImpactValueGenerateUponCreateProcess(CreateProcessImpactValueRequest request) {
-        System.out.println("dô tạo list impact nè với process id nè: " + request.getProcessId());
         handleImpactValueCreation(request);
     }
 
+    /**
+     * Handle impact value creation method.
+     *
+     * @param request the request
+     */
     public void handleImpactValueCreation(CreateProcessImpactValueRequest request) {
         UUID processId = request.getProcessId();
         UUID methodId = request.getMethodId();
@@ -229,17 +280,19 @@ public class ProcessServiceImpl implements ProcessService {
                 .collect(Collectors.toList());
     }
 
-
-    //    @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
+    /**
+     * Create process listener method.
+     *
+     * @param request the request
+     */
+//    @RabbitListener(queues = RabbitMQConfig.CREATE_PROCESS_QUEUE)
     public void createProcessListener(CreateProcessRequest request) {
-        log.info("create process message from nodeBased server: {}", request);
         ProcessDto processDto = createProcess(request);
         messagePublisher.publishCreateProcess(RabbitMQConfig.CREATED_PROCESS_EXCHANGE, RabbitMQConfig.CREATED_PROCESS_ROUTING_KEY, processDto);
     }
 
     @Override
     public ProcessNodeDto constructListProcessNodeDto(UUID projectId) {
-        log.info("constructing contribution breakdown data");
 
         List<Process> processList = processRepository.findAll(projectId);
         List<Connector> connectorList = connectorRepository.findAllByProject(projectId);
@@ -402,7 +455,6 @@ public class ProcessServiceImpl implements ProcessService {
         return newImpactValue;
     }
 
-
     @Transactional
     @Override
     public ProcessDto convertObjectLibraryToProcessDto(Process object, Project project) {
@@ -442,7 +494,6 @@ public class ProcessServiceImpl implements ProcessService {
         return processDto;
     }
 
-
     @Override
     public ProcessNodeDto calculationFast(UUID projectId) {
         ProcessNodeDto dto = constructListProcessNodeDto(projectId);
@@ -464,6 +515,12 @@ public class ProcessServiceImpl implements ProcessService {
         return dto;
     }
 
+    /**
+     * Calculate to designated process method.
+     *
+     * @param node the node
+     * @return the list
+     */
     public List<ProcessImpactValue> calculateToDesignatedProcess(ProcessNodeDto node) {
         Map<UUID, BigDecimal> totalNet = aggregateNet(node);
 
@@ -475,25 +532,5 @@ public class ProcessServiceImpl implements ProcessService {
 //        processImpactValueRepository.saveAll(updatedImpactValues);
 
         return updatedImpactValues.stream().filter(x -> x.getProcessId().equals(node.getProcessId())).collect(Collectors.toList());
-    }
-
-
-    private static Map<UUID, BigDecimal> aggregateNet(ProcessNodeDto root) {
-        Map<UUID, BigDecimal> result = new HashMap<>();
-        aggregateNetRecursive(root, result);
-        return result;
-    }
-
-    private static void aggregateNetRecursive(ProcessNodeDto node, Map<UUID, BigDecimal> result) {
-        if (node == null) return;
-
-        result.put(
-                node.getProcessId(),
-                result.getOrDefault(node.getProcessId(), BigDecimal.ZERO).add(node.getNet())
-        );
-
-        for (ProcessNodeDto subProcess : node.getSubProcesses()) {
-            aggregateNetRecursive(subProcess, result);
-        }
     }
 }

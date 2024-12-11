@@ -8,6 +8,11 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/**
+ * The class Refresh token.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

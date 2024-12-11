@@ -16,13 +16,27 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.UUID;
 
+/**
+ * The class Email verification token service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class EmailVerificationTokenServiceImpl implements EmailVerificationTokenService {
 
+    /**
+     * The Email verification token repository.
+     */
     @Autowired
     EmailVerificationTokenRepository emailVerificationTokenRepository;
+    /**
+     * The User repository.
+     */
     @Autowired
     UserRepository userRepository;
+    /**
+     * The Jwt service.
+     */
     @Autowired
     JwtService jwtService;
 
