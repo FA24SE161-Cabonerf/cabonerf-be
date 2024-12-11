@@ -252,10 +252,12 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public List<CarbonIntensityDto> getIntensity(UUID projectId) {
+        // Tìm kiếm Project
         Project p = projectRepository.findByIdAndStatusTrue(projectId)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
+                .orElseThrow(() -> CustomExceptions.notFound(
+                        MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
 
-        if(projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()){
+        if (projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()) {
             return Collections.emptyList();
         }
 
@@ -263,13 +265,22 @@ public class ProjectServiceImpl implements ProjectService {
 
         List<CarbonIntensity> ci = ciRepository.findAll();
 
+        Map<UUID, BigDecimal> originalValues = new HashMap<>();
+        ci.forEach(c -> originalValues.put(c.getId(), c.getValue()));
+
         ci.forEach(c ->
                 c.setValue(c.getValue().multiply(value.getValue()).setScale(2, RoundingMode.HALF_UP))
         );
 
+        List<CarbonIntensityDto> result = ci.stream()
+                .map(ciConverter::toDto)
+                .collect(Collectors.toList());
 
-        return ci.stream().map(ciConverter::toDto).collect(Collectors.toList());
+        ci.forEach(c -> c.setValue(originalValues.get(c.getId())));
+
+        return result;
     }
+
 
     @Override
     public int countAllProject() {
@@ -789,9 +800,6 @@ public class ProjectServiceImpl implements ProjectService {
 
 
         Optional<Exchanges> e = exchangesRepository.findProductOut(root.getId());
-        if(e.isEmpty()){
-            return "";
-        }
-        return e.get().getValue().setScale(2, RoundingMode.HALF_UP)+ " " + e.get().getUnit().getName()+ " " + e.get().getName();
+        return e.map(exchanges -> exchanges.getValue().setScale(2, RoundingMode.HALF_UP) + " " + exchanges.getUnit().getName() + " " + exchanges.getName()).orElse("");
     }
 }
