@@ -371,6 +371,10 @@ public class ProjectServiceImpl implements ProjectService {
         Project p = projectRepository.findByIdAndStatusTrue(projectId)
                 .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
 
+        List<ProjectImpactValue> data = projectImpactValueRepository.findAllByProjectId(projectId);
+        if(data.isEmpty()){
+            throw CustomExceptions.badRequest("Please calculation to export");
+        }
 
         byte[] file = createFile(p);
         ByteArrayResource resource = new ByteArrayResource(file);
