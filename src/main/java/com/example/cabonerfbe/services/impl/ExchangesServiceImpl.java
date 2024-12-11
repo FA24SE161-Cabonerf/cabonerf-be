@@ -124,7 +124,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         if (pageCurrent > totalPage) {
             return SearchElementaryResponse.builder()
                     .totalPage(0)
-                    .pageSize(pageSize)
+                    .pageSize(0)
                     .pageCurrent(1)
                     .list(Collections.emptyList())
                     .build();
