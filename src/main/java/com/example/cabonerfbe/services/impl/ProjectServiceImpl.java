@@ -783,7 +783,7 @@ public class ProjectServiceImpl implements ProjectService {
                 return "";
             }
             root = _root.get(0);
-        }else{
+        }else if(processList.size() == 1) {
             root = processList.get(0);
         }
 
