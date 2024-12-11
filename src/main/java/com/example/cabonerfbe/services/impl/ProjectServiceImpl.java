@@ -774,11 +774,21 @@ public class ProjectServiceImpl implements ProjectService {
         if(projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()){
             return "";
         }
-        List<Process> root = processRepository.findRootProcess(projectId);
-        if(root.isEmpty()){
-            return "";
+
+        List<Process> processList = processRepository.findAll(projectId);
+        Process root = new Process();
+        if(processList.size() > 1){
+            List<Process> _root = processRepository.findRootProcess(projectId);
+            if(_root.isEmpty()){
+                return "";
+            }
+            root = _root.get(0);
+        }else{
+            root = processList.get(0);
         }
-        Optional<Exchanges> e = exchangesRepository.findProductOut(root.get(0).getId());
+
+
+        Optional<Exchanges> e = exchangesRepository.findProductOut(root.getId());
         if(e.isEmpty()){
             return "";
         }
