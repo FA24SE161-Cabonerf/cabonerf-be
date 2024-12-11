@@ -8,6 +8,11 @@ import lombok.Setter;
 
 import java.util.UUID;
 
+/**
+ * The class Calculate project request.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

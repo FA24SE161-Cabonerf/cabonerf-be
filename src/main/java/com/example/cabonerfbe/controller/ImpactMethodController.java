@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * The class Impact method controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.IMPACT)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,6 +31,11 @@ public class ImpactMethodController {
     @Autowired
     private ImpactMethodService impactMethodService;
 
+    /**
+     * Gets all impact methods.
+     *
+     * @return the all impact methods
+     */
     @GetMapping(API_PARAMS.GET_ALL_IMPACT_METHODS)
     public ResponseEntity<ResponseObject> getAllImpactMethods() {
         log.info("Start getAllImpactMethods");
@@ -34,6 +44,12 @@ public class ImpactMethodController {
         );
     }
 
+    /**
+     * Gets impact method by id.
+     *
+     * @param methodId the method id
+     * @return the impact method by id
+     */
     @GetMapping(API_PARAMS.GET_IMPACT_METHOD_BY_ID)
     public ResponseEntity<ResponseObject> getImpactMethodById(@PathVariable UUID methodId) {
         log.info("Start getImpactMethodById. id {}", methodId);
@@ -42,6 +58,12 @@ public class ImpactMethodController {
         );
     }
 
+    /**
+     * Gets category by method id.
+     *
+     * @param methodId the method id
+     * @return the category by method id
+     */
     @GetMapping(API_PARAMS.GET_CATEGORY_BY_METHOD_ID)
     public ResponseEntity<ResponseObject> getCategoryByMethodId(@PathVariable UUID methodId) {
         log.info("Start getCategoryByMethodId. id {}", methodId);
@@ -50,6 +72,12 @@ public class ImpactMethodController {
         );
     }
 
+    /**
+     * Create impact method method.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping(API_PARAMS.CREATE_IMPACT_METHOD)
     public ResponseEntity<ResponseObject> createImpactMethod(@Valid @RequestBody BaseImpactMethodRequest request) {
         log.info("Start createImpactMethod. request {}", request);
@@ -58,6 +86,13 @@ public class ImpactMethodController {
         );
     }
 
+    /**
+     * Update impact method by id method.
+     *
+     * @param methodId the method id
+     * @param request  the request
+     * @return the response entity
+     */
     @PutMapping(API_PARAMS.UPDATE_IMPACT_METHOD_BY_ID)
     public ResponseEntity<ResponseObject> updateImpactMethodById(@PathVariable UUID methodId, @Valid @RequestBody BaseImpactMethodRequest request) {
         log.info("Start updateImpactMethodById, methodId {}, request {}", methodId, request);
@@ -66,6 +101,12 @@ public class ImpactMethodController {
         );
     }
 
+    /**
+     * Delete impact method by id method.
+     *
+     * @param methodId the method id
+     * @return the response entity
+     */
     @DeleteMapping(API_PARAMS.DELETE_IMPACT_METHOD_BY_ID)
     public ResponseEntity<ResponseObject> deleteImpactMethodById(@PathVariable UUID methodId) {
         log.info("Start deleteImpactMethodById, methodId {}", methodId);
@@ -74,6 +115,11 @@ public class ImpactMethodController {
         );
     }
 
+    /**
+     * Gets name all method.
+     *
+     * @return the name all method
+     */
     @GetMapping(API_PARAMS.GET_ALL_METHOD_NAME)
     public ResponseEntity<ResponseObject> getNameAllMethod() {
         log.info("Start getAllMethodName");
@@ -82,6 +128,13 @@ public class ImpactMethodController {
         );
     }
 
+    /**
+     * Add impact category to impact method method.
+     *
+     * @param methodId   the method id
+     * @param categoryId the category id
+     * @return the response entity
+     */
     @PostMapping(API_PARAMS.ADD_IMPACT_CATEGORY_TO_IMPACT_METHOD)
     public ResponseEntity<ResponseObject> addImpactCategoryToImpactMethod(@PathVariable UUID methodId, @PathVariable UUID categoryId) {
         log.info("Start addImpactCategoryToImpactMethod");

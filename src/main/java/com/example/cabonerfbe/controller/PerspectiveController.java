@@ -17,6 +17,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * The class Perspective controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.PERSPECTIVE)
 @RestController
 @NoArgsConstructor
@@ -24,9 +29,17 @@ import java.util.UUID;
 @CrossOrigin("*")
 @Slf4j
 public class PerspectiveController {
+    /**
+     * The Perspective service.
+     */
     @Autowired
     PerspectiveService perspectiveService;
 
+    /**
+     * Gets all perspective.
+     *
+     * @return the all perspective
+     */
     @GetMapping(API_PARAMS.GET_ALL_PERSPECTIVE)
     public ResponseEntity<ResponseObject> getAllPerspective() {
         log.info("Start getAllPerspective");
@@ -35,6 +48,12 @@ public class PerspectiveController {
         );
     }
 
+    /**
+     * Gets by id.
+     *
+     * @param id the id
+     * @return the by id
+     */
     @GetMapping(API_PARAMS.GET_BY_ID_PERSPECTIVE)
     public ResponseEntity<ResponseObject> getById(@PathVariable UUID id) {
         log.info("Start getPerspectiveById. Id: {}", id);
@@ -43,6 +62,13 @@ public class PerspectiveController {
         );
     }
 
+    /**
+     * Update by id method.
+     *
+     * @param id      the id
+     * @param request the request
+     * @return the response entity
+     */
     @PutMapping(API_PARAMS.GET_BY_ID_PERSPECTIVE)
     public ResponseEntity<ResponseObject> updateById(@PathVariable UUID id, @RequestBody UpdatePerspectiveRequest request) {
         log.info("Start updateById. Id: {}", id);
@@ -51,6 +77,12 @@ public class PerspectiveController {
         );
     }
 
+    /**
+     * Create perspective method.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping()
     public ResponseEntity<ResponseObject> createPerspective(@Valid @RequestBody CreatePerspectiveRequest request) {
         log.info("Start createPerspective");
@@ -59,6 +91,12 @@ public class PerspectiveController {
         );
     }
 
+    /**
+     * Delete perspective method.
+     *
+     * @param id the id
+     * @return the response entity
+     */
     @DeleteMapping(API_PARAMS.GET_BY_ID_PERSPECTIVE)
     public ResponseEntity<ResponseObject> deletePerspective(@PathVariable UUID id) {
         log.info("Start deletePerspective. Id: {}", id);

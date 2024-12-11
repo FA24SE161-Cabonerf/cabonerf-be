@@ -17,6 +17,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * The class Unit controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,6 +32,11 @@ public class UnitController {
     @Autowired
     private UnitService unitService;
 
+    /**
+     * Gets all units.
+     *
+     * @return the all units
+     */
     @GetMapping(API_PARAMS.GET_ALL_UNITS)
     public ResponseEntity<ResponseObject> getAllUnits() {
         log.info("getAllUnits");
@@ -35,6 +45,12 @@ public class UnitController {
         );
     }
 
+    /**
+     * Gets unit by id.
+     *
+     * @param unitId the unit id
+     * @return the unit by id
+     */
     @GetMapping(API_PARAMS.GET_UNIT_BY_ID)
     public ResponseEntity<ResponseObject> getUnitById(@PathVariable UUID unitId) {
         log.info("getUnitById: {}", unitId);
@@ -43,6 +59,12 @@ public class UnitController {
         );
     }
 
+    /**
+     * Gets all units from group id.
+     *
+     * @param groupId the group id
+     * @return the all units from group id
+     */
     @GetMapping(API_PARAMS.GET_ALL_UNITS_FROM_UNIT_GROUP_ID)
     public ResponseEntity<ResponseObject> getAllUnitsFromGroupId(@PathVariable UUID groupId) {
         log.info("getAllUnitsFromGroupId: {}", groupId);
@@ -51,6 +73,13 @@ public class UnitController {
         );
     }
 
+    /**
+     * Create unit in unit group method.
+     *
+     * @param groupId the group id
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping(API_PARAMS.ADD_UNIT_TO_UNIT_GROUP)
     public ResponseEntity<ResponseObject> createUnitInUnitGroup(@PathVariable UUID groupId, @Valid @RequestBody CreateUnitRequest request) {
         log.info("addUnitToUnitGroup: {}", request);
@@ -59,6 +88,13 @@ public class UnitController {
         );
     }
 
+    /**
+     * Update unit by id method.
+     *
+     * @param unitId  the unit id
+     * @param request the request
+     * @return the response entity
+     */
     @PutMapping(API_PARAMS.UPDATE_UNIT_BY_ID)
     public ResponseEntity<ResponseObject> updateUnitById(@PathVariable UUID unitId, @Valid @RequestBody UpdateUnitRequest request) {
         log.info("updateUnitById: {}", unitId);
@@ -67,6 +103,12 @@ public class UnitController {
         );
     }
 
+    /**
+     * Delete unit by id method.
+     *
+     * @param unitId the unit id
+     * @return the response entity
+     */
     @DeleteMapping(API_PARAMS.DELETE_UNIT_BY_ID)
     public ResponseEntity<ResponseObject> deleteUnitById(@PathVariable UUID unitId) {
         log.info("deleteUnitById: {}", unitId);

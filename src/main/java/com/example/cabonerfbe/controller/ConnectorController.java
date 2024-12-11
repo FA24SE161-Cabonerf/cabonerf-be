@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * The class Connector controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.CONNECTOR)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,6 +31,12 @@ public class ConnectorController {
     @Autowired
     private ConnectorService service;
 
+    /**
+     * Create connector method.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping()
     public ResponseEntity<ResponseObject> createConnector(@Valid @RequestBody CreateConnectorRequest request) {
         log.info("Start createConnector. request: {}", request);
@@ -34,6 +45,12 @@ public class ConnectorController {
         ));
     }
 
+    /**
+     * Delete connector method.
+     *
+     * @param id the id
+     * @return the response entity
+     */
     @DeleteMapping(API_PARAMS.DELETE_CONNECTOR)
     public ResponseEntity<ResponseObject> deleteConnector(@PathVariable UUID id) {
         log.info("Start deleteConnector. id: {}", id);

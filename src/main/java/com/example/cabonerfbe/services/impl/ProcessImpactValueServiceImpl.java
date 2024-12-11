@@ -24,6 +24,11 @@ import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * The class Process impact value service.
+ *
+ * @author SonPHH.
+ */
 @Slf4j
 @Lazy
 @Service
@@ -46,6 +51,25 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     private final ImpactCategoryRepository icRepository;
     private final ImpactCategoryConverter icConverter;
 
+    /**
+     * Instantiates a new Process impact value service.
+     *
+     * @param impactMethodCategoryRepository the impact method category repository
+     * @param processRepository              the process repository
+     * @param systemBoundaryRepository       the system boundary repository
+     * @param processImpactValueRepository   the process impact value repository
+     * @param exchangesRepository            the exchanges repository
+     * @param midpointFactorsRepository      the midpoint factors repository
+     * @param unitService                    the unit service
+     * @param icRepository                   the ic repository
+     * @param icConverter                    the ic converter
+     * @param projectRepository              the project repository
+     * @param connectorRepository            the connector repository
+     * @param projectImpactValueRepository   the project impact value repository
+     * @param processService                 the process service
+     * @param lcsConverter                   the lcs converter
+     * @param lcsRepository                  the lcs repository
+     */
     @Autowired
     public ProcessImpactValueServiceImpl(ImpactMethodCategoryRepository impactMethodCategoryRepository,
                                          ProcessRepository processRepository, SystemBoundaryRepository systemBoundaryRepository,
@@ -69,6 +93,11 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     // this one will be used once the client is too tired to update one by one.
     // however this still needs to be optimized
 
+    /**
+     * Compute process impact value all exchange of process method.
+     *
+     * @param process the process
+     */
     public void computeProcessImpactValueAllExchangeOfProcess(Process process) {
         UUID processId = process.getId();
         // the idea here is:
@@ -107,75 +136,13 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processImpactValueRepository.saveAll(processImpactValueList);
     }
 
-//    @Transactional
-//    public void computeProcessImpactValueSingleExchange(Process process, Exchanges exchange, BigDecimal initialValue) {
-//        UUID processId = process.getId();
-//        log.info("Starting impact value computation for process ID: " + processId);
-//
-//        List<ProcessImpactValue> processImpactValueList = new ArrayList<>();
-//        UUID emissionSubstanceId = exchange.getEmissionSubstance().getId();
-//        Unit baseUnit = exchange.getEmissionSubstance().getUnit();
-//
-//        Optional<Exchanges> exchanges = exchangesRepository.findProductOut(processId);
-//
-//        List<MidpointImpactCharacterizationFactors> list = midpointFactorsRepository
-//                .findByEmissionSubstanceId(emissionSubstanceId);
-//        int index = 0;
-//        for (MidpointImpactCharacterizationFactors factors : list) {
-//            Optional<ProcessImpactValue> processImpactValueOpt = processImpactValueRepository
-//                    .findByProcessIdAndImpactMethodCategoryId(
-//                            processId, factors.getImpactMethodCategory().getId());
-//
-//            if (processImpactValueOpt.isPresent()) {
-//                System.out.println("start: " + index++);
-//                ProcessImpactValue processImpactValue = processImpactValueOpt.get();
-//                BigDecimal unitLevel = processImpactValue.getUnitLevel();
-//                BigDecimal systemLevel = processImpactValue.getSystemLevel();
-//                BigDecimal totalFlow = exchanges.map(value -> process.getOverAllProductFlowRequired()).orElse(BigDecimal.ONE);
-//                System.out.println("Exchange name: " + exchange.getName());
-//                System.out.println("Processing impact category name: " + processImpactValueOpt.get().getImpactMethodCategory().getImpactCategory().getName());
-//                System.out.println("Initial unit level: " + unitLevel + " scale: " + unitLevel.scale());
-//                System.out.println("base exchange value (before converted): " + exchange.getValue() + " scale: " + exchange.getValue().scale());
-//                System.out.println("initial value: " + initialValue + " scale: " + initialValue.scale());
-//                BigDecimal exchangeValue = exchange.getValue().subtract(initialValue);
-//
-//                // Convert the exchange value to the base unit and adjust based on initial value
-//                if (!baseUnit.getId().equals(exchange.getUnit().getId())) {
-//                    exchangeValue = unitService.convertValue(
-//                            exchange.getUnit(),
-//                            exchange.getValue().subtract(initialValue),
-//                            baseUnit);
-//                }
-//
-//                System.out.println("After exchange value: " + exchangeValue);
-//
-//                // Adjust unit level by adding the product of exchange value and factor
-//                BigDecimal factorValue = factors.getDecimalValue();
-//                System.out.println("Factor value: " + factorValue + " scale: " + factorValue.scale());
-//
-//                unitLevel = unitLevel.add(exchangeValue.multiply(factorValue));
-//                System.out.println("exchangeValue.multiply(factorValue) value: " + exchangeValue.multiply(factorValue) + " scale: " + exchangeValue.multiply(factorValue).scale());
-//                systemLevel = systemLevel.add(exchangeValue.multiply(factorValue.multiply(totalFlow)));
-//
-//                System.out.println("Updated unit level = old unitLvl + fact * exVal = " + unitLevel + " scale: " + unitLevel.scale());
-//
-//                processImpactValue.setUnitLevel(unitLevel);
-//                processImpactValue.setSystemLevel(systemLevel);
-//                processImpactValueList.add(processImpactValue);
-//                System.out.println("end.");
-//            }
-//        }
-//
-//        // Batch save processImpactValues in chunks
-//        int batchSize = 100;
-//        for (int i = 0; i < processImpactValueList.size(); i += batchSize) {
-//            List<ProcessImpactValue> batch = processImpactValueList.subList(i,
-//                    Math.min(i + batchSize, processImpactValueList.size()));
-//            processImpactValueRepository.saveAll(batch);
-//        }
-//
-//    }
-
+    /**
+     * Compute process impact value single exchange method.
+     *
+     * @param process      the process
+     * @param exchange     the exchange
+     * @param initialValue the initial value
+     */
     @Transactional
     public void computeProcessImpactValueSingleExchange(Process process, Exchanges exchange, BigDecimal initialValue) {
         UUID processId = process.getId();
@@ -251,6 +218,11 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
 
+    /**
+     * Compute process impact value of project method.
+     *
+     * @param project the project
+     */
     public void computeProcessImpactValueOfProject(Project project) {
         // the idea here is getting all the process impact value based on the project id
         // input,
@@ -273,6 +245,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         processRepository.saveAll(processList);
     }
 
+    /**
+     * Alter prev impact value list method.
+     *
+     * @param processes the processes
+     * @param methodId  the method id
+     */
     public void alterPrevImpactValueList(List<Process> processes, UUID methodId) {
         List<ImpactMethodCategory> methodCategories = impactMethodCategoryRepository.findByMethod(methodId);
 
@@ -512,6 +490,11 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         return methodIdMap.values().stream().allMatch(methodId -> methodId.equals(projectMethodId));
     }
 
+    /**
+     * Compute process impact value of project when change method method.
+     *
+     * @param project the project
+     */
     public void computeProcessImpactValueOfProjectWhenChangeMethod(Project project) {
         UUID projectId = project.getId();
         UUID methodId = project.getLifeCycleImpactAssessmentMethod().getId();
@@ -579,6 +562,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
 
+    /**
+     * Build life cycle breakdown method.
+     *
+     * @param projectId the project id
+     * @return the list
+     */
     public List<LifeCycleBreakdownDto> buildLifeCycleBreakdown(UUID projectId) {
         List<LifeCycleStage> lifeCycleStages = lcsRepository.findAll();
         List<LifeCycleBreakdownDto> dto = lifeCycleStages.stream().map(lcsConverter::toPercent).collect(Collectors.toList());
@@ -607,6 +596,12 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
         return dto;
     }
 
+    /**
+     * Build life cycle breakdown when get all method.
+     *
+     * @param projectId the project id
+     * @return the list
+     */
     public List<LifeCycleBreakdownPercentDto> buildLifeCycleBreakdownWhenGetAll(UUID projectId) {
         if (projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()) {
             return Collections.emptyList();

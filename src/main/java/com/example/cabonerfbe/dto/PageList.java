@@ -5,6 +5,11 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The class Page list.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

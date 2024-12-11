@@ -6,6 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * The class Organization.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

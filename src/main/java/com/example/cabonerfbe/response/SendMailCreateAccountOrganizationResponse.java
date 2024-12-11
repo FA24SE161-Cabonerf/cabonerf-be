@@ -5,6 +5,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * The class Send mail create account organization response.
+ *
+ * @author SonPHH.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

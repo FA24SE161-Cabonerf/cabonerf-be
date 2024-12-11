@@ -17,6 +17,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+/**
+ * The class Contract service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class ContractServiceImpl implements ContractService {
 

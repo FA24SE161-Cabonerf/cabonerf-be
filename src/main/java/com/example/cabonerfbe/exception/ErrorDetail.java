@@ -3,6 +3,11 @@ package com.example.cabonerfbe.exception;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+/**
+ * The class Error detail.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @Builder

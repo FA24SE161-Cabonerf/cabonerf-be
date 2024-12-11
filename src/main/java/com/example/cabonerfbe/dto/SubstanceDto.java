@@ -4,6 +4,11 @@ import lombok.*;
 
 import java.util.UUID;
 
+/**
+ * The class Substance dto.
+ *
+ * @author SonPHH.
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

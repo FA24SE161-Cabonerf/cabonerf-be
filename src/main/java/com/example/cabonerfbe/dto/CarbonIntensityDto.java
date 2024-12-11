@@ -1,11 +1,15 @@
 package com.example.cabonerfbe.dto;
 
-import jakarta.persistence.Column;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * The class Carbon intensity dto.
+ *
+ * @author SonPHH.
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

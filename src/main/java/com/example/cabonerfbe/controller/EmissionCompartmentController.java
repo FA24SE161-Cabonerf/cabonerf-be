@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * The class Emission compartment controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.EMISSIONS)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,9 +28,17 @@ import java.util.UUID;
 @CrossOrigin("*")
 @Slf4j
 public class EmissionCompartmentController {
+    /**
+     * The Emission compartment service.
+     */
     @Autowired
     EmissionCompartmentService emissionCompartmentService;
 
+    /**
+     * Gets all emission compartments.
+     *
+     * @return the all emission compartments
+     */
     @GetMapping(API_PARAMS.GET_ALL_EMISSION_COMPARTMENTS)
     public ResponseEntity<ResponseObject> getAllEmissionCompartments() {
         log.info("Start getAllEmissionCompartments");
@@ -34,6 +47,12 @@ public class EmissionCompartmentController {
         );
     }
 
+    /**
+     * Create method.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping(API_PARAMS.GET_ALL_EMISSION_COMPARTMENTS)
     public ResponseEntity<ResponseObject> create(@Valid @RequestBody EmissionCompartmentRequest request) {
         log.info("Start createEmissionCompartment. request: {}", request);
@@ -42,6 +61,13 @@ public class EmissionCompartmentController {
         );
     }
 
+    /**
+     * Update method.
+     *
+     * @param emissionCompartmentId the emission compartment id
+     * @param request               the request
+     * @return the response entity
+     */
     @PutMapping(API_PARAMS.GET_ALL_EMISSION_COMPARTMENTS + API_PARAMS.UPDATE_EMISSION_COMPARTMENT)
     public ResponseEntity<ResponseObject> update(@PathVariable UUID emissionCompartmentId, @Valid @RequestBody EmissionCompartmentRequest request) {
         log.info("Start updateEmissionCompartment. id: {}, request: {}", emissionCompartmentId, request);
@@ -50,6 +76,12 @@ public class EmissionCompartmentController {
         );
     }
 
+    /**
+     * Delete method.
+     *
+     * @param emissionCompartmentId the emission compartment id
+     * @return the response entity
+     */
     @DeleteMapping(API_PARAMS.GET_ALL_EMISSION_COMPARTMENTS + API_PARAMS.DELETE_EMISSION_COMPARTMENT)
     public ResponseEntity<ResponseObject> delete(@PathVariable UUID emissionCompartmentId) {
         log.info("Start deleteEmissionCompartment. id : {}", emissionCompartmentId);

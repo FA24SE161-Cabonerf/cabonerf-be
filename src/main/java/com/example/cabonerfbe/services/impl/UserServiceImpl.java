@@ -38,6 +38,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * The class User service.
+ *
+ * @author SonPHH.
+ */
 @Service
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -199,13 +204,13 @@ public class UserServiceImpl implements UserService {
 
         List<UserOrganization> uo = uoRepository.getByUser(userId);
         Organization o = new Organization();
-        for(UserOrganization x: uo){
-            if(x.getOrganization().getContract() == null && Objects.equals(x.getRole().getName(), Constants.ORGANIZATION_MANAGER)){
+        for (UserOrganization x : uo) {
+            if (x.getOrganization().getContract() == null && Objects.equals(x.getRole().getName(), Constants.ORGANIZATION_MANAGER)) {
                 o = x.getOrganization();
             }
         }
         String[] _name = user.getFullName().split(" ");
-        o.setName(_name[_name.length-1] + "'s Organization");
+        o.setName(_name[_name.length - 1] + "'s Organization");
 
         return userConverter.fromUserToUserProfileDto(userRepository.save(user));
     }

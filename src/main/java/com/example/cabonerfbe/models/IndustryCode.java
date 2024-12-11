@@ -8,13 +8,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * The class Industry code.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table
-public class IndustryCode extends Base{
+public class IndustryCode extends Base {
     @Column(unique = true)
     private String code;
     private String name;

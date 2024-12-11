@@ -8,6 +8,11 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
+/**
+ * The class Unit.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

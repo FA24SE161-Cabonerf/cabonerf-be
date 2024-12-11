@@ -8,6 +8,11 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * The class Verify create organization request.
+ *
+ * @author SonPHH.
+ */
 @Data
 @Builder
 @NoArgsConstructor

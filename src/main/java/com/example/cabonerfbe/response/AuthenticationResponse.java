@@ -5,6 +5,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * The class Authentication response.
+ *
+ * @author SonPHH.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

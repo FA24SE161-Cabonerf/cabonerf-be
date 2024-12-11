@@ -16,6 +16,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
+/**
+ * The class S 3 service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class S3ServiceImpl implements S3Service {
 

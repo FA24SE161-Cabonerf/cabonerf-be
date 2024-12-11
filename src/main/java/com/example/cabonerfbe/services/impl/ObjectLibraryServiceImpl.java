@@ -8,8 +8,8 @@ import com.example.cabonerfbe.dto.SearchObjectLibraryDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.models.Process;
+import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.AddObjectLibraryRequest;
 import com.example.cabonerfbe.request.PagingKeywordMethodRequest;
@@ -29,6 +29,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * The class Object library service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class ObjectLibraryServiceImpl implements ObjectLibraryService {
 
@@ -46,6 +51,26 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
     private final ProcessImpactValueService processImpactValueService;
     private final ProjectImpactValueRepository projectImpactValueRepository;
 
+    /**
+     * Instantiates a new Object library service.
+     *
+     * @param processService               the process service
+     * @param organizationRepository       the organization repository
+     * @param processRepository            the process repository
+     * @param methodRepository             the method repository
+     * @param processConverter             the process converter
+     * @param processImpactValueRepository the process impact value repository
+     * @param exchangesConverter           the exchanges converter
+     * @param exchangesRepository          the exchanges repository
+     * @param exchangesConverter1          the exchanges converter 1
+     * @param exchangesRepository1         the exchanges repository 1
+     * @param userOrganizationRepository   the user organization repository
+     * @param lifeCycleStageRepository     the life cycle stage repository
+     * @param projectRepository            the project repository
+     * @param messagePublisher             the message publisher
+     * @param processImpactValueService    the process impact value service
+     * @param projectImpactValueRepository the project impact value repository
+     */
     public ObjectLibraryServiceImpl(ProcessService processService, OrganizationRepository organizationRepository, ProcessRepository processRepository, LifeCycleImpactAssessmentMethodRepository methodRepository, ProcessConverter processConverter, ProcessImpactValueRepository processImpactValueRepository, ExchangesConverter exchangesConverter, ExchangesRepository exchangesRepository, ExchangesConverter exchangesConverter1, ExchangesRepository exchangesRepository1, UserOrganizationRepository userOrganizationRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, MessagePublisher messagePublisher, ProcessImpactValueService processImpactValueService, ProjectImpactValueRepository projectImpactValueRepository) {
         this.organizationRepository = organizationRepository;
         this.processRepository = processRepository;
@@ -175,11 +200,6 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
             throw CustomExceptions.badRequest(MessageConstants.OBJECT_AND_PROJECT_ORGANIZATION_NOT_SIMILAR);
         }
 
-//        UUID projectMethodId = project.getLifeCycleImpactAssessmentMethod().getId();
-
-//        if (!object.getMethodId().equals(projectMethodId)) {
-//            throw CustomExceptions.badRequest(MessageConstants.OBJECT_AND_PROJECT_METHOD_NOT_SIMILAR);
-//        }
 
         // duplicate from object lib to a new processDto
         return processService.convertObjectLibraryToProcessDto(object, project);

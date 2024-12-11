@@ -30,9 +30,17 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * The class Organization service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class OrganizationServiceImpl implements OrganizationService {
 
+    /**
+     * The Password encoder.
+     */
     @Autowired
     PasswordEncoder passwordEncoder;
     @Autowired
@@ -220,7 +228,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         List<OrganizationIndustryCode> oicList = new ArrayList<>();
 
-        for(IndustryCode x : industryCodes){
+        for (IndustryCode x : industryCodes) {
             OrganizationIndustryCode oic = new OrganizationIndustryCode();
             oic.setOrganization(organization);
             oic.setIndustryCode(x);
@@ -257,60 +265,11 @@ public class OrganizationServiceImpl implements OrganizationService {
         return organizationConverter.modelToDto(organizationRepository.save(o));
     }
 
-//    @Override
-//    public LoginResponse confirm(VerifyCreateOrganizationRequest request) {
-//        Organization o = organizationRepository.findByIdWhenCreate(request.getOrganizationId())
-//                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
-//
-//        EmailVerificationToken _token = jwtService.checkToken(request.getToken());
-//
-//        Users u = userRepository.findById(_token.getUsers().getId())
-//                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
-//
-//        UserOrganization uo = userOrganizationRepository.findByUserAndOrganization(o.getId(), u.getId())
-//                .orElseThrow(() -> CustomExceptions.notFound("User doesn't belong to organization."));
-//
-//        if (u.getRole().getName().equals("Verified")) {
-//            if (uo.isHasJoined()) {
-//                throw CustomExceptions.badRequest("Account has already joined organization.");
-//            }
-//        }
-//        u.setUserVerifyStatus(userVerifyStatusRepository.findByName("Verified").get());
-//        userRepository.save(u);
-//
-//        o.setStatus(false);
-//        organizationRepository.save(o);
-//
-//        uo.setHasJoined(true);
-//        userOrganizationRepository.save(uo);
-//
-//        _token.setValid(false);
-//        evtRepository.save(_token);
-//
-//        var access_token = jwtService.generateToken(u);
-//        var refresh_token = jwtService.generateRefreshToken(u);
-//
-//        authenticationService.saveRefreshToken(refresh_token, u);
-//
-//        return LoginResponse.builder()
-//                .access_token(access_token)
-//                .refresh_token(refresh_token)
-//                .user(userConverter.fromUserToUserDto(u))
-//                .build();
-//    }
-
     @Override
     public List<InviteUserOrganizationDto> invite(UUID userId, InviteUserToOrganizationRequest request) {
 
         Organization organization = organizationRepository.findById(request.getOrganizationId())
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
-
-//        UserOrganization organizationManager = userOrganizationRepository.findByUserAndOrganization(request.getOrganizationId(), userId)
-//                .orElseThrow(() -> CustomExceptions.unauthorized("You do not belong to this organization."));
-//
-//        if(!Objects.equals(organizationManager.getRole().getName(), "Organization Manager")){
-//            throw CustomExceptions.unauthorized("Your role not support this action");
-//        }
 
         List<Users> existingUsers = userRepository.findAllByEmail(request.getUserIds());
 
@@ -497,12 +456,12 @@ public class OrganizationServiceImpl implements OrganizationService {
         UserOrganization organizationManager = userOrganizationRepository.findByUserAndOrganization(uo.getOrganization().getId(), userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized("You do not belong to this organization."));
 
-        if(!Objects.equals(organizationManager.getRole().getName(), Constants.ORGANIZATION_MANAGER)){
+        if (!Objects.equals(organizationManager.getRole().getName(), Constants.ORGANIZATION_MANAGER)) {
             throw CustomExceptions.unauthorized("Your role not support this action");
         }
 
 
-        if(Objects.equals(uo.getRole().getName(), Constants.ORGANIZATION_MANAGER)){
+        if (Objects.equals(uo.getRole().getName(), Constants.ORGANIZATION_MANAGER)) {
             throw CustomExceptions.unauthorized("Organization Manager cannot out organization");
         }
 
@@ -519,11 +478,11 @@ public class OrganizationServiceImpl implements OrganizationService {
         UserOrganization uo = userOrganizationRepository.findById(userOrganizationId)
                 .orElseThrow(() -> CustomExceptions.notFound("Member do not belong to this organization"));
 
-        if(!uo.getUser().getId().equals(userId)){
+        if (!uo.getUser().getId().equals(userId)) {
             throw CustomExceptions.unauthorized("User not equals to out organization");
         }
 
-        if(Objects.equals(uo.getRole().getName(), Constants.ORGANIZATION_MANAGER)){
+        if (Objects.equals(uo.getRole().getName(), Constants.ORGANIZATION_MANAGER)) {
             throw CustomExceptions.unauthorized("Organization Manager cannot out organization");
         }
 

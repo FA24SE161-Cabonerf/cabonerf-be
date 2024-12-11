@@ -6,6 +6,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * The class Project dto.
+ *
+ * @author SonPHH.
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

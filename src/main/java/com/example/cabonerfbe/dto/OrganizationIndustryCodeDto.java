@@ -4,6 +4,11 @@ import lombok.*;
 
 import java.util.UUID;
 
+/**
+ * The class Organization industry code dto.
+ *
+ * @author SonPHH.
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

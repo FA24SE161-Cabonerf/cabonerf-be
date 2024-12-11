@@ -4,6 +4,11 @@ import lombok.*;
 
 import java.util.List;
 
+/**
+ * The class Search object library dto.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

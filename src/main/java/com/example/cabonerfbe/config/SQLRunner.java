@@ -12,14 +12,27 @@ import org.springframework.util.StreamUtils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * The class Sql runner.
+ *
+ * @author SonPHH.
+ */
 @Component
 public class SQLRunner implements CommandLineRunner {
     private final JdbcTemplate jdbcTemplate;
+    /**
+     * The Password encoder.
+     */
     @Autowired
     PasswordEncoder passwordEncoder;
     @Autowired
     private UserRepository userRepository;
 
+    /**
+     * Instantiates a new Sql runner.
+     *
+     * @param jdbcTemplate the jdbc template
+     */
     public SQLRunner(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }

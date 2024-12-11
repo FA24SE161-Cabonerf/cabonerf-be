@@ -10,6 +10,11 @@ import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * The class Process.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

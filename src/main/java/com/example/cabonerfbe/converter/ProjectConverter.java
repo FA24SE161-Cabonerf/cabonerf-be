@@ -9,19 +9,51 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+/**
+ * The interface Project converter.
+ *
+ * @author SonPHH.
+ */
 @Mapper(componentModel = "spring")
 public interface ProjectConverter {
+    /**
+     * The constant INSTANCE.
+     */
     ProjectConverter INSTANCE = Mappers.getMapper(ProjectConverter.class);
 
+    /**
+     * From project to project dto method.
+     *
+     * @param project the project
+     * @return the project dto
+     */
     ProjectDto fromProjectToProjectDto(Project project);
 
+    /**
+     * To dto method.
+     *
+     * @param project the project
+     * @return the project dto
+     */
     @Mapping(source = "lifeCycleImpactAssessmentMethod", target = "method")
     @Mapping(source = "user", target = "owner")
     ProjectDto toDto(Project project);
 
+    /**
+     * From detail to dto method.
+     *
+     * @param project the project
+     * @return the update project dto
+     */
     @Mapping(source = "lifeCycleImpactAssessmentMethod", target = "method")
     UpdateProjectDto fromDetailToDto(Project project);
 
+    /**
+     * From get project dto to calculate response method.
+     *
+     * @param project the project
+     * @return the project calculation response
+     */
     default ProjectCalculationResponse fromGetProjectDtoToCalculateResponse(GetProjectByIdDto project) {
         if (project == null) {
             return null;
@@ -40,5 +72,4 @@ public interface ProjectConverter {
         return projectCalculationResponse;
     }
 
-    ;
 }

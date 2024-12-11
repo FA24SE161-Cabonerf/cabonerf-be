@@ -11,6 +11,11 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
 
+/**
+ * The class Get profile response.
+ *
+ * @author SonPHH.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

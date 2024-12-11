@@ -14,6 +14,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * The class Dataset controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.DATASET)
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
@@ -24,6 +29,13 @@ public class DatasetController {
     @Autowired
     private DatasetService datasetService;
 
+    /**
+     * Gets all datasets.
+     *
+     * @param userId    the user id
+     * @param projectId the project id
+     * @return the all datasets
+     */
     @GetMapping()
     public ResponseEntity<ResponseObject> getAllDatasets(@RequestHeader(value = Constants.USER_ID_HEADER) UUID userId, @RequestParam UUID projectId) {
         return ResponseEntity.ok().body(
@@ -31,13 +43,21 @@ public class DatasetController {
         );
     }
 
+    /**
+     * Gets all by admin.
+     *
+     * @param pageCurrent the page current
+     * @param pageSize    the page size
+     * @param keyword     the keyword
+     * @return the all by admin
+     */
     @GetMapping(API_PARAMS.ADMIN)
     public ResponseEntity<ResponseObject> getAllByAdmin(@RequestParam(defaultValue = "1") int pageCurrent,
                                                         @RequestParam(defaultValue = "5") int pageSize,
-                                                        @RequestParam(required = false) String keyword){
+                                                        @RequestParam(required = false) String keyword) {
         log.info("Start getAllDataByAdmin");
         return ResponseEntity.ok().body(
-                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get all data set by admin success",datasetService.get(pageCurrent, pageSize, keyword))
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Get all data set by admin success", datasetService.get(pageCurrent, pageSize, keyword))
         );
     }
 

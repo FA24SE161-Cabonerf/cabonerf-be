@@ -8,6 +8,11 @@ import lombok.Setter;
 
 import java.sql.Timestamp;
 
+/**
+ * The class Email verification token.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

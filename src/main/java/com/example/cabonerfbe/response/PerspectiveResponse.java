@@ -7,6 +7,11 @@ import lombok.Setter;
 
 import java.util.UUID;
 
+/**
+ * The class Perspective response.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

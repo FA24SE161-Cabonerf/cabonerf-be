@@ -20,8 +20,16 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * The class Impact category service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class ImpactCategoryServiceImpl implements ImpactCategoryService {
+    /**
+     * The constant NO_UPDATE.
+     */
     public static final long NO_UPDATE = -1;
     @Autowired
     private ImpactCategoryRepository impactCategoryRepository;
@@ -114,10 +122,10 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
                     () -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND)
             );
         }
-        if(request.getEmissionCompartmentId() == null){
-            if(impactCategory.getEmissionCompartment() == null){
+        if (request.getEmissionCompartmentId() == null) {
+            if (impactCategory.getEmissionCompartment() == null) {
                 emissionCompartment = null;
-            }else{
+            } else {
                 request.setEmissionCompartmentId(impactCategory.getEmissionCompartment().getId());
                 emissionCompartment = emissionCompartmentRepository.findByIdAndStatus(request.getEmissionCompartmentId(), Constants.STATUS_TRUE)
                         .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_EMISSION_COMPARTMENT_FOUND));

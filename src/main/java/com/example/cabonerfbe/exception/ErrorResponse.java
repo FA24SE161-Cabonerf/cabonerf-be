@@ -7,6 +7,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+/**
+ * The class Error response.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @Builder

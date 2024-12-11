@@ -7,13 +7,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * The class System boundary.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table
-public class SystemBoundary extends Base{
+public class SystemBoundary extends Base {
     private String boundaryFrom;
     private String boundaryTo;
     private String description;

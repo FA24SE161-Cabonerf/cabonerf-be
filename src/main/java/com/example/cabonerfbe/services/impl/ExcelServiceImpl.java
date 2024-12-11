@@ -39,11 +39,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+/**
+ * The class Excel service.
+ *
+ * @author SonPHH.
+ */
 @Slf4j
 @Service
 public class ExcelServiceImpl implements ExcelService {
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);
+    private final ArrayList<String> errorContent = new ArrayList<>();
     @Autowired
     private EmissionCompartmentRepository emissionCompartmentRepository;
     @Autowired
@@ -70,7 +76,6 @@ public class ExcelServiceImpl implements ExcelService {
     private MidpointImpactCharacterizationFactorConverter midpointConverter;
     @Autowired
     private S3Service s3Service;
-    private ArrayList<String> errorContent = new ArrayList<>();
 
     @Override
     public ImportFactorResponse readExcel(MultipartFile file, String name) throws IOException {

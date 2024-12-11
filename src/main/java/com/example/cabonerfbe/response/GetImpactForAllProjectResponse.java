@@ -7,6 +7,11 @@ import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
+/**
+ * The class Get impact for all project response.
+ *
+ * @author SonPHH.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

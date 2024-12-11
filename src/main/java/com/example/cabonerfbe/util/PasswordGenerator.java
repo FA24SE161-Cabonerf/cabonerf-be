@@ -4,6 +4,11 @@ import com.example.cabonerfbe.exception.CustomExceptions;
 
 import java.security.SecureRandom;
 
+/**
+ * The class Password generator.
+ *
+ * @author SonPHH.
+ */
 public class PasswordGenerator {
     private static final String UPPER_CASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final String LOWER_CASE = "abcdefghijklmnopqrstuvwxyz";
@@ -13,6 +18,12 @@ public class PasswordGenerator {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
+    /**
+     * Generate random password method.
+     *
+     * @param length the length
+     * @return the string
+     */
     public static String generateRandomPassword(int length) {
         if (length < 1) throw CustomExceptions.unauthorized("Password length must be at least 1");
 

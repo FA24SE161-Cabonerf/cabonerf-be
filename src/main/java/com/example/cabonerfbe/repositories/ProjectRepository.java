@@ -13,10 +13,24 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * The interface Project repository.
+ *
+ * @author SonPHH.
+ */
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, UUID> {
+    /**
+     * The constant dto.
+     */
     ProjectDetailResponseDto dto = new ProjectDetailResponseDto();
 
+    /**
+     * Gets project level detail.
+     *
+     * @param projectId the project id
+     * @return the project level detail
+     */
     @Query("SELECT dto(" +
             "p.name, p.modifiedAt, lciam.name, ic.name, mic.name, mic.abbr, piv.value, mic.unit.name) " +
             "FROM Project p " +
@@ -29,17 +43,50 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
             "WHERE p.id = :projectId")
     List<ProjectDetailResponseDto> getProjectLevelDetail(@Param("projectId") UUID projectId);
 
+    /**
+     * Find by name and status method.
+     *
+     * @param name   the name
+     * @param status the status
+     * @return the project
+     */
     Project findByNameAndStatus(String name, boolean status);
 
+    /**
+     * Find all method.
+     *
+     * @param organizationId the organization id
+     * @param pageable       the pageable
+     * @return the page
+     */
     @Query("SELECT p FROM Project p WHERE p.organization.id = :organizationId AND p.status = true")
     Page<Project> findAll(@Param("organizationId") UUID organizationId, Pageable pageable);
 
+    /**
+     * Sort by method method.
+     *
+     * @param organizationId the organization id
+     * @param methodId       the method id
+     * @param pageable       the pageable
+     * @return the page
+     */
     @Query("SELECT p FROM Project p WHERE p.organization.id = :organizationId AND p.status = true AND p.lifeCycleImpactAssessmentMethod.id = :methodId")
-    Page<Project> sortByMethod(@Param("organizationId") UUID organizationId,@Param("methodId") UUID methodId, Pageable pageable);
+    Page<Project> sortByMethod(@Param("organizationId") UUID organizationId, @Param("methodId") UUID methodId, Pageable pageable);
 
+    /**
+     * Find by id and status true method.
+     *
+     * @param id the id
+     * @return the optional
+     */
     @Query("SELECT p FROM Project p WHERE p.id = ?1 AND p.status = true")
     Optional<Project> findByIdAndStatusTrue(UUID id);
 
+    /**
+     * Find all by status method.
+     *
+     * @return the int
+     */
     @Query("SELECT count(p) FROM Project p WHERE p.status = true")
     int findAllByStatus();
 }

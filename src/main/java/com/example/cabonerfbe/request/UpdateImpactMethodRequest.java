@@ -11,6 +11,11 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * The class Update impact method request.
+ *
+ * @author SonPHH.
+ */
 @Data
 @Builder
 @NoArgsConstructor

@@ -7,6 +7,11 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * The class Update perspective request.
+ *
+ * @author SonPHH.
+ */
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data

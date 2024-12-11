@@ -15,6 +15,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * The class System boundary controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.SYSTEM_BOUNDARY)
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
@@ -22,9 +27,17 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin(origins = "*")
 @Slf4j
 public class SystemBoundaryController {
+    /**
+     * The System boundary service.
+     */
     @Autowired
     SystemBoundaryService systemBoundaryService;
 
+    /**
+     * Gets all system boundary.
+     *
+     * @return the all system boundary
+     */
     @GetMapping()
     public ResponseEntity<ResponseObject> getAllSystemBoundary() {
         log.info("start getAllSystemBoundary");

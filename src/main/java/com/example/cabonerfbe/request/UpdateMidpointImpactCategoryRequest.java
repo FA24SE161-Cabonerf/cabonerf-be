@@ -11,6 +11,11 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
 
+/**
+ * The class Update midpoint impact category request.
+ *
+ * @author SonPHH.
+ */
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data

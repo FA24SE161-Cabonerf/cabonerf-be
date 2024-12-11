@@ -7,6 +7,11 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
 
+/**
+ * The class Update avatar user response.
+ *
+ * @author SonPHH.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

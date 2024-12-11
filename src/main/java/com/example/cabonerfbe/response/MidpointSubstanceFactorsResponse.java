@@ -5,6 +5,11 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * The class Midpoint substance factors response.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,6 +28,12 @@ public class MidpointSubstanceFactorsResponse {
     private BigDecimal hierarchist;
     private BigDecimal egalitarian;
 
+    /**
+     * Sets method value.
+     *
+     * @param methodName the method name
+     * @param value      the value
+     */
     public void setMethodValue(String methodName, BigDecimal value) {
         switch (methodName) {
             case "Individualist":

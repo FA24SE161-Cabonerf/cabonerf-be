@@ -10,6 +10,11 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
+/**
+ * The class Get all organization response.
+ *
+ * @author SonPHH.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

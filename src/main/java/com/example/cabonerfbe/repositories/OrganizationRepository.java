@@ -12,9 +12,21 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * The interface Organization repository.
+ *
+ * @author SonPHH.
+ */
 @Repository
 public interface OrganizationRepository extends JpaRepository<Organization, UUID> {
 
+    /**
+     * Find all by keyword method.
+     *
+     * @param keyword  the keyword
+     * @param pageable the pageable
+     * @return the page
+     */
     @Query("SELECT o FROM Organization o WHERE UPPER(o.name) like UPPER(CONCAT('%',:keyword,'%')) AND o.status = true AND o.contract is null")
     Page<Organization> findAllByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
@@ -26,6 +38,12 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
     @Query("SELECT o FROM Organization o WHERE o.id = :organizationId AND o.status = true")
     Optional<Organization> findById(@NotNull @Param("organizationId") UUID id);
 
+    /**
+     * Find by id when create method.
+     *
+     * @param id the id
+     * @return the optional
+     */
     @NotNull
     @Query("SELECT o FROM Organization o WHERE o.id = :organizationId")
     Optional<Organization> findByIdWhenCreate(@NotNull @Param("organizationId") UUID id);

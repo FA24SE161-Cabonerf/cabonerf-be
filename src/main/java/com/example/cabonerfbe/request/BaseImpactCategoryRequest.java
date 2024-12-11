@@ -9,6 +9,11 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * The class Base impact category request.
+ *
+ * @author SonPHH.
+ */
 @Data
 @Builder
 @NoArgsConstructor

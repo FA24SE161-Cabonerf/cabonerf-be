@@ -10,6 +10,11 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
 
+/**
+ * The class Get all process request.
+ *
+ * @author SonPHH.
+ */
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data

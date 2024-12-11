@@ -6,6 +6,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * The class Register response.
+ *
+ * @author SonPHH.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

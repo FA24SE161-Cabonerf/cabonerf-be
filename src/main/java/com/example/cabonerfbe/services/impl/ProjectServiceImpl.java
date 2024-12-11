@@ -5,8 +5,8 @@ import com.example.cabonerfbe.dto.*;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.models.Process;
+import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CalculateProjectRequest;
 import com.example.cabonerfbe.request.CreateProjectRequest;
@@ -43,6 +43,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * The class Project service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class ProjectServiceImpl implements ProjectService {
     private static final int PAGE_INDEX_ADJUSTMENT = 1;
@@ -105,6 +110,14 @@ public class ProjectServiceImpl implements ProjectService {
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
 
+    @NotNull
+    private static ProjectImpactValue getNewProjectImpactValue(ImpactMethodCategory methodCategory, Project project) {
+        ProjectImpactValue projectImpactValue = new ProjectImpactValue();
+        projectImpactValue.setProject(project);
+        projectImpactValue.setImpactMethodCategory(methodCategory);
+        projectImpactValue.setValue(BigDecimal.ZERO);
+        return projectImpactValue;
+    }
 
     @Override
     public List<Project> getProjectListByMethodId(UUID id) {
@@ -139,8 +152,8 @@ public class ProjectServiceImpl implements ProjectService {
                 () -> CustomExceptions.badRequest(MessageConstants.NO_ORGANIZATION_FOUND, Collections.EMPTY_LIST)
         );
 
-        if(organization.getContract() != null){
-            OrganizationIndustryCode icOrganization = oicRepository.findByOrganizationAndIndustryCode(request.getOrganizationId(),ic.getId())
+        if (organization.getContract() != null) {
+            OrganizationIndustryCode icOrganization = oicRepository.findByOrganizationAndIndustryCode(request.getOrganizationId(), ic.getId())
                     .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.ORGANIZATION_DOES_NOT_TO_INDUSTRY_CODE));
         }
 
@@ -178,7 +191,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         Page<Project> projects;
         if (methodId == null) {
-            projects = projectRepository.findAll( organizationId, pageable);
+            projects = projectRepository.findAll(organizationId, pageable);
         } else {
             projects = projectRepository.sortByMethod(organizationId, methodId, pageable);
         }
@@ -281,7 +294,6 @@ public class ProjectServiceImpl implements ProjectService {
         return result;
     }
 
-
     @Override
     public int countAllProject() {
         return projectRepository.findAllByStatus();
@@ -336,7 +348,6 @@ public class ProjectServiceImpl implements ProjectService {
         return value == null || value.trim().isEmpty();
     }
 
-
     @Override
     public List<Project> deleteProject(UUID userId, UUID projectId) {
         Project project = projectRepository.findByIdAndStatusTrue(projectId)
@@ -356,7 +367,6 @@ public class ProjectServiceImpl implements ProjectService {
         return new ArrayList<>();
     }
 
-
     @Transactional
     @Override
     public GetProjectByIdDto changeProjectMethod(UUID projectId, UUID methodId) {
@@ -373,7 +383,7 @@ public class ProjectServiceImpl implements ProjectService {
             alterPrevProjectImpactValueList(project, methodId);
 
             long endTime = System.currentTimeMillis();
-            System.out.println("đổi của project nè: "+ (endTime - startTime));
+            System.out.println("đổi của project nè: " + (endTime - startTime));
             processImpactValueService.computeProcessImpactValueOfProjectWhenChangeMethod(projectRepository.save(project));
         }
         return getProject(project);
@@ -385,7 +395,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
 
         List<ProjectImpactValue> data = projectImpactValueRepository.findAllByProjectId(projectId);
-        if(data.isEmpty()){
+        if (data.isEmpty()) {
             throw CustomExceptions.badRequest("Please calculation to export");
         }
 
@@ -420,7 +430,7 @@ public class ProjectServiceImpl implements ProjectService {
                 value.setValue(BigDecimal.ZERO);
                 valuesToSave.add(value);
             } else {
-                valuesToSave.add(getNewProjectImpactValue(methodCategories.get(i),project));
+                valuesToSave.add(getNewProjectImpactValue(methodCategories.get(i), project));
             }
         }
         long endFor = System.currentTimeMillis();
@@ -431,11 +441,11 @@ public class ProjectServiceImpl implements ProjectService {
             valuesToDelete.addAll(existingValues.subList(methodCategories.size(), existingValues.size()));
         }
 
-        if(!valuesToDelete.isEmpty()){
+        if (!valuesToDelete.isEmpty()) {
             projectImpactValueRepository.deleteAll(valuesToDelete);
 
         }
-        if(!valuesToSave.isEmpty()){
+        if (!valuesToSave.isEmpty()) {
 
             long startSave = System.currentTimeMillis();
 
@@ -449,7 +459,7 @@ public class ProjectServiceImpl implements ProjectService {
         List<Process> processes = processRepository.findAll(project.getId());
 
         long endFind = System.currentTimeMillis();
-        System.out.println("tìm all process nè: "+ (endFind - startFind));
+        System.out.println("tìm all process nè: " + (endFind - startFind));
 
 
         long startTime = System.currentTimeMillis();
@@ -457,11 +467,16 @@ public class ProjectServiceImpl implements ProjectService {
         processImpactValueService.alterPrevImpactValueList(processes, methodId);
 
         long endTime = System.currentTimeMillis();
-        System.out.println("đổi của process nè: "+ (endTime - startTime));
+        System.out.println("đổi của process nè: " + (endTime - startTime));
 
     }
 
-
+    /**
+     * Converter project method.
+     *
+     * @param list the list
+     * @return the list
+     */
     public List<ProjectImpactDto> converterProject(List<ProjectImpactValue> list) {
         return list.stream()
                 .map(x -> {
@@ -742,6 +757,12 @@ public class ProjectServiceImpl implements ProjectService {
         return boldStyle;
     }
 
+    /**
+     * Aggregate exchanges with fields method.
+     *
+     * @param data the data
+     * @return the list
+     */
     public List<ExchangesDto> aggregateExchangesWithFields(List<Exchanges> data) {
         // Map để lưu các nhóm cộng dồn
         Map<String, ExchangesDto> aggregatedMap = new HashMap<>();
@@ -772,29 +793,20 @@ public class ProjectServiceImpl implements ProjectService {
         return new ArrayList<>(aggregatedMap.values());
     }
 
-    @NotNull
-    private static ProjectImpactValue getNewProjectImpactValue(ImpactMethodCategory methodCategory, Project project) {
-        ProjectImpactValue projectImpactValue = new ProjectImpactValue();
-        projectImpactValue.setProject(project);
-        projectImpactValue.setImpactMethodCategory(methodCategory);
-        projectImpactValue.setValue(BigDecimal.ZERO);
-        return projectImpactValue;
-    }
-
-    private String getFunctionalUnit(UUID projectId){
-        if(projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()){
+    private String getFunctionalUnit(UUID projectId) {
+        if (projectImpactValueRepository.findAllByProjectId(projectId).isEmpty()) {
             return "";
         }
 
         List<Process> processList = processRepository.findAll(projectId);
         Process root = new Process();
-        if(processList.size() > 1){
+        if (processList.size() > 1) {
             List<Process> _root = processRepository.findRootProcess(projectId);
-            if(_root.isEmpty()){
+            if (_root.isEmpty()) {
                 return "";
             }
             root = _root.get(0);
-        }else if(processList.size() == 1) {
+        } else if (processList.size() == 1) {
             root = processList.get(0);
         }
 

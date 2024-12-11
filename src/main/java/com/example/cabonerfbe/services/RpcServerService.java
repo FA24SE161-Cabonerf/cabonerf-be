@@ -23,11 +23,22 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+/**
+ * The class Rpc server service.
+ *
+ * @author SonPHH.
+ */
 @Service
 @Slf4j
 public class RpcServerService {
 
+    /**
+     * The constant PROCESS_QUEUE_TYPE.
+     */
     public static final String PROCESS_QUEUE_TYPE = "process";
+    /**
+     * The constant CONNECTOR_QUEUE_TYPE.
+     */
     public static final String CONNECTOR_QUEUE_TYPE = "connector";
     private final RabbitTemplate rabbitTemplate;
     private final ProcessServiceImpl processService;
@@ -35,6 +46,15 @@ public class RpcServerService {
     private final ObjectMapper objectMapper;
     private final ObjectLibraryService objectLibraryService;
 
+    /**
+     * Instantiates a new Rpc server service.
+     *
+     * @param rabbitTemplate       the rabbit template
+     * @param processService       the process service
+     * @param connectorService     the connector service
+     * @param objectMapper         the object mapper
+     * @param objectLibraryService the object library service
+     */
     @Autowired
     public RpcServerService(RabbitTemplate rabbitTemplate, ProcessServiceImpl processService, ConnectorServiceImpl connectorService, ObjectMapper objectMapper, ObjectLibraryService objectLibraryService) {
         this.rabbitTemplate = rabbitTemplate;
@@ -44,11 +64,21 @@ public class RpcServerService {
         this.objectLibraryService = objectLibraryService;
     }
 
+    /**
+     * Receive process tasks method.
+     *
+     * @param message the message
+     */
     @RabbitListener(queues = RabbitMQConfig.RPC_QUEUE)
     public void receiveProcessTasks(Message message) {
         processTask(message, PROCESS_QUEUE_TYPE);
     }
 
+    /**
+     * Receive connector tasks method.
+     *
+     * @param message the message
+     */
     @RabbitListener(queues = RabbitMQConfig.RPC_QUEUE_CONNECTOR)
     public void receiveConnectorTasks(Message message) {
         processTask(message, CONNECTOR_QUEUE_TYPE);
