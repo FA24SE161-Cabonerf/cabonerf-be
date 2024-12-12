@@ -50,6 +50,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
     private final MessagePublisher messagePublisher;
     private final ProcessImpactValueService processImpactValueService;
     private final ProjectImpactValueRepository projectImpactValueRepository;
+    private final ConnectorRepository connectorRepository;
 
     /**
      * Instantiates a new Object library service.
@@ -71,7 +72,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
      * @param processImpactValueService    the process impact value service
      * @param projectImpactValueRepository the project impact value repository
      */
-    public ObjectLibraryServiceImpl(ProcessService processService, OrganizationRepository organizationRepository, ProcessRepository processRepository, LifeCycleImpactAssessmentMethodRepository methodRepository, ProcessConverter processConverter, ProcessImpactValueRepository processImpactValueRepository, ExchangesConverter exchangesConverter, ExchangesRepository exchangesRepository, ExchangesConverter exchangesConverter1, ExchangesRepository exchangesRepository1, UserOrganizationRepository userOrganizationRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, MessagePublisher messagePublisher, ProcessImpactValueService processImpactValueService, ProjectImpactValueRepository projectImpactValueRepository) {
+    public ObjectLibraryServiceImpl(ProcessService processService, OrganizationRepository organizationRepository, ProcessRepository processRepository, LifeCycleImpactAssessmentMethodRepository methodRepository, ProcessConverter processConverter, ProcessImpactValueRepository processImpactValueRepository, ExchangesConverter exchangesConverter, ExchangesRepository exchangesRepository, ExchangesConverter exchangesConverter1, ExchangesRepository exchangesRepository1, UserOrganizationRepository userOrganizationRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, MessagePublisher messagePublisher, ProcessImpactValueService processImpactValueService, ProjectImpactValueRepository projectImpactValueRepository, ConnectorRepository connectorRepository) {
         this.organizationRepository = organizationRepository;
         this.processRepository = processRepository;
         this.methodRepository = methodRepository;
@@ -162,12 +163,17 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
             throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT, Collections.EMPTY_LIST);
         }
 
+        if (connectorRepository.findAllByProject(projectId).size() < (processList.size() - 1) ) {
+            throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
+        }
+
         Process saveProcess = processList.get(0);
 
         try {
             if (processList.size() > 1) {
                 saveProcess = processRepository.findRootProcess(projectId).get(0);
             }
+
         } catch (Exception e) {
             throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
         }
