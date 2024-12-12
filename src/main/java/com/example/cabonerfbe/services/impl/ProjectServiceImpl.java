@@ -351,13 +351,14 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public List<Project> deleteProject(UUID userId, UUID projectId) {
         Project project = projectRepository.findByIdAndStatusTrue(projectId)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND));
+
         UserOrganization uo = uoRepository.findByUserAndOrganization(project.getOrganization().getId(), userId)
-                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
         if (!project.getUser().getId().equals(userId)) {
             if (!Constants.ORGANIZATION_MANAGER.equals(uo.getRole().getName())) {
-                throw CustomExceptions.unauthorized(MessageConstants.NO_AUTHORITY);
+                throw CustomExceptions.badRequest(MessageConstants.NO_AUTHORITY);
             }
         }
 

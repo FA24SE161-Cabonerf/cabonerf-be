@@ -55,7 +55,7 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
     @Override
     public ImpactCategoryDto getImpactCategoryById(UUID id) {
         ImpactCategory impactCategory = impactCategoryRepository.findByIdAndStatus(id, Constants.STATUS_TRUE).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND));
+                () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_CATEGORY_FOUND));
         return impactCategoryConverter.fromImpactCategoryToImpactCategoryDto(impactCategory);
     }
 
@@ -72,7 +72,7 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
     @Override
     public ImpactCategoryDto deleteImpactCategoryById(UUID categoryId) {
         ImpactCategory impactCategory = impactCategoryRepository.findByIdAndStatus(categoryId, Constants.STATUS_TRUE).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND)
+                () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_CATEGORY_FOUND)
         );
         impactCategory.setStatus(Constants.STATUS_FALSE);
         return impactCategoryConverter.fromImpactCategoryToImpactCategoryDto(impactCategoryRepository.save(impactCategory));
@@ -83,7 +83,7 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
 
         Optional<ImpactCategory> category = impactCategoryRepository.findByIdAndStatus(categoryId, true);
         if (category.isEmpty()) {
-            throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, MessageConstants.NO_IMPACT_METHOD_FOUND);
+            throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, MessageConstants.NO_IMPACT_METHOD_FOUND);
         }
         List<ImpactMethodCategory> list = impactMethodCategoryRepository.findMethodByCategory(categoryId);
         if (list.isEmpty()) {
@@ -101,11 +101,11 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
     public List<String> deleteCategoryFromMethod(UUID categoryId, UUID methodId) {
         Optional<ImpactCategory> category = impactCategoryRepository.findByIdAndStatus(categoryId, true);
         if (category.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND);
+            throw CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND);
         }
         Optional<ImpactMethodCategory> imc = impactMethodCategoryRepository.findByMethodAndCategory(categoryId, methodId);
         if (imc.isEmpty()) {
-            throw CustomExceptions.notFound("Impact category not exist with method");
+            throw CustomExceptions.badRequest("Impact category not exist with method");
         }
         imc.get().setStatus(false);
         impactMethodCategoryRepository.save(imc.get());
@@ -119,7 +119,7 @@ public class ImpactCategoryServiceImpl implements ImpactCategoryService {
         ImpactCategory impactCategory = new ImpactCategory();
         if (updateId != null) {
             impactCategory = impactCategoryRepository.findByIdAndStatus(updateId, Constants.STATUS_TRUE).orElseThrow(
-                    () -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND)
+                    () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_CATEGORY_FOUND)
             );
         }
         if (request.getEmissionCompartmentId() == null) {

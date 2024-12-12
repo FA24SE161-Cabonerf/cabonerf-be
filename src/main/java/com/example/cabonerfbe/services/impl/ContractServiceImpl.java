@@ -35,7 +35,7 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public ResponseEntity<Resource> downloadContract(UUID contractId) {
         Contract c = repository.findById(contractId)
-                .orElseThrow(() -> CustomExceptions.notFound("Contract not exist"));
+                .orElseThrow(() -> CustomExceptions.badRequest("Contract not exist"));
 
         try {
             byte[] fileData = s3Service.downloadFile(c.getUrl());
@@ -51,7 +51,7 @@ public class ContractServiceImpl implements ContractService {
                         .contentLength(fileData.length)
                         .body(resource);
             } else {
-                throw CustomExceptions.notFound(Constants.RESPONSE_STATUS_ERROR, "File not found in S3");
+                throw CustomExceptions.badRequest(Constants.RESPONSE_STATUS_ERROR, "File not found in S3");
             }
         } catch (RuntimeException e) {
             throw e; // rethrow after logging

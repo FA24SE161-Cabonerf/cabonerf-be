@@ -58,7 +58,7 @@ public class MidpointImpactCategoryServiceImpl implements MidpointImpactCategory
     @Override
     public MidpointImpactCategoryDto create(CreateMidpointImpactCategoryRequest request) {
         Unit u = uRepository.findByIdAndStatus(request.getUnitId(), true)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_UNIT_FOUND));
 
         MidpointImpactCategory mic = new MidpointImpactCategory(request.getName(), request.getDescription(), request.getAbbr(), u);
 
