@@ -136,6 +136,10 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
         UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(process.getOrganization().getId(), userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
+        if (!Constants.ORGANIZATION_MANAGER.equals(userOrganization.getRole().getName())) {
+            throw CustomExceptions.unauthorized(MessageConstants.NO_AUTHORITY);
+        }
+
         process.setStatus(false);
         processRepository.save(process);
         return new DeleteProcessResponse(process.getId());
