@@ -234,7 +234,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
             System.out.println("Time to determine root process: " + (determineRootProcessEnd - determineRootProcessStart) + " ms");
 
             long validateUserStart = System.currentTimeMillis();
-            if (userOrganizationRepository.existsByOrganization_IdAndUser_Id(saveProcess.getOrganization().getId(), userId)) {
+            if (userOrganizationRepository.existsByOrganization_IdAndUser_Id(saveProcess.getProject().getOrganization().getId(), userId)) {
                throw  CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION);
             };
             long validateUserEnd = System.currentTimeMillis();
