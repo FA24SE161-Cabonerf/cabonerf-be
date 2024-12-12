@@ -536,12 +536,16 @@ public class MessageConstants {
      * The constant CANNOT_UPDATE_NAME_OF_LIBRARY_CONNECTED_PROCESS.
      */
     public static final String CANNOT_UPDATE_NAME_OF_LIBRARY_CONNECTED_PROCESS = "Cannot change product exchange name of library connected process.";
+    /**
+     * The constant CALCULATE_PROJECT_AGAIN.
+     */
+    public static final String CALCULATE_PROJECT_AGAIN = "Cannot save to object library. Please calculate the project again.";
 
 
     /**
      * The constant FAILED_TO_PERFORM_CALCULATION.
      */
-// CALCULATION ERROR MSG
+    // CALCULATION ERROR MSG
     public static final String FAILED_TO_PERFORM_CALCULATION = "Failed to perform calculation. ";
     /**
      * The constant EXCHANGE_VALUE_CANNOT_BE_ZERO.

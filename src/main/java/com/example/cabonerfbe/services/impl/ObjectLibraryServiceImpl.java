@@ -164,9 +164,14 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
 
         Process saveProcess = processList.get(0);
 
-        if (processList.size() > 1) {
-            saveProcess = processRepository.findRootProcess(projectId).get(0);
+        try {
+            if (processList.size() > 1) {
+                saveProcess = processRepository.findRootProcess(projectId).get(0);
+            }
+        } catch (Exception e) {
+            throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
         }
+
 
         UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(saveProcess.getProject().getOrganization().getId(), userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
