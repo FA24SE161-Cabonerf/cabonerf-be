@@ -72,7 +72,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
      * @param processImpactValueService    the process impact value service
      * @param projectImpactValueRepository the project impact value repository
      */
-    public ObjectLibraryServiceImpl(ProcessService processService, OrganizationRepository organizationRepository, ProcessRepository processRepository, LifeCycleImpactAssessmentMethodRepository methodRepository, ProcessConverter processConverter, ProcessImpactValueRepository processImpactValueRepository, ExchangesConverter exchangesConverter, ExchangesRepository exchangesRepository, ExchangesConverter exchangesConverter1, ExchangesRepository exchangesRepository1, UserOrganizationRepository userOrganizationRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, MessagePublisher messagePublisher, ProcessImpactValueService processImpactValueService, ProjectImpactValueRepository projectImpactValueRepository, ConnectorRepository connectorRepository) {
+    public ObjectLibraryServiceImpl(ProcessService processService, OrganizationRepository organizationRepository, ProcessRepository processRepository, LifeCycleImpactAssessmentMethodRepository methodRepository, ProcessConverter processConverter, ProcessImpactValueRepository processImpactValueRepository, ExchangesConverter exchangesConverter, ExchangesRepository exchangesRepository, ExchangesConverter exchangesConverter1, ExchangesRepository exchangesRepository1, UserOrganizationRepository userOrganizationRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, MessagePublisher messagePublisher, ProcessImpactValueService processImpactValueService, ProjectImpactValueRepository projectImpactValueRepository, ConnectorRepository connectorRepository, ConnectorRepository connectorRepository1) {
         this.organizationRepository = organizationRepository;
         this.processRepository = processRepository;
         this.methodRepository = methodRepository;
@@ -86,6 +86,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
         this.messagePublisher = messagePublisher;
         this.processImpactValueService = processImpactValueService;
         this.projectImpactValueRepository = projectImpactValueRepository;
+        this.connectorRepository = connectorRepository1;
     }
 
     @Transactional
