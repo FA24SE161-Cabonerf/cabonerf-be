@@ -66,7 +66,7 @@ public class MidpointServiceImpl implements MidpointService {
     @Override
     public MidpointImpactCharacterizationFactorsResponse getMidpointFactorById(UUID id) {
         MidpointImpactCharacterizationFactors factor = midpointRepository.findByIdAndStatus(id, Constants.STATUS_TRUE).orElseThrow(()
-                -> CustomExceptions.notFound(MessageConstants.NO_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR)
+                -> CustomExceptions.badRequest(MessageConstants.NO_MIDPOINT_IMPACT_CHARACTERIZATION_FACTOR)
         );
         return midpointConverter.fromMidpointToMidpointResponse(factor);
     }
@@ -109,13 +109,13 @@ public class MidpointServiceImpl implements MidpointService {
     public List<MidpointSubstanceFactorsDto> create(CreateFactorRequest request) {
 
         LifeCycleImpactAssessmentMethod method = methodRepository.findByIdAndStatus(request.getMethodId(), true)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND));
 
         ImpactCategory category = categoryRepository.findByIdAndStatus(request.getCategoryId(), true)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_CATEGORY_FOUND));
 
         ImpactMethodCategory imc = imcRepository.findByMethodAndCategory(request.getCategoryId(), request.getMethodId())
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_CATEGORY_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_CATEGORY_FOUND));
 
         EmissionSubstance sc;
         if (request.getEmissionSubstanceId() == null) {
@@ -131,7 +131,7 @@ public class MidpointServiceImpl implements MidpointService {
 
             EmissionCompartment ec = ecRepository.getReferenceById(request.getEmissionCompartmentId());
             Unit u = uRepository.findByIdAndStatus(request.getUnitId(), true)
-                    .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND));
+                    .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_UNIT_FOUND));
             boolean isInput = Objects.equals(ec.getName(), "Natural Resource");
             sc = scRepository.checkExistBySubstanceAndCompartment(es.getId(), ec.getId())
                     .orElseGet(() -> scRepository.save(new EmissionSubstance(es, ec, u, isInput)));
@@ -139,7 +139,7 @@ public class MidpointServiceImpl implements MidpointService {
             request.setEmissionSubstanceId(sc.getId());
         } else {
             sc = scRepository.findById(request.getEmissionSubstanceId())
-                    .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_EMISSION_SUBSTANCE_FOUND));
+                    .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_EMISSION_SUBSTANCE_FOUND));
             if (!sc.getUnit().getId().equals(request.getUnitId())) {
                 throw CustomExceptions.badRequest("Units are not similar.");
             }
@@ -170,7 +170,7 @@ public class MidpointServiceImpl implements MidpointService {
     @Override
     public List<MidpointSubstanceFactorsDto> delete(UUID id) {
         EmissionSubstance sc = scRepository.findById(id)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_EMISSION_SUBSTANCE_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_EMISSION_SUBSTANCE_FOUND));
         sc.setStatus(false);
         scRepository.save(sc);
         List<Object[]> factor = midpointRepository.getWhenCreate(sc.getId());

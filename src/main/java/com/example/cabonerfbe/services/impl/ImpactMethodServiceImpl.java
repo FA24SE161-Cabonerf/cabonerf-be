@@ -61,7 +61,7 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
     @Override
     public LifeCycleImpactAssessmentMethodDto getImpactMethodById(UUID id) {
         LifeCycleImpactAssessmentMethod impactMethod = impactMethodRepository.findByIdAndStatus(id, Constants.STATUS_TRUE).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND)
+                () -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND)
         );
         return impactMethodConverter.fromLifeCycleImpactAssessmentMethodToLifeCycleImpactAssessmentMethodDto(impactMethod);
     }
@@ -70,7 +70,7 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
     public List<ImpactCategoryDto> getCategoryByMethodId(UUID id) {
         List<ImpactCategory> impactCategories = impactCategoryRepository.findAllByImpactMethodId(id);
         if (impactCategories.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_IMPACT_CATEGORY_FOUND);
+            throw CustomExceptions.badRequest(MessageConstants.NO_IMPACT_CATEGORY_FOUND);
         }
         return impactCategoryConverter.fromImpactCategoryListToDtoList(impactCategories);
     }
@@ -133,7 +133,7 @@ public class ImpactMethodServiceImpl implements ImpactMethodService {
         }
 
         Perspective perspective = perspectiveRepository.findById(perspectiveId).orElseThrow(() ->
-                CustomExceptions.notFound(MessageConstants.NO_PERSPECTIVE_FOUND)
+                CustomExceptions.badRequest(MessageConstants.NO_PERSPECTIVE_FOUND)
         );
 
         impactMethod.setName(methodName);

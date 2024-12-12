@@ -38,7 +38,7 @@ public class EmissionCompartmentServiceImpl implements EmissionCompartmentServic
     public List<EmissionCompartmentResponse> getAllEmissionCompartments() {
         List<EmissionCompartment> emissionCompartmentList = emissionCompartmentRepository.findByStatus(Constants.STATUS_TRUE);
         if (emissionCompartmentList.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_EMISSION_COMPARTMENT_FOUND);
+            throw CustomExceptions.badRequest(MessageConstants.NO_EMISSION_COMPARTMENT_FOUND);
         }
         return emissionCompartmentConverter.fromListEmissionCompartmentToListEmissionCompartmentResponse(emissionCompartmentList);
     }
@@ -54,7 +54,7 @@ public class EmissionCompartmentServiceImpl implements EmissionCompartmentServic
     @Override
     public EmissionCompartmentDto update(UUID emissionCompartmentId, EmissionCompartmentRequest request) {
         EmissionCompartment ec = emissionCompartmentRepository.findByIdAndStatus(emissionCompartmentId, true)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_EMISSION_COMPARTMENT_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_EMISSION_COMPARTMENT_FOUND));
         ec.setName(request.getName());
         if (!request.getDescription().isEmpty()) {
             ec.setDescription(request.getDescription());
@@ -65,7 +65,7 @@ public class EmissionCompartmentServiceImpl implements EmissionCompartmentServic
     @Override
     public EmissionCompartmentDto delete(UUID emissionCompartmentId) {
         EmissionCompartment ec = emissionCompartmentRepository.findByIdAndStatus(emissionCompartmentId, true)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_EMISSION_COMPARTMENT_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_EMISSION_COMPARTMENT_FOUND));
         ec.setStatus(false);
         return emissionCompartmentConverter.fromEmissionCompartmentToEmissionCompartmentDto(emissionCompartmentRepository.save(ec));
     }

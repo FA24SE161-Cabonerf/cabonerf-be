@@ -172,7 +172,7 @@ public class ExchangesServiceImpl implements ExchangesService {
     @Override
     public ImpactExchangeResponse removeElementaryExchange(UUID exchangeId) {
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
+                () -> CustomExceptions.badRequest(MessageConstants.NO_EXCHANGE_FOUND)
         );
 
         validateObjectLibrary(exchange.getProcess());
@@ -195,7 +195,7 @@ public class ExchangesServiceImpl implements ExchangesService {
     @Override
     public List<ExchangesDto> removeProductExchange(UUID exchangeId) {
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
+                () -> CustomExceptions.badRequest(MessageConstants.NO_EXCHANGE_FOUND)
         );
 
         validateObjectLibrary(exchange.getProcess());
@@ -219,7 +219,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         BigDecimal value = request.getValue();
 
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
+                () -> CustomExceptions.badRequest(MessageConstants.NO_EXCHANGE_FOUND)
         );
 
         if (!exchange.getProcessId().equals(processId)) {
@@ -232,7 +232,7 @@ public class ExchangesServiceImpl implements ExchangesService {
 
         if (unitId != null && !unitId.equals(exchange.getUnit().getId())) {
             Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
-                    () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
+                    () -> CustomExceptions.badRequest(MessageConstants.NO_UNIT_FOUND)
             );
 
             initialValue = unitService.convertValue(exchange.getUnit(), initialValue, unit);
@@ -265,7 +265,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         }
 
         Exchanges exchange = exchangesRepository.findByIdAndStatus(exchangeId, Constants.STATUS_TRUE).orElseThrow(
-                () -> CustomExceptions.notFound(MessageConstants.NO_EXCHANGE_FOUND)
+                () -> CustomExceptions.badRequest(MessageConstants.NO_EXCHANGE_FOUND)
         );
 
         if (!exchange.getProcessId().equals(processId)) {
@@ -293,7 +293,7 @@ public class ExchangesServiceImpl implements ExchangesService {
         }
         if (unitId != null && !unitId.equals(exchange.getUnit().getId())) {
             Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
-                    () -> CustomExceptions.notFound(MessageConstants.NO_UNIT_FOUND)
+                    () -> CustomExceptions.badRequest(MessageConstants.NO_UNIT_FOUND)
             );
             UnitGroup initialUnitGroup = exchange.getUnit().getUnitGroup();
             if (!unit.getUnitGroup().equals(initialUnitGroup)) {
@@ -340,19 +340,19 @@ public class ExchangesServiceImpl implements ExchangesService {
 
     private EmissionSubstance findSubstancesCompartments(UUID id, boolean isInput) {
         return scRepository.findByIdWithInput(id, isInput)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ELEMENTARY_FLOW_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_ELEMENTARY_FLOW_FOUND));
     }
 
     private Process findProcess(UUID id) {
         Process process = processRepository.findByProcessId(id)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_PROCESS_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_PROCESS_FOUND));
         validateObjectLibrary(process);
         return process;
     }
 
     private void validateMethod(UUID methodId) {
         methodRepository.findByIdAndStatus(methodId, true)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_IMPACT_METHOD_FOUND, Collections.EMPTY_LIST));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_IMPACT_METHOD_FOUND, Collections.EMPTY_LIST));
     }
 
     private void validateObjectLibrary(Process process) {

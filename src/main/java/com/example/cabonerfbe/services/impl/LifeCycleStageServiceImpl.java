@@ -42,7 +42,7 @@ public class LifeCycleStageServiceImpl implements LifeCycleStageService {
     public LifeCycleStageDto update(UUID lifeCycleStagesId, LifeCycleStagesRequest request) {
         Optional<LifeCycleStage> lif = repository.findByIdAndStatus(lifeCycleStagesId, true);
         if (lif.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND);
+            throw CustomExceptions.badRequest(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND);
         }
         lif.get().setName(request.getName());
         lif.get().setDescription(request.getDescription());
@@ -54,7 +54,7 @@ public class LifeCycleStageServiceImpl implements LifeCycleStageService {
     public LifeCycleStageDto delete(UUID lifeCycleStagesId) {
         Optional<LifeCycleStage> lif = repository.findByIdAndStatus(lifeCycleStagesId, true);
         if (lif.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND);
+            throw CustomExceptions.badRequest(MessageConstants.NO_LIFE_CYCLE_STAGE_FOUND);
         }
         lif.get().setStatus(false);
         return converter.fromLifecycleStageToLifecycleStageDto(repository.save(lif.get()));

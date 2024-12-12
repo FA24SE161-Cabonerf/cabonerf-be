@@ -34,7 +34,7 @@ public class UnitGroupServiceImpl implements UnitGroupService {
     public List<UnitGroupDto> getAllUnitGroup() {
         List<UnitGroup> unitGroupList = unitGroupRepository.findAllByStatus(Constants.STATUS_TRUE);
         if (unitGroupList.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_UNIT_GROUP_FOUND);
+            throw CustomExceptions.badRequest(MessageConstants.NO_UNIT_GROUP_FOUND);
         }
         return unitGroupConverter.fromListUnitGroupToUnitGroupDto(unitGroupList);
     }
@@ -51,7 +51,7 @@ public class UnitGroupServiceImpl implements UnitGroupService {
     public UnitGroupResponse createUnitGroup(CreateUnitGroupRequest request) {
         UnitGroup unitGroup = unitGroupRepository.findByNameAndUnitGroupTypeAndStatus(request.getUnitGroupName(), request.getUnitGroupType(), true);
         if (unitGroup != null) {
-            throw CustomExceptions.notFound(MessageConstants.UNIT_GROUP_EXIST);
+            throw CustomExceptions.badRequest(MessageConstants.UNIT_GROUP_EXIST);
         }
         UnitGroup newUnitGroup = new UnitGroup();
         newUnitGroup.setName(request.getUnitGroupName());

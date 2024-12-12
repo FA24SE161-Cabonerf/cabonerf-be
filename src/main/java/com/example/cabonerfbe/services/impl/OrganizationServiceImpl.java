@@ -138,7 +138,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         List<IndustryCode> industryCodes = icRepository.findAllByIds(request.getIndustryCodeIds());
 
         if (industryCodes == null || industryCodes.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.NO_INDUSTRY_CODE_FOUND);
+            throw CustomExceptions.badRequest(MessageConstants.NO_INDUSTRY_CODE_FOUND);
         }
 
         if (industryCodes.size() < request.getIndustryCodeIds().size()) {
@@ -257,7 +257,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public OrganizationDto deleteOrganization(UUID organizationId) {
         Organization o = organizationRepository.findById(organizationId)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_ORGANIZATION_FOUND));
 
         contractService.deleteContract(o.getContract().getId());
 //        s3Service.deleteFile(o.getLogo());
@@ -269,12 +269,12 @@ public class OrganizationServiceImpl implements OrganizationService {
     public List<InviteUserOrganizationDto> invite(UUID userId, InviteUserToOrganizationRequest request) {
 
         Organization organization = organizationRepository.findById(request.getOrganizationId())
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_ORGANIZATION_FOUND));
 
         List<Users> existingUsers = userRepository.findAllByEmail(request.getUserIds());
 
         if (existingUsers == null || existingUsers.isEmpty()) {
-            throw CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND);
+            throw CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND);
         }
 
         if (existingUsers.size() < request.getUserIds().size()) {
@@ -287,7 +287,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                     .toList();
 
             if (!missingUserIds.isEmpty()) {
-                throw CustomExceptions.notFound(
+                throw CustomExceptions.badRequest(
                         String.format("Users not found: %s", missingUserIds)
                 );
             }
@@ -341,7 +341,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         InviteOrganizationToken _token = jwtService.checkInviteToken(token);
         UUID userId = _token.getUsers().getId();
         Users u = userRepository.findById(userId)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.USER_NOT_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND));
 
         if (!u.isStatus()) {
             throw CustomExceptions.unauthorized("Account is banned");
@@ -375,7 +375,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     public List<InviteUserOrganizationDto> getMemberInOrganization(UUID organizationId) {
 
         Organization o = organizationRepository.findById(organizationId)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_ORGANIZATION_FOUND));
 
         List<UserOrganization> member = userOrganizationRepository.findByOrganization(organizationId);
 
@@ -394,7 +394,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public UploadOrgLogoResponse uploadLogo(UUID organizationId, MultipartFile logo) {
         Organization organization = organizationRepository.findById(organizationId)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_ORGANIZATION_FOUND));
 
         String logoUrl;
         try {

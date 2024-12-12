@@ -140,58 +140,16 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
         );
 
         UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(process.getOrganization().getId(), userId)
-                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
         if (!Constants.ORGANIZATION_MANAGER.equals(userOrganization.getRole().getName())) {
-            throw CustomExceptions.unauthorized(MessageConstants.NO_AUTHORITY);
+            throw CustomExceptions.badRequest(MessageConstants.NO_AUTHORITY);
         }
 
         process.setStatus(false);
         processRepository.save(process);
         return new DeleteProcessResponse(process.getId());
     }
-
-//    @Transactional
-//    @Override
-//    public List<Process> saveToObjectLibrary(UUID userId, UUID projectId) {
-//        Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
-//                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
-//        );
-//
-//        List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
-//        if (processList.isEmpty()) {
-//            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT, Collections.EMPTY_LIST);
-//        }
-//
-//        if (connectorRepository.findAllByProject(projectId).size() < (processList.size() - 1) ) {
-//            throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
-//        }
-//
-//        List<ProjectImpactValue> projectImpactValueList = projectImpactValueRepository.findAllByProjectId(projectId);
-//        if (projectImpactValueList.isEmpty()) {
-//            throw CustomExceptions.badRequest(MessageConstants.CALCULATION_REQUIRED_TO_SAVE_OBJECT_LIBRARY);
-//        }
-//
-//        Process saveProcess = processList.get(0);
-//
-//        try {
-//            if (processList.size() > 1) {
-//                if (processRepository.findProcessesWithoutOutgoingConnectors(projectId).size() > 1) {
-//                    throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
-//                }
-//                saveProcess = processRepository.findRootProcess(projectId).get(0);
-//            }
-//        } catch (Exception e) {
-//            throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
-//        }
-//
-//        UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(saveProcess.getProject().getOrganization().getId(), userId)
-//                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
-//
-//        processService.convertProcessToObjectLibrary(saveProcess, projectImpactValueList);
-//
-//        return new ArrayList<>();
-//    }
 
     @Transactional
     @Override

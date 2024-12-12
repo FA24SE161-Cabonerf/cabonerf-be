@@ -88,7 +88,7 @@ public class IndustryCodeServiceImpl implements IndustryCodeService {
     @Override
     public IndustryCodeDto update(UUID id, IndustryCodeRequest request) {
         IndustryCode ic = icRepository.findByIdWithStatus(id)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_INDUSTRY_CODE_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_INDUSTRY_CODE_FOUND));
 
         boolean isCodeDuplicate = icRepository.existsByCodeAndIdNot(request.getCode(), id);
         if (isCodeDuplicate) {
@@ -104,7 +104,7 @@ public class IndustryCodeServiceImpl implements IndustryCodeService {
     @Override
     public IndustryCodeDto delete(UUID id) {
         IndustryCode ic = icRepository.findByIdWithStatus(id)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_INDUSTRY_CODE_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_INDUSTRY_CODE_FOUND));
 
         ic.setStatus(false);
 
@@ -115,7 +115,7 @@ public class IndustryCodeServiceImpl implements IndustryCodeService {
     public List<IndustryCodeDto> getInOrganization(UUID organizationId) {
 
         Organization o = oRepository.findById(organizationId)
-                .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
+                .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_ORGANIZATION_FOUND));
 
         if (oicRepository.findByOrganization(organizationId).isEmpty()) {
             return icRepository.findAllByStatus().stream().map(icConverter::modelToDto).toList();
