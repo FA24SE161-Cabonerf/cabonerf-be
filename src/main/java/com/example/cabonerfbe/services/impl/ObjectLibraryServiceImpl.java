@@ -147,48 +147,119 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
         return new DeleteProcessResponse(process.getId());
     }
 
+//    @Transactional
+//    @Override
+//    public List<Process> saveToObjectLibrary(UUID userId, UUID projectId) {
+//        Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
+//                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
+//        );
+//
+//        List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
+//        if (processList.isEmpty()) {
+//            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT, Collections.EMPTY_LIST);
+//        }
+//
+//        if (connectorRepository.findAllByProject(projectId).size() < (processList.size() - 1) ) {
+//            throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
+//        }
+//
+//        List<ProjectImpactValue> projectImpactValueList = projectImpactValueRepository.findAllByProjectId(projectId);
+//        if (projectImpactValueList.isEmpty()) {
+//            throw CustomExceptions.badRequest(MessageConstants.CALCULATION_REQUIRED_TO_SAVE_OBJECT_LIBRARY);
+//        }
+//
+//        Process saveProcess = processList.get(0);
+//
+//        try {
+//            if (processList.size() > 1) {
+//                if (processRepository.findProcessesWithoutOutgoingConnectors(projectId).size() > 1) {
+//                    throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
+//                }
+//                saveProcess = processRepository.findRootProcess(projectId).get(0);
+//            }
+//        } catch (Exception e) {
+//            throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
+//        }
+//
+//        UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(saveProcess.getProject().getOrganization().getId(), userId)
+//                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+//
+//        processService.convertProcessToObjectLibrary(saveProcess, projectImpactValueList);
+//
+//        return new ArrayList<>();
+//    }
+
     @Transactional
     @Override
     public List<Process> saveToObjectLibrary(UUID userId, UUID projectId) {
-        Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
-                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
-        );
-
-        List<ProjectImpactValue> projectImpactValueList = projectImpactValueRepository.findAllByProjectId(projectId);
-        if (projectImpactValueList.isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.CALCULATION_REQUIRED_TO_SAVE_OBJECT_LIBRARY);
-        }
-
-        List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
-        if (processList.isEmpty()) {
-            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT, Collections.EMPTY_LIST);
-        }
-
-        if (connectorRepository.findAllByProject(projectId).size() < (processList.size() - 1) ) {
-            throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
-        }
-
-
-        Process saveProcess = processList.get(0);
-
+        long startTime = System.currentTimeMillis();
         try {
-            if (processList.size() > 1) {
-                if (processRepository.findProcessesWithoutOutgoingConnectors(projectId).size() > 1) {
-                    throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
-                }
-                saveProcess = processRepository.findRootProcess(projectId).get(0);
+            long fetchProjectStart = System.currentTimeMillis();
+            Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
+                    () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
+            );
+            long fetchProjectEnd = System.currentTimeMillis();
+            System.out.println("Time to fetch project: " + (fetchProjectEnd - fetchProjectStart) + " ms");
+
+            long fetchProcessesStart = System.currentTimeMillis();
+            List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
+            if (processList.isEmpty()) {
+                throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT, Collections.EMPTY_LIST);
             }
-        } catch (Exception e) {
-            throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
+            long fetchProcessesEnd = System.currentTimeMillis();
+            System.out.println("Time to fetch processes: " + (fetchProcessesEnd - fetchProcessesStart) + " ms");
+
+            long checkConnectorsStart = System.currentTimeMillis();
+            if (connectorRepository.findAllByProject(projectId).size() < (processList.size() - 1)) {
+                throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
+            }
+            long checkConnectorsEnd = System.currentTimeMillis();
+            System.out.println("Time to check connectors: " + (checkConnectorsEnd - checkConnectorsStart) + " ms");
+
+            long fetchImpactValuesStart = System.currentTimeMillis();
+            List<ProjectImpactValue> projectImpactValueList = projectImpactValueRepository.findAllByProjectId(projectId);
+            if (projectImpactValueList.isEmpty()) {
+                throw CustomExceptions.badRequest(MessageConstants.CALCULATION_REQUIRED_TO_SAVE_OBJECT_LIBRARY);
+            }
+            long fetchImpactValuesEnd = System.currentTimeMillis();
+            System.out.println("Time to fetch impact values: " + (fetchImpactValuesEnd - fetchImpactValuesStart) + " ms");
+
+            Process saveProcess = processList.get(0);
+
+            long determineRootProcessStart = System.currentTimeMillis();
+            try {
+                if (processList.size() > 1) {
+                    if (processRepository.findProcessesWithoutOutgoingConnectors(projectId).size() > 1) {
+                        throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
+                    }
+                    saveProcess = processRepository.findRootProcess(projectId).get(0);
+                }
+            } catch (Exception e) {
+                throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
+            }
+            long determineRootProcessEnd = System.currentTimeMillis();
+            System.out.println("Time to determine root process: " + (determineRootProcessEnd - determineRootProcessStart) + " ms");
+
+            long validateUserStart = System.currentTimeMillis();
+            UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(
+                            saveProcess.getProject().getOrganization().getId(), userId)
+                    .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+            long validateUserEnd = System.currentTimeMillis();
+            System.out.println("Time to validate user: " + (validateUserEnd - validateUserStart) + " ms");
+
+            long convertProcessStart = System.currentTimeMillis();
+            processService.convertProcessToObjectLibrary(saveProcess, projectImpactValueList);
+            long convertProcessEnd = System.currentTimeMillis();
+            System.out.println("Time to convert process: " + (convertProcessEnd - convertProcessStart) + " ms");
+
+        } finally {
+            long endTime = System.currentTimeMillis();
+            System.out.println("Total execution time: " + (endTime - startTime) + " ms");
         }
-
-        UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(saveProcess.getProject().getOrganization().getId(), userId)
-                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
-
-        processService.convertProcessToObjectLibrary(saveProcess, projectImpactValueList);
 
         return new ArrayList<>();
     }
+
 
     @Override
     public ProcessDto addFromObjectLibraryToProject(AddObjectLibraryRequest request) {
