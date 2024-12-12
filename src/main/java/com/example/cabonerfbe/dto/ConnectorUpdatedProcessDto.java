@@ -5,6 +5,11 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
 
+/**
+ * The class Connector updated process dto.
+ *
+ * @author SonPHH.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

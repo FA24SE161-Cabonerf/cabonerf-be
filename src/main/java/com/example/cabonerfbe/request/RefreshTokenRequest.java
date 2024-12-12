@@ -6,6 +6,11 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.UUID;
 
+/**
+ * The class Refresh token request.
+ *
+ * @author SonPHH.
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

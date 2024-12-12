@@ -9,8 +9,18 @@ import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * The class Swagger config.
+ *
+ * @author SonPHH.
+ */
 @Configuration
 public class SwaggerConfig {
+    /**
+     * Public api method.
+     *
+     * @return the grouped open api
+     */
     @Bean
     GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
@@ -19,6 +29,11 @@ public class SwaggerConfig {
                 .build();
     }
 
+    /**
+     * Cabonerf api method.
+     *
+     * @return the open api
+     */
     @Bean
     OpenAPI cabonerfApi() {
         return new OpenAPI()

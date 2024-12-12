@@ -6,6 +6,11 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * The class Emission compartment response.
+ *
+ * @author SonPHH.
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

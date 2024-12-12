@@ -14,6 +14,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
+/**
+ * The class Security configuration.
+ *
+ * @author SonPHH.
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -35,6 +40,13 @@ public class SecurityConfiguration {
     @Autowired
     private AuthenticationProvider authenticationProvider;
 
+    /**
+     * Security filter chain method.
+     *
+     * @param http the http
+     * @return the security filter chain
+     * @throws Exception the exception
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * The class Authenticate controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.USERS)
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
@@ -26,6 +31,12 @@ public class AuthenticateController {
     @Autowired
     private AuthenticationService authenticationService;
 
+    /**
+     * Login by email method.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping(API_PARAMS.LOGIN_BY_EMAIL)
     public ResponseEntity<ResponseObject> loginByEmail(@Valid @RequestBody LoginByEmailRequest request) {
         log.info("Start loginByEmail. request: {}", request);
@@ -34,6 +45,12 @@ public class AuthenticateController {
         );
     }
 
+    /**
+     * Register method.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping(API_PARAMS.REGISTER)
     public ResponseEntity<ResponseObject> register(@Valid @RequestBody RegisterRequest request) {
         log.info("Start register. request: {}", request);
@@ -42,6 +59,12 @@ public class AuthenticateController {
         );
     }
 
+    /**
+     * Refresh token method.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping(API_PARAMS.REFRESH_TOKEN)
     public ResponseEntity<ResponseObject> refreshToken(@RequestBody RefreshTokenRequest request) {
         log.info("Start refreshToken. request: {}", request);
@@ -50,6 +73,13 @@ public class AuthenticateController {
         );
     }
 
+    /**
+     * Logout method.
+     *
+     * @param userId        the user id
+     * @param logoutRequest the logout request
+     * @return the response entity
+     */
     @PostMapping(API_PARAMS.LOGOUT)
     public ResponseEntity<ResponseObject> logout(@RequestHeader(value = "x-user-id", required = true) UUID userId, @Valid @RequestBody(required = true) LogoutRequest logoutRequest) {
         log.info("Start logout. userID: {}, request: {}", userId, logoutRequest);
@@ -58,6 +88,12 @@ public class AuthenticateController {
         );
     }
 
+    /**
+     * Verify method.
+     *
+     * @param token the token
+     * @return the response entity
+     */
     @PostMapping(API_PARAMS.EMAIL_VERIFY)
     public ResponseEntity<ResponseObject> verify(@RequestParam("token") String token) {
         VerifyEmailRequest request = new VerifyEmailRequest(token);
@@ -66,6 +102,13 @@ public class AuthenticateController {
         );
     }
 
+    /**
+     * Change password method.
+     *
+     * @param userId  the user id
+     * @param request the request
+     * @return the response entity
+     */
     @PutMapping(API_PARAMS.CHANGE_PASSWORD)
     public ResponseEntity<ResponseObject> changePassword(@RequestHeader(value = "x-user-id", required = true) UUID userId,
                                                          @Valid @RequestBody ChangePasswordRequest request) {

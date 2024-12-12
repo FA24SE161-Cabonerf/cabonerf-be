@@ -13,6 +13,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * The class Substance controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.EMISSION_SUBSTANCE)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,6 +28,18 @@ public class SubstanceController {
     @Autowired
     private ExchangesService service;
 
+    /**
+     * Gets all emission substances.
+     *
+     * @param pageCurrent           the page current
+     * @param pageSize              the page size
+     * @param methodId              the method id
+     * @param input                 the input
+     * @param keyword               the keyword
+     * @param emissionCompartmentId the emission compartment id
+     * @param impactCategoryId      the impact category id
+     * @return the all emission substances
+     */
     @GetMapping()
     public ResponseEntity<ResponseObject> getAllEmissionSubstances(
             @RequestParam(defaultValue = "1") int pageCurrent,
@@ -38,6 +55,12 @@ public class SubstanceController {
         );
     }
 
+    /**
+     * Gets all emission substances in admin.
+     *
+     * @param keyword the keyword
+     * @return the all emission substances in admin
+     */
     @GetMapping(API_PARAMS.ADMIN)
     public ResponseEntity<ResponseObject> getAllEmissionSubstancesInAdmin(@RequestParam(required = false) String keyword) {
         return ResponseEntity.ok().body(

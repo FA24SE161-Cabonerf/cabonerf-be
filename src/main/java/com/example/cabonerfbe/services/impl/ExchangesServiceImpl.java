@@ -31,12 +31,29 @@ import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * The class Exchanges service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class ExchangesServiceImpl implements ExchangesService {
 
+    /**
+     * The constant EXCHANGE_TYPE_ELEMENTARY.
+     */
     public static final String EXCHANGE_TYPE_ELEMENTARY = "Elementary";
+    /**
+     * The constant EXCHANGE_TYPE_PRODUCT.
+     */
     public static final String EXCHANGE_TYPE_PRODUCT = "Product";
+    /**
+     * The constant DEFAULT_VALUE.
+     */
     public static final BigDecimal DEFAULT_VALUE = BigDecimal.valueOf(0);
+    /**
+     * The constant DEFAULT_PRODUCT_UNIT.
+     */
     public static final String DEFAULT_PRODUCT_UNIT = "kg";
     @Autowired
     private ProcessRepository processRepository;
@@ -212,7 +229,6 @@ public class ExchangesServiceImpl implements ExchangesService {
         validateObjectLibrary(exchange.getProcess());
 
         BigDecimal initialValue = exchange.getValue();
-        System.out.println("initial value before converted to " + exchange.getUnit().getName() + " unit: " + initialValue);
 
         if (unitId != null && !unitId.equals(exchange.getUnit().getId())) {
             Unit unit = unitRepository.findByIdAndStatus(unitId, Constants.STATUS_TRUE).orElseThrow(
@@ -220,7 +236,6 @@ public class ExchangesServiceImpl implements ExchangesService {
             );
 
             initialValue = unitService.convertValue(exchange.getUnit(), initialValue, unit);
-            System.out.println("initial value after converted to " + unit.getName() + " unit: " + initialValue);
             if (value != null) {
                 initialValue = initialValue.setScale(value.scale(), RoundingMode.HALF_UP);
             }
@@ -228,7 +243,6 @@ public class ExchangesServiceImpl implements ExchangesService {
         }
 
         if (value != null) {
-            System.out.println("old exchange value: " + exchange.getValue() + " | new exchange value: " + value);
             exchange.setValue(value);
         }
 

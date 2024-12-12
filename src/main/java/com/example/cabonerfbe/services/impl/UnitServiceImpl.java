@@ -26,6 +26,11 @@ import java.math.MathContext;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * The class Unit service.
+ *
+ * @author SonPHH.
+ */
 @Service
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -122,12 +127,15 @@ public class UnitServiceImpl implements UnitService {
         return unitConverter.fromUnitToUnitResponse(unit);
     }
 
-    //    public double convertValue(Unit originalUnit, double originalValue, Unit targetUnit) {
-//        return originalValue * originalUnit.getConversionFactor() / targetUnit.getConversionFactor();
-//    }
+    /**
+     * Convert value method.
+     *
+     * @param originalUnit  the original unit
+     * @param originalValue the original value
+     * @param targetUnit    the target unit
+     * @return the big decimal
+     */
     public BigDecimal convertValue(Unit originalUnit, BigDecimal originalValue, Unit targetUnit) {
-//        System.out.println("inside convert value function! original value= " + originalValue);
-//        System.out.println(originalValue + " * " + originalUnit.getConversionFactor() + " / " + targetUnit.getConversionFactor());
         return originalValue.multiply(originalUnit.getConversionFactor())
                 .divide(targetUnit.getConversionFactor(), MathContext.DECIMAL128);
     }

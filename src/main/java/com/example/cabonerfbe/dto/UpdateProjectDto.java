@@ -5,6 +5,11 @@ import lombok.*;
 import java.time.LocalDate;
 import java.util.UUID;
 
+/**
+ * The class Update project dto.
+ *
+ * @author SonPHH.
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

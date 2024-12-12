@@ -24,6 +24,11 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * The class Midpoint service.
+ *
+ * @author SonPHH.
+ */
 @Service
 @Slf4j
 public class MidpointServiceImpl implements MidpointService {
@@ -175,11 +180,11 @@ public class MidpointServiceImpl implements MidpointService {
         return response;
     }
 
-    public List<EmissionSubstanceDashboardResponse> getEmissionSubstanceDashboard(){
+    public List<EmissionSubstanceDashboardResponse> getEmissionSubstanceDashboard() {
         List<EmissionCompartment> ec = ecRepository.findAllByStatus();
         return ec.stream()
-                .map(c ->{
-                    return new EmissionSubstanceDashboardResponse(c.getName(),scRepository.findByCompartment(c.getId()));
+                .map(c -> {
+                    return new EmissionSubstanceDashboardResponse(c.getName(), scRepository.findByCompartment(c.getId()));
                 }).collect(Collectors.toList());
 
     }

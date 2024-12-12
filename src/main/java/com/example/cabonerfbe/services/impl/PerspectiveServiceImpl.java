@@ -16,10 +16,21 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * The class Perspective service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class PerspectiveServiceImpl implements PerspectiveService {
+    /**
+     * The Perspective repository.
+     */
     @Autowired
     PerspectiveRepository perspectiveRepository;
+    /**
+     * The Perspective converter.
+     */
     @Autowired
     PerspectiveConverter perspectiveConverter;
 

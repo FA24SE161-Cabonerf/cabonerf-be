@@ -9,6 +9,11 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * The class Exchanges.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,6 +23,7 @@ import java.util.UUID;
 public class Exchanges extends Base {
 
     private String name;
+    @Column(length = 1000)
     private String description;
     @Column(precision = 100, scale = 60)
     private BigDecimal value;
@@ -40,6 +46,11 @@ public class Exchanges extends Base {
     @JoinColumn(name = "emission_substance_id")
     private EmissionSubstance emissionSubstance;
 
+    /**
+     * Gets process id.
+     *
+     * @return the process id
+     */
     public UUID getProcessId() {
         return process != null ? process.getId() : null;
     }

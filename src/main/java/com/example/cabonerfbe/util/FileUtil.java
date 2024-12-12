@@ -7,8 +7,19 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+/**
+ * The class File util.
+ *
+ * @author SonPHH.
+ */
 @Component
 public class FileUtil {
+    /**
+     * Is image file method.
+     *
+     * @param file the file
+     * @return the boolean
+     */
     public boolean isImageFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             return false;
@@ -21,11 +32,23 @@ public class FileUtil {
         return isMimeTypeImage && isExtensionImage && isContentValidImage;
     }
 
+    /**
+     * Is image file mime method.
+     *
+     * @param file the file
+     * @return the boolean
+     */
     public boolean isImageFileMime(MultipartFile file) {
         String contentType = file.getContentType();
         return contentType != null && contentType.startsWith("image/");
     }
 
+    /**
+     * Is image file extension method.
+     *
+     * @param file the file
+     * @return the boolean
+     */
     public boolean isImageFileExtension(MultipartFile file) {
         String fileName = file.getOriginalFilename();
         if (fileName != null) {
@@ -34,6 +57,12 @@ public class FileUtil {
         return false;
     }
 
+    /**
+     * Is valid image file method.
+     *
+     * @param file the file
+     * @return the boolean
+     */
     public boolean isValidImageFile(MultipartFile file) {
         try {
             BufferedImage image = ImageIO.read(file.getInputStream());
@@ -43,6 +72,12 @@ public class FileUtil {
         }
     }
 
+    /**
+     * Is pdf file method.
+     *
+     * @param file the file
+     * @return the boolean
+     */
     public boolean isPdfFile(MultipartFile file) {
         // Cách 1: Kiểm tra theo Content Type
         if (file.getContentType() != null && file.getContentType().equals("application/pdf")) {

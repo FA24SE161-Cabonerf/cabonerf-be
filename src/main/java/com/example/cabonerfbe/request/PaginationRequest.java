@@ -7,6 +7,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+/**
+ * The class Pagination request.
+ *
+ * @author SonPHH.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

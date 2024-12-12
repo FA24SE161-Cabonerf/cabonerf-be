@@ -24,6 +24,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * The class Impact method service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class ImpactMethodServiceImpl implements ImpactMethodService {
     @Autowired

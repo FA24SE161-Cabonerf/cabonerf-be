@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * The class Process controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.PROCESS)
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
@@ -35,6 +40,12 @@ public class ProcessController {
 //        );
 //    }
 
+    /**
+     * Gets process by id.
+     *
+     * @param id the id
+     * @return the process by id
+     */
     @GetMapping(API_PARAMS.PROCESS_BY_ID)
     public ResponseEntity<ResponseObject> getProcessById(@PathVariable UUID id) {
         log.info("Start getProcessById. id: {}", id);
@@ -44,6 +55,12 @@ public class ProcessController {
         );
     }
 
+    /**
+     * Create process method.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping()
     public ResponseEntity<ResponseObject> createProcess(@Valid @RequestBody CreateProcessRequest request) {
         log.info("Start createProcess. request: {}", request);
@@ -53,6 +70,13 @@ public class ProcessController {
         );
     }
 
+    /**
+     * Update process method.
+     *
+     * @param request the request
+     * @param id      the id
+     * @return the response entity
+     */
     @PutMapping(API_PARAMS.PROCESS_BY_ID)
     public ResponseEntity<ResponseObject> updateProcess(@Valid @RequestBody UpdateProcessRequest request, @PathVariable UUID id) {
         log.info("Start updateProcess. id: {}, request: {}", id, request);
@@ -62,6 +86,12 @@ public class ProcessController {
         );
     }
 
+    /**
+     * Delete process method.
+     *
+     * @param id the id
+     * @return the response entity
+     */
     @DeleteMapping(API_PARAMS.PROCESS_BY_ID)
     public ResponseEntity<ResponseObject> deleteProcess(@PathVariable UUID id) {
         log.info("Start updateProcess. id: {}", id);

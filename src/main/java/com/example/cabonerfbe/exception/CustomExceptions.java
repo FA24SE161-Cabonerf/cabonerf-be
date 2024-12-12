@@ -11,6 +11,11 @@ import org.springframework.http.HttpStatus;
 import java.util.Collections;
 
 
+/**
+ * The class Custom exceptions.
+ *
+ * @author SonPHH.
+ */
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 @Setter
@@ -19,6 +24,12 @@ public class CustomExceptions extends RuntimeException {
     HttpStatus status;
     ErrorResponse error;
 
+    /**
+     * Not found method.
+     *
+     * @param message the message
+     * @return the custom exceptions
+     */
     public static CustomExceptions notFound(String message) {
         return CustomExceptions.builder()
                 .status(HttpStatus.NOT_FOUND)
@@ -30,6 +41,13 @@ public class CustomExceptions extends RuntimeException {
                 .build();
     }
 
+    /**
+     * Not found method.
+     *
+     * @param message the message
+     * @param data    the data
+     * @return the custom exceptions
+     */
     public static CustomExceptions notFound(String message, Object data) {
         return CustomExceptions.builder()
                 .status(HttpStatus.NOT_FOUND)
@@ -41,6 +59,12 @@ public class CustomExceptions extends RuntimeException {
                 .build();
     }
 
+    /**
+     * Bad request method.
+     *
+     * @param message the message
+     * @return the custom exceptions
+     */
     public static CustomExceptions badRequest(String message) {
         return CustomExceptions.builder()
                 .status(HttpStatus.BAD_REQUEST)
@@ -52,6 +76,13 @@ public class CustomExceptions extends RuntimeException {
                 .build();
     }
 
+    /**
+     * Bad request method.
+     *
+     * @param message the message
+     * @param data    the data
+     * @return the custom exceptions
+     */
     public static CustomExceptions badRequest(String message, Object data) {
         return CustomExceptions.builder()
                 .status(HttpStatus.BAD_REQUEST)
@@ -63,6 +94,12 @@ public class CustomExceptions extends RuntimeException {
                 .build();
     }
 
+    /**
+     * Unauthorized method.
+     *
+     * @param message the message
+     * @return the custom exceptions
+     */
     public static CustomExceptions unauthorized(String message) {
         return CustomExceptions.builder()
                 .status(HttpStatus.UNAUTHORIZED)
@@ -74,6 +111,13 @@ public class CustomExceptions extends RuntimeException {
                 .build();
     }
 
+    /**
+     * Unauthorized method.
+     *
+     * @param message the message
+     * @param data    the data
+     * @return the custom exceptions
+     */
     public static CustomExceptions unauthorized(String message, Object data) {
         return CustomExceptions.builder()
                 .status(HttpStatus.UNAUTHORIZED)
@@ -85,6 +129,12 @@ public class CustomExceptions extends RuntimeException {
                 .build();
     }
 
+    /**
+     * Validator method.
+     *
+     * @param message the message
+     * @return the custom exceptions
+     */
     public static CustomExceptions validator(String message) {
         return CustomExceptions.builder()
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -96,6 +146,13 @@ public class CustomExceptions extends RuntimeException {
                 .build();
     }
 
+    /**
+     * Validator method.
+     *
+     * @param message the message
+     * @param data    the data
+     * @return the custom exceptions
+     */
     public static CustomExceptions validator(String message, Object data) {
         return CustomExceptions.builder()
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -107,6 +164,12 @@ public class CustomExceptions extends RuntimeException {
                 .build();
     }
 
+    /**
+     * No content method.
+     *
+     * @param message the message
+     * @return the custom exceptions
+     */
     public static CustomExceptions noContent(String message) {
         return CustomExceptions.builder()
                 .status(HttpStatus.NO_CONTENT)
@@ -118,6 +181,13 @@ public class CustomExceptions extends RuntimeException {
                 .build();
     }
 
+    /**
+     * No content method.
+     *
+     * @param message the message
+     * @param data    the data
+     * @return the custom exceptions
+     */
     public static CustomExceptions noContent(String message, Object data) {
         return CustomExceptions.builder()
                 .status(HttpStatus.NO_CONTENT)

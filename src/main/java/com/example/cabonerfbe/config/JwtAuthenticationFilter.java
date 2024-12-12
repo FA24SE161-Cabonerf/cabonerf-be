@@ -22,6 +22,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * The class Jwt authentication filter.
+ *
+ * @author SonPHH.
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -177,7 +182,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String jsonResponse = "{"
                 + "\"status\": \"Error\","
                 + "\"message\": \"Error\","
-                + dataBuilder.toString()
+                + dataBuilder
                 + "}";
 
         response.getWriter().write(jsonResponse);

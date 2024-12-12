@@ -1,12 +1,23 @@
 package com.example.cabonerfbe.enums;
 
+/**
+ * The class Query strings.
+ *
+ * @author SonPHH.
+ */
 public class QueryStrings {
+    /**
+     * The constant FIND_CATEGORY_BY_IMPACT_METHOD_ID.
+     */
     public static final String FIND_CATEGORY_BY_IMPACT_METHOD_ID = "SELECT ic FROM ImpactCategory ic " +
             "JOIN ImpactMethodCategory imc ON ic.id = imc.impactCategory.id " +
             "WHERE imc.lifeCycleImpactAssessmentMethod.id = :methodId " +
             "AND ic.status = true " +
             "AND imc.status = true ";
 
+    /**
+     * The constant FIND_MIDPOINT_SUBSTANCE_FACTORS_WITH_PERSPECTIVES.
+     */
     public static final String FIND_MIDPOINT_SUBSTANCE_FACTORS_WITH_PERSPECTIVES =
             "SELECT \n" +
                     "sc.id,\n" +
@@ -30,6 +41,9 @@ public class QueryStrings {
                     "GROUP BY sc.id, es.cas, es.name, es.chemical_name, es.molecular_formula, es.alternative_formula, ec.name \n" +
                     "ORDER BY es.name ASC;";
 
+    /**
+     * The constant COUNT_MIDPOINT_SUBSTANCE_FACTORS_WITH_PERSPECTIVE.
+     */
     public static final String COUNT_MIDPOINT_SUBSTANCE_FACTORS_WITH_PERSPECTIVE = """
             SELECT 
                 COUNT(*) 
@@ -56,6 +70,9 @@ public class QueryStrings {
             ) AS subquery;
             """;
 
+    /**
+     * The constant FIND_MIDPOINT_SUBSTANCE_FACTORS.
+     */
     public static final String FIND_MIDPOINT_SUBSTANCE_FACTORS =
             "SELECT \n" +
                     "sc.id,\n" +
@@ -79,6 +96,9 @@ public class QueryStrings {
                     "GROUP BY sc.id, es.cas, es.name, es.chemical_name, es.molecular_formula, es.alternative_formula, ec.name \n" +
                     "ORDER BY es.name ASC;";
 
+    /**
+     * The constant FIND_FACTOR_BY_KEYWORD.
+     */
     public static final String FIND_FACTOR_BY_KEYWORD =
             "SELECT sc.id, \n" +
                     "       es.cas, \n" +
@@ -105,6 +125,9 @@ public class QueryStrings {
                     "GROUP BY sc.id, es.cas, es.name, es.chemical_name, es.molecular_formula, es.alternative_formula, ec.name \n" +
                     "ORDER BY es.name ASC;";
 
+    /**
+     * The constant FIND_FACTOR_BY_COMPARTMENT.
+     */
     public static final String FIND_FACTOR_BY_COMPARTMENT =
             "SELECT sc.id, \n" +
                     "       es.cas, \n" +
@@ -128,6 +151,9 @@ public class QueryStrings {
                     "GROUP BY sc.id, es.cas, es.name, es.chemical_name, es.molecular_formula, es.alternative_formula, ec.name \n" +
                     "ORDER BY es.name ASC;";
 
+    /**
+     * The constant FIND_FACTOR_BY_KEYWORD_AND_COMPARTMENT.
+     */
     public static final String FIND_FACTOR_BY_KEYWORD_AND_COMPARTMENT =
             "SELECT sc.id, \n" +
                     "       es.cas, \n" +
@@ -155,6 +181,9 @@ public class QueryStrings {
                     "GROUP BY sc.id, es.cas, es.name, es.chemical_name, es.molecular_formula, es.alternative_formula, ec.name \n" +
                     "ORDER BY es.name ASC;";
 
+    /**
+     * The constant COUNT_FACTORS_BY_KEYWORD.
+     */
     public static final String COUNT_FACTORS_BY_KEYWORD = """
             SELECT 
                 COUNT(*) 
@@ -185,6 +214,9 @@ public class QueryStrings {
             ) AS subquery;
             """;
 
+    /**
+     * The constant COUNT_FACTORS_BY_COMPARTMENT.
+     */
     public static final String COUNT_FACTORS_BY_COMPARTMENT = """
             SELECT 
                 COUNT(*) 
@@ -212,6 +244,9 @@ public class QueryStrings {
             ) AS subquery;
             """;
 
+    /**
+     * The constant COUNT_FACTORS_BY_KEYWORD_AND_COMPARTMENT.
+     */
     public static final String COUNT_FACTORS_BY_KEYWORD_AND_COMPARTMENT = """
             SELECT 
                 COUNT(*) 
@@ -242,10 +277,16 @@ public class QueryStrings {
                 GROUP BY sc.id, es.cas, es.name, es.chemical_name, es.molecular_formula, es.alternative_formula, ec.name
             ) AS subquery;
             """;
+    /**
+     * The constant CONNECTOR_EXIST_BY_START_END_PROCESS.
+     */
     public static final String CONNECTOR_EXIST_BY_START_END_PROCESS = "select (count(c) > 0) from Connector c " +
             "where ((c.startProcess.id = ?1 and c.endProcess.id = ?2) or (c.startProcess.id = ?2 and c.endProcess.id = ?1)) " +
             "and c.endProcess.status = true and c.startProcess.status = true and c.status = true";
 
+    /**
+     * The constant FIND_MIDPOINT_SUBSTANCE_FACTORS_TO_EXPORT.
+     */
     public static final String FIND_MIDPOINT_SUBSTANCE_FACTORS_TO_EXPORT =
             "SELECT \n" +
                     "sc.id,\n" +

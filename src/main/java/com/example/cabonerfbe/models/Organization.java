@@ -6,6 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * The class Organization.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,6 +19,7 @@ import lombok.Setter;
 @Table
 public class Organization extends Base {
     private String name;
+    @Column(length = 1000)
     private String description;
     private String taxCode;
     @Column(length = 9000)

@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * The class Impact category controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.IMPACT)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,6 +31,11 @@ public class ImpactCategoryController {
     @Autowired
     private ImpactCategoryService impactCategoryService;
 
+    /**
+     * Gets impact category list.
+     *
+     * @return the impact category list
+     */
     @GetMapping(API_PARAMS.GET_ALL_IMPACT_CATEGORIES)
     public ResponseEntity<ResponseObject> getImpactCategoryList() {
         log.info("Start getImpactCategoryList");
@@ -34,6 +44,12 @@ public class ImpactCategoryController {
         );
     }
 
+    /**
+     * Gets impact category by id.
+     *
+     * @param categoryId the category id
+     * @return the impact category by id
+     */
     @GetMapping(API_PARAMS.GET_IMPACT_CATEGORY_BY_ID)
     public ResponseEntity<ResponseObject> getImpactCategoryById(@PathVariable UUID categoryId) {
         log.info("Start getImpactCategoryById id: {}", categoryId);
@@ -42,6 +58,12 @@ public class ImpactCategoryController {
         );
     }
 
+    /**
+     * Create impact category method.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping(API_PARAMS.CREATE_IMPACT_CATEGORY)
     public ResponseEntity<ResponseObject> createImpactCategory(@Valid @RequestBody BaseImpactCategoryRequest request) {
         log.info("Start createImpactCategory. request: {}", request);
@@ -50,6 +72,13 @@ public class ImpactCategoryController {
         );
     }
 
+    /**
+     * Update impact category by id method.
+     *
+     * @param categoryId the category id
+     * @param request    the request
+     * @return the response entity
+     */
     @PutMapping(API_PARAMS.UPDATE_IMPACT_CATEGORY_BY_ID)
     public ResponseEntity<ResponseObject> updateImpactCategoryById(@PathVariable UUID categoryId, @Valid @RequestBody BaseImpactCategoryRequest request) {
         log.info("Start updateImpactCategoryById. id: {}, request: {}", categoryId, request);
@@ -58,6 +87,12 @@ public class ImpactCategoryController {
         );
     }
 
+    /**
+     * Delete impact category by id method.
+     *
+     * @param categoryId the category id
+     * @return the response entity
+     */
     @DeleteMapping(API_PARAMS.DELETE_IMPACT_CATEGORY_BY_ID)
     public ResponseEntity<ResponseObject> deleteImpactCategoryById(@PathVariable UUID categoryId) {
         log.info("Start deleteImpactCategoryById. id: {}", categoryId);
@@ -66,6 +101,12 @@ public class ImpactCategoryController {
         );
     }
 
+    /**
+     * Gets method with category id.
+     *
+     * @param categoryId the category id
+     * @return the method with category id
+     */
     @GetMapping(API_PARAMS.GET_METHOD_BY_IMPACT_CATEGORY_ID)
     public ResponseEntity<ResponseObject> getMethodWithCategoryId(@PathVariable UUID categoryId) {
         log.info("Start getMethodWithCategoryId. id: {}", categoryId);
@@ -74,6 +115,13 @@ public class ImpactCategoryController {
         );
     }
 
+    /**
+     * Delete impact category from method method.
+     *
+     * @param categoryId the category id
+     * @param methodId   the method id
+     * @return the response entity
+     */
     @DeleteMapping(API_PARAMS.DELETE_IMPACT_CATEGORY_IN_METHOD)
     public ResponseEntity<ResponseObject> deleteImpactCategoryFromMethod(@PathVariable UUID categoryId, @PathVariable UUID methodId) {
         log.info("Start deleteImpactCategoryFromMethod. categoryId: {}, methodId: {}", categoryId, methodId);

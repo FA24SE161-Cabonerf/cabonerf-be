@@ -17,6 +17,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
+/**
+ * The class User controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.USERS)
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
@@ -24,9 +29,18 @@ import java.util.UUID;
 @CrossOrigin(origins = "*")
 @Slf4j
 public class UserController {
+    /**
+     * The User service.
+     */
     @Autowired
     UserService userService;
 
+    /**
+     * Gets me.
+     *
+     * @param userId the user id
+     * @return the me
+     */
     @GetMapping(API_PARAMS.ME)
     public ResponseEntity<ResponseObject> getMe(@RequestHeader("x-user-id") UUID userId) {
         log.info("Start getMe. userId: {}", userId);
@@ -35,6 +49,14 @@ public class UserController {
         );
     }
 
+    /**
+     * Gets all.
+     *
+     * @param pageCurrent the page current
+     * @param pageSize    the page size
+     * @param keyword     the keyword
+     * @return the all
+     */
     @GetMapping(API_PARAMS.ADMIN)
     public ResponseEntity<ResponseObject> getAll(@RequestParam(required = true, defaultValue = "1") int pageCurrent,
                                                  @RequestParam(required = true, defaultValue = "5") int pageSize,
@@ -45,6 +67,12 @@ public class UserController {
         );
     }
 
+    /**
+     * Update user status method.
+     *
+     * @param userId the user id
+     * @return the response entity
+     */
     @PostMapping(API_PARAMS.ADMIN + API_PARAMS.BAN_UNBAN_USER)
     public ResponseEntity<ResponseObject> updateUserStatus(@PathVariable("userId") UUID userId) {
         log.info("Start ban/unban User. Id: {}", userId);
@@ -53,6 +81,13 @@ public class UserController {
         );
     }
 
+    /**
+     * Update avatar method.
+     *
+     * @param userId the user id
+     * @param image  the image
+     * @return the response entity
+     */
     @PutMapping(API_PARAMS.UPDATE_AVATAR_USER)
     public ResponseEntity<ResponseObject> updateAvatar(@RequestHeader("x-user-id") UUID userId, @RequestParam("image") MultipartFile image) {
         log.info("Start updateAvatar. id: {}", userId);
@@ -61,6 +96,14 @@ public class UserController {
         );
     }
 
+    /**
+     * Gets user to invite.
+     *
+     * @param pageCurrent the page current
+     * @param pageSize    the page size
+     * @param keyword     the keyword
+     * @return the user to invite
+     */
     @GetMapping(API_PARAMS.GET_USER_TO_INVITE)
     public ResponseEntity<ResponseObject> getUserToInvite(@RequestParam(defaultValue = "1") int pageCurrent,
                                                           @RequestParam(defaultValue = "5") int pageSize,
@@ -71,6 +114,11 @@ public class UserController {
         );
     }
 
+    /**
+     * Gets user in dashboard.
+     *
+     * @return the user in dashboard
+     */
     @GetMapping(API_PARAMS.ADMIN + API_PARAMS.GET_USER_TO_DASHBOARD)
     public ResponseEntity<ResponseObject> getUserInDashboard() {
         log.info("Start getUserInDashboard");
@@ -79,6 +127,11 @@ public class UserController {
         );
     }
 
+    /**
+     * Gets all user.
+     *
+     * @return the all user
+     */
     @GetMapping(API_PARAMS.ADMIN + API_PARAMS.GET_ALL_USER_TO_DASHBOARD)
     public ResponseEntity<ResponseObject> getAllUser() {
         log.info("Start getAllUser");
@@ -87,6 +140,13 @@ public class UserController {
         );
     }
 
+    /**
+     * Update user profile method.
+     *
+     * @param userId  the user id
+     * @param request the request
+     * @return the response entity
+     */
     @PutMapping(API_PARAMS.UPDATE_PROFILE)
     public ResponseEntity<ResponseObject> updateUserProfile(@RequestHeader("x-user-id") UUID userId, @Valid @RequestBody UpdateUserInfoRequest request) {
         log.info("Start updateUserProfile. id: {}", userId);

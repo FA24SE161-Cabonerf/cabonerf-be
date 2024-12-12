@@ -17,6 +17,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * The class Unit group controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.UNIT_GROUP)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,6 +32,11 @@ public class UnitGroupController {
     @Autowired
     private UnitGroupService unitGroupService;
 
+    /**
+     * Gets all unit group.
+     *
+     * @return the all unit group
+     */
     @GetMapping()
     public ResponseEntity<ResponseObject> getAllUnitGroup() {
         log.info("Start getAllUnitGroup");
@@ -35,6 +45,12 @@ public class UnitGroupController {
                 ));
     }
 
+    /**
+     * Gets unit group by id.
+     *
+     * @param id the id
+     * @return the unit group by id
+     */
     @GetMapping(API_PARAMS.UNIT_GROUP_BY_ID)
     public ResponseEntity<ResponseObject> getUnitGroupById(@PathVariable UUID id) {
         log.info("Start getUnitGroupById. id:{}", id);
@@ -43,6 +59,12 @@ public class UnitGroupController {
                 ));
     }
 
+    /**
+     * Create unit group method.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping(API_PARAMS.CREATE_UNIT_GROUP)
     public ResponseEntity<ResponseObject> createUnitGroup(@Valid @RequestBody CreateUnitGroupRequest request) {
         log.info("Start createUnitGroup. request:{}", request);
@@ -51,6 +73,13 @@ public class UnitGroupController {
         );
     }
 
+    /**
+     * Update unit group by id method.
+     *
+     * @param groupId the group id
+     * @param request the request
+     * @return the response entity
+     */
     @PutMapping(API_PARAMS.UPDATE_UNIT_GROUP_BY_ID)
     public ResponseEntity<ResponseObject> updateUnitGroupById(@PathVariable UUID groupId, @Valid @RequestBody UpdateUnitGroupRequest request) {
         log.info("Start updateUnitGroupById. groupId: {}, request:{}", groupId, request);
@@ -59,6 +88,12 @@ public class UnitGroupController {
         );
     }
 
+    /**
+     * Delete unit group by id method.
+     *
+     * @param groupId the group id
+     * @return the response entity
+     */
     @DeleteMapping(API_PARAMS.DELETE_UNIT_GROUP_BY_ID)
     public ResponseEntity<ResponseObject> deleteUnitGroupById(@PathVariable UUID groupId) {
         log.info("Start deleteUnitGroupById. groupId: {}", groupId);

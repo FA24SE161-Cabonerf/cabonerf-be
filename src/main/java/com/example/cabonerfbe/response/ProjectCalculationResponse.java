@@ -6,12 +6,20 @@ import lombok.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * The class Project calculation response.
+ *
+ * @author SonPHH.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 public class ProjectCalculationResponse {
+    /**
+     * The Contribution breakdown.
+     */
     ProcessNodeDto contributionBreakdown;
     private UUID id;
     private String name;

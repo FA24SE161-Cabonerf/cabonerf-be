@@ -10,6 +10,11 @@ import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * The class Process.
+ *
+ * @author SonPHH.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,6 +25,7 @@ import java.util.UUID;
 public class Process extends Base {
 
     private String name;
+    @Column(length = 1000)
     private String description;
     @Column(nullable = true)
     private UUID methodId;

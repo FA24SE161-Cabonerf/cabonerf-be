@@ -2,7 +2,6 @@ package com.example.cabonerfbe.services.impl;
 
 import com.example.cabonerfbe.converter.ProcessConverter;
 import com.example.cabonerfbe.dto.DatasetDto;
-import com.example.cabonerfbe.dto.ObjectLibraryDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
@@ -25,6 +24,11 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * The class Dataset service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class DatasetServiceImpl implements DatasetService {
     private final ProjectRepository projectRepository;
@@ -34,6 +38,17 @@ public class DatasetServiceImpl implements DatasetService {
     private final ProcessService processService;
     private final ProcessImpactValueRepository pivRepository;
 
+    /**
+     * Instantiates a new Dataset service.
+     *
+     * @param projectRepository       the project repository
+     * @param organizationRepository  the organization repository
+     * @param organizationRepository1 the organization repository 1
+     * @param processRepository1      the process repository 1
+     * @param processConverter        the process converter
+     * @param processService          the process service
+     * @param pivRepository           the piv repository
+     */
     public DatasetServiceImpl(ProjectRepository projectRepository, OrganizationRepository organizationRepository, OrganizationRepository organizationRepository1, ProcessRepository processRepository1, ProcessConverter processConverter, ProcessService processService, ProcessImpactValueRepository pivRepository) {
         this.projectRepository = projectRepository;
         this.organizationRepository = organizationRepository1;
@@ -75,8 +90,8 @@ public class DatasetServiceImpl implements DatasetService {
         Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
 
         Page<Process> processPage = keyword == null
-                ? processRepository.findDataset(Constants.DATASET_LIST,pageable)
-                : processRepository.findDatasetByKeword(Constants.DATASET_LIST,keyword,pageable);
+                ? processRepository.findDataset(Constants.DATASET_LIST, pageable)
+                : processRepository.findDatasetByKeword(Constants.DATASET_LIST, keyword, pageable);
 
         int totalPage = processPage.getTotalPages();
 
@@ -88,13 +103,13 @@ public class DatasetServiceImpl implements DatasetService {
                     return object;
                 }
         ).toList();
-        if(totalPage < pageCurrent){
-           return DatasetAdminResponse.builder()
-                   .pageCurrent(1)
-                   .pageSize(0)
-                   .totalPage(0)
-                   .data(Collections.EMPTY_LIST)
-                   .build();
+        if (totalPage < pageCurrent) {
+            return DatasetAdminResponse.builder()
+                    .pageCurrent(1)
+                    .pageSize(0)
+                    .totalPage(0)
+                    .data(Collections.EMPTY_LIST)
+                    .build();
         }
 
         return DatasetAdminResponse.builder()

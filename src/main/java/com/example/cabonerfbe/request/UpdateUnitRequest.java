@@ -11,6 +11,11 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * The class Update unit request.
+ *
+ * @author SonPHH.
+ */
 @Data
 @Builder
 @NoArgsConstructor

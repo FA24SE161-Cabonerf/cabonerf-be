@@ -8,11 +8,19 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
+/**
+ * The class Search elementary response.
+ *
+ * @author SonPHH.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
 public class SearchElementaryResponse {
+    /**
+     * The List.
+     */
     List<SearchEmissionSubstanceDto> list;
     private int pageCurrent;
     private int pageSize;

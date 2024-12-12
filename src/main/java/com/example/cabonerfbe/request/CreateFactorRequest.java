@@ -13,6 +13,11 @@ import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * The class Create factor request.
+ *
+ * @author SonPHH.
+ */
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data

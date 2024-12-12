@@ -10,20 +10,67 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * The interface User organization repository.
+ *
+ * @author SonPHH.
+ */
 @Repository
 public interface UserOrganizationRepository extends JpaRepository<UserOrganization, UUID> {
-    @Query("SELECT uo FROM UserOrganization uo WHERE uo.organization.id = :organizationId AND uo.user.id = :userId")
+    /**
+     * Find by user and organization method.
+     *
+     * @param organizationId the organization id
+     * @param userId         the user id
+     * @return the optional
+     */
+    @Query("SELECT uo FROM UserOrganization uo WHERE uo.organization.id = :organizationId AND uo.user.id = :userId and uo.status = true")
     Optional<UserOrganization> findByUserAndOrganization(@Param("organizationId") UUID organizationId, @Param("userId") UUID userId);
 
+    /**
+     * Find by user method.
+     *
+     * @param userId the user id
+     * @return the list
+     */
     @Query("SELECT uo FROM UserOrganization uo WHERE uo.user.id = :userId AND uo.hasJoined = true AND uo.status = true")
     List<UserOrganization> findByUser(@Param("userId") UUID userId);
 
+    /**
+     * Gets by user.
+     *
+     * @param userId the user id
+     * @return the by user
+     */
     @Query("SELECT uo FROM UserOrganization uo WHERE uo.user.id = :userId AND uo.status = true AND uo.hasJoined = true ORDER BY uo.createdAt DESC")
     List<UserOrganization> getByUser(@Param("userId") UUID userId);
 
+    /**
+     * Find invite method.
+     *
+     * @param userIds the user ids
+     * @param id      the id
+     * @return the list
+     */
     @Query("SELECT uo FROM UserOrganization uo WHERE uo.user.id IN :userIds AND uo.organization.id = :organizationId AND uo.status = true")
     List<UserOrganization> findInvite(@Param("userIds") List<UUID> userIds, @Param("organizationId") UUID id);
 
+    /**
+     * Find by organization method.
+     *
+     * @param organizationId the organization id
+     * @return the list
+     */
     @Query("SELECT uo FROM UserOrganization uo WHERE uo.organization.id = :organizationId AND uo.status = true ")
     List<UserOrganization> findByOrganization(@Param("organizationId") UUID organizationId);
+
+    /**
+     * Exists by organization id and user id method.
+     *
+     * @param orgId  the org id
+     * @param userId the user id
+     * @return the boolean
+     */
+    @Query("select (count(*) > 0) from UserOrganization u where u.organization.id = ?1 and u.user.id = ?2 and u.status = true")
+    boolean existsByOrganization_IdAndUser_Id(UUID orgId, UUID userId);
 }

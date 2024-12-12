@@ -6,6 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+/**
+ * The class Rabbit mq test.
+ *
+ * @author SonPHH.
+ */
 @Component
 public class RabbitMqTest implements CommandLineRunner {
 

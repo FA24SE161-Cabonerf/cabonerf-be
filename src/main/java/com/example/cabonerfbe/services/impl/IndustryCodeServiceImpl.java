@@ -21,9 +21,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * The class Industry code service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class IndustryCodeServiceImpl implements IndustryCodeService {
 
@@ -44,7 +48,7 @@ public class IndustryCodeServiceImpl implements IndustryCodeService {
 
         int totalPage = industryCodePage.getTotalPages();
 
-        if(pageCurrent > totalPage){
+        if (pageCurrent > totalPage) {
             return GetAllIndustryCodeResponse.builder()
                     .pageCurrent(1)
                     .pageSize(0)
@@ -70,7 +74,7 @@ public class IndustryCodeServiceImpl implements IndustryCodeService {
     @Override
     public IndustryCodeDto create(IndustryCodeRequest request) {
 
-        if(icRepository.findByCode(request.getCode()).isPresent()){
+        if (icRepository.findByCode(request.getCode()).isPresent()) {
             throw CustomExceptions.validator(MessageConstants.INDUSTRY_CODE_EXIST);
         }
 
@@ -102,7 +106,7 @@ public class IndustryCodeServiceImpl implements IndustryCodeService {
         IndustryCode ic = icRepository.findByIdWithStatus(id)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_INDUSTRY_CODE_FOUND));
 
-       ic.setStatus(false);
+        ic.setStatus(false);
 
         return icConverter.modelToDto(icRepository.save(ic));
     }
@@ -113,7 +117,7 @@ public class IndustryCodeServiceImpl implements IndustryCodeService {
         Organization o = oRepository.findById(organizationId)
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_ORGANIZATION_FOUND));
 
-        if(oicRepository.findByOrganization(organizationId).isEmpty()){
+        if (oicRepository.findByOrganization(organizationId).isEmpty()) {
             return icRepository.findAllByStatus().stream().map(icConverter::modelToDto).toList();
         }
 

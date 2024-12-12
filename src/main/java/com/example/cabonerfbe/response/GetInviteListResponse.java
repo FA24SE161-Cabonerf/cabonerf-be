@@ -10,6 +10,11 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
+/**
+ * The class Get invite list response.
+ *
+ * @author SonPHH.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

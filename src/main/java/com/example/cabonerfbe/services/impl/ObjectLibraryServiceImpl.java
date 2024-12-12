@@ -8,8 +8,10 @@ import com.example.cabonerfbe.dto.SearchObjectLibraryDto;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.*;
+import com.example.cabonerfbe.models.Organization;
 import com.example.cabonerfbe.models.Process;
+import com.example.cabonerfbe.models.Project;
+import com.example.cabonerfbe.models.UserOrganization;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.AddObjectLibraryRequest;
 import com.example.cabonerfbe.request.PagingKeywordMethodRequest;
@@ -29,6 +31,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * The class Object library service.
+ *
+ * @author SonPHH.
+ */
 @Service
 public class ObjectLibraryServiceImpl implements ObjectLibraryService {
 
@@ -45,8 +52,31 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
     private final MessagePublisher messagePublisher;
     private final ProcessImpactValueService processImpactValueService;
     private final ProjectImpactValueRepository projectImpactValueRepository;
+    private final ConnectorRepository connectorRepository;
 
-    public ObjectLibraryServiceImpl(ProcessService processService, OrganizationRepository organizationRepository, ProcessRepository processRepository, LifeCycleImpactAssessmentMethodRepository methodRepository, ProcessConverter processConverter, ProcessImpactValueRepository processImpactValueRepository, ExchangesConverter exchangesConverter, ExchangesRepository exchangesRepository, ExchangesConverter exchangesConverter1, ExchangesRepository exchangesRepository1, UserOrganizationRepository userOrganizationRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, MessagePublisher messagePublisher, ProcessImpactValueService processImpactValueService, ProjectImpactValueRepository projectImpactValueRepository) {
+    /**
+     * Instantiates a new Object library service.
+     *
+     * @param processService               the process service
+     * @param organizationRepository       the organization repository
+     * @param processRepository            the process repository
+     * @param methodRepository             the method repository
+     * @param processConverter             the process converter
+     * @param processImpactValueRepository the process impact value repository
+     * @param exchangesConverter           the exchanges converter
+     * @param exchangesRepository          the exchanges repository
+     * @param exchangesConverter1          the exchanges converter 1
+     * @param exchangesRepository1         the exchanges repository 1
+     * @param userOrganizationRepository   the user organization repository
+     * @param lifeCycleStageRepository     the life cycle stage repository
+     * @param projectRepository            the project repository
+     * @param messagePublisher             the message publisher
+     * @param processImpactValueService    the process impact value service
+     * @param projectImpactValueRepository the project impact value repository
+     * @param connectorRepository          the connector repository
+     * @param connectorRepository1         the connector repository 1
+     */
+    public ObjectLibraryServiceImpl(ProcessService processService, OrganizationRepository organizationRepository, ProcessRepository processRepository, LifeCycleImpactAssessmentMethodRepository methodRepository, ProcessConverter processConverter, ProcessImpactValueRepository processImpactValueRepository, ExchangesConverter exchangesConverter, ExchangesRepository exchangesRepository, ExchangesConverter exchangesConverter1, ExchangesRepository exchangesRepository1, UserOrganizationRepository userOrganizationRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, MessagePublisher messagePublisher, ProcessImpactValueService processImpactValueService, ProjectImpactValueRepository projectImpactValueRepository, ConnectorRepository connectorRepository, ConnectorRepository connectorRepository1) {
         this.organizationRepository = organizationRepository;
         this.processRepository = processRepository;
         this.methodRepository = methodRepository;
@@ -60,6 +90,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
         this.messagePublisher = messagePublisher;
         this.processImpactValueService = processImpactValueService;
         this.projectImpactValueRepository = projectImpactValueRepository;
+        this.connectorRepository = connectorRepository1;
     }
 
     @Transactional
@@ -111,20 +142,65 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
         UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(process.getOrganization().getId(), userId)
                 .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
+        if (!Constants.ORGANIZATION_MANAGER.equals(userOrganization.getRole().getName())) {
+            throw CustomExceptions.unauthorized(MessageConstants.NO_AUTHORITY);
+        }
+
         process.setStatus(false);
         processRepository.save(process);
         return new DeleteProcessResponse(process.getId());
     }
 
+//    @Transactional
+//    @Override
+//    public List<Process> saveToObjectLibrary(UUID userId, UUID projectId) {
+//        Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
+//                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
+//        );
+//
+//        List<Process> processList = processRepository.findAllWithCreatedAsc(projectId);
+//        if (processList.isEmpty()) {
+//            throw CustomExceptions.badRequest(MessageConstants.NO_PROCESS_IN_PROJECT, Collections.EMPTY_LIST);
+//        }
+//
+//        if (connectorRepository.findAllByProject(projectId).size() < (processList.size() - 1) ) {
+//            throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
+//        }
+//
+//        List<ProjectImpactValue> projectImpactValueList = projectImpactValueRepository.findAllByProjectId(projectId);
+//        if (projectImpactValueList.isEmpty()) {
+//            throw CustomExceptions.badRequest(MessageConstants.CALCULATION_REQUIRED_TO_SAVE_OBJECT_LIBRARY);
+//        }
+//
+//        Process saveProcess = processList.get(0);
+//
+//        try {
+//            if (processList.size() > 1) {
+//                if (processRepository.findProcessesWithoutOutgoingConnectors(projectId).size() > 1) {
+//                    throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
+//                }
+//                saveProcess = processRepository.findRootProcess(projectId).get(0);
+//            }
+//        } catch (Exception e) {
+//            throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
+//        }
+//
+//        UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(saveProcess.getProject().getOrganization().getId(), userId)
+//                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+//
+//        processService.convertProcessToObjectLibrary(saveProcess, projectImpactValueList);
+//
+//        return new ArrayList<>();
+//    }
+
     @Transactional
     @Override
     public List<Process> saveToObjectLibrary(UUID userId, UUID projectId) {
-        Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
-                () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
-        );
+        if (!projectRepository.existsByIdAndStatus(projectId, Constants.STATUS_TRUE)) {
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND);
+        }
 
-        List<ProjectImpactValue> projectImpactValueList = projectImpactValueRepository.findAllByProjectId(projectId);
-        if (projectImpactValueList.isEmpty()) {
+        if (!projectImpactValueRepository.existsByProject_Id(projectId)) {
             throw CustomExceptions.badRequest(MessageConstants.CALCULATION_REQUIRED_TO_SAVE_OBJECT_LIBRARY);
         }
 
@@ -135,17 +211,26 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
 
         Process saveProcess = processList.get(0);
 
-        if (processList.size() > 1) {
-            saveProcess = processRepository.findRootProcess(projectId).get(0);
+        try {
+            if (processList.size() > 1) {
+                if (processRepository.countProcessesWithoutOutgoingConnectors(projectId) > 1) {
+                    throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
+                }
+                saveProcess = processRepository.findRootProcess(projectId).get(0);
+            }
+        } catch (Exception e) {
+            throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
         }
 
-        UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(saveProcess.getProject().getOrganization().getId(), userId)
-                .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+        if (!userOrganizationRepository.existsByOrganization_IdAndUser_Id(saveProcess.getProject().getOrganization().getId(), userId)) {
+            throw CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION);
+        }
 
-        processService.convertProcessToObjectLibrary(saveProcess, projectImpactValueList);
+        processService.convertProcessToObjectLibrary(saveProcess, projectImpactValueRepository.findAllByProjectId(projectId));
 
         return new ArrayList<>();
     }
+
 
     @Override
     public ProcessDto addFromObjectLibraryToProject(AddObjectLibraryRequest request) {
@@ -175,11 +260,6 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
             throw CustomExceptions.badRequest(MessageConstants.OBJECT_AND_PROJECT_ORGANIZATION_NOT_SIMILAR);
         }
 
-//        UUID projectMethodId = project.getLifeCycleImpactAssessmentMethod().getId();
-
-//        if (!object.getMethodId().equals(projectMethodId)) {
-//            throw CustomExceptions.badRequest(MessageConstants.OBJECT_AND_PROJECT_METHOD_NOT_SIMILAR);
-//        }
 
         // duplicate from object lib to a new processDto
         return processService.convertObjectLibraryToProcessDto(object, project);

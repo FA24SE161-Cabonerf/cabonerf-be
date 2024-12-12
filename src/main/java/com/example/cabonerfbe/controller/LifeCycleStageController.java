@@ -15,6 +15,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * The class Life cycle stage controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.LIFE_STAGE)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,6 +31,11 @@ public class LifeCycleStageController {
     @Autowired
     private LifeCycleStageService lifeCycleStageService;
 
+    /**
+     * Gets all life cycle stage.
+     *
+     * @return the all life cycle stage
+     */
     @GetMapping()
     public ResponseEntity<ResponseObject> getAllLifeCycleStage() {
         log.info("Start getAllLifeCycleStage");
@@ -34,6 +44,12 @@ public class LifeCycleStageController {
         );
     }
 
+    /**
+     * Create method.
+     *
+     * @param request the request
+     * @return the response entity
+     */
     @PostMapping()
     public ResponseEntity<ResponseObject> create(@Valid @RequestBody LifeCycleStagesRequest request) {
         log.info("Start createLifeCycleStages. request: {}", request);
@@ -42,6 +58,13 @@ public class LifeCycleStageController {
         );
     }
 
+    /**
+     * Update method.
+     *
+     * @param id      the id
+     * @param request the request
+     * @return the response entity
+     */
     @PutMapping(API_PARAMS.LIFE_CYCLE_STAGE_UPDATE)
     public ResponseEntity<ResponseObject> update(@PathVariable UUID id, @Valid @RequestBody LifeCycleStagesRequest request) {
         log.info("Start updateLifeCycleStages. Id: {}, request: {}", id, request);
@@ -50,6 +73,12 @@ public class LifeCycleStageController {
         );
     }
 
+    /**
+     * Delete method.
+     *
+     * @param id the id
+     * @return the response entity
+     */
     @DeleteMapping(API_PARAMS.LIFE_CYCLE_STAGE_DELETE)
     public ResponseEntity<ResponseObject> delete(@PathVariable UUID id) {
         log.info("Start deleteLifeCycleStages. Id: {}", id);

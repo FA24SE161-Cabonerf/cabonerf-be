@@ -16,9 +16,20 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * The class Global exception handler.
+ *
+ * @author SonPHH.
+ */
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+    /**
+     * Handle validation exception method.
+     *
+     * @param ex the ex
+     * @return the response entity
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -36,6 +47,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
+    /**
+     * Handle global exception method.
+     *
+     * @param ex the ex
+     * @return the response entity
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex) {
         ErrorResponse response = ErrorResponse.builder()
@@ -46,17 +63,35 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    /**
+     * Handle global exception method.
+     *
+     * @param ex the ex
+     * @return the response entity
+     */
     @ExceptionHandler(CustomExceptions.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(CustomExceptions ex) {
         return new ResponseEntity<>(ex.getError(), ex.getStatus());
     }
 
+    /**
+     * Handle missing header method.
+     *
+     * @param ex the ex
+     * @return the response entity
+     */
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<ResponseObject> handleMissingHeader(MissingRequestHeaderException ex) {
         return ResponseEntity.status(401).body(
                 new ResponseObject(Constants.RESPONSE_STATUS_ERROR, "Error", Map.of("Authorization", "Unauthorized access")));
     }
 
+    /**
+     * Handle validation body method.
+     *
+     * @param ex the ex
+     * @return the response entity
+     */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleValidationBody(HttpMessageNotReadableException ex) {
         // Log the detailed error for debugging

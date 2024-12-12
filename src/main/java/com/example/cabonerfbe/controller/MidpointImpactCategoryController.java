@@ -17,6 +17,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * The class Midpoint impact category controller.
+ *
+ * @author SonPHH.
+ */
 @RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.IMPACT)
 @RestController
 @AllArgsConstructor
@@ -24,9 +29,17 @@ import java.util.UUID;
 @CrossOrigin("*")
 @Slf4j
 public class MidpointImpactCategoryController {
+    /**
+     * The Midpoint impact category service.
+     */
     @Autowired
     MidpointImpactCategoryService midpointImpactCategoryService;
 
+    /**
+     * Gets all midpoint impact categories.
+     *
+     * @return the all midpoint impact categories
+     */
     @GetMapping(API_PARAMS.GET_ALL_MIDPOINT_IMPACT_CATEGORY)
     public ResponseEntity<ResponseObject> getAllMidpointImpactCategories() {
         log.info("Start getAllMidpointImpactCategories");
