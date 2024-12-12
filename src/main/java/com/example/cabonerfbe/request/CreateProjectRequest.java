@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.validator.constraints.Length;
 
 import java.util.UUID;
 
@@ -24,6 +25,7 @@ import java.util.UUID;
 public class CreateProjectRequest {
     @NotEmpty(message = "Name is required.")
     private String name;
+    @Length(max = 1000)
     private String description;
     private String location;
     @NotNull(message = "Method is required")

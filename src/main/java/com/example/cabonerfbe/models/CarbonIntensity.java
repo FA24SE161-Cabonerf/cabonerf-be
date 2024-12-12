@@ -25,6 +25,7 @@ public class CarbonIntensity extends Base {
     private String category;
     private BigDecimal value;
     private String unit;
+    @Column(length = 1000)
     private String description;
     @Column(length = 90000)
     private String icon;

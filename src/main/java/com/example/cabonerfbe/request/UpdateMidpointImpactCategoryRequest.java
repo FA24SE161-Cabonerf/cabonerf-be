@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.validator.constraints.Length;
 
 import java.util.UUID;
 
@@ -25,6 +26,7 @@ public class UpdateMidpointImpactCategoryRequest {
     @NotEmpty(message = "Name is required.")
     private String name;
     @NotEmpty(message = "Description is required.")
+    @Length(max = 1000)
     private String description;
     @NotEmpty(message = "Abbr is required.")
     private String abbr;

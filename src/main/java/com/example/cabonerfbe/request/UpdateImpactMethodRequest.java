@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
 import java.util.UUID;
 
@@ -24,6 +25,7 @@ public class UpdateImpactMethodRequest {
     @NotBlank(message = "Method name is required.")
     private String name;
     @NotBlank(message = "Method description is required.")
+    @Length(max = 1000)
     private String description;
     @NotBlank(message = "Method version is required.")
     @Pattern(regexp = "^(\\d{4}(\\sv(\\d+)(\\.\\d+){1,2})?|v(\\d+)(\\.\\d+){1,2})$",

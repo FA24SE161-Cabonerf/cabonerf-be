@@ -23,6 +23,7 @@ import java.util.UUID;
 public class Exchanges extends Base {
 
     private String name;
+    @Column(length = 1000)
     private String description;
     @Column(precision = 100, scale = 60)
     private BigDecimal value;

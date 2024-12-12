@@ -21,6 +21,7 @@ import lombok.Setter;
 @Table
 public class LifeCycleStage extends Base {
     private String name;
+    @Column(length = 1000)
     private String description;
     @Column(length = 9000)
     private String iconUrl;

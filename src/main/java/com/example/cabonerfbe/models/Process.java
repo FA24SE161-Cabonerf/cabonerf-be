@@ -25,6 +25,7 @@ import java.util.UUID;
 public class Process extends Base {
 
     private String name;
+    @Column(length = 1000)
     private String description;
     @Column(nullable = true)
     private UUID methodId;
