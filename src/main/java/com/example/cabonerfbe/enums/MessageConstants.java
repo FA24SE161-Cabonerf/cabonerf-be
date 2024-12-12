@@ -545,7 +545,7 @@ public class MessageConstants {
     /**
      * The constant FAILED_TO_PERFORM_CALCULATION.
      */
-    // CALCULATION ERROR MSG
+// CALCULATION ERROR MSG
     public static final String FAILED_TO_PERFORM_CALCULATION = "Failed to perform calculation. ";
     /**
      * The constant EXCHANGE_VALUE_CANNOT_BE_ZERO.

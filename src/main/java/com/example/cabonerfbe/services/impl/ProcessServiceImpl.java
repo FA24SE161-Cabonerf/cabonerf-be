@@ -399,7 +399,7 @@ public class ProcessServiceImpl implements ProcessService {
     private List<Exchanges> copyExchanges(UUID processId, Process newProcess) {
         List<Exchanges> exchanges = exchangesRepository.findAllByProcess(processId);
         boolean containsProductOutput = exchanges.stream()
-                .anyMatch(this::isProductOutput);
+                .anyMatch(e -> (isProductOutput(e) && !(e.getValue().compareTo(BigDecimal.ZERO) == 0)));
 
         if (!containsProductOutput) {
             throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);

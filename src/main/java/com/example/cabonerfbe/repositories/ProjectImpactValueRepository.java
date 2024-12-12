@@ -58,6 +58,12 @@ public interface ProjectImpactValueRepository extends JpaRepository<ProjectImpac
     @Query("SELECT SUM(p.value) FROM ProjectImpactValue p WHERE p.impactMethodCategory.impactCategory.id = :categoryId")
     BigDecimal getSumImpact(@Param("categoryId") UUID categoryId);
 
+    /**
+     * Exists by project id method.
+     *
+     * @param id the id
+     * @return the boolean
+     */
     @Query("select (count(p) > 0) from ProjectImpactValue p where p.project.id = ?1")
     boolean existsByProject_Id(UUID id);
 }

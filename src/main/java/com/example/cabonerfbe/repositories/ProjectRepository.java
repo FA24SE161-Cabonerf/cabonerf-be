@@ -89,4 +89,14 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
      */
     @Query("SELECT count(p) FROM Project p WHERE p.status = true")
     int findAllByStatus();
+
+    /**
+     * Exists by id and status method.
+     *
+     * @param id     the id
+     * @param status the status
+     * @return the boolean
+     */
+    @Query("select (count(p) > 0) from Project p where p.id = ?1 and p.status = ?2")
+    boolean existsByIdAndStatus(UUID id, boolean status);
 }

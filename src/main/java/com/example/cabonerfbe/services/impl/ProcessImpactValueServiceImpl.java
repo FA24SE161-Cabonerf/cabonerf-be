@@ -338,9 +338,8 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
 //            throw CustomExceptions.badRequest(MessageConstants.PROCESS_NOT_SAME_METHOD_WITH_PROJECT);
 //        }
 
-        List<Exchanges> dataList = exchangesRepository.findAllByElementary(processIds);
 
-        if (dataList.isEmpty()) {
+        if (!exchangesRepository.existAllByElementary(processIds)) {
             throw CustomExceptions.badRequest(MessageConstants.ELEMENTARY_CANNOT_BE_EMPTY);
         }
 

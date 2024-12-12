@@ -24,7 +24,7 @@ public interface UserOrganizationRepository extends JpaRepository<UserOrganizati
      * @param userId         the user id
      * @return the optional
      */
-    @Query("SELECT uo FROM UserOrganization uo WHERE uo.organization.id = :organizationId AND uo.user.id = :userId")
+    @Query("SELECT uo FROM UserOrganization uo WHERE uo.organization.id = :organizationId AND uo.user.id = :userId and uo.status = true")
     Optional<UserOrganization> findByUserAndOrganization(@Param("organizationId") UUID organizationId, @Param("userId") UUID userId);
 
     /**
@@ -64,6 +64,13 @@ public interface UserOrganizationRepository extends JpaRepository<UserOrganizati
     @Query("SELECT uo FROM UserOrganization uo WHERE uo.organization.id = :organizationId AND uo.status = true ")
     List<UserOrganization> findByOrganization(@Param("organizationId") UUID organizationId);
 
-    @Query("select (count(*) > 0) from UserOrganization u where u.organization.id = ?1 and u.user.id = ?2")
+    /**
+     * Exists by organization id and user id method.
+     *
+     * @param orgId  the org id
+     * @param userId the user id
+     * @return the boolean
+     */
+    @Query("select (count(*) > 0) from UserOrganization u where u.organization.id = ?1 and u.user.id = ?2 and u.status = true")
     boolean existsByOrganization_IdAndUser_Id(UUID orgId, UUID userId);
 }
