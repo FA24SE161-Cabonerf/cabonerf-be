@@ -195,7 +195,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
         long startTime = System.currentTimeMillis();
         try {
             long fetchProjectStart = System.currentTimeMillis();
-            Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
+            projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
                     () -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND)
             );
             long fetchProjectEnd = System.currentTimeMillis();
@@ -209,16 +209,9 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
             long fetchProcessesEnd = System.currentTimeMillis();
             System.out.println("Time to fetch processes: " + (fetchProcessesEnd - fetchProcessesStart) + " ms");
 
-            long checkConnectorsStart = System.currentTimeMillis();
-            if (connectorRepository.findAllByProject(projectId).size() < (processList.size() - 1)) {
-                throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
-            }
-            long checkConnectorsEnd = System.currentTimeMillis();
-            System.out.println("Time to check connectors: " + (checkConnectorsEnd - checkConnectorsStart) + " ms");
 
             long fetchImpactValuesStart = System.currentTimeMillis();
-            List<ProjectImpactValue> projectImpactValueList = projectImpactValueRepository.findAllByProjectId(projectId);
-            if (projectImpactValueList.isEmpty()) {
+            if (!projectImpactValueRepository.existsByProject_Id(projectId)) {
                 throw CustomExceptions.badRequest(MessageConstants.CALCULATION_REQUIRED_TO_SAVE_OBJECT_LIBRARY);
             }
             long fetchImpactValuesEnd = System.currentTimeMillis();
@@ -229,7 +222,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
             long determineRootProcessStart = System.currentTimeMillis();
             try {
                 if (processList.size() > 1) {
-                    if (processRepository.findProcessesWithoutOutgoingConnectors(projectId).size() > 1) {
+                    if (processRepository.countProcessesWithoutOutgoingConnectors(projectId) > 1) {
                         throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
                     }
                     saveProcess = processRepository.findRootProcess(projectId).get(0);
@@ -241,14 +234,14 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
             System.out.println("Time to determine root process: " + (determineRootProcessEnd - determineRootProcessStart) + " ms");
 
             long validateUserStart = System.currentTimeMillis();
-            UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(
-                            saveProcess.getProject().getOrganization().getId(), userId)
-                    .orElseThrow(() -> CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
+            if (userOrganizationRepository.existsByOrganization_IdAndUser_Id(saveProcess.getOrganization().getId(), userId)) {
+               throw  CustomExceptions.unauthorized(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION);
+            };
             long validateUserEnd = System.currentTimeMillis();
             System.out.println("Time to validate user: " + (validateUserEnd - validateUserStart) + " ms");
 
             long convertProcessStart = System.currentTimeMillis();
-            processService.convertProcessToObjectLibrary(saveProcess, projectImpactValueList);
+            processService.convertProcessToObjectLibrary(saveProcess, projectImpactValueRepository.findAllByProjectId(projectId));
             long convertProcessEnd = System.currentTimeMillis();
             System.out.println("Time to convert process: " + (convertProcessEnd - convertProcessStart) + " ms");
 

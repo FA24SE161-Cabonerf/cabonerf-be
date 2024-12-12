@@ -352,9 +352,7 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
             throw CustomExceptions.badRequest(MessageConstants.NO_CONNECTOR_TO_CALCULATE, Collections.EMPTY_LIST);
         }
 
-        List<Process> processesWithoutOutgoingConnectors = processRepository
-                .findProcessesWithoutOutgoingConnectors(projectId);
-        if (processesWithoutOutgoingConnectors.size() > 1) {
+        if (processRepository.countProcessesWithoutOutgoingConnectors(projectId) > 1) {
             throw CustomExceptions.badRequest(MessageConstants.FINAL_PROCESS_MUST_BE_SPECIFIED, Collections.EMPTY_LIST);
         }
         if (processIds.size() > 1) {

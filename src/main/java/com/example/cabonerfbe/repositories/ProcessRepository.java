@@ -72,6 +72,16 @@ public interface ProcessRepository extends JpaRepository<Process, UUID> {
             """)
     List<Process> findProcessesWithoutOutgoingConnectors(@Param("projectId") UUID projectId);
 
+    @Query("""
+                SELECT (count(*))
+                FROM Process p 
+                LEFT JOIN Connector c ON p.id = c.startProcess.id 
+                WHERE c.startProcess.id IS NULL 
+                  AND p.status = true 
+                  AND p.project.id = :projectId
+            """)
+    Long countProcessesWithoutOutgoingConnectors(@Param("projectId") UUID projectId);
+
 
     /**
      * Find root process method.

@@ -63,4 +63,7 @@ public interface UserOrganizationRepository extends JpaRepository<UserOrganizati
      */
     @Query("SELECT uo FROM UserOrganization uo WHERE uo.organization.id = :organizationId AND uo.status = true ")
     List<UserOrganization> findByOrganization(@Param("organizationId") UUID organizationId);
+
+    @Query("select (count(u) > 0) from UserOrganization u where u.organization.id = ?1 and u.user.id = ?2")
+    boolean existsByOrganization_IdAndUser_Id(UUID id, UUID id1);
 }
