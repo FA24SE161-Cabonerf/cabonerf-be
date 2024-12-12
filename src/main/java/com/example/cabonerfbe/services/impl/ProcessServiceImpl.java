@@ -397,8 +397,15 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     private List<Exchanges> copyExchanges(UUID processId, Process newProcess) {
-        return exchangesRepository.findAllByProcess(processId)
-                .stream()
+        List<Exchanges> exchanges = exchangesRepository.findAllByProcess(processId);
+        boolean containsProductOutput = exchanges.stream()
+                .anyMatch(this::isProductOutput);
+
+        if (!containsProductOutput) {
+            throw CustomExceptions.badRequest(MessageConstants.CALCULATE_PROJECT_AGAIN);
+        }
+
+        return exchanges.stream()
                 .filter(this::isNonProductInput)
                 .map(e -> mapToNewExchange(e, newProcess))
                 .toList();
@@ -406,6 +413,10 @@ public class ProcessServiceImpl implements ProcessService {
 
     private boolean isNonProductInput(Exchanges exchange) {
         return !(Constants.PRODUCT_EXCHANGE.equals(exchange.getExchangesType().getName()) && exchange.isInput());
+    }
+
+    private boolean isProductOutput(Exchanges exchange) {
+        return (Constants.PRODUCT_EXCHANGE.equals(exchange.getExchangesType().getName()) && !exchange.isInput());
     }
 
     private Exchanges mapToNewExchange(Exchanges oldExchange, Process newProcess) {

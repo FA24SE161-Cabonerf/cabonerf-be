@@ -49,7 +49,7 @@ public class ObjectLibraryController {
                                                                             @RequestParam(required = false) UUID systemBoundaryId,
                                                                             @RequestParam(required = false) String keyword,
                                                                             @RequestHeader(value = Constants.USER_ID_HEADER) UUID userId) {
-        log.info("Start searchObjectLibraryOfOrganization methodId: {}, keyword: {}, orgId: {}", systemBoundaryId, keyword, organizationId);
+        log.info("Start searchObjectLibraryOfOrganization systemBoundaryId: {}, keyword: {}, orgId: {}", systemBoundaryId, keyword, organizationId);
         PagingKeywordMethodRequest request = new PagingKeywordMethodRequest(pageCurrent, pageSize, systemBoundaryId, keyword);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.SEARCH_OBJECT_LIBRARY_OF_ORGANIZATION_SUCCESS, objectLibraryService.searchObjectLibraryOfOrganization(userId, organizationId, request))
