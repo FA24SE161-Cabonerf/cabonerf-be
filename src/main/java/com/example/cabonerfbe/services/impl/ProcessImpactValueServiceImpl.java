@@ -372,8 +372,6 @@ public class ProcessImpactValueServiceImpl implements ProcessImpactValueService 
     }
 
     private void validateRootProcess(Process process) {
-        List<Exchanges> elementary = exchangesRepository.findElementaryByProcess(process.getId());
-
         Exchanges productOut = exchangesRepository.findProductOutWithOneProcess(process.getId());
         if (productOut == null) {
             throw CustomExceptions.badRequest(MessageConstants.FAILED_TO_PERFORM_CALCULATION +
