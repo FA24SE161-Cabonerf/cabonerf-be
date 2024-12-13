@@ -8,6 +8,7 @@ import com.example.cabonerfbe.request.InviteUserToOrganizationRequest;
 import com.example.cabonerfbe.request.UpdateOrganizationRequest;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.OrganizationService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,7 +41,8 @@ public class OrganizationController {
 
     @Autowired
     private OrganizationService organizationService;
-
+    @Autowired
+    private ObjectMapper objectMapper;
     /**
      * Create organization method.
      *
@@ -54,10 +60,18 @@ public class OrganizationController {
                                                              @RequestParam @Email String email,
                                                              @RequestParam String description,
                                                              @RequestParam String taxCode,
-                                                             @RequestParam List<String> industryCodeIds,
+                                                             @RequestParam String industryCodeIds,
                                                              @RequestParam MultipartFile contractFile,
-                                                             @RequestParam MultipartFile logo) {
-        List<UUID> icIds = industryCodeIds.stream().map(UUID::fromString).toList();
+                                                             @RequestParam MultipartFile logo){
+        List<UUID> icIds = new ArrayList<>();
+        try{
+           icIds = Arrays.stream(
+                    objectMapper.readValue(industryCodeIds, String[].class)
+            ).map(UUID::fromString).toList();
+        }catch (JsonProcessingException ignored){
+            
+        }
+        
         CreateOrganizationRequest request = new CreateOrganizationRequest(name, email, icIds, taxCode, description);
         log.info("Start createOrganization. Request: {}", request);
         return ResponseEntity.ok().body(new ResponseObject(
