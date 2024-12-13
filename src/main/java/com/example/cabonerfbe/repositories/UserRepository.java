@@ -42,7 +42,7 @@ public interface UserRepository extends JpaRepository<Users, UUID> {
      * @param pageable the pageable
      * @return the page
      */
-    @Query("select u from Users u where (u.role.name not like 'System Admin' OR u.role.name not like 'Manager') AND LOWER(u.email) like LOWER(CONCAT('%', :keyword, '%')) or LOWER(u.fullName) like LOWER(CONCAT('%', :keyword, '%'))")
+    @Query("select u from Users u where (u.role.name not like 'System Admin' AND u.role.name not like 'Manager') AND LOWER(u.email) like LOWER(CONCAT('%', :keyword, '%')) or LOWER(u.fullName) like LOWER(CONCAT('%', :keyword, '%'))")
     Page<Users> findByEmailAndFullName(@Param("keyword") String keyword, Pageable pageable);
 
     /**
@@ -112,6 +112,6 @@ public interface UserRepository extends JpaRepository<Users, UUID> {
      * @param pageable the pageable
      * @return the page
      */
-    @Query("select u from Users u where (u.role.name not like 'System Admin' OR u.role.name not like 'Manager')")
+    @Query("select u from Users u where (u.role.name not like 'System Admin' AND u.role.name not like 'Manager')")
     Page<Users> findAllExceptAdminAndManager(Pageable pageable);
 }
