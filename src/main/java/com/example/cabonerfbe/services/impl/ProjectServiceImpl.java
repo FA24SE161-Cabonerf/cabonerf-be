@@ -145,7 +145,7 @@ public class ProjectServiceImpl implements ProjectService {
                 () -> CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND, Collections.EMPTY_LIST)
         );
 
-        IndustryCode ic = codeRepository.findByIdWithStatus(request.getIndustryCodeId())
+        IndustryCode ic = codeRepository.findByIdWithStatusToCreateProject(request.getIndustryCodeId())
                 .orElseThrow(() -> CustomExceptions.notFound(MessageConstants.NO_INDUSTRY_CODE_FOUND));
 
         Organization organization = oRepository.findById(request.getOrganizationId()).orElseThrow(
