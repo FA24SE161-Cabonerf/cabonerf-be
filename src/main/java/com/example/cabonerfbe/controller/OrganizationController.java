@@ -54,10 +54,11 @@ public class OrganizationController {
                                                              @RequestParam @Email String email,
                                                              @RequestParam String description,
                                                              @RequestParam String taxCode,
-                                                             @RequestParam List<UUID> industryCodeIds,
+                                                             @RequestParam List<String> industryCodeIds,
                                                              @RequestParam MultipartFile contractFile,
                                                              @RequestParam MultipartFile logo) {
-        CreateOrganizationRequest request = new CreateOrganizationRequest(name, email, industryCodeIds, taxCode, description);
+        List<UUID> icIds = industryCodeIds.stream().map(UUID::fromString).toList();
+        CreateOrganizationRequest request = new CreateOrganizationRequest(name, email, icIds, taxCode, description);
         log.info("Start createOrganization. Request: {}", request);
         return ResponseEntity.ok().body(new ResponseObject(
                 Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CREATE_ORGANIZATION_SUCCESS, organizationService.createOrganization(request, contractFile, logo)
