@@ -37,7 +37,7 @@ public interface IndustryCodeRepository extends JpaRepository<IndustryCode, UUID
     @Query("SELECT ic FROM IndustryCode ic WHERE ic.id in :industryCodeIds AND ic.status = true")
     List<IndustryCode> findAllByIds(@Param("industryCodeIds") List<UUID> industryCodeIds);
 
-    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true ")
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true ORDER BY ic.code ASC")
     Page<IndustryCode> findAll(Pageable pageable);
 
     /**
@@ -47,7 +47,7 @@ public interface IndustryCodeRepository extends JpaRepository<IndustryCode, UUID
      * @param pageable the pageable
      * @return the page
      */
-    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true AND ic.name ILIKE CONCAT('%', :keyword ,'%')")
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true AND ic.name ILIKE CONCAT('%', :keyword ,'%') ORDER BY ic.code ASC")
     Page<IndustryCode> findAllByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     /**
@@ -56,7 +56,7 @@ public interface IndustryCodeRepository extends JpaRepository<IndustryCode, UUID
      * @param code the code
      * @return the optional
      */
-    @Query("SELECT ic FROM IndustryCode ic WHERE ic.code like :code AND ic.status = true")
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.code like :code AND ic.status = true ORDER BY ic.code ASC")
     Optional<IndustryCode> findByCode(@Param("code") String code);
 
     /**
@@ -73,7 +73,7 @@ public interface IndustryCodeRepository extends JpaRepository<IndustryCode, UUID
      *
      * @return the list
      */
-    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true")
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true ORDER BY ic.code ASC")
     List<IndustryCode> findByStatus();
 
     /**
@@ -82,7 +82,7 @@ public interface IndustryCodeRepository extends JpaRepository<IndustryCode, UUID
      * @param keyword the keyword
      * @return the list
      */
-    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true AND ic.name ILIKE CONCAT('%', :keyword ,'%')")
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true AND ic.name ILIKE CONCAT('%', :keyword ,'%') ORDER BY ic.code ASC")
     List<IndustryCode> findByKeyword(@Param("keyword") String keyword);
 
     /**
