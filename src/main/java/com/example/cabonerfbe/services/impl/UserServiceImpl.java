@@ -90,7 +90,7 @@ public class UserServiceImpl implements UserService {
 
         Page<Users> users = keyword != null
                 ? userRepository.findByEmailAndFullName(keyword, pageable)
-                : userRepository.findAll(pageable);
+                : userRepository.findAllExceptAdminAndManager(pageable);
 
         int totalPage = users.getTotalPages();
         if (pageCurrent > totalPage) {
