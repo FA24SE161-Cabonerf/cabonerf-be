@@ -2,6 +2,7 @@ package com.example.cabonerfbe.dto;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,6 +21,7 @@ public class ObjectLibraryDto {
     private String name;
     private String description;
     private boolean library;
+    private LocalDateTime createdAt;
     private SystemBoundaryDto systemBoundary;
     private LifeCycleStageDto lifeCycleStage;
     private List<ProcessImpactValueDto> impacts;
