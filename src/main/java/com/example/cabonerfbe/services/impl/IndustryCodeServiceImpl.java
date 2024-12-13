@@ -4,7 +4,6 @@ import com.example.cabonerfbe.converter.IndustryCodeConverter;
 import com.example.cabonerfbe.dto.IndustryCodeDto;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
-import com.example.cabonerfbe.models.Base;
 import com.example.cabonerfbe.models.IndustryCode;
 import com.example.cabonerfbe.models.Organization;
 import com.example.cabonerfbe.models.OrganizationIndustryCode;
@@ -125,7 +124,6 @@ public class IndustryCodeServiceImpl implements IndustryCodeService {
         return oicRepository.findByOrganization(organizationId)
                 .stream()
                 .map(OrganizationIndustryCode::getIndustryCode)
-                .filter(Base::isStatus)
                 .map(icConverter::modelToDto)
                 .toList();
 

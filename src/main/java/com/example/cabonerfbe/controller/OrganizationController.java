@@ -26,7 +26,7 @@ import java.util.UUID;
  *
  * @author SonPHH.
  */
-@RequestMapping(API_PARAMS.API_VERSION + API_PARAMS.ORGANIZATION)
+@RequestMapping(API_PARAMS.API_VERSION)
 @NoArgsConstructor
 @AllArgsConstructor
 @RestController
@@ -49,7 +49,7 @@ public class OrganizationController {
      * @param logo            the logo
      * @return the response entity
      */
-    @PostMapping(value = API_PARAMS.MANAGER, consumes = "multipart/form-data")
+    @PostMapping(value = API_PARAMS.MANAGER + API_PARAMS.ORGANIZATION, consumes = "multipart/form-data")
     public ResponseEntity<ResponseObject> createOrganization(@RequestParam String name,
                                                              @RequestParam @Email String email,
                                                              @RequestParam String description,
@@ -72,7 +72,7 @@ public class OrganizationController {
      * @param keyword     the keyword
      * @return the all
      */
-    @GetMapping(API_PARAMS.MANAGER)
+    @GetMapping(API_PARAMS.MANAGER + API_PARAMS.ORGANIZATION)
     public ResponseEntity<ResponseObject> getALL(@RequestParam(required = true, defaultValue = "1") int pageCurrent,
                                                  @RequestParam(required = true, defaultValue = "5") int pageSize,
                                                  @RequestParam(required = false) String keyword) {
@@ -89,7 +89,7 @@ public class OrganizationController {
      * @param request        the request
      * @return the response entity
      */
-    @PutMapping(API_PARAMS.MANAGER + API_PARAMS.UPDATE_ORGANIZATION)
+    @PutMapping(API_PARAMS.MANAGER + API_PARAMS.ORGANIZATION + API_PARAMS.UPDATE_ORGANIZATION)
     public ResponseEntity<ResponseObject> updateOrganization(@PathVariable("organizationId") UUID organizationId, @RequestBody UpdateOrganizationRequest request) {
         log.info("Start updateOrganization.Id: {}, Request: {}", organizationId, request);
         return ResponseEntity.ok().body(new ResponseObject(
@@ -103,7 +103,7 @@ public class OrganizationController {
      * @param organizationId the organization id
      * @return the response entity
      */
-    @DeleteMapping(API_PARAMS.MANAGER + API_PARAMS.DELETE_ORGANIZATION)
+    @DeleteMapping(API_PARAMS.MANAGER + API_PARAMS.ORGANIZATION + API_PARAMS.DELETE_ORGANIZATION)
     public ResponseEntity<ResponseObject> deleteOrganization(@PathVariable("organizationId") UUID organizationId) {
         log.info("Start deleteOrganization.Id: {}", organizationId);
         return ResponseEntity.ok().body(new ResponseObject(
@@ -126,7 +126,7 @@ public class OrganizationController {
 //                Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.CONFIRM_CREATE_ORGANIZATION_SUCCESS, organizationService.confirm(request)
 //        ));
 //    }
-    @PostMapping(API_PARAMS.ORGANIZATION_MANAGER + API_PARAMS.INVITE_MEMBER_ORGANIZATION)
+    @PostMapping(API_PARAMS.ORGANIZATION_MANAGER + API_PARAMS.ORGANIZATION + API_PARAMS.INVITE_MEMBER_ORGANIZATION)
     public ResponseEntity<ResponseObject> inviteMemberOrganization(@RequestHeader("x-user-id") UUID userId, @Valid @RequestBody InviteUserToOrganizationRequest request) {
         log.info("Start inviteMemberOrganization. Request: {}", request);
         return ResponseEntity.ok().body(
@@ -141,7 +141,7 @@ public class OrganizationController {
      * @param token              the token
      * @return the response entity
      */
-    @PutMapping(API_PARAMS.ACCEPT_INVITE_ORGANIZATION)
+    @PutMapping(API_PARAMS.ORGANIZATION + API_PARAMS.ACCEPT_INVITE_ORGANIZATION)
     public ResponseEntity<ResponseObject> accept(@RequestParam UUID userOrganizationId, @RequestParam String token) {
         log.info("Start acceptInviteOrganization.");
         return ResponseEntity.ok().body(
@@ -155,7 +155,7 @@ public class OrganizationController {
      * @param organizationId the organization id
      * @return the member in organization
      */
-    @GetMapping(API_PARAMS.GET_MEMBER_IN_ORGANIZATION)
+    @GetMapping(API_PARAMS.ORGANIZATION + API_PARAMS.GET_MEMBER_IN_ORGANIZATION)
     public ResponseEntity<ResponseObject> getMemberInOrganization(@PathVariable UUID organizationId) {
         log.info("Start getMemberInOrganization. organizationId: {}", organizationId);
         return ResponseEntity.ok().body(
@@ -170,7 +170,7 @@ public class OrganizationController {
      * @param userOrganizationId the user organization id
      * @return the response entity
      */
-    @DeleteMapping(API_PARAMS.ORGANIZATION_MANAGER + API_PARAMS.REMOVE_MEMBER_IN_ORGANIZATION)
+    @DeleteMapping(API_PARAMS.ORGANIZATION_MANAGER + API_PARAMS.ORGANIZATION + API_PARAMS.REMOVE_MEMBER_IN_ORGANIZATION)
     public ResponseEntity<ResponseObject> removeMember(@RequestHeader("x-user-id") UUID userId, @PathVariable("userOrganizationId") UUID userOrganizationId) {
         log.info("Start removeMember");
         return ResponseEntity.ok().body(
@@ -185,7 +185,7 @@ public class OrganizationController {
      * @param logo           the logo
      * @return the response entity
      */
-    @PostMapping(API_PARAMS.UPLOAD_LOGO)
+    @PostMapping(API_PARAMS.ORGANIZATION + API_PARAMS.UPLOAD_LOGO)
     public ResponseEntity<ResponseObject> uploadLogo(@PathVariable("organizationId") UUID organizationId, @RequestParam("logo") MultipartFile logo) {
         log.info("Start uploadLogoOrganization. Id: {}", organizationId);
         return ResponseEntity.ok().body(
@@ -199,7 +199,7 @@ public class OrganizationController {
      * @param userId the user id
      * @return the all by user
      */
-    @GetMapping()
+    @GetMapping(API_PARAMS.ORGANIZATION)
     public ResponseEntity<ResponseObject> getAllByUser(@RequestHeader("x-user-id") UUID userId) {
         log.info("Start getAllOrganizationByUser. userId: {}", userId);
         return ResponseEntity.ok().body(
@@ -213,7 +213,7 @@ public class OrganizationController {
      * @param organizationId the organization id
      * @return the organization by id
      */
-    @GetMapping(API_PARAMS.GET_ORGANIZATION_BY_ID)
+    @GetMapping(API_PARAMS.ORGANIZATION + API_PARAMS.GET_ORGANIZATION_BY_ID)
     public ResponseEntity<ResponseObject> getOrganizationById(@PathVariable UUID organizationId) {
         log.info("Start getOrganizationById. Id: {}", organizationId);
         return ResponseEntity.ok().body(
@@ -228,7 +228,7 @@ public class OrganizationController {
      * @param userOrganizationId the user organization id
      * @return the response entity
      */
-    @DeleteMapping(API_PARAMS.OUT_ORGANIZATION)
+    @DeleteMapping(API_PARAMS.ORGANIZATION + API_PARAMS.OUT_ORGANIZATION)
     public ResponseEntity<ResponseObject> leaveOrganization(@RequestHeader("x-user-id") UUID userId, @PathVariable UUID userOrganizationId) {
         log.info("Start leaveOrganization. userId: {}", userId);
         return ResponseEntity.ok().body(

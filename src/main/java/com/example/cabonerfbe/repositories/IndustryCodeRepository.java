@@ -92,4 +92,13 @@ public interface IndustryCodeRepository extends JpaRepository<IndustryCode, UUID
      */
     @Query("SELECT ic FROM IndustryCode ic WHERE ic.status = true ")
     List<IndustryCode> findAllByStatus();
+
+    /**
+     * Find by id with status method.
+     *
+     * @param industryCodeId the industry code id
+     * @return the optional
+     */
+    @Query("SELECT ic FROM IndustryCode ic WHERE ic.id = :industryCodeId")
+    Optional<IndustryCode> findByIdWithStatusToCreateProject(@Param("industryCodeId") UUID industryCodeId);
 }
