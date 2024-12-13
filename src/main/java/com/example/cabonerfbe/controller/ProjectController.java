@@ -52,7 +52,7 @@ public class ProjectController {
     public ResponseEntity<ResponseObject> getProjectListByMethodId(
             @RequestHeader("x-user-id") UUID userId,
             @RequestParam(defaultValue = "1") int pageCurrent,
-            @RequestParam(defaultValue = "5") int pageSize,
+            @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(required = false) UUID methodId,
             @RequestParam(required = true) UUID organizationId
     ) {
