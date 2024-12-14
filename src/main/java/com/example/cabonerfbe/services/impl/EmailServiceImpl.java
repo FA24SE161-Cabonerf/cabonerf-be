@@ -16,6 +16,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -34,6 +35,7 @@ import java.util.Map;
  * @author SonPHH.
  */
 @Service
+@Slf4j
 public class EmailServiceImpl implements EmailService {
 
     /**
@@ -114,6 +116,7 @@ public class EmailServiceImpl implements EmailService {
      */
     @RabbitListener(queues = RabbitMQConfig.EMAIL_INVITE_QUEUE)
     public void consumeSendMailInviteToOrganization(SendMailInviteRequest request) {
+        log.info("consumeSendMailInviteToOrganization: {}", request);
         MailRequest mailRequest = new MailRequest();
         mailRequest.setSubject(Constants.INVITE_ORGANIZATION_SUBJECT);
         mailRequest.setName(Constants.CABONERF_TITLE);
@@ -133,6 +136,7 @@ public class EmailServiceImpl implements EmailService {
      */
     @RabbitListener(queues = RabbitMQConfig.EMAIL_INVITE_QUEUE)
     public void consumeSendMailCreateAccountOrganization(SendMailCreateAccountOrganizationRequest request) {
+        log.info("consumeSendMailCreateAccountOrganization: {}", request);
         MailRequest mailRequest = new MailRequest();
         mailRequest.setSubject(Constants.CREATE_ORGANIZATION_SUBJECT);
         mailRequest.setName(Constants.CABONERF_TITLE);
