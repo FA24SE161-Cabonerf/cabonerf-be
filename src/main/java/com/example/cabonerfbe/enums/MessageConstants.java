@@ -584,4 +584,11 @@ public class MessageConstants {
      */
     public static final String PROCESS_NOT_SAME_METHOD_WITH_PROJECT = FAILED_TO_PERFORM_CALCULATION + "- Has process using different method than project.";
 
+    /**
+     * The constant ALREADY_IN_ORGANIZATION.
+     */
+    public static final String ALREADY_IN_ORGANIZATION = "User already invite to organization.";
+
+
+
 }

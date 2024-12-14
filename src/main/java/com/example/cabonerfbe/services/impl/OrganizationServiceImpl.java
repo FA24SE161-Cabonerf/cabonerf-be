@@ -12,6 +12,7 @@ import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CreateOrganizationRequest;
 import com.example.cabonerfbe.request.InviteUserToOrganizationRequest;
+import com.example.cabonerfbe.request.MailRequest;
 import com.example.cabonerfbe.request.UpdateOrganizationRequest;
 import com.example.cabonerfbe.response.GetAllOrganizationResponse;
 import com.example.cabonerfbe.response.LoginResponse;
@@ -87,6 +88,8 @@ public class OrganizationServiceImpl implements OrganizationService {
     private OrganizationIndustryCodeConverter oicConverter;
     @Autowired
     private IndustryCodeConverter icConverter;
+    @Autowired
+    private EmailService emailService;
 
     @Override
     public GetAllOrganizationResponse getAll(int pageCurrent, int pageSize, String keyword) {
@@ -157,7 +160,6 @@ public class OrganizationServiceImpl implements OrganizationService {
             }
         }
 
-        CreateOrganizationDto finalDto = dto;
         Users user = userRepository.findByEmail(request.getEmail()).orElseGet(
                 () -> {
                     Users newAccount = new Users();
@@ -168,7 +170,20 @@ public class OrganizationServiceImpl implements OrganizationService {
                     newAccount.setPassword(passwordEncoder.encode(password));
                     newAccount.setProfilePictureUrl(Constants.DEFAULT_USER_IMAGE);
                     newAccount = userRepository.save(newAccount);
-                    finalDto.setNewUserId(newAccount.getId());
+
+                    //Send-mail
+                    MailRequest mailRequest = new MailRequest();
+                    mailRequest.setSubject("Create Organization");
+                    mailRequest.setName("Cabonerf");
+                    mailRequest.setTo(request.getEmail());
+                    mailRequest.setFrom("cabonerf@gmail.com");
+
+                    Map<String,Object> model = new HashMap<>();
+                    model.put("email", request.getEmail());
+                    model.put("password", password);
+
+                    emailService.sendMailCreateAccountOrganization(mailRequest,model);
+                    //----------------------
 
                     Organization o = new Organization();
                     o.setName(Constants.DEFAULT_ORGANIZATION);
@@ -214,10 +229,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         UserOrganization userOrganization = new UserOrganization();
         userOrganization.setOrganization(organization);
         userOrganization.setUser(user);
-        userOrganization.setHasJoined(false);
+        userOrganization.setHasJoined(true);
         userOrganization.setRole(organizationManager);
         userOrganizationRepository.save(userOrganization);
-
 
         Contract contract = new Contract();
         contract.setOrganization(organization);
@@ -239,9 +253,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         dto = organizationConverter.modelToCreateDto(organization);
         dto.setIndustryCodes(industryCodes.stream().map(icConverter::modelToDto).toList());
-        if (finalDto.getNewUserId() != null) {
-            dto.setNewUserId(finalDto.getNewUserId());
-        }
         return dto;
     }
 
@@ -275,6 +286,12 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         if (existingUsers == null || existingUsers.isEmpty()) {
             throw CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND);
+        }
+        for (Users users: existingUsers){
+            Optional<UserOrganization> uoCheck = userOrganizationRepository.findByUserAndOrganization(request.getOrganizationId(),users.getId());
+            if(uoCheck.isPresent()){
+                throw CustomExceptions.badRequest(MessageConstants.ALREADY_IN_ORGANIZATION);
+            }
         }
 
         if (existingUsers.size() < request.getUserIds().size()) {
@@ -320,6 +337,21 @@ public class OrganizationServiceImpl implements OrganizationService {
                 }).collect(Collectors.toList());
 
         userOrganizations = userOrganizationRepository.saveAll(userOrganizations);
+
+        userOrganizations.parallelStream().forEach(x -> {
+            MailRequest mailRequest = new MailRequest();
+            mailRequest.setSubject("Invite Organization");
+            mailRequest.setName("Cabonerf");
+            mailRequest.setTo(x.getUser().getEmail());
+            mailRequest.setFrom("cabonerf@gmail.com");
+
+            Map<String, Object> model = Map.of(
+                    "organization_name", x.getOrganization().getName()
+            );
+
+            emailService.sendMailInviteOrganization(mailRequest, model);
+        });
+
 
 
         return userOrganizations.stream()
