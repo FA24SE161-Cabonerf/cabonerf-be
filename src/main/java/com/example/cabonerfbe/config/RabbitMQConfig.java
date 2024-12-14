@@ -68,10 +68,13 @@ public class RabbitMQConfig {
      */
     public static final String CONNECTOR_EXCHANGE = "exchange.connector";
     /**
+     * The constant EMAIL_INVITE_QUEUE.
+     */
+    public static final String EMAIL_INVITE_QUEUE = "email.invite.queue";
+    /**
      * The constant EMAIL_QUEUE.
      */
-// send email queue
-    public static final String EMAIL_QUEUE = "email.queue";
+    public static final String EMAIL_CREATE_ORG_QUEUE = "email.create.organization.queue";
     /**
      * The constant EMAIL_EXCHANGE.
      */
@@ -173,8 +176,13 @@ public class RabbitMQConfig {
      * @return the queue
      */
     @Bean
-    public Queue emailQueue() {
-        return new Queue(EMAIL_QUEUE, true);
+    public Queue emailInviteQueue() {
+        return new Queue(EMAIL_INVITE_QUEUE, true);
+    }
+
+    @Bean
+    public Queue emailCreateOrgQueue() {
+        return new Queue(EMAIL_CREATE_ORG_QUEUE, true);
     }
 
     /**
@@ -282,7 +290,7 @@ public class RabbitMQConfig {
      */
     @Bean
     public Binding bindingCreateOrganization() {
-        return BindingBuilder.bind(emailQueue())
+        return BindingBuilder.bind(emailCreateOrgQueue())
                 .to(emailExchange())
                 .with(EMAIL_CREATE_ORGANIZATION_ROUTING_KEY);
     }
@@ -294,7 +302,7 @@ public class RabbitMQConfig {
      */
     @Bean
     public Binding bindingCreateAccountManager() {
-        return BindingBuilder.bind(emailQueue())
+        return BindingBuilder.bind(emailInviteQueue())
                 .to(emailExchange())
                 .with(EMAIL_CREATE_ACCOUNT_MANAGER_ROUTING_KEY);
     }
@@ -306,7 +314,7 @@ public class RabbitMQConfig {
      */
     @Bean
     public Binding bindingRegister() {
-        return BindingBuilder.bind(emailQueue())
+        return BindingBuilder.bind(emailInviteQueue())
                 .to(emailExchange())
                 .with(EMAIL_REGISTER_ROUTING_KEY);
     }
@@ -318,7 +326,7 @@ public class RabbitMQConfig {
      */
     @Bean
     public Binding bindingInvite() {
-        return BindingBuilder.bind(emailQueue())
+        return BindingBuilder.bind(emailInviteQueue())
                 .to(emailExchange())
                 .with(EMAIL_INVITE_ROUTING_KEY);
     }

@@ -112,7 +112,7 @@ public class EmailServiceImpl implements EmailService {
      *
      * @param request the request
      */
-    @RabbitListener(queues = RabbitMQConfig.EMAIL_QUEUE)
+    @RabbitListener(queues = RabbitMQConfig.EMAIL_INVITE_QUEUE)
     public void consumeSendMailInviteToOrganization(SendMailInviteRequest request) {
         MailRequest mailRequest = new MailRequest();
         mailRequest.setSubject(Constants.INVITE_ORGANIZATION_SUBJECT);
@@ -131,7 +131,7 @@ public class EmailServiceImpl implements EmailService {
      *
      * @param request the request
      */
-    @RabbitListener(queues = RabbitMQConfig.EMAIL_QUEUE)
+    @RabbitListener(queues = RabbitMQConfig.EMAIL_INVITE_QUEUE)
     public void consumeSendMailCreateAccountOrganization(SendMailCreateAccountOrganizationRequest request) {
         MailRequest mailRequest = new MailRequest();
         mailRequest.setSubject(Constants.CREATE_ORGANIZATION_SUBJECT);
