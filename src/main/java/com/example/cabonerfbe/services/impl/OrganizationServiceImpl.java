@@ -164,7 +164,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                     Users newAccount = new Users();
                     newAccount.setEmail(request.getEmail());
                     newAccount.setFullName(request.getName());
-                    newAccount.setUserVerifyStatus(pendingStatus);
+                    newAccount.setUserVerifyStatus(userVerifyStatusRepository.findByName("Verified").get());
                     newAccount.setRole(organizationManager);
                     newAccount.setPassword(passwordEncoder.encode(password));
                     newAccount.setProfilePictureUrl(Constants.DEFAULT_USER_IMAGE);
