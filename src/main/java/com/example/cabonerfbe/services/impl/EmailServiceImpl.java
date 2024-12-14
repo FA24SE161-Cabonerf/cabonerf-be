@@ -134,7 +134,7 @@ public class EmailServiceImpl implements EmailService {
      *
      * @param request the request
      */
-    @RabbitListener(queues = RabbitMQConfig.EMAIL_INVITE_QUEUE)
+    @RabbitListener(queues = RabbitMQConfig.EMAIL_CREATE_ORG_QUEUE)
     public void consumeSendMailCreateAccountOrganization(SendMailCreateAccountOrganizationRequest request) {
         log.info("consumeSendMailCreateAccountOrganization: {}", request);
         MailRequest mailRequest = new MailRequest();
