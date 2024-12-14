@@ -590,5 +590,4 @@ public class MessageConstants {
     public static final String ALREADY_IN_ORGANIZATION = "User already invite to organization.";
 
 
-
 }

@@ -88,7 +88,10 @@ public class RabbitMQConfig {
      * The constant EMAIL_REGISTER_ROUTING_KEY.
      */
     public static final String EMAIL_REGISTER_ROUTING_KEY = "email.register.key";
-
+    /**
+     * The constant EMAIL_INVITE_ROUTING_KEY.
+     */
+    public static final String EMAIL_INVITE_ROUTING_KEY = "email.invite.key";
 
     /**
      * The constant RPC_QUEUE.
@@ -306,6 +309,18 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(emailQueue())
                 .to(emailExchange())
                 .with(EMAIL_REGISTER_ROUTING_KEY);
+    }
+
+    /**
+     * Binding invite method.
+     *
+     * @return the binding
+     */
+    @Bean
+    public Binding bindingInvite() {
+        return BindingBuilder.bind(emailQueue())
+                .to(emailExchange())
+                .with(EMAIL_INVITE_ROUTING_KEY);
     }
 
     /**

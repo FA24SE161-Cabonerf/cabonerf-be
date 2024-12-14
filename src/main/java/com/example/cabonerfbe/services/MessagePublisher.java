@@ -4,7 +4,8 @@ import com.example.cabonerfbe.config.RabbitMQConfig;
 import com.example.cabonerfbe.dto.ProcessDto;
 import com.example.cabonerfbe.request.CreateProcessImpactValueRequest;
 import com.example.cabonerfbe.request.RabbitMqJsonRequest;
-import com.example.cabonerfbe.response.SendMailCreateAccountOrganizationResponse;
+import com.example.cabonerfbe.request.SendMailCreateAccountOrganizationRequest;
+import com.example.cabonerfbe.request.SendMailInviteRequest;
 import com.example.cabonerfbe.response.SendMailRegisterResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -102,17 +103,22 @@ public class MessagePublisher {
     /**
      * Publish send mail create account organization method.
      *
-     * @param response the response
+     * @param request the response
      */
-    public void publishSendMailCreateAccountOrganization(SendMailCreateAccountOrganizationResponse response) {
-        rabbitTemplate.convertAndSend(RabbitMQConfig.EMAIL_EXCHANGE, RabbitMQConfig.EMAIL_CREATE_ORGANIZATION_ROUTING_KEY, response);
-        log.info("Publish SendMailCreateAccountOrganization: {}", response.getEmail());
+    public void publishSendMailCreateAccountOrganization(SendMailCreateAccountOrganizationRequest request) {
+        log.info("Publish SendMailCreateAccountOrganization: {}", request.getEmail());
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EMAIL_EXCHANGE, RabbitMQConfig.EMAIL_CREATE_ORGANIZATION_ROUTING_KEY, request);
     }
 
-//    public void publishSendMailCreateAccountByOrganizationManager(SendMailCreateAccountResponse response) {
-//        rabbitTemplate.convertAndSend(RabbitMQConfig.EMAIL_EXCHANGE, RabbitMQConfig.EMAIL_CREATE_ACCOUNT_MANAGER_ROUTING_KEY, response);
-//        log.info("Publish SendMailCreateAccountByOrganizationManager: {}", response.getEmail());
-//    }
+    /**
+     * Publish send mail invite to organization method.
+     *
+     * @param request the request
+     */
+    public void publishSendMailInviteToOrganization(SendMailInviteRequest request) {
+        log.info("Publish publishSendMailInviteToOrganization: {}", request);
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EMAIL_EXCHANGE, RabbitMQConfig.EMAIL_INVITE_ROUTING_KEY, request);
+    }
 
     /**
      * Publish send mail register method.

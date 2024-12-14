@@ -3,7 +3,6 @@ package com.example.cabonerfbe.services;
 import com.example.cabonerfbe.request.MailRequest;
 
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * The interface Email service.

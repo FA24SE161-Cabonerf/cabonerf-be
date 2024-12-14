@@ -9,6 +9,7 @@ import com.example.cabonerfbe.request.UpdateOrganizationRequest;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.OrganizationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
@@ -18,8 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +42,7 @@ public class OrganizationController {
     private OrganizationService organizationService;
     @Autowired
     private ObjectMapper objectMapper;
+
     /**
      * Create organization method.
      *
@@ -62,16 +62,16 @@ public class OrganizationController {
                                                              @RequestParam String taxCode,
                                                              @RequestParam String industryCodeIds,
                                                              @RequestParam MultipartFile contractFile,
-                                                             @RequestParam MultipartFile logo){
+                                                             @RequestParam MultipartFile logo) {
         List<UUID> icIds = new ArrayList<>();
-        try{
-           icIds = Arrays.stream(
+        try {
+            icIds = Arrays.stream(
                     objectMapper.readValue(industryCodeIds, String[].class)
             ).map(UUID::fromString).toList();
-        }catch (JsonProcessingException ignored){
-            
+        } catch (JsonProcessingException ignored) {
+
         }
-        
+
         CreateOrganizationRequest request = new CreateOrganizationRequest(name, email, icIds, taxCode, description);
         log.info("Start createOrganization. Request: {}", request);
         return ResponseEntity.ok().body(new ResponseObject(

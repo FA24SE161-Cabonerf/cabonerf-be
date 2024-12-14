@@ -10,10 +10,7 @@ import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
-import com.example.cabonerfbe.request.CreateOrganizationRequest;
-import com.example.cabonerfbe.request.InviteUserToOrganizationRequest;
-import com.example.cabonerfbe.request.MailRequest;
-import com.example.cabonerfbe.request.UpdateOrganizationRequest;
+import com.example.cabonerfbe.request.*;
 import com.example.cabonerfbe.response.GetAllOrganizationResponse;
 import com.example.cabonerfbe.response.LoginResponse;
 import com.example.cabonerfbe.response.UploadOrgLogoResponse;
@@ -90,6 +87,8 @@ public class OrganizationServiceImpl implements OrganizationService {
     private IndustryCodeConverter icConverter;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private MessagePublisher messagePublisher;
 
     @Override
     public GetAllOrganizationResponse getAll(int pageCurrent, int pageSize, String keyword) {
@@ -172,17 +171,9 @@ public class OrganizationServiceImpl implements OrganizationService {
                     newAccount = userRepository.save(newAccount);
 
                     //Send-mail
-                    MailRequest mailRequest = new MailRequest();
-                    mailRequest.setSubject("Create Organization");
-                    mailRequest.setName("Cabonerf");
-                    mailRequest.setTo(request.getEmail());
-                    mailRequest.setFrom("cabonerf@gmail.com");
-
-                    Map<String,Object> model = new HashMap<>();
-                    model.put("email", request.getEmail());
-                    model.put("password", password);
-
-                    emailService.sendMailCreateAccountOrganization(mailRequest,model);
+                    messagePublisher.publishSendMailCreateAccountOrganization(
+                            new SendMailCreateAccountOrganizationRequest(request.getEmail(), password)
+                    );
                     //----------------------
 
                     Organization o = new Organization();
@@ -287,9 +278,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (existingUsers == null || existingUsers.isEmpty()) {
             throw CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND);
         }
-        for (Users users: existingUsers){
-            Optional<UserOrganization> uoCheck = userOrganizationRepository.findByUserAndOrganization(request.getOrganizationId(),users.getId());
-            if(uoCheck.isPresent()){
+        for (Users users : existingUsers) {
+            Optional<UserOrganization> uoCheck = userOrganizationRepository.findByUserAndOrganization(request.getOrganizationId(), users.getId());
+            if (uoCheck.isPresent()) {
                 throw CustomExceptions.badRequest(MessageConstants.ALREADY_IN_ORGANIZATION);
             }
         }
@@ -339,19 +330,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         userOrganizations = userOrganizationRepository.saveAll(userOrganizations);
 
         userOrganizations.parallelStream().forEach(x -> {
-            MailRequest mailRequest = new MailRequest();
-            mailRequest.setSubject("Invite Organization");
-            mailRequest.setName("Cabonerf");
-            mailRequest.setTo(x.getUser().getEmail());
-            mailRequest.setFrom("cabonerf@gmail.com");
-
-            Map<String, Object> model = Map.of(
-                    "organization_name", x.getOrganization().getName()
-            );
-
-            emailService.sendMailInviteOrganization(mailRequest, model);
+            messagePublisher.publishSendMailInviteToOrganization(
+                    new SendMailInviteRequest(x.getUser().getEmail(), x.getOrganization().getName()));
         });
-
 
 
         return userOrganizations.stream()
