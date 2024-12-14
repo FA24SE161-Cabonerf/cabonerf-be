@@ -124,7 +124,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .fullName(request.getFullName())
                 .profilePictureUrl(Constants.DEFAULT_USER_IMAGE)
                 .password(passwordEncoder.encode(request.getPassword()))
-                .userVerifyStatus(userVerifyStatusRepository.findByName(Constants.VERIFY_STATUS_PENDING).get())
+                .userVerifyStatus(userVerifyStatusRepository.findByName("Verified").get())
                 .role(roleRepository.findByName(Constants.LCA_STAFF).get())
                 .status(true)
                 .build();
