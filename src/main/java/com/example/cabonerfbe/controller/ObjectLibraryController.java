@@ -5,6 +5,7 @@ import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.request.AddObjectLibraryRequest;
 import com.example.cabonerfbe.request.PagingKeywordMethodRequest;
+import com.example.cabonerfbe.request.RemoveObjectLibraryRequest;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.ObjectLibraryService;
 import lombok.AllArgsConstructor;
@@ -76,14 +77,16 @@ public class ObjectLibraryController {
      * Remove from object library method.
      *
      * @param userId    the user id
-     * @param processId the process id
+     * @param organizationId the process id
      * @return the response entity
      */
     @DeleteMapping(API_PARAMS.REMOVE_PROCESS_FROM_OBJECT_LIBRARY)
-    public ResponseEntity<ResponseObject> removeFromObjectLibrary(@RequestHeader(value = Constants.USER_ID_HEADER) UUID userId, @PathVariable UUID processId) {
-        log.info("Start removeFromObjectLibrary. processId: {}", processId);
+    public ResponseEntity<ResponseObject> removeFromObjectLibrary(@RequestHeader(value = Constants.USER_ID_HEADER) UUID userId,
+                                                                  @PathVariable UUID organizationId,
+                                                                  @RequestBody RemoveObjectLibraryRequest request) {
+        log.info("Start removeFromObjectLibrary. organizationId: {}, request: {}", organizationId, request);
         return ResponseEntity.ok().body(new ResponseObject(
-                        Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.REMOVE_FROM_OBJECT_LIBRARY_SUCCESS, objectLibraryService.removeFromObjectLibrary(userId, processId)
+                        Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.REMOVE_FROM_OBJECT_LIBRARY_SUCCESS, objectLibraryService.removeFromObjectLibrary(userId, organizationId, request)
                 )
         );
     }

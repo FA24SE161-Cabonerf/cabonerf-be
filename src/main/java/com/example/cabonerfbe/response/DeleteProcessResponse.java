@@ -15,5 +15,4 @@ import java.util.UUID;
 @Getter
 @Setter
 public class DeleteProcessResponse {
-    private UUID id;
 }
