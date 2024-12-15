@@ -21,6 +21,7 @@ import com.example.cabonerfbe.request.UpdateProcessRequest;
 import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.MessagePublisher;
 import com.example.cabonerfbe.services.ProcessService;
+import com.example.cabonerfbe.services.UnitService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,10 +54,11 @@ public class ProcessServiceImpl implements ProcessService {
     private final MessagePublisher messagePublisher;
     private final ConnectorServiceImpl connectorService;
     private final ConnectorRepository connectorRepository;
-    private final UnitServiceImpl unitService;
+    private final UnitService unitService;
     private final UnitRepository unitRepository;
     private final ImpactMethodCategoryRepository impactMethodCategoryRepository;
     private final ProjectImpactValueRepository projectImpactValueRepository;
+    private final EmissionSubstanceRepository emissionSubstanceRepository;
 
     /**
      * Instantiates a new Process service.
@@ -79,7 +81,7 @@ public class ProcessServiceImpl implements ProcessService {
      * @param projectImpactValueRepository   the project impact value repository
      */
     @Autowired
-    public ProcessServiceImpl(ProcessConverter processConverter, ProcessRepository processRepository, ProcessImpactValueRepository processImpactValueRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, ExchangesRepository exchangesRepository, ConnectorRepository connectorRepository, ExchangesConverter exchangesConverter, UnitServiceImpl unitService, LifeCycleImpactAssessmentMethodConverter methodConverter, UnitRepository unitRepository, ImpactCategoryConverter categoryConverter, MessagePublisher messagePublisher, ConnectorServiceImpl connectorService, ImpactMethodCategoryRepository impactMethodCategoryRepository, ProjectImpactValueRepository projectImpactValueRepository) {
+    public ProcessServiceImpl(ProcessConverter processConverter, ProcessRepository processRepository, ProcessImpactValueRepository processImpactValueRepository, LifeCycleStageRepository lifeCycleStageRepository, ProjectRepository projectRepository, ExchangesRepository exchangesRepository, ConnectorRepository connectorRepository, ExchangesConverter exchangesConverter, UnitService unitService, LifeCycleImpactAssessmentMethodConverter methodConverter, UnitRepository unitRepository, ImpactCategoryConverter categoryConverter, MessagePublisher messagePublisher, ConnectorServiceImpl connectorService, ImpactMethodCategoryRepository impactMethodCategoryRepository, ProjectImpactValueRepository projectImpactValueRepository, EmissionSubstanceRepository emissionSubstanceRepository) {
         this.processConverter = processConverter;
         this.processRepository = processRepository;
         this.processImpactValueRepository = processImpactValueRepository;
@@ -96,6 +98,7 @@ public class ProcessServiceImpl implements ProcessService {
         this.connectorService = connectorService;
         this.impactMethodCategoryRepository = impactMethodCategoryRepository;
         this.projectImpactValueRepository = projectImpactValueRepository;
+        this.emissionSubstanceRepository = emissionSubstanceRepository;
     }
 
 //    private final ExecutorService executorService = Executors.newFixedThreadPool(17);
@@ -375,7 +378,7 @@ public class ProcessServiceImpl implements ProcessService {
         Process newProcess = createLibraryProcess(process);
         processRepository.save(newProcess);
 
-        List<Exchanges> exchangesList = copyExchanges(process.getId(), newProcess);
+        List<Exchanges> exchangesList = copyExchangesFromProcessToObj(process.getId(), newProcess, process.getProject().getId());
         exchangesRepository.saveAll(exchangesList);
 
         List<ProcessImpactValue> impactValues = copyProjectImpactValues(projectImpactValueList, newProcess);
@@ -387,13 +390,65 @@ public class ProcessServiceImpl implements ProcessService {
         newProcess.setLibrary(true);
         newProcess.setName(process.getName());
         newProcess.setDescription(process.getDescription());
-        newProcess.setProject(null); // Set to library, no project association
+        newProcess.setProject(null);
         newProcess.setMethodId(process.getMethodId());
         newProcess.setSystemBoundary(process.getProject().getSystemBoundary());
         newProcess.setLifeCycleStage(process.getLifeCycleStage());
         newProcess.setOrganization(process.getProject().getOrganization());
         newProcess.setOverAllProductFlowRequired(Constants.DEFAULT_OVERALL_PRODUCT_FLOW_REQUIRED);
         return newProcess;
+    }
+
+    private List<Exchanges> copyExchangesFromProcessToObj(UUID processId, Process newProcess, UUID projectId) {
+        // find for all project
+        // -> if processId = input => gets only the output
+        List<Exchanges> elementaryList = exchangesRepository.findElementaryExchangeByProject(projectId);
+        List<Connector> connectorList = connectorRepository.findAllByProject(projectId);
+
+        Map<UUID, Map<UUID, BigDecimal>> connectorMap = new HashMap<>();
+        Map<UUID, BigDecimal> inputMap = new HashMap<>();
+        Map<UUID, BigDecimal> outputMap = new HashMap<>();
+        ExchangesType exchangesType = elementaryList.get(0).getExchangesType();
+
+        elementaryList.forEach(e -> {
+            UUID substanceId = e.getEmissionSubstance().getId();
+            Unit exchangeUnit = e.getUnit();
+            BigDecimal exchangeValue = e.getValue().multiply(e.getProcess().getOverAllProductFlowRequired());
+            Unit baseUnit = e.getEmissionSubstance().getUnit();
+
+            if (e.isInput()) {
+                inputMap.merge(substanceId, unitService.convertValue(exchangeUnit, exchangeValue, baseUnit), BigDecimal::add);
+            } else {
+                outputMap.merge(substanceId, unitService.convertValue(exchangeUnit, exchangeValue, baseUnit), BigDecimal::add);
+            }
+        });
+
+        List<Exchanges> newExchangeList = inputMap.entrySet().stream()
+                .map(entry -> createNewExchange(entry.getKey(), entry.getValue(), newProcess, exchangesType, true))
+                .toList();
+
+        newExchangeList.addAll(outputMap.entrySet().stream()
+                .map(entry -> createNewExchange(entry.getKey(), entry.getValue(), newProcess, exchangesType, false))
+                .toList());
+
+        newExchangeList.add(exchangesRepository.findProductOutWithOneProcess(processId));
+
+        return newExchangeList;
+    }
+
+    private Exchanges createNewExchange(UUID substanceId, BigDecimal value, Process newProcess, ExchangesType exchangesType, boolean isInput) {
+        EmissionSubstance emissionSubstance = emissionSubstanceRepository.findById(substanceId).orElseThrow(() ->
+                CustomExceptions.badRequest(MessageConstants.NO_EMISSION_SUBSTANCE_FOUND));
+        Exchanges newExchange = new Exchanges();
+        newExchange.setProcess(newProcess);
+        newExchange.setName(emissionSubstance.getSubstance().getName());
+        newExchange.setDescription("");
+        newExchange.setUnit(emissionSubstance.getUnit());
+        newExchange.setEmissionSubstance(emissionSubstance);
+        newExchange.setExchangesType(exchangesType);
+        newExchange.setValue(value);
+        newExchange.setInput(isInput);
+        return newExchange;
     }
 
     private List<Exchanges> copyExchanges(UUID processId, Process newProcess) {

@@ -1,9 +1,11 @@
 package com.example.cabonerfbe.services;
 
+import com.example.cabonerfbe.models.Unit;
 import com.example.cabonerfbe.request.CreateUnitRequest;
 import com.example.cabonerfbe.request.UpdateUnitRequest;
 import com.example.cabonerfbe.response.UnitResponse;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -61,5 +63,7 @@ public interface UnitService {
      * @return the unit response
      */
     UnitResponse deleteUnitById(UUID unitId);
+
+    BigDecimal convertValue(Unit originalUnit, BigDecimal originalValue, Unit targetUnit);
 
 }
