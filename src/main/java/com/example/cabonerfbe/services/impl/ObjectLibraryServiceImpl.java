@@ -16,7 +16,6 @@ import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.AddObjectLibraryRequest;
 import com.example.cabonerfbe.request.PagingKeywordMethodRequest;
 import com.example.cabonerfbe.request.RemoveObjectLibraryRequest;
-import com.example.cabonerfbe.response.DeleteProcessResponse;
 import com.example.cabonerfbe.services.MessagePublisher;
 import com.example.cabonerfbe.services.ObjectLibraryService;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
@@ -132,7 +131,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
     }
 
     @Override
-    public DeleteProcessResponse removeFromObjectLibrary(UUID userId, UUID organizationId, RemoveObjectLibraryRequest request) {
+    public List<?> removeFromObjectLibrary(UUID userId, UUID organizationId, RemoveObjectLibraryRequest request) {
         UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(organizationId, userId)
                 .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
@@ -151,7 +150,7 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
         ).toList();
 
         processRepository.saveAll(processList);
-        return new DeleteProcessResponse();
+        return Collections.emptyList();
     }
 
     @Transactional

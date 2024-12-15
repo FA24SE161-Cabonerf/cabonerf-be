@@ -6,7 +6,6 @@ import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.request.AddObjectLibraryRequest;
 import com.example.cabonerfbe.request.PagingKeywordMethodRequest;
 import com.example.cabonerfbe.request.RemoveObjectLibraryRequest;
-import com.example.cabonerfbe.response.DeleteProcessResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -35,7 +34,7 @@ public interface ObjectLibraryService {
      * @param id     the id
      * @return the delete process response
      */
-    DeleteProcessResponse removeFromObjectLibrary(UUID userId, UUID organizationId, RemoveObjectLibraryRequest request);
+    List<?> removeFromObjectLibrary(UUID userId, UUID organizationId, RemoveObjectLibraryRequest request);
 
     /**
      * Save to object library method.
