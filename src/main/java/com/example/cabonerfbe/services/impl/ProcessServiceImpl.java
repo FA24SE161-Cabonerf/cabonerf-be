@@ -400,8 +400,6 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     private List<Exchanges> copyExchangesFromProcessToObj(UUID processId, Process newProcess, UUID projectId) {
-        // find for all project
-        // -> if processId = input => gets only the output
         List<Exchanges> elementaryList = exchangesRepository.findElementaryExchangeByProject(projectId);
 
         Map<UUID, BigDecimal> inputMap = new HashMap<>();
