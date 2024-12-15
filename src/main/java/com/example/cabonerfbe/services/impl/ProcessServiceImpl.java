@@ -430,7 +430,7 @@ public class ProcessServiceImpl implements ProcessService {
                 .map(entry -> createNewExchange(entry.getKey(), entry.getValue(), newProcess, exchangesType, false))
                 .toList();
 
-        newExchangeList.add(exchangesRepository.findProductOutWithOneProcess(processId));
+        newExchangeList.add(this.mapToNewExchange(exchangesRepository.findProductOutWithOneProcess(processId), newProcess));
         newExchangeList.addAll(inputList);
         newExchangeList.addAll(outputList);
 
