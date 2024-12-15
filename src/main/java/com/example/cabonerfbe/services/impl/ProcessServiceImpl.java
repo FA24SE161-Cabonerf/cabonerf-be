@@ -403,9 +403,7 @@ public class ProcessServiceImpl implements ProcessService {
         // find for all project
         // -> if processId = input => gets only the output
         List<Exchanges> elementaryList = exchangesRepository.findElementaryExchangeByProject(projectId);
-        List<Connector> connectorList = connectorRepository.findAllByProject(projectId);
 
-        Map<UUID, Map<UUID, BigDecimal>> connectorMap = new HashMap<>();
         Map<UUID, BigDecimal> inputMap = new HashMap<>();
         Map<UUID, BigDecimal> outputMap = new HashMap<>();
         ExchangesType exchangesType = elementaryList.get(0).getExchangesType();
@@ -423,15 +421,18 @@ public class ProcessServiceImpl implements ProcessService {
             }
         });
 
-        List<Exchanges> newExchangeList = inputMap.entrySet().stream()
+        List<Exchanges> newExchangeList = new ArrayList<>();
+        List<Exchanges> inputList = inputMap.entrySet().stream()
                 .map(entry -> createNewExchange(entry.getKey(), entry.getValue(), newProcess, exchangesType, true))
                 .toList();
 
-        newExchangeList.addAll(outputMap.entrySet().stream()
+        List<Exchanges> outputList = outputMap.entrySet().stream()
                 .map(entry -> createNewExchange(entry.getKey(), entry.getValue(), newProcess, exchangesType, false))
-                .toList());
+                .toList();
 
         newExchangeList.add(exchangesRepository.findProductOutWithOneProcess(processId));
+        newExchangeList.addAll(inputList);
+        newExchangeList.addAll(outputList);
 
         return newExchangeList;
     }
