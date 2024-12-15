@@ -1,6 +1,8 @@
 package com.example.cabonerfbe.services;
 
-import java.util.UUID;
+import com.example.cabonerfbe.request.MailRequest;
+
+import java.util.Map;
 
 /**
  * The interface Email service.
@@ -9,24 +11,26 @@ import java.util.UUID;
  */
 public interface EmailService {
     /**
-     * Send mail create account organization method.
+     * Sends an email for creating an organization account.
      *
-     * @param userId the user id
+     * @param request the mail request containing recipient details and email metadata
+     * @param model   the data model for populating the email template
      */
-    void sendMailCreateAccountOrganization(UUID userId);
+    void sendMailCreateAccountOrganization(MailRequest request, Map<String, Object> model);
 
     /**
-     * Send mail register method.
+     * Sends an email for creating an organization account.
      *
-     * @param userId the user id
+     * @param request the mail request containing recipient details and email metadata
+     * @param model   the data model for populating the email template
      */
-    void sendMailRegister(UUID userId);
+    void sendMailRegister(MailRequest request, Map<String, Object> model);
 
     /**
-     * Send mail invite organization method.
+     * Sends an email for creating an organization account.
      *
-     * @param userId         the user id
-     * @param organizationId the organization id
+     * @param request the mail request containing recipient details and email metadata
+     * @param model   the data model for populating the email template
      */
-    void sendMailInviteOrganization(UUID userId, UUID organizationId);
+    void sendMailInviteOrganization(MailRequest request, Map<String, Object> model);
 }

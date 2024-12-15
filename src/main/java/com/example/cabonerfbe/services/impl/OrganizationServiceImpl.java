@@ -10,9 +10,7 @@ import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.exception.CustomExceptions;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
-import com.example.cabonerfbe.request.CreateOrganizationRequest;
-import com.example.cabonerfbe.request.InviteUserToOrganizationRequest;
-import com.example.cabonerfbe.request.UpdateOrganizationRequest;
+import com.example.cabonerfbe.request.*;
 import com.example.cabonerfbe.response.GetAllOrganizationResponse;
 import com.example.cabonerfbe.response.LoginResponse;
 import com.example.cabonerfbe.response.UploadOrgLogoResponse;
@@ -87,6 +85,10 @@ public class OrganizationServiceImpl implements OrganizationService {
     private OrganizationIndustryCodeConverter oicConverter;
     @Autowired
     private IndustryCodeConverter icConverter;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private MessagePublisher messagePublisher;
 
     @Override
     public GetAllOrganizationResponse getAll(int pageCurrent, int pageSize, String keyword) {
@@ -157,18 +159,22 @@ public class OrganizationServiceImpl implements OrganizationService {
             }
         }
 
-        CreateOrganizationDto finalDto = dto;
         Users user = userRepository.findByEmail(request.getEmail()).orElseGet(
                 () -> {
                     Users newAccount = new Users();
                     newAccount.setEmail(request.getEmail());
                     newAccount.setFullName(request.getName());
-                    newAccount.setUserVerifyStatus(pendingStatus);
+                    newAccount.setUserVerifyStatus(userVerifyStatusRepository.findByName("Verified").get());
                     newAccount.setRole(organizationManager);
                     newAccount.setPassword(passwordEncoder.encode(password));
                     newAccount.setProfilePictureUrl(Constants.DEFAULT_USER_IMAGE);
                     newAccount = userRepository.save(newAccount);
-                    finalDto.setNewUserId(newAccount.getId());
+
+                    //Send-mail
+                    messagePublisher.publishSendMailCreateAccountOrganization(
+                            new SendMailCreateAccountOrganizationRequest(request.getEmail(), password)
+                    );
+                    //----------------------
 
                     Organization o = new Organization();
                     o.setName(Constants.DEFAULT_ORGANIZATION);
@@ -214,10 +220,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         UserOrganization userOrganization = new UserOrganization();
         userOrganization.setOrganization(organization);
         userOrganization.setUser(user);
-        userOrganization.setHasJoined(false);
+        userOrganization.setHasJoined(true);
         userOrganization.setRole(organizationManager);
         userOrganizationRepository.save(userOrganization);
-
 
         Contract contract = new Contract();
         contract.setOrganization(organization);
@@ -239,9 +244,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         dto = organizationConverter.modelToCreateDto(organization);
         dto.setIndustryCodes(industryCodes.stream().map(icConverter::modelToDto).toList());
-        if (finalDto.getNewUserId() != null) {
-            dto.setNewUserId(finalDto.getNewUserId());
-        }
         return dto;
     }
 
@@ -275,6 +277,12 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         if (existingUsers == null || existingUsers.isEmpty()) {
             throw CustomExceptions.badRequest(MessageConstants.USER_NOT_FOUND);
+        }
+        for (Users users : existingUsers) {
+            Optional<UserOrganization> uoCheck = userOrganizationRepository.findByUserAndOrganization(request.getOrganizationId(), users.getId());
+            if (uoCheck.isPresent()) {
+                throw CustomExceptions.badRequest(MessageConstants.ALREADY_IN_ORGANIZATION);
+            }
         }
 
         if (existingUsers.size() < request.getUserIds().size()) {
@@ -320,6 +328,11 @@ public class OrganizationServiceImpl implements OrganizationService {
                 }).collect(Collectors.toList());
 
         userOrganizations = userOrganizationRepository.saveAll(userOrganizations);
+
+        userOrganizations.parallelStream().forEach(x -> {
+            messagePublisher.publishSendMailInviteToOrganization(
+                    new SendMailInviteRequest(x.getUser().getEmail(), x.getOrganization().getName()));
+        });
 
 
         return userOrganizations.stream()

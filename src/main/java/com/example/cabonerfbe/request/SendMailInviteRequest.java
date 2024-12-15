@@ -1,4 +1,4 @@
-package com.example.cabonerfbe.response;
+package com.example.cabonerfbe.request;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -17,7 +17,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SendMailInviteResponse {
-    private String email;
-    private String token;
+public class SendMailInviteRequest {
+    private String userEmail;
+    private String organizationName;
 }

@@ -1,4 +1,4 @@
-package com.example.cabonerfbe.response;
+package com.example.cabonerfbe.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,8 +14,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class SendMailCreateAccountOrganizationResponse {
-    private String token;
+public class SendMailCreateAccountOrganizationRequest {
     private String email;
     private String password;
 }

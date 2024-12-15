@@ -184,4 +184,23 @@ public class Constants {
     // Ecoinvent dataset
     public static final List<UUID> DATASET_LIST = List.of(UUID.fromString("461282ad-3ee6-408b-80be-ec28d792f891"));
 
+    /**
+     * The constant INVITE_ORGANIZATION_SUBJECT.
+     */
+    public static final String INVITE_ORGANIZATION_SUBJECT = "Invite Organization";
+    /**
+     * The constant CREATE_ORGANIZATION_SUBJECT.
+     */
+    public static final String CREATE_ORGANIZATION_SUBJECT = "Create Organization";
+
+    /**
+     * The constant CABONERF_TITLE.
+     */
+    public static final String CABONERF_TITLE = "Cabonerf";
+    /**
+     * The constant CABONERF_GMAIL.
+     */
+    public static final String CABONERF_GMAIL = "cabonerf@gmail.com";
+
+
 }
