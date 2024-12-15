@@ -497,7 +497,7 @@ public class API_PARAMS {
     /**
      * The constant REMOVE_PROCESS_FROM_OBJECT_LIBRARY.
      */
-    public static final String REMOVE_PROCESS_FROM_OBJECT_LIBRARY = "/{processId}";
+    public static final String REMOVE_PROCESS_FROM_OBJECT_LIBRARY = "/organizations/{organizationId}";
     /**
      * The constant SAVE_PROCESS_TO_OBJECT_LIBRARY.
      */

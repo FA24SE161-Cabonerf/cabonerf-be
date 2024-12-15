@@ -15,7 +15,7 @@ import com.example.cabonerfbe.models.UserOrganization;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.AddObjectLibraryRequest;
 import com.example.cabonerfbe.request.PagingKeywordMethodRequest;
-import com.example.cabonerfbe.response.DeleteProcessResponse;
+import com.example.cabonerfbe.request.RemoveObjectLibraryRequest;
 import com.example.cabonerfbe.services.MessagePublisher;
 import com.example.cabonerfbe.services.ObjectLibraryService;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
@@ -26,10 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * The class Object library service.
@@ -134,21 +131,26 @@ public class ObjectLibraryServiceImpl implements ObjectLibraryService {
     }
 
     @Override
-    public DeleteProcessResponse removeFromObjectLibrary(UUID userId, UUID pid) {
-        Process process = processRepository.findByProcessIdAndLibrary(pid, Constants.IS_LIB_TRUE).orElseThrow(
-                () -> CustomExceptions.badRequest(MessageConstants.PROCESS_NOT_FOUND_IN_OBJECT_LIBRARY)
-        );
-
-        UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(process.getOrganization().getId(), userId)
+    public List<?> removeFromObjectLibrary(UUID userId, UUID organizationId, RemoveObjectLibraryRequest request) {
+        UserOrganization userOrganization = userOrganizationRepository.findByUserAndOrganization(organizationId, userId)
                 .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.USER_NOT_BELONG_TO_ORGANIZATION));
 
         if (!Constants.ORGANIZATION_MANAGER.equals(userOrganization.getRole().getName())) {
             throw CustomExceptions.badRequest(MessageConstants.NO_AUTHORITY);
         }
 
-        process.setStatus(false);
-        processRepository.save(process);
-        return new DeleteProcessResponse(process.getId());
+        List<Process> processList = processRepository.findAllByProcessIdsAndLibrary(request.getObjectIds(), Constants.IS_LIB_TRUE)
+                .stream().peek(
+                p -> {
+                    if (!organizationId.equals(p.getOrganization().getId())) {
+                        throw CustomExceptions.badRequest(MessageConstants.PROCESS_NOT_FOUND_IN_OBJECT_LIBRARY, Map.of("Id", p.getId()));
+                    }
+                    p.setStatus(false);
+                }
+        ).toList();
+
+        processRepository.saveAll(processList);
+        return Collections.emptyList();
     }
 
     @Transactional
