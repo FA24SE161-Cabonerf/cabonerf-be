@@ -776,12 +776,12 @@ public class ProjectServiceImpl implements ProjectService {
                 // Nếu đã tồn tại trong Map, cộng dồn value
                 if (aggregatedMap.containsKey(key)) {
                     ExchangesDto existingSummary = aggregatedMap.get(key);
-                    existingSummary.setValue(existingSummary.getValue().add(exchange.getValue()));
+                    existingSummary.setValue(existingSummary.getValue().add(exchange.getValue().multiply(exchange.getProcess().getOverAllProductFlowRequired())));
                 } else {
                     // Nếu chưa tồn tại, tạo mới một ExchangeSummary và thêm vào Map
                     ExchangesDto newExchange = new ExchangesDto();
                     newExchange.setName(exchange.getName());
-                    newExchange.setValue(exchange.getValue());
+                    newExchange.setValue(exchange.getValue().multiply(exchange.getProcess().getOverAllProductFlowRequired()));
                     newExchange.setExchangesType(new ExchangesTypeDto(exchange.getExchangesType().getId(), exchange.getExchangesType().getName()));
                     newExchange.setEmissionSubstance(emissionSubstanceConverter.modelToDto(exchange.getEmissionSubstance()));
                     newExchange.setUnit(unitConverter.fromUnitToUnitDto(exchange.getUnit()));
