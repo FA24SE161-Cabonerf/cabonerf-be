@@ -22,7 +22,7 @@ public class ObjectLibraryDto {
     private String name;
     private String description;
     private boolean library;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSS")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSS", timezone = "GMT")
     private LocalDateTime createdAt;
     private SystemBoundaryDto systemBoundary;
     private LifeCycleStageDto lifeCycleStage;
