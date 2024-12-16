@@ -9,12 +9,10 @@ import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CalculateProjectRequest;
+import com.example.cabonerfbe.request.CompareProjectsRequest;
 import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
-import com.example.cabonerfbe.response.CreateProjectResponse;
-import com.example.cabonerfbe.response.GetAllProjectResponse;
-import com.example.cabonerfbe.response.GetImpactForAllProjectResponse;
-import com.example.cabonerfbe.response.ProjectCalculationResponse;
+import com.example.cabonerfbe.response.*;
 import com.example.cabonerfbe.services.ProjectService;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -211,16 +209,15 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
 
-        List<ProjectWithProcessDto> list = new ArrayList<>();
+        List<ProjectDto> list = new ArrayList<>();
         for (Project project : projects) {
-            ProjectWithProcessDto projectWithProcessDto = projectConverter.toProjectWithProcessDto(project);
+            ProjectDto projectDto = projectConverter.toDto(project);
 
-            projectWithProcessDto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
-            projectWithProcessDto.setLifeCycleStageBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
-            projectWithProcessDto.setFunctionalUnit(this.getFunctionalUnit(project.getId()));
-            projectWithProcessDto.setIntensity(this.getIntensity(project.getId()));
-            projectWithProcessDto.setProcesses(processService.getProcessDtoWithNoExchangesById(processRepository.findAll(project.getId())));
-            list.add(projectWithProcessDto);
+            projectDto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
+            projectDto.setLifeCycleStageBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
+            projectDto.setFunctionalUnit(this.getFunctionalUnit(project.getId()));
+            projectDto.setIntensity(this.getIntensity(project.getId()));
+            list.add(projectDto);
         }
 
         GetAllProjectResponse response = new GetAllProjectResponse();
@@ -317,6 +314,26 @@ public class ProjectServiceImpl implements ProjectService {
         p.setFavorite(!p.getFavorite());
 
         return projectConverter.fromDetailToDto(projectRepository.save(p));
+    }
+
+    @Override
+    public ProjectWithProcessResponse compareProjects(CompareProjectsRequest request) {
+        UUID firstProjectId = request.getFirstProjectId();
+        UUID secondProjectId = request.getSecondProjectId();
+        if (!projectRepository.existsByIdAndStatus(request.getFirstProjectId(), Constants.STATUS_TRUE)) {
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Map.of("firstProjectId", firstProjectId));
+        }
+
+        if (!projectRepository.existsByIdAndStatus(request.getSecondProjectId(), Constants.STATUS_TRUE)) {
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Map.of("secondProjectId", secondProjectId));
+        }
+
+        return ProjectWithProcessResponse.builder()
+                .firstProjectId(firstProjectId)
+                .secondProjectId(secondProjectId)
+                .firstProjectProcesses(processService.getProcessDtoWithNoExchangesById(processRepository.findAll(firstProjectId)))
+                .secondProjectProcesses(processService.getProcessDtoWithNoExchangesById(processRepository.findAll(secondProjectId)))
+                .build();
     }
 
     @Override

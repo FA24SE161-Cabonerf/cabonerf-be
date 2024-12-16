@@ -243,6 +243,8 @@ public class API_PARAMS {
      */
     public static final String SET_FAVORITE_PROJECT = "/{projectId}/favorite";
 
+    public static final String COMPARISONS = "/comparisons";
+
     /**
      * The constant PROCESS.
      */

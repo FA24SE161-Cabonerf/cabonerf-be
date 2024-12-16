@@ -1,6 +1,6 @@
 package com.example.cabonerfbe.response;
 
-import com.example.cabonerfbe.dto.ProjectWithProcessDto;
+import com.example.cabonerfbe.dto.ProjectDto;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,5 +24,5 @@ public class GetAllProjectResponse {
     private int pageCurrent;
     private int pageSize;
     private int totalPage;
-    private List<ProjectWithProcessDto> projects;
+    private List<ProjectDto> projects;
 }

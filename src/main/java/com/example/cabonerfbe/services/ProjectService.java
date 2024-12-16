@@ -2,9 +2,11 @@ package com.example.cabonerfbe.services;
 
 import com.example.cabonerfbe.dto.CarbonIntensityDto;
 import com.example.cabonerfbe.dto.GetProjectByIdDto;
+import com.example.cabonerfbe.response.ProjectWithProcessResponse;
 import com.example.cabonerfbe.dto.UpdateProjectDto;
 import com.example.cabonerfbe.models.Project;
 import com.example.cabonerfbe.request.CalculateProjectRequest;
+import com.example.cabonerfbe.request.CompareProjectsRequest;
 import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.CreateProjectResponse;
@@ -142,4 +144,6 @@ public interface ProjectService {
      * @return the update project dto
      */
     UpdateProjectDto updateFavorite(UUID projectId);
+
+    ProjectWithProcessResponse compareProjects(CompareProjectsRequest request);
 }

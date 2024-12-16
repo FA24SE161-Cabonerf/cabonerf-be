@@ -2,7 +2,7 @@ package com.example.cabonerfbe.converter;
 
 import com.example.cabonerfbe.dto.GetProjectByIdDto;
 import com.example.cabonerfbe.dto.ProjectDto;
-import com.example.cabonerfbe.dto.ProjectWithProcessDto;
+import com.example.cabonerfbe.response.ProjectWithProcessResponse;
 import com.example.cabonerfbe.dto.UpdateProjectDto;
 import com.example.cabonerfbe.models.Project;
 import com.example.cabonerfbe.response.ProjectCalculationResponse;
@@ -47,7 +47,7 @@ public interface ProjectConverter {
     @Mapping(target = "functionalUnit", ignore = true)
     @Mapping(source = "lifeCycleImpactAssessmentMethod", target = "method")
     @Mapping(source = "user", target = "owner")
-    ProjectWithProcessDto toProjectWithProcessDto(Project project);
+    ProjectWithProcessResponse toProjectWithProcessDto(Project project);
 
     /**
      * From detail to dto method.
