@@ -80,7 +80,7 @@ public class ObjectLibraryController {
      * @param organizationId the process id
      * @return the response entity
      */
-    @DeleteMapping(API_PARAMS.REMOVE_PROCESS_FROM_OBJECT_LIBRARY)
+    @PostMapping(API_PARAMS.REMOVE_PROCESS_FROM_OBJECT_LIBRARY)
     public ResponseEntity<ResponseObject> removeFromObjectLibrary(@RequestHeader(value = Constants.USER_ID_HEADER) UUID userId,
                                                                   @PathVariable UUID organizationId,
                                                                   @RequestBody RemoveObjectLibraryRequest request) {

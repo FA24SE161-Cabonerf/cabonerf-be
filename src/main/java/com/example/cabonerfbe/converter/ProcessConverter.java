@@ -59,6 +59,7 @@ public interface ProcessConverter {
      */
     @Mapping(target = "impacts", ignore = true)
     @Mapping(target = "exchanges", ignore = true)
+    @Mapping(target = "createdAt", source = "createdAt")
     ObjectLibraryDto fromProcessToObjectLibraryDto(Process process);
 
     /**

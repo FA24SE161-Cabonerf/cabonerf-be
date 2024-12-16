@@ -1,5 +1,6 @@
 package com.example.cabonerfbe.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ public class ObjectLibraryDto {
     private String name;
     private String description;
     private boolean library;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSS")
     private LocalDateTime createdAt;
     private SystemBoundaryDto systemBoundary;
     private LifeCycleStageDto lifeCycleStage;
