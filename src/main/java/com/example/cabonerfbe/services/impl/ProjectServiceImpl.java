@@ -211,15 +211,16 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
 
-        List<ProjectDto> list = new ArrayList<>();
+        List<ProjectWithProcessDto> list = new ArrayList<>();
         for (Project project : projects) {
-            ProjectDto projectDto = projectConverter.toDto(project);
+            ProjectWithProcessDto projectWithProcessDto = projectConverter.toProjectWithProcessDto(project);
 
-            projectDto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
-            projectDto.setLifeCycleStageBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
-            projectDto.setFunctionalUnit(this.getFunctionalUnit(project.getId()));
-            projectDto.setIntensity(this.getIntensity(project.getId()));
-            list.add(projectDto);
+            projectWithProcessDto.setImpacts(converterProject(projectImpactValueRepository.findAllByProjectId(project.getId())));
+            projectWithProcessDto.setLifeCycleStageBreakdown(processImpactValueService.buildLifeCycleBreakdownWhenGetAll(project.getId()));
+            projectWithProcessDto.setFunctionalUnit(this.getFunctionalUnit(project.getId()));
+            projectWithProcessDto.setIntensity(this.getIntensity(project.getId()));
+            projectWithProcessDto.setProcesses(processService.getProcessDtoWithNoExchangesById(processRepository.findAll(project.getId())));
+            list.add(projectWithProcessDto);
         }
 
         GetAllProjectResponse response = new GetAllProjectResponse();

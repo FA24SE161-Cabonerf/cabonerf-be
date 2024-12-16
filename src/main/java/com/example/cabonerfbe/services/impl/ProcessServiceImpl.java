@@ -216,6 +216,15 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
+    public List<ProcessDto> getProcessDtoWithNoExchangesById(List<Process> processList) {
+        return processList.stream().map(process -> {
+            ProcessDto dto = processConverter.fromProcessToProcessDto(process);
+            dto.setImpacts(converterProcess(processImpactValueRepository.findByProcessId(process.getId())));
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
     public List<ProcessDto> getAllProcessesByProjectId(UUID projectId) {
         Project project = projectRepository.findByIdAndStatusTrue(projectId).orElseThrow(
                 () -> CustomExceptions.notFound(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST)
