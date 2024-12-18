@@ -18,6 +18,7 @@ import com.example.cabonerfbe.response.ProjectCalculationResponse;
 import com.example.cabonerfbe.services.ProjectService;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -693,7 +694,7 @@ public class ProjectServiceImpl implements ProjectService {
     private void createLciaResultsSheet(XSSFSheet lciaResults, XSSFWorkbook workbook, Project p, CellStyle boldStyle) {
 
         List<ProjectImpactValue> data = projectImpactValueRepository.findAllByProjectId(p.getId());
-
+        List<LifeCycleBreakdownPercentDto> lifeCycleStageBreakdown = processImpactValueService.buildLifeCycleBreakdownWhenGetAll(p.getId());
         Set<String> boldHeaders = new HashSet<>(Arrays.asList(
                 "LCA Process Impact Summary - Cabonerf Excel Export",
                 "Name",
@@ -705,9 +706,9 @@ public class ProjectServiceImpl implements ProjectService {
 
         // Dữ liệu của tab Guide
         Object[][] guideData = {
-                {"LCA Process Impact Summary - Cabonerf Excel Export"},
+                {"LCA Process Impact Summary - Cabonerf Excel Export","","","","","Contribution Life Cycle Stage"},
                 {},
-                {"Name", "Amount", "Unit", "Method", "Description"},
+                {"Name", "Amount", "Unit", "Method", "Description","Raw material","Production","Distribute","Use","End-of-life"},
 
         };
 
@@ -742,6 +743,15 @@ public class ProjectServiceImpl implements ProjectService {
             row.createCell(columnCount++).setCellValue(x.getImpactMethodCategory().getImpactCategory().getMidpointImpactCategory().getUnit().getName());
             row.createCell(columnCount++).setCellValue(x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod().getName() + "(" + x.getImpactMethodCategory().getLifeCycleImpactAssessmentMethod().getPerspective().getAbbr() + ")");
             row.createCell(columnCount++).setCellValue(x.getImpactMethodCategory().getImpactCategory().getMidpointImpactCategory().getName());
+            for(LifeCycleBreakdownPercentDto y: lifeCycleStageBreakdown) {
+                if(y.getId().equals(x.getImpactMethodCategory().getImpactCategory().getId())) {
+                    row.createCell(columnCount++).setCellValue((RichTextString) y.getLifeCycleStage().get(0).getPercent().multiply(BigDecimal.valueOf(100)));
+                    row.createCell(columnCount++).setCellValue((RichTextString) y.getLifeCycleStage().get(1).getPercent().multiply(BigDecimal.valueOf(100)));
+                    row.createCell(columnCount++).setCellValue((RichTextString) y.getLifeCycleStage().get(2).getPercent().multiply(BigDecimal.valueOf(100)));
+                    row.createCell(columnCount++).setCellValue((RichTextString) y.getLifeCycleStage().get(3).getPercent().multiply(BigDecimal.valueOf(100)));
+                    row.createCell(columnCount++).setCellValue((RichTextString) y.getLifeCycleStage().get(4).getPercent().multiply(BigDecimal.valueOf(100)));
+                }
+            }
         }
 
         // Điều chỉnh độ rộng cột cho dễ đọc
