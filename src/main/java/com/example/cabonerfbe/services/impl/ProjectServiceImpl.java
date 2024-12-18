@@ -701,7 +701,13 @@ public class ProjectServiceImpl implements ProjectService {
                 "Amount",
                 "Unit",
                 "Method",
-                "Description"
+                "Description",
+                "Contribution Life Cycle Stage",
+                "Raw material",
+                "Production",
+                "Distribute",
+                "Use",
+                "End-of-life"
         ));
 
         // Dữ liệu của tab Guide
@@ -711,7 +717,6 @@ public class ProjectServiceImpl implements ProjectService {
                 {"Name", "Amount", "Unit", "Method", "Description","Raw material","Production","Distribute","Use","End-of-life"},
 
         };
-
         // Viết dữ liệu vào sheet Guide
         int rowCount = 1;
         for (Object[] rowData : guideData) {
