@@ -745,11 +745,10 @@ public class ProjectServiceImpl implements ProjectService {
             row.createCell(columnCount++).setCellValue(x.getImpactMethodCategory().getImpactCategory().getMidpointImpactCategory().getName());
             for(LifeCycleBreakdownPercentDto y: lifeCycleStageBreakdown) {
                 if(y.getId().equals(x.getImpactMethodCategory().getImpactCategory().getId())) {
-                    row.createCell(columnCount++).setCellValue((RichTextString) y.getLifeCycleStage().get(0).getPercent().multiply(BigDecimal.valueOf(100)));
-                    row.createCell(columnCount++).setCellValue((RichTextString) y.getLifeCycleStage().get(1).getPercent().multiply(BigDecimal.valueOf(100)));
-                    row.createCell(columnCount++).setCellValue((RichTextString) y.getLifeCycleStage().get(2).getPercent().multiply(BigDecimal.valueOf(100)));
-                    row.createCell(columnCount++).setCellValue((RichTextString) y.getLifeCycleStage().get(3).getPercent().multiply(BigDecimal.valueOf(100)));
-                    row.createCell(columnCount++).setCellValue((RichTextString) y.getLifeCycleStage().get(4).getPercent().multiply(BigDecimal.valueOf(100)));
+                    for(LifeCycleStagePercentDto z: y.getLifeCycleStage()){
+                        row.createCell(columnCount++).setCellValue(Double.parseDouble(String.valueOf(z.getPercent().multiply(BigDecimal.valueOf(100)))));
+                    }
+
                 }
             }
         }
