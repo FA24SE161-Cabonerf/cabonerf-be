@@ -159,7 +159,7 @@ public class ProjectController {
      * @param projectId the project id
      * @return the response entity
      */
-    @GetMapping(API_PARAMS.EXPORT_PROJECT)
+    @PostMapping(API_PARAMS.EXPORT_PROJECT)
     public ResponseEntity<Resource> export(@RequestBody ExportProjectRequest request) {
         log.info("Start exportProject. Id: {}", request.getProjectId());
         return projectService.exportProject(request);
