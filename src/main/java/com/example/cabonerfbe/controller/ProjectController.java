@@ -5,6 +5,7 @@ import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.request.CalculateProjectRequest;
 import com.example.cabonerfbe.request.CreateProjectRequest;
+import com.example.cabonerfbe.request.ExportProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.ResponseObject;
 import com.example.cabonerfbe.services.ProcessImpactValueService;
@@ -159,9 +160,9 @@ public class ProjectController {
      * @return the response entity
      */
     @GetMapping(API_PARAMS.EXPORT_PROJECT)
-    public ResponseEntity<Resource> export(@PathVariable("projectId") UUID projectId) {
-        log.info("Start exportProject. Id: {}", projectId);
-        return projectService.exportProject(projectId);
+    public ResponseEntity<Resource> export(@RequestBody ExportProjectRequest request) {
+        log.info("Start exportProject. Id: {}", request.getProjectId());
+        return projectService.exportProject(request);
     }
 
     /**

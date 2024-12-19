@@ -225,7 +225,7 @@ public class API_PARAMS {
     /**
      * The constant EXPORT_PROJECT.
      */
-    public static final String EXPORT_PROJECT = "/{projectId}/export";
+    public static final String EXPORT_PROJECT = "/export";
     /**
      * The constant INTENSITY_PROJECT.
      */
