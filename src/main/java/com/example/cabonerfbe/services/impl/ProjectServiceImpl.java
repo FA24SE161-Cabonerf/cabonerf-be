@@ -10,6 +10,7 @@ import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CalculateProjectRequest;
 import com.example.cabonerfbe.request.CreateProjectRequest;
+import com.example.cabonerfbe.request.ExportProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.CreateProjectResponse;
 import com.example.cabonerfbe.response.GetAllProjectResponse;
@@ -392,11 +393,11 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ResponseEntity<Resource> exportProject(UUID projectId) {
-        Project p = projectRepository.findByIdAndStatusTrue(projectId)
+    public ResponseEntity<Resource> exportProject(ExportProjectRequest request) {
+        Project p = projectRepository.findByIdAndStatusTrue(request.getProjectId())
                 .orElseThrow(() -> CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Collections.EMPTY_LIST));
 
-        List<ProjectImpactValue> data = projectImpactValueRepository.findAllByProjectId(projectId);
+        List<ProjectImpactValue> data = projectImpactValueRepository.findAllByProjectId(request.getProjectId());
         if (data.isEmpty()) {
             throw CustomExceptions.badRequest("Please calculation to export");
         }

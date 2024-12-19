@@ -6,6 +6,7 @@ import com.example.cabonerfbe.dto.UpdateProjectDto;
 import com.example.cabonerfbe.models.Project;
 import com.example.cabonerfbe.request.CalculateProjectRequest;
 import com.example.cabonerfbe.request.CreateProjectRequest;
+import com.example.cabonerfbe.request.ExportProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
 import com.example.cabonerfbe.response.CreateProjectResponse;
 import com.example.cabonerfbe.response.GetAllProjectResponse;
@@ -103,7 +104,7 @@ public interface ProjectService {
      * @param projectId the project id
      * @return the response entity
      */
-    ResponseEntity<Resource> exportProject(UUID projectId);
+    ResponseEntity<Resource> exportProject(ExportProjectRequest request);
 
     /**
      * Gets project.
