@@ -466,12 +466,12 @@ public class OrganizationServiceImpl implements OrganizationService {
         UserOrganization uo = userOrganizationRepository.findById(userOrganizationId)
                 .orElseThrow(() -> CustomExceptions.notFound("Member do not belong to this organization"));
 
-        UserOrganization organizationManager = userOrganizationRepository.findByUserAndOrganization(uo.getOrganization().getId(), userId)
-                .orElseThrow(() -> CustomExceptions.unauthorized("You do not belong to this organization."));
-
-        if (!Objects.equals(organizationManager.getRole().getName(), Constants.ORGANIZATION_MANAGER)) {
-            throw CustomExceptions.unauthorized("Your role not support this action");
-        }
+//        UserOrganization organizationManager = userOrganizationRepository.findByUserAndOrganization(uo.getOrganization().getId(), userId)
+//                .orElseThrow(() -> CustomExceptions.unauthorized("You do not belong to this organization."));
+//
+//        if (!Objects.equals(organizationManager.getRole().getName(), Constants.ORGANIZATION_MANAGER)) {
+//            throw CustomExceptions.unauthorized("Your role not support this action");
+//        }
 
 
         if (Objects.equals(uo.getRole().getName(), Constants.ORGANIZATION_MANAGER)) {
