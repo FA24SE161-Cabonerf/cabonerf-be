@@ -9,13 +9,11 @@ import com.example.cabonerfbe.models.Process;
 import com.example.cabonerfbe.models.*;
 import com.example.cabonerfbe.repositories.*;
 import com.example.cabonerfbe.request.CalculateProjectRequest;
+import com.example.cabonerfbe.request.CompareProjectsRequest;
 import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.request.ExportProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
-import com.example.cabonerfbe.response.CreateProjectResponse;
-import com.example.cabonerfbe.response.GetAllProjectResponse;
-import com.example.cabonerfbe.response.GetImpactForAllProjectResponse;
-import com.example.cabonerfbe.response.ProjectCalculationResponse;
+import com.example.cabonerfbe.response.*;
 import com.example.cabonerfbe.services.ProjectService;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -318,6 +316,26 @@ public class ProjectServiceImpl implements ProjectService {
         p.setFavorite(!p.getFavorite());
 
         return projectConverter.fromDetailToDto(projectRepository.save(p));
+    }
+
+    @Override
+    public ProjectWithProcessResponse compareProjects(CompareProjectsRequest request) {
+        UUID firstProjectId = request.getFirstProjectId();
+        UUID secondProjectId = request.getSecondProjectId();
+        if (!projectRepository.existsByIdAndStatus(request.getFirstProjectId(), Constants.STATUS_TRUE)) {
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Map.of("firstProjectId", firstProjectId));
+        }
+
+        if (!projectRepository.existsByIdAndStatus(request.getSecondProjectId(), Constants.STATUS_TRUE)) {
+            throw CustomExceptions.badRequest(MessageConstants.NO_PROJECT_FOUND, Map.of("secondProjectId", secondProjectId));
+        }
+
+        return ProjectWithProcessResponse.builder()
+                .firstProjectId(firstProjectId)
+                .secondProjectId(secondProjectId)
+                .firstProjectProcesses(processService.getProcessDtoWithNoExchangesById(processRepository.findAll(firstProjectId)))
+                .secondProjectProcesses(processService.getProcessDtoWithNoExchangesById(processRepository.findAll(secondProjectId)))
+                .build();
     }
 
     @Override

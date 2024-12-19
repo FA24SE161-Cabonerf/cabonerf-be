@@ -35,6 +35,8 @@ public interface ProcessService {
      */
     ProcessDto getProcessById(UUID id);
 
+    List<ProcessDto> getProcessDtoWithNoExchangesById(List<Process> processList);
+
     /**
      * Gets all processes by project id.
      *

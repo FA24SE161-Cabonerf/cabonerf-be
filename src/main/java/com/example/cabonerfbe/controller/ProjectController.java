@@ -4,6 +4,7 @@ import com.example.cabonerfbe.enums.API_PARAMS;
 import com.example.cabonerfbe.enums.Constants;
 import com.example.cabonerfbe.enums.MessageConstants;
 import com.example.cabonerfbe.request.CalculateProjectRequest;
+import com.example.cabonerfbe.request.CompareProjectsRequest;
 import com.example.cabonerfbe.request.CreateProjectRequest;
 import com.example.cabonerfbe.request.ExportProjectRequest;
 import com.example.cabonerfbe.request.UpdateProjectDetailRequest;
@@ -216,6 +217,14 @@ public class ProjectController {
         log.info("Start updateFavorite. projectId: {}", projectId);
         return ResponseEntity.ok().body(
                 new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, "Update favorite success", projectService.updateFavorite(projectId))
+        );
+    }
+
+    @PostMapping(API_PARAMS.COMPARISONS)
+    public ResponseEntity<ResponseObject> compareProjects(@RequestBody CompareProjectsRequest request) {
+        log.info("Start compareProjects. request: {}", request);
+        return ResponseEntity.ok().body(
+                new ResponseObject(Constants.RESPONSE_STATUS_SUCCESS, MessageConstants.COMPARE_PROJECTS_SUCCESS, projectService.compareProjects(request))
         );
     }
 }
